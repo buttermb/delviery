@@ -32,6 +32,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { queryKeys } from '@/lib/queryKeys';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 // Permission categories for UI organization
 const PERMISSION_CATEGORIES = [
@@ -509,20 +510,21 @@ export function RoleManagement() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Role Management</h1>
-          <p className="text-muted-foreground text-sm">
-            Create and manage custom roles with specific permissions for your team
-          </p>
+    <PermissionGuard required="team.manage">
+      <div className="space-y-4 p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Role Management</h1>
+            <p className="text-muted-foreground text-sm">
+              Create and manage custom roles with specific permissions for your team
+            </p>
+          </div>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Role
+          </Button>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Role
-        </Button>
-      </div>
 
       {/* Roles Table */}
       <Card>
@@ -695,7 +697,8 @@ export function RoleManagement() {
         description={`Are you sure you want to delete the role "${roleToDelete?.name}"? This action cannot be undone. Team members assigned to this role will lose these permissions.`}
         isLoading={deleteRoleMutation.isPending}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }
 

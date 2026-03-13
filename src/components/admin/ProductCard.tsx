@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,7 @@ interface ProductCardProps {
   onStockUpdate?: (newValue: string) => Promise<void>;
 }
 
-export function ProductCard({
+const ProductCardComponent = ({
   product,
   onEdit,
   onDelete,
@@ -67,7 +68,7 @@ export function ProductCard({
   onToggleStorefrontVisibility,
   isTogglingVisibility,
   onStockUpdate,
-}: ProductCardProps) {
+}: ProductCardProps) => {
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
   const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
@@ -360,4 +361,6 @@ export function ProductCard({
   }
 
   return cardContent;
-}
+};
+
+export const ProductCard = memo(ProductCardComponent);

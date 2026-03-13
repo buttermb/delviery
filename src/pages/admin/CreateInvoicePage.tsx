@@ -6,6 +6,7 @@ import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -73,6 +74,7 @@ export default function CreateInvoicePage() {
     const createInvoice = useCreateInvoice();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const { csrfToken, validateToken } = useCsrfToken();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -103,6 +105,12 @@ export default function CreateInvoicePage() {
     const { execute: executeCreditAction } = useCreditGatedAction();
 
     const onSubmit = async (values: FormValues) => {
+        // Validate CSRF token
+        if (!validateToken()) {
+            toast.error("Security validation failed. Please refresh the page and try again.");
+            return;
+        }
+
         if (!accountId) {
             toast.error('Account information not available');
             return;
@@ -184,6 +192,7 @@ export default function CreateInvoicePage() {
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <input type="hidden" name="csrf_token" value={csrfToken} />
                     <div className="grid gap-6 md:grid-cols-2">
                         {/* Client & Dates */}
                         <Card>

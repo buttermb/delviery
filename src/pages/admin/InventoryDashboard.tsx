@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InventoryHistoryTimeline } from '@/components/admin/inventory/InventoryHistoryTimeline';
+import { InventoryAlertsDashboard } from '@/components/admin/inventory/InventoryAlertsDashboard';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { TruncatedText } from '@/components/shared/TruncatedText';
@@ -682,6 +683,9 @@ export default function InventoryDashboard() {
           <InventoryHistoryTimeline className="border-none shadow-sm" />
         </TabsContent>
       </Tabs>
+
+      {/* Inventory Alerts Dashboard */}
+      <InventoryAlertsDashboard />
     </div>
   );
 }

@@ -30,6 +30,7 @@ import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { toast } from "sonner";
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import {
   GeneralSettingsSkeleton,
   SecuritySettingsSkeleton,
@@ -544,7 +545,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   }
 
   return (
-    <div className="container mx-auto p-2 sm:p-4 space-y-4">
+    <PermissionGuard required="settings:manage">
+      <div className="container mx-auto p-2 sm:p-4 space-y-4">
       <div>
         <Button
           variant="ghost"
@@ -965,5 +967,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         onCancelLeave={cancelLeave}
       />
     </div>
+    </PermissionGuard>
   );
 }

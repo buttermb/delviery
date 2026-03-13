@@ -1,10 +1,15 @@
 import { logger } from '@/lib/logger';
+import { validateEnvironmentVariables } from '@/lib/envValidation';
+
 /**
  * Delivery Platform - Main Entry Point
- * 
+ *
  * Framework: React 18 + TypeScript + Vite 5.0
  * State: TanStack Query | Styling: Tailwind CSS
  */
+
+// Validate environment variables at startup
+validateEnvironmentVariables();
 
 /**
  * NOTE: Zen Firewall (AikidoSec) is installed but designed for Node.js/Express backend servers.

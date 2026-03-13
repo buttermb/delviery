@@ -13,6 +13,7 @@ import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog"
 import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
+import { QuickReceiving } from "@/components/admin/inventory/QuickReceiving";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -479,6 +480,9 @@ export function InventoryManagement() {
           );
         })
       )}
+
+      {/* Quick Receiving Widget */}
+      <QuickReceiving />
 
       {/* Movement Log */}
       <InventoryMovementLog />

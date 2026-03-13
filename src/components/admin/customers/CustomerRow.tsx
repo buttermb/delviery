@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,13 +55,13 @@ const getCustomerStatus = (customer: Customer) => {
   return <Badge variant="secondary">Regular</Badge>;
 };
 
-function CustomerRow({
+const CustomerRowComponent = ({
   customer,
   isSelected,
   tenantSlug,
   onSelectChange,
   onDeleteClick,
-}: CustomerRowProps) {
+}: CustomerRowProps) => {
   const navigate = useNavigate();
 
   return (
@@ -156,7 +156,6 @@ function CustomerRow({
       </td>
     </tr>
   );
-}
+};
 
-// Wrap with React.memo to prevent unnecessary re-renders
-export default React.memo(CustomerRow);
+export default memo(CustomerRowComponent);

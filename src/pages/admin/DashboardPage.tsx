@@ -33,6 +33,7 @@ import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupComplet
 import { NeedsAttentionWidget } from '@/components/admin/dashboard/NeedsAttentionWidget';
 import { QuickActionsRow } from '@/components/admin/dashboard/QuickActionsRow';
 import { AISuggestionBanner } from '@/components/admin/dashboard/AISuggestionBanner';
+import { LowStockBanner } from '@/components/admin/LowStockBanner';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { format } from 'date-fns';
@@ -232,6 +233,9 @@ export function DashboardPage() {
 
       {/* Setup Completion Checklist — shown for new tenants */}
       <SetupCompletionWidget />
+
+      {/* Low Stock Alert Banner */}
+      <LowStockBanner onViewDetails={() => navigate(`/${tenantSlug}/admin/inventory-hub`)} />
 
       {/* Empty state for brand-new tenants */}
       {error && !stats ? null : !isLoading && stats && stats.totalProducts === 0 && stats.totalOrdersMTD === 0 && stats.pendingOrders === 0 ? (

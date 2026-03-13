@@ -41,6 +41,7 @@ import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 interface TeamMember {
   id: string;
@@ -528,8 +529,9 @@ export default function TeamManagement() {
   const isLimitReached = !isEnterprise && activeUserCount >= (userLimit as number);
 
   return (
-    <div className="space-y-4">
-      <SEOHead title="Team Management" description="Manage your team members and permissions" />
+    <PermissionGuard required="team.view">
+      <div className="space-y-4">
+        <SEOHead title="Team Management" description="Manage your team members and permissions" />
 
       {membersError && teamMembers.length > 0 && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-2 text-sm text-destructive">
@@ -736,6 +738,7 @@ export default function TeamManagement() {
         itemType="team member"
         isLoading={removeMutation.isPending}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

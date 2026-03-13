@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -76,6 +77,7 @@ export function CreateOrderForm({
     title = "Create Order",
     submitLabel = "Create Order",
 }: CreateOrderFormProps) {
+    const { csrfToken, validateToken } = useCsrfToken();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
     const [lineItemsError, setLineItemsError] = useState<string | null>(null);
     const [lineItemsTouched, setLineItemsTouched] = useState(false);
@@ -133,6 +135,12 @@ export function CreateOrderForm({
     const canSubmit = !hasLineItemErrors && !hasInventoryIssues && !isSubmitting;
 
     const handleFormSubmit = async (values: FormValues) => {
+        // Validate CSRF token
+        if (!validateToken()) {
+            toast.error("Security validation failed. Please refresh the page and try again.");
+            return;
+        }
+
         setLineItemsTouched(true);
         const itemError = validateLineItems(lineItems);
         setLineItemsError(itemError);
@@ -193,6 +201,7 @@ export function CreateOrderForm({
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+                <input type="hidden" name="csrf_token" value={csrfToken} />
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Customer & Order Type */}
                     <Card>

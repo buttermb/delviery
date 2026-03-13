@@ -33,6 +33,7 @@ import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupComplet
 import { NeedsAttentionWidget } from '@/components/admin/dashboard/NeedsAttentionWidget';
 import { QuickActionsRow } from '@/components/admin/dashboard/QuickActionsRow';
 import { AISuggestionBanner } from '@/components/admin/dashboard/AISuggestionBanner';
+import { LowStockBanner } from '@/components/admin/LowStockBanner';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useCredits } from '@/hooks/useCredits';
@@ -308,6 +309,7 @@ export default function TenantAdminDashboardPage() {
       )}
       <EmailVerificationBanner />
       <DataSetupBanner />
+      <LowStockBanner onViewDetails={() => navigate(`/${tenantSlug}/admin/inventory-hub`)} />
 
       {/* Onboarding checklist for trial users */}
       {tenant?.slug && isTrialActive && (

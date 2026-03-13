@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatWeightWithConversion } from '@/lib/utils/unitConversion';
 import { format } from 'date-fns';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Package from "lucide-react/dist/esm/icons/package";
@@ -52,6 +53,10 @@ import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import { useState } from 'react';
+import { StockAdjustmentDialog } from '@/components/admin/StockAdjustmentDialog';
+import Settings from "lucide-react/dist/esm/icons/settings";
+import { ProductQRGenerator } from '@/components/admin/products/ProductQRGenerator';
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
 
 export default function ProductDetailsPage() {
     const { productId: rawProductId } = useParams<{ productId: string }>();
@@ -60,6 +65,8 @@ export default function ProductDetailsPage() {
     const { tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
     const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
+    const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
+    const [qrGeneratorOpen, setQrGeneratorOpen] = useState(false);
 
     const { data: product, isLoading, error } = useProduct({ productId });
     const { data: inventoryHistory = [], isLoading: historyLoading } = useProductInventoryHistory(productId);
@@ -209,6 +216,14 @@ export default function ProductDetailsPage() {
                     </div>
                     <div className="flex gap-2">
                         <ProductStorefrontPreview product={product} />
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setQrGeneratorOpen(true)}
+                            aria-label="Generate QR Code"
+                        >
+                            <QrCode className="h-4 w-4" />
+                        </Button>
                         <Button
                             variant="outline"
                             onClick={() => navigateToAdmin(`inventory-hub?tab=products&edit=${product.id}`)}
@@ -445,9 +460,11 @@ export default function ProductDetailsPage() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Weight (g)</p>
+                                            <p className="text-sm text-muted-foreground">Weight</p>
                                             <p className="font-medium">
-                                                {product.weight_grams != null ? `${product.weight_grams}g` : '-'}
+                                                {product.weight_grams != null
+                                                    ? formatWeightWithConversion(product.weight_grams)
+                                                    : '-'}
                                             </p>
                                         </div>
                                     </div>
@@ -670,6 +687,17 @@ export default function ProductDetailsPage() {
 
                     {/* Inventory Tab */}
                     <TabsContent value="inventory" className="space-y-4">
+                        {/* Stock Adjustment Button */}
+                        <div className="flex justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={() => setStockAdjustmentOpen(true)}
+                            >
+                                <Settings className="mr-2 h-4 w-4" />
+                                Adjust Stock
+                            </Button>
+                        </div>
+
                         {/* Reorder Suggestion Card */}
                         <ProductReorderCard productId={productId} />
 
@@ -874,6 +902,33 @@ export default function ProductDetailsPage() {
                     </TabsContent>
                 </Tabs>
             </div>
+
+            {/* Stock Adjustment Dialog */}
+            {product && (
+                <StockAdjustmentDialog
+                    productId={product.id}
+                    productName={product.name}
+                    currentQuantity={availableQty}
+                    warehouse="Main Warehouse"
+                    open={stockAdjustmentOpen}
+                    onOpenChange={setStockAdjustmentOpen}
+                />
+            )}
+
+            {/* QR Code Generator */}
+            {product && tenant?.slug && (
+                <ProductQRGenerator
+                    open={qrGeneratorOpen}
+                    onClose={() => setQrGeneratorOpen(false)}
+                    product={{
+                        id: product.id,
+                        name: product.name,
+                        sku: product.sku,
+                        image_url: product.image_url,
+                    }}
+                    storeSlug={tenant.slug}
+                />
+            )}
         </SwipeBackWrapper>
     );
 }

@@ -18,6 +18,7 @@ import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
+import { RateLimitIndicator } from "@/components/auth/RateLimitIndicator";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,6 +42,7 @@ export default function TenantAdminLoginPage() {
   const [accountLocked, setAccountLocked] = useState(false);
   const [lockDurationSeconds, setLockDurationSeconds] = useState(0);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const { validateToken } = useCsrfToken();
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
@@ -106,6 +108,9 @@ export default function TenantAdminLoginPage() {
     try {
       await login(email, password, tenantSlug, rememberMe);
 
+      // Reset failed attempts on successful login
+      setFailedAttempts(0);
+
       toast.success("Welcome back!", {
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
@@ -117,6 +122,9 @@ export default function TenantAdminLoginPage() {
       logger.debug('[TenantAdminLogin] Redirecting after successful login', { intendedDestination, redirectTo });
       navigate(redirectTo, { replace: true });
     } catch (error: unknown) {
+      // Increment failed attempts on error
+      setFailedAttempts((prev) => prev + 1);
+
       logger.error("Tenant admin login error", error, { component: 'TenantAdminLoginPage' });
 
       // Check if account is locked (429 rate limit or explicit lock)
@@ -319,6 +327,9 @@ export default function TenantAdminLoginPage() {
 
           {/* Offline Indicator */}
           <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
+
+          {/* Rate Limit Indicator */}
+          <RateLimitIndicator attemptCount={failedAttempts} maxAttempts={5} className="mb-4" />
 
           {/* Error Alert */}
           <AuthErrorAlert

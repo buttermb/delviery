@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -64,6 +65,7 @@ export default function CustomerForm() {
 
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
+  const { csrfToken, validateToken } = useCsrfToken();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
@@ -140,6 +142,12 @@ export default function CustomerForm() {
   };
 
   const onSubmit = async (values: CustomerFormValues) => {
+    // Validate CSRF token
+    if (!validateToken()) {
+      toast.error('Security validation failed. Please refresh the page and try again.');
+      return;
+    }
+
     if (!tenant) {
       toast.error('Tenant not found');
       return;
@@ -277,6 +285,7 @@ export default function CustomerForm() {
         {/* Form */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
+            <input type="hidden" name="csrf_token" value={csrfToken} />
             <div className="space-y-6">
               {/* Basic Information */}
               <Card>

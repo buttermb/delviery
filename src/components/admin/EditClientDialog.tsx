@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { z } from "zod";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const { csrfToken, validateToken } = useCsrfToken();
   const [formData, setFormData] = useState<ClientFormData>({
     business_name: "",
     contact_name: "",
@@ -110,6 +112,12 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate CSRF token
+    if (!validateToken()) {
+      showErrorToast("Security validation failed. Please refresh the page and try again.");
+      return;
+    }
+
     const result = clientFormSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -172,6 +180,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            <input type="hidden" name="csrf_token" value={csrfToken} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="business_name">Business Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>

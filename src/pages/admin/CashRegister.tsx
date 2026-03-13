@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  Percent, Receipt, Printer, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
+  Percent, Receipt, Printer, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock, Mail
 } from 'lucide-react';
+import { playSuccessBeep, playPaymentCompleteBeep } from '@/lib/audio';
 import {
   Dialog,
   DialogContent,
@@ -184,10 +185,20 @@ function CashRegisterContent() {
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState<string>('');
+  const [isValidatingCode, setIsValidatingCode] = useState(false);
 
   // Tax state
   const [taxRate, _setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
   const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
+
+  // Split payment state
+  const [splitPaymentEnabled, setSplitPaymentEnabled] = useState(false);
+  const [splitPayment1, setSplitPayment1] = useState({ method: 'cash', amount: 0 });
+  const [splitPayment2, setSplitPayment2] = useState({ method: 'credit', amount: 0 });
+
+  // View state (Sale vs History)
+  const [currentView, setCurrentView] = useState<'sale' | 'history'>('sale');
 
   // Customer state
   const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
@@ -402,7 +413,11 @@ function CashRegisterContent() {
     setPaymentMethod('cash');
     setDiscountValue(0);
     setDiscountType('percentage');
+    setDiscountCode('');
     setSelectedCustomer(null);
+    setSplitPaymentEnabled(false);
+    setSplitPayment1({ method: 'cash', amount: 0 });
+    setSplitPayment2({ method: 'credit', amount: 0 });
   }, []);
 
   // Process payment mutation - uses atomic RPC only
@@ -410,6 +425,17 @@ function CashRegisterContent() {
     mutationFn: async (): Promise<POSTransactionResult> => {
       if (!tenantId || cart.length === 0) {
         throw new Error('Invalid transaction: No items in cart');
+      }
+
+      // Validate split payment if enabled
+      if (splitPaymentEnabled) {
+        const splitTotal = splitPayment1.amount + splitPayment2.amount;
+        if (Math.abs(splitTotal - total) > 0.01) {
+          throw new Error(`Split payment amounts must sum to ${formatCurrency(total)}`);
+        }
+        if (splitPayment1.amount <= 0 || splitPayment2.amount <= 0) {
+          throw new Error('Both split payment amounts must be greater than zero');
+        }
       }
 
       // Check online status - queue if offline
@@ -475,6 +501,7 @@ function CashRegisterContent() {
     },
     onSuccess: (result) => {
       triggerSuccess();
+      playPaymentCompleteBeep();
 
       if (result.transaction_number === 'QUEUED') {
         // Already handled in queueOfflineTransaction
@@ -549,6 +576,7 @@ function CashRegisterContent() {
           return;
         }
         triggerLight();
+        playSuccessBeep();
         setCart(cart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
@@ -561,6 +589,7 @@ function CashRegisterContent() {
           return;
         }
         triggerLight();
+        playSuccessBeep();
         setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
       }
       setProductDialogOpen(false);
@@ -596,6 +625,65 @@ function CashRegisterContent() {
     resetTransaction();
     setClearCartDialogOpen(false);
     toast.success('Cart cleared');
+  };
+
+  // Validate discount code
+  const handleValidateDiscountCode = async (code: string) => {
+    if (!code.trim()) {
+      toast.error('Please enter a discount code');
+      return;
+    }
+
+    setIsValidatingCode(true);
+    try {
+      const { data, error } = await supabase
+        .from('promo_codes')
+        .select('id, code, credits_amount, max_uses, uses_count, is_active, valid_from, valid_until')
+        .eq('code', code.trim().toUpperCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('Failed to validate discount code', error, { component: 'CashRegister' });
+        toast.error('Failed to validate code');
+        return;
+      }
+
+      if (!data) {
+        toast.error('Invalid discount code');
+        return;
+      }
+
+      // Check validity period
+      const now = new Date();
+      if (data.valid_from && new Date(data.valid_from) > now) {
+        toast.error('This code is not yet valid');
+        return;
+      }
+      if (data.valid_until && new Date(data.valid_until) < now) {
+        toast.error('This code has expired');
+        return;
+      }
+
+      // Check max uses
+      if (data.max_uses && data.uses_count >= data.max_uses) {
+        toast.error('This code has reached its usage limit');
+        return;
+      }
+
+      // Apply as fixed discount (credits_amount is in cents)
+      const discountAmt = data.credits_amount / 100;
+      setDiscountType('fixed');
+      setDiscountValue(discountAmt);
+      setDiscountCode(code.trim().toUpperCase());
+      toast.success(`Discount code applied: ${formatCurrency(discountAmt)} off`);
+      setDiscountDialogOpen(false);
+    } catch (error) {
+      logger.error('Discount code validation error', error, { component: 'CashRegister' });
+      toast.error('Failed to validate code');
+    } finally {
+      setIsValidatingCode(false);
+    }
   };
 
   // Apply discount
@@ -938,6 +1026,7 @@ function CashRegisterContent() {
 
         if (product) {
           addToCart(product);
+          playSuccessBeep();
           toast.success(`Added: ${product.name}`);
         } else {
           triggerError();
@@ -1027,13 +1116,33 @@ function CashRegisterContent() {
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-            Cash Register
-            {!isOnline && <WifiOff className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />}
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Point of sale transaction management</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              Cash Register
+              {!isOnline && <WifiOff className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Point of sale transaction management</p>
+          </div>
+          <div className="flex gap-1 border rounded-lg p-1">
+            <Button
+              variant={currentView === 'sale' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setCurrentView('sale')}
+              className="text-xs h-8"
+            >
+              Sale
+            </Button>
+            <Button
+              variant={currentView === 'history' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setCurrentView('history')}
+              className="text-xs h-8"
+            >
+              History
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {activeShift && (
@@ -1068,8 +1177,11 @@ function CashRegisterContent() {
         </div>
       </div>
 
-      {/* Quick Add Product Grid — Top sellers by frequency */}
-      {topProducts.length > 0 && (
+      {/* Sale View */}
+      {currentView === 'sale' && (
+        <>
+          {/* Quick Add Product Grid — Top sellers by frequency */}
+          {topProducts.length > 0 && (
         <Card className="bg-gradient-to-r from-primary/5 to-background">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -1132,9 +1244,9 @@ function CashRegisterContent() {
             </div>
           </CardContent>
         </Card>
-      )}
+          )}
 
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center justify-between text-base sm:text-lg">
@@ -1303,20 +1415,115 @@ function CashRegisterContent() {
             )}
 
             {/* Payment Method */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Payment Method</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {POS_PAYMENT_METHODS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Payment Method</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSplitPaymentEnabled(!splitPaymentEnabled);
+                    if (!splitPaymentEnabled) {
+                      // Initialize split amounts to half each
+                      const half = total / 2;
+                      setSplitPayment1({ method: 'cash', amount: half });
+                      setSplitPayment2({ method: 'credit', amount: half });
+                    }
+                  }}
+                  className="text-xs h-7"
+                >
+                  {splitPaymentEnabled ? 'Single Payment' : 'Split Payment'}
+                </Button>
+              </div>
+
+              {!splitPaymentEnabled ? (
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POS_PAYMENT_METHODS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Payment 1</Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={splitPayment1.method}
+                        onValueChange={(method) => setSplitPayment1({ ...splitPayment1, method })}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POS_PAYMENT_METHODS.map((m) => (
+                            <SelectItem key={m.value} value={m.value}>
+                              {m.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={total}
+                        step="0.01"
+                        value={splitPayment1.amount || ''}
+                        onChange={(e) => {
+                          const amt = Number(e.target.value);
+                          setSplitPayment1({ ...splitPayment1, amount: amt });
+                          setSplitPayment2({ ...splitPayment2, amount: total - amt });
+                        }}
+                        className="w-28"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Payment 2</Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={splitPayment2.method}
+                        onValueChange={(method) => setSplitPayment2({ ...splitPayment2, method })}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POS_PAYMENT_METHODS.map((m) => (
+                            <SelectItem key={m.value} value={m.value}>
+                              {m.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={total}
+                        step="0.01"
+                        value={splitPayment2.amount || ''}
+                        onChange={(e) => {
+                          const amt = Number(e.target.value);
+                          setSplitPayment2({ ...splitPayment2, amount: amt });
+                          setSplitPayment1({ ...splitPayment1, amount: total - amt });
+                        }}
+                        className="w-28"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground pt-1 border-t">
+                    Total: {formatCurrency(splitPayment1.amount + splitPayment2.amount)} / {formatCurrency(total)}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
@@ -1397,9 +1604,9 @@ function CashRegisterContent() {
             )}
           </CardContent>
         </Card>
-      </div>
+          </div>
 
-      {/* Cash Drawer Panel - Full Width */}
+          {/* Cash Drawer Panel - Full Width */}
       {activeShift && (
         <div className="mt-4">
           <CashDrawerPanel
@@ -1410,20 +1617,72 @@ function CashRegisterContent() {
         </div>
       )}
 
-      {/* No Active Shift Empty State */}
-      {!activeShift && (
-        <EmptyState
-          icon={Clock}
-          title="No active shift"
-          description="Start a shift to begin processing sales and track cash drawer activity."
-          action={{
-            label: 'Start Shift',
-            onClick: () => navigate(`/${tenantSlug}/admin/pos-system?tab=shifts`),
-            icon: Clock,
-          }}
-          variant="card"
-          className="mt-4"
-        />
+          {/* No Active Shift Empty State */}
+          {!activeShift && (
+            <EmptyState
+              icon={Clock}
+              title="No active shift"
+              description="Start a shift to begin processing sales and track cash drawer activity."
+              action={{
+                label: 'Start Shift',
+                onClick: () => navigate(`/${tenantSlug}/admin/pos-system?tab=shifts`),
+                icon: Clock,
+              }}
+              variant="card"
+              className="mt-4"
+            />
+          )}
+        </>
+      )}
+
+      {/* Transaction History View */}
+      {currentView === 'history' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Transaction History</CardTitle>
+            <CardDescription>Recent POS transactions and sales</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {transactions && transactions.length > 0 ? (
+              <div className="space-y-3">
+                {(transactions as POSTransaction[]).map((transaction) => (
+                  <div key={transaction.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Receipt className="h-4 w-4 text-muted-foreground" />
+                        <div className="font-medium text-sm sm:text-base truncate">Transaction #{transaction.id.slice(0, 8)}</div>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatSmartDate(transaction.created_at, { includeTime: true })}
+                        </span>
+                        {transaction.payment_method && (
+                          <Badge variant="outline" className="text-xs">
+                            {POS_PAYMENT_METHODS.find(m => m.value === transaction.payment_method)?.label || transaction.payment_method}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                      <div className="text-base sm:text-lg font-bold">{formatCurrency(transaction.total_amount)}</div>
+                      <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
+                        {transaction.payment_status || 'pending'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Receipt}
+                title="No transactions yet"
+                description="Transaction history will appear here after sales are processed."
+                variant="inline"
+              />
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Product Selection Dialog */}
@@ -1522,9 +1781,42 @@ function CashRegisterContent() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Apply Discount</DialogTitle>
-            <DialogDescription>Add a percentage or fixed amount discount</DialogDescription>
+            <DialogDescription>Add a discount code, percentage, or fixed amount</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Discount Code Input */}
+            <div>
+              <Label htmlFor="discount-code-input">Discount Code</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  id="discount-code-input"
+                  type="text"
+                  placeholder="Enter promo code"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleValidateDiscountCode(discountCode);
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={() => handleValidateDiscountCode(discountCode)}
+                  disabled={!discountCode.trim() || isValidatingCode}
+                  size="sm"
+                >
+                  {isValidatingCode ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Apply'
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
             <div className="flex gap-2">
               <Button
                 variant={discountType === 'percentage' ? 'default' : 'outline'}
@@ -1576,6 +1868,7 @@ function CashRegisterContent() {
           <DialogFooter>
             <Button variant="outline" onClick={() => {
               setDiscountValue(0);
+              setDiscountCode('');
               setDiscountDialogOpen(false);
             }}>
               Remove Discount
@@ -1668,9 +1961,19 @@ function CashRegisterContent() {
               </div>
             </div>
           ) : null}
-          <DialogFooter className="flex gap-2">
+          <DialogFooter className="flex gap-2 flex-col sm:flex-row">
             <Button variant="outline" onClick={() => { setReceiptDialogOpen(false); setLastRefundData(null); }} className="flex-1">
               Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                toast.info('Email receipt feature coming soon');
+              }}
+              className="flex-1"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Email Receipt
             </Button>
             <Button onClick={handlePrintReceipt} disabled={isPrinting} className="flex-1">
               {isPrinting ? (

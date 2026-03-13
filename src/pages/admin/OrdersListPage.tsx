@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { DeliveryETACell } from '@/components/admin/orders/DeliveryETACell';
 import { OrderFilters, useOrderFilters } from '@/components/admin/orders/OrderFilters';
+import { OrderPriorityFlag, type OrderPriority } from '@/components/admin/orders/OrderPriorityFlag';
 import type { ActiveFilters, DateRangeValue } from '@/components/admin/shared/FilterBar';
 import {
   DropdownMenu,
@@ -67,6 +68,7 @@ interface Order {
   order_source?: string;
   payment_status?: string;
   delivery_status?: string;
+  priority?: OrderPriority;
   tenant_id: string;
   user?: {
     full_name: string | null;
@@ -89,6 +91,52 @@ const getStatusBadge = (status: string) => {
     completed: 'outline',
   };
   return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
+};
+
+// Payment status badge helper
+const getPaymentStatusBadge = (paymentStatus: string | undefined) => {
+  if (!paymentStatus) return null;
+
+  const config: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
+    paid: {
+      label: 'Paid',
+      variant: 'outline',
+      className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
+    },
+    unpaid: {
+      label: 'Unpaid',
+      variant: 'secondary',
+      className: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-800',
+    },
+    partially_paid: {
+      label: 'Partial',
+      variant: 'outline',
+      className: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+    },
+    partial: {
+      label: 'Partial',
+      variant: 'outline',
+      className: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+    },
+    refunded: {
+      label: 'Refunded',
+      variant: 'outline',
+      className: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+    },
+    pending: {
+      label: 'Pending',
+      variant: 'secondary',
+      className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+    },
+  };
+
+  const statusConfig = config[paymentStatus] || config.unpaid;
+
+  return (
+    <Badge variant={statusConfig.variant} className={`text-xs font-medium ${statusConfig.className}`}>
+      {statusConfig.label}
+    </Badge>
+  );
 };
 
 // Source badge helper
@@ -146,22 +194,53 @@ export function OrdersListPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      // Fetch orders with extended fields
-      const { data: ordersData, error } = await supabase
-        .from('orders')
+      // Try unified_orders first for priority support
+      let ordersData: Array<Record<string, unknown>> | null = null;
+      let error: { message: string } | null = null;
+
+      const { data: unifiedData, error: unifiedError } = await supabase
+        .from('unified_orders')
         .select(`
           id,
           order_number,
           created_at,
           status,
           total_amount,
-          user_id,
+          customer_id,
           courier_id,
           tenant_id,
-          payment_status
+          payment_status,
+          priority
         `)
         .eq('tenant_id', tenant.id)
         .order(sort?.column && sortColumnMap[sort.column] ? sortColumnMap[sort.column] : 'created_at', { ascending: sort?.ascending ?? false });
+
+      if (!unifiedError && unifiedData) {
+        ordersData = unifiedData.map(o => ({
+          ...o,
+          user_id: o.customer_id, // Map customer_id to user_id for compatibility
+        }));
+      } else {
+        // Fallback to orders table
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('orders')
+          .select(`
+            id,
+            order_number,
+            created_at,
+            status,
+            total_amount,
+            user_id,
+            courier_id,
+            tenant_id,
+            payment_status
+          `)
+          .eq('tenant_id', tenant.id)
+          .order(sort?.column && sortColumnMap[sort.column] ? sortColumnMap[sort.column] : 'created_at', { ascending: sort?.ascending ?? false });
+
+        ordersData = fallbackData;
+        error = fallbackError;
+      }
 
       if (error) {
         logger.error('Failed to fetch orders', { error });
@@ -243,6 +322,7 @@ export function OrdersListPage() {
         payment_status: order.payment_status || undefined,
         delivery_status: deliveryStatusMap[order.id] || undefined,
         delivery_method: undefined,
+        priority: (order.priority as OrderPriority | undefined) || undefined,
         user: order.user_id ? profilesMap[order.user_id] : undefined,
         products: orderProductsMap[order.id] ?? [],
       })) as Order[];
@@ -438,10 +518,23 @@ export function OrdersListPage() {
       ),
     },
     {
+      accessorKey: 'priority',
+      header: 'Priority',
+      cell: ({ original }: { original: Order }) =>
+        original.priority && original.priority !== 'normal' ? (
+          <OrderPriorityFlag priority={original.priority} size="sm" showIcon={true} showLabel={false} />
+        ) : null,
+    },
+    {
       accessorKey: 'status',
       header: 'Status',
       sortable: true,
       cell: ({ original }: { original: Order }) => getStatusBadge(original.status),
+    },
+    {
+      accessorKey: 'payment_status',
+      header: 'Payment',
+      cell: ({ original }: { original: Order }) => getPaymentStatusBadge(original.payment_status),
     },
     {
       accessorKey: 'delivery_method',

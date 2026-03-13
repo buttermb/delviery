@@ -17,6 +17,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
 import { queryKeys } from '@/lib/queryKeys';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 export default function DataExport() {
   const { tenant } = useTenantAdminAuth();
@@ -121,7 +122,8 @@ export default function DataExport() {
   });
 
   return (
-    <div className="p-4 space-y-4">
+    <PermissionGuard required="data:export">
+      <div className="p-4 space-y-4">
       <div>
         <h1 className="text-xl font-bold">Data Export</h1>
         <p className="text-muted-foreground">Export your data in various formats</p>
@@ -221,6 +223,7 @@ export default function DataExport() {
         </Card>
       </div>
     </div>
+    </PermissionGuard>
   );
 }
 

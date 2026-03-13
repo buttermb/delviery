@@ -59,6 +59,7 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
+import { LowStockBanner } from "@/components/admin/LowStockBanner";
 const ProductImportDialog = lazy(() => import("@/components/admin/ProductImportDialog").then(m => ({ default: m.ProductImportDialog })));
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
 import { useProductDuplicate } from "@/hooks/useProductDuplicate";
@@ -78,6 +79,7 @@ import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
+import { ProductHoverCard } from "@/components/admin/products/ProductHoverCard";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -105,10 +107,13 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   image_url: product.image_url || "",
 
   low_stock_alert: product.low_stock_alert?.toString() || "10",
-  
+
 
   exclude_from_discounts: product.exclude_from_discounts ?? false,
   minimum_price: product.minimum_price?.toString() || "",
+  tags: Array.isArray((product as unknown as { tags?: string[] }).tags)
+    ? (product as unknown as { tags: string[] }).tags
+    : [],
 });
 
 export default function ProductManagement() {
@@ -624,9 +629,10 @@ export default function ProductManagement() {
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
         thca_percentage: null,
-        
+
         exclude_from_discounts: data.exclude_from_discounts,
         minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
+        tags: data.tags || [],
       };
 
       if (editingProduct) {
@@ -1125,20 +1131,22 @@ export default function ProductManagement() {
       header: "Product Details",
       accessorKey: "name",
       cell: (product) => (
-        <div className="flex flex-col">
-          <InlineEditableCell
-            value={product.name}
-            onSave={(v) => handleInlineUpdate(product.id, 'name', v)}
-            type="text"
-            className="font-medium text-foreground"
-          />
-          {product.sku && visibleColumns.includes("sku") && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              SKU: {product.sku}
-              <CopyButton text={product.sku} label="SKU" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </span>
-          )}
-        </div>
+        <ProductHoverCard product={product}>
+          <div className="flex flex-col">
+            <InlineEditableCell
+              value={product.name}
+              onSave={(v) => handleInlineUpdate(product.id, 'name', v)}
+              type="text"
+              className="font-medium text-foreground"
+            />
+            {product.sku && visibleColumns.includes("sku") && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                SKU: {product.sku}
+                <CopyButton text={product.sku} label="SKU" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </span>
+            )}
+          </div>
+        </ProductHoverCard>
       )
     },
     ...(visibleColumns.includes("category") ? [{
@@ -1438,6 +1446,9 @@ export default function ProductManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Low Stock Banner */}
+      <LowStockBanner onViewDetails={() => navigateTenant('inventory-hub')} />
 
       {/* Filter Presets */}
       <div className="flex items-center gap-1.5">

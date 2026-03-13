@@ -38,6 +38,7 @@ export interface AdminDataTableProps<T> {
     renderGridItem?: (item: T) => React.ReactNode;
     renderMobileItem?: (item: T) => React.ReactNode;
     onRowClick?: (item: T) => void;
+    onRowHover?: (item: T) => void;
 
     // Skeletons
     gridSkeletonCount?: number;
@@ -65,6 +66,7 @@ export function AdminDataTable<T>({
     renderGridItem,
     renderMobileItem,
     onRowClick,
+    onRowHover,
     gridSkeletonCount = 8,
     listSkeletonCount = 6,
     className,
@@ -174,6 +176,7 @@ export function AdminDataTable<T>({
                         keyExtractor={keyExtractor}
                         mobileRenderer={renderMobileItem}
                         onRowClick={onRowClick}
+                        onRowHover={onRowHover}
                     />
                 )}
             </CardContent>

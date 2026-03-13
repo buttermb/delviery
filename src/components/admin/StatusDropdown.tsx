@@ -1,6 +1,7 @@
 /**
  * StatusDropdown - Inline Status Change Component
  * Reduces clicks from 3-4 to just 1 for status updates
+ * Now with state machine validation for order statuses
  */
 import { useState } from 'react';
 import { Check, ChevronDown, Loader2 } from 'lucide-react';
@@ -16,6 +17,11 @@ import { cn } from '@/lib/utils';
 import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import {
+  getValidNextStatuses,
+  isValidTransition,
+  type OrderStatus,
+} from '@/lib/orderStatusMachine';
 
 export type StatusOption = {
   value: string;
@@ -71,6 +77,10 @@ interface StatusDropdownProps {
   size?: 'sm' | 'default';
   showCheckmark?: boolean;
   className?: string;
+  /** Enable state machine validation (only shows valid next statuses) */
+  useStateMachine?: boolean;
+  /** Entity type for state machine (currently only 'order' supported) */
+  entityType?: 'order' | 'other';
 }
 
 export function StatusDropdown({
@@ -81,6 +91,8 @@ export function StatusDropdown({
   size = 'default',
   showCheckmark = true,
   className,
+  useStateMachine = false,
+  entityType = 'order',
 }: StatusDropdownProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -88,8 +100,29 @@ export function StatusDropdown({
   const currentStatusOption = statuses.find(s => s.value === currentStatus);
   const displayLabel = currentStatusOption?.label || currentStatus;
 
+  // Filter statuses based on state machine if enabled
+  const availableStatuses = useStateMachine && entityType === 'order'
+    ? (() => {
+        const validNextStatuses = getValidNextStatuses(currentStatus as OrderStatus);
+        // Include current status + valid next statuses
+        return statuses.filter(s =>
+          s.value === currentStatus || validNextStatuses.includes(s.value as OrderStatus)
+        );
+      })()
+    : statuses;
+
   const handleStatusChange = async (newStatus: string) => {
     if (newStatus === currentStatus || isUpdating) return;
+
+    // Validate transition if state machine is enabled
+    if (useStateMachine && entityType === 'order') {
+      if (!isValidTransition(currentStatus as OrderStatus, newStatus as OrderStatus)) {
+        toast.error('Invalid status transition', {
+          description: `Cannot change from ${currentStatus} to ${newStatus}`,
+        });
+        return;
+      }
+    }
 
     setIsUpdating(true);
     try {
@@ -131,12 +164,12 @@ export function StatusDropdown({
           )}
         </Badge>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="start" 
+      <DropdownMenuContent
+        align="start"
         className="w-48"
         onClick={(e) => e.stopPropagation()}
       >
-        {statuses.map((status) => (
+        {availableStatuses.map((status) => (
           <DropdownMenuItem
             key={status.value}
             onClick={() => handleStatusChange(status.value)}

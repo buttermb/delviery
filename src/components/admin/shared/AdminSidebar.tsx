@@ -45,6 +45,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRoutePrefetch } from '@/hooks/useRoutePrefetch';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { usePermissions } from '@/hooks/usePermissions';
+import type { Permission } from '@/lib/permissions/rolePermissions';
 
 /**
  * Navigation item structure
@@ -55,6 +57,10 @@ interface NavItem {
   icon: LucideIcon;
   href: string;
   badgeKey?: 'pendingOrders' | 'lowStock' | 'unreadNotifications' | 'pendingDeliveries';
+  /** Required permission(s) to view this item. If not specified, item is always visible. */
+  permission?: Permission | Permission[];
+  /** If true, user must have all permissions. If false, user must have at least one. Default: true */
+  requireAll?: boolean;
 }
 
 /**
@@ -149,7 +155,7 @@ const navigationSections: NavSection[] = [
     id: 'settings',
     label: 'Settings',
     items: [
-      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+      { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings', permission: 'settings:manage' },
       { id: 'notifications', label: 'Notifications', icon: Bell, href: '/admin/notifications', badgeKey: 'unreadNotifications' },
     ],
   },
@@ -234,6 +240,7 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
   const { tenant } = useTenantAdminAuth();
   const location = useLocation();
   const { prefetchRoute } = useRoutePrefetch();
+  const { checkPermission, checkAnyPermission, checkAllPermissions } = usePermissions();
 
   // Sidebar collapsed state (icon-only mode)
   const [isCollapsed, setIsCollapsed] = useState(getPersistedCollapsedState);
@@ -276,7 +283,7 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
 
   // Auto-expand section when it contains active item
   useEffect(() => {
-    navigationSections.forEach(section => {
+    visibleSections.forEach(section => {
       const hasActiveItem = section.items.some(item => isActive(item.href));
       if (hasActiveItem && !sectionStates[section.id]) {
         setSectionStates(prev => {
@@ -286,13 +293,32 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
         });
       }
     });
-  }, [location.pathname, isActive, sectionStates]);
+  }, [location.pathname, isActive, sectionStates, visibleSections]);
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
     logger.error('AdminSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdminSidebar' });
     return null;
   }
+
+  // Check if user has permission to view an item
+  const hasPermission = useCallback((item: NavItem): boolean => {
+    if (!item.permission) return true; // No permission required
+    if (Array.isArray(item.permission)) {
+      return item.requireAll !== false
+        ? checkAllPermissions(item.permission)
+        : checkAnyPermission(item.permission);
+    }
+    return checkPermission(item.permission);
+  }, [checkPermission, checkAnyPermission, checkAllPermissions]);
+
+  // Filter sections and items based on permissions
+  const visibleSections = useMemo(() => {
+    return navigationSections.map(section => ({
+      ...section,
+      items: section.items.filter(hasPermission)
+    })).filter(section => section.items.length > 0);
+  }, [hasPermission]);
 
   // Get badge value for an item
   const getBadgeValue = (badgeKey?: NavItem['badgeKey']): number | undefined => {
@@ -441,7 +467,7 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
         {/* Navigation */}
         <ScrollArea className="flex-1">
           <nav className="p-2 space-y-4">
-            {navigationSections.map(renderSection)}
+            {visibleSections.map(renderSection)}
           </nav>
         </ScrollArea>
 

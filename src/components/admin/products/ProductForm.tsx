@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { VendorSelector } from "@/components/admin/products/VendorSelector";
 import type { VendorWithStats } from "@/hooks/useVendorsWithStats";
 import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
+import { ProductTagsInput } from "@/components/admin/products/ProductTagsInput";
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -44,6 +45,7 @@ export interface ProductFormData {
     metrc_retail_id?: string;
     exclude_from_discounts: boolean;
     minimum_price: string;
+    tags: string[];
 }
 
 interface ProductFormProps {
@@ -75,6 +77,7 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     metrc_retail_id: "",
     exclude_from_discounts: false,
     minimum_price: "",
+    tags: [],
 };
 
 export function ProductForm({
@@ -346,6 +349,15 @@ export function ProductForm({
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Product description..."
                                     rows={3}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Tags</Label>
+                                <ProductTagsInput
+                                    value={formData.tags}
+                                    onChange={(tags) => setFormData({ ...formData, tags })}
+                                    placeholder="Add tags (e.g., organic, indoor, premium)..."
                                 />
                             </div>
                         </div>
