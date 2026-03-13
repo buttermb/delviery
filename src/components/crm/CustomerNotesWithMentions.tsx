@@ -131,7 +131,7 @@ export function CustomerNotesWithMentions({
   // Add note mutation
   const addNoteMutation = useMutation({
     mutationFn: async (content: string) => {
-      if (!tenant?.id || !userId) throw new Error('Not authenticated');
+      if (!tenant?.id || !admin?.id) throw new Error('Not authenticated');
 
       const mentions = extractMentions(content);
 
