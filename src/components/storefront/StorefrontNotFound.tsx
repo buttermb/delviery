@@ -36,11 +36,11 @@ export default function StorefrontNotFound({
   const getDefaultMessage = () => {
     switch (type) {
       case 'store-not-found':
-        return 'The store you're looking for doesn't exist or has been removed.';
+        return "The store you're looking for doesn't exist or has been removed.";
       case 'product-not-found':
-        return 'The product you're looking for is no longer available.';
+        return "The product you're looking for is no longer available.";
       default:
-        return 'The page you're looking for doesn't exist or has been moved.';
+        return "The page you're looking for doesn't exist or has been moved.";
     }
   };
 
