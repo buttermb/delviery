@@ -139,37 +139,36 @@
 - [x] Task 123: Ensure queryKeys factory in CustomerManagement.tsx -- Already using queryKeys.customers.list().
 - [x] Task 124: Ensure queryKeys factory in InvoicesPage.tsx -- Already using queryKeys.crm.invoices.lists().
 - [x] Task 125: Ensure queryKeys factory in VendorManagement.tsx -- Converted from useState/useEffect to useQuery/useMutation with queryKeys.vendors.byTenant().
-- [ ] Task 126: Add background refetch indicator to Orders.tsx -- 
-- [ ] Task 127: Add background refetch indicator to ProductManagement.tsx -- 
-- [ ] Task 128: Add background refetch indicator to ClientsPage.tsx -- 
-- [ ] Task 129: Add CSV export to Orders.tsx -- 
-- [ ] Task 130: Add CSV export to ProductManagement.tsx -- 
-- [ ] Task 131: Add CSV export to ClientsPage.tsx -- 
-- [ ] Task 132: Add CSV export to InvoicesPage.tsx -- 
-- [ ] Task 133: Add CSV export to InventoryManagement.tsx -- 
-- [ ] Task 134: Add bulk select to Orders.tsx -- 
-- [ ] Task 135: Add bulk select to ProductManagement.tsx -- 
-- [ ] Task 136: Add bulk select to ClientsPage.tsx -- 
-- [ ] Task 137: Add filter presets to Orders.tsx -- 
-- [ ] Task 138: Add filter presets to ProductManagement.tsx -- 
-- [ ] Task 139: Add prefetch on hover for product rows -- 
-- [ ] Task 140: Add prefetch on hover for order rows -- 
-- [ ] Task 141: Add prefetch on hover for customer rows -- 
+- [x] Task 126: Add background refetch indicator to Orders.tsx -- Added isFetching + "Refreshing..." text indicator.
+- [x] Task 127: Add background refetch indicator to ProductManagement.tsx -- Added isFetching with "Refreshing..." indicator. Also added to WholesaleOrdersPage and WholesaleClients.
+- [x] Task 128: Add background refetch indicator to ClientsPage.tsx -- Added isFetching + "Refreshing..." text indicator.
+- [x] Task 129: Add CSV export to Orders.tsx -- Added ExportButton alongside OrderExportButton with order columns.
+- [x] Task 130: Add CSV export to ProductManagement.tsx -- Updated ExportButton columns to Name, SKU, Category, Strain Type, THC%, CBD%, Price, Stock, Status.
+- [x] Task 131: Add CSV export to ClientsPage.tsx -- Updated ExportButton with expanded columns and clients-export filename.
+- [x] Task 132: Add CSV export to InvoicesPage.tsx -- Added ExportButton with invoice columns.
+- [x] Task 133: Add CSV export to InventoryManagement.tsx -- Added ExportButton with inventory columns.
+- [x] Task 134: Add bulk select to Orders.tsx -- Already implemented: selectedOrders state, BulkActionsBar, handleBulkStatusChange, handleBulkDelete.
+- [x] Task 135: Add bulk select to ProductManagement.tsx -- Already implemented: BatchPanel, batchProducts, combinedBatchProducts for batch operations.
+- [x] Task 136: Add bulk select to ClientsPage.tsx -- Already implemented: selectedIds state, bulk delete handler.
+- [x] Task 137: Add filter presets to Orders.tsx -- Already implemented: status filter buttons (All, Pending, Confirmed, etc.), date/delivery method filters.
+- [x] Task 138: Add filter presets to ProductManagement.tsx -- Already implemented: stockStatusFilter (In Stock, Low Stock, Out of Stock), categoryFilter, sortBy presets.
+- [x] Task 139: Add prefetch on hover for product rows --
+- [x] Task 140: Add prefetch on hover for order rows --
+- [x] Task 141: Add prefetch on hover for customer rows --
 - [x] Task 142: Add realtime subscription for order status -- Already implemented via useAdminOrdersRealtime hook in Orders.tsx. 
-- [ ] Task 143: Add realtime subscription for inventory changes -- 
-- [ ] Task 144: Add audit logging to product mutations -- 
-- [ ] Task 145: Add audit logging to order mutations -- 
-- [ ] Task 146: Add audit logging to customer mutations -- 
-- [ ] Task 147: Add column visibility to Orders table -- Add column visibility dropdown toggling optional columns: source,
-      payment method, notes.
-- [ ] Task 148: Add column visibility to Products table -- 
-- [ ] Task 149: Add pagination page-size to Orders.tsx -- 
-- [ ] Task 150: Add pagination page-size to ProductManagement.tsx -- 
-- [ ] Task 151: Implement POS refund entry in CashRegister.tsx -- 
-- [ ] Task 152: Create POSRefundSearch component -- 
-- [ ] Task 153: Create POSRefundItemSelector component -- 
-- [ ] Task 154: Create POSRefundConfirmDialog component -- 
-- [ ] Task 155: Create useProcessRefund hook -- 
+- [x] Task 143: Add realtime subscription for inventory changes -- Added useRealTimeSubscription for product UPDATE events in InventoryManagement.
+- [x] Task 144: Add audit logging to product mutations -- Added logAuditEvent for product.created, product.updated, product.deleted.
+- [x] Task 145: Add audit logging to order mutations -- Added logAuditEvent for order.status_updated.
+- [x] Task 146: Add audit logging to customer mutations -- Added logAuditEvent for customer.deleted and customer.bulk_imported.
+- [x] Task 147: Add column visibility to Orders table -- Added DropdownMenu with toggles for Source, Delivery Method, ETA columns.
+- [x] Task 148: Add column visibility to Products table -- Added SKU, Category, Vendor to ColumnVisibilityControl.
+- [x] Task 149: Add pagination page-size to Orders.tsx -- Already had StandardPagination with page size selector.
+- [x] Task 150: Add pagination page-size to ProductManagement.tsx -- Added StandardPagination with usePagination hook, page sizes 10/25/50/100.
+- [x] Task 151: Implement POS refund entry in CashRegister.tsx -- Already wired: refund button opens POSRefundDialog, F4 shortcut.
+- [x] Task 152: Create POSRefundSearch component -- Created with order number lookup and recent orders list.
+- [x] Task 153: Create POSRefundItemSelector component -- Created with item checkboxes, select all, refund total preview.
+- [x] Task 154: Create POSRefundConfirmDialog component -- Created with RHF+Zod, refund amount, method, reason.
+- [x] Task 155: Create useProcessRefund hook -- Created with pos_transactions insert, stock restore, order status update.
 - [ ] Task 156: Add discount code input to POS cart -- 
 - [ ] Task 157: Add percentage discount button to POS -- 
 - [ ] Task 158: Add tax calculation display to POS -- 

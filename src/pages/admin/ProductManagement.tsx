@@ -376,6 +376,31 @@ export default function ProductManagement() {
   // Alias for external usage
   const loadProducts = refetchProducts;
 
+  // Prefetch product detail on hover
+  const handlePrefetchProduct = useCallback((productId: string) => {
+    if (!tenant?.id) return;
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.products.detail(tenant.id, productId),
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (error) {
+          logger.error('Failed to prefetch product', { error, productId });
+          throw error;
+        }
+        return data;
+      },
+      staleTime: 30_000,
+      retry: 2,
+    });
+  }, [tenant?.id, queryClient]);
+
   // Derived state for categories
   const categories = useMemo(() => {
     return Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
@@ -1223,14 +1248,16 @@ export default function ProductManagement() {
   ];
 
   const renderMobileProduct = (product: Product) => (
-    <ProductCard
-      product={product}
-      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
-      onDelete={() => handleDelete(product.id)}
-      onDuplicate={() => duplicateProduct(product)}
-      onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
-      onPublish={() => handlePublish(product.id)}
-    />
+    <div onMouseEnter={() => handlePrefetchProduct(product.id)}>
+      <ProductCard
+        product={product}
+        onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+        onDelete={() => handleDelete(product.id)}
+        onDuplicate={() => duplicateProduct(product)}
+        onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
+        onPublish={() => handlePublish(product.id)}
+      />
+    </div>
   );
 
 
@@ -1578,8 +1605,12 @@ export default function ProductManagement() {
         isError={productsError}
         onRetry={() => refetchProductsQuery()}
         viewMode={viewMode}
+        onRowHover={(product) => handlePrefetchProduct(product.id)}
         renderGridItem={(product) => (
-          <div className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}>
+          <div
+            className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
+            onMouseEnter={() => handlePrefetchProduct(product.id)}
+          >
             <ProductCard
               product={product}
               onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}

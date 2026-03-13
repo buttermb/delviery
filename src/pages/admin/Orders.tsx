@@ -239,6 +239,31 @@ export default function Orders() {
     },
   });
 
+  // Prefetch order detail on hover
+  const handlePrefetchOrder = useCallback((orderId: string) => {
+    if (!tenant?.id) return;
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.orders.detail(tenant.id, orderId),
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('unified_orders')
+          .select('*, order_items(*)')
+          .eq('id', orderId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (error) {
+          logger.error('Failed to prefetch order', { error, orderId });
+          throw error;
+        }
+        return data;
+      },
+      staleTime: 30_000,
+      retry: 2,
+    });
+  }, [tenant?.id, queryClient]);
+
   // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: queryKeys.orders.byTenant(tenant!.id),
@@ -1372,6 +1397,7 @@ export default function Orders() {
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
               onRowClick={handleOrderClick}
+              onRowHover={(order) => handlePrefetchOrder(order.id)}
               rowClassName={(order) =>
                 newOrderIds.has(order.id)
                   ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary'

@@ -3,6 +3,10 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClients } from '@/hooks/crm/useClients';
 import { CreateClientDialog } from '@/components/crm/CreateClientDialog';
 import { Button } from '@/components/ui/button';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import {
     Select,
     SelectContent,
@@ -113,6 +117,7 @@ function ClientsPageSkeleton() {
 
 export default function ClientsPage() {
     const { navigateToAdmin } = useTenantNavigation();
+    const queryClient = useQueryClient();
 
     // Filter state — persisted in URL for back-button & navigation support
     const [filters, setFilters] = useUrlFilters<ClientFilters>(CLIENTS_FILTER_CONFIG);
@@ -121,6 +126,28 @@ export default function ClientsPage() {
 
     // Bulk selection state
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // Prefetch client detail on hover
+    const handlePrefetchClient = useCallback((clientId: string) => {
+        queryClient.prefetchQuery({
+            queryKey: queryKeys.crm.clients.detail(clientId),
+            queryFn: async () => {
+                const { data, error } = await supabase
+                    .from('crm_clients')
+                    .select('*')
+                    .eq('id', clientId)
+                    .maybeSingle();
+
+                if (error) {
+                    logger.error('Failed to prefetch client', { error, clientId });
+                    throw error;
+                }
+                return data;
+            },
+            staleTime: 30_000,
+            retry: 2,
+        });
+    }, [queryClient]);
 
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
     const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
@@ -391,6 +418,7 @@ export default function ClientsPage() {
                 keyExtractor={(client) => client.id}
                 isLoading={isLoading}
                 onRowClick={(client) => navigateToAdmin(`crm/clients/${client.id}`)}
+                onRowHover={(client) => handlePrefetchClient(client.id)}
                 mobileRenderer={renderMobileCard}
                 emptyState={{
                     type: searchTerm ? undefined : "no_customers",

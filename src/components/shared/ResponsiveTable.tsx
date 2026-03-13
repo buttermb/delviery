@@ -29,6 +29,8 @@ interface ResponsiveTableProps<T> {
     emptyState?: Omit<EnhancedEmptyStateProps, "className">;
     mobileRenderer?: (item: T) => React.ReactNode;
     onRowClick?: (item: T) => void;
+    /** Callback fired when a row is hovered */
+    onRowHover?: (item: T) => void;
     /** Per-row className function for dynamic styling (e.g., highlight animations) */
     rowClassName?: (item: T) => string | undefined;
     className?: string;
@@ -55,6 +57,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item,
     columns,
     onRowClick,
+    onRowHover,
     itemKey: _itemKey,
     rowClassName,
     keyboardProps,
@@ -62,6 +65,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
+    onRowHover?: (item: T) => void;
     itemKey?: string;
     rowClassName?: string;
     keyboardProps?: KeyboardRowProps;
@@ -74,6 +78,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
             onKeyDown={keyboardProps?.onKeyDown}
             onFocus={keyboardProps?.onFocus}
             onClick={() => onRowClick && onRowClick(item)}
+            onMouseEnter={() => onRowHover && onRowHover(item)}
             className={cn(
                 onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
@@ -95,6 +100,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
+    onRowHover?: (item: T) => void;
     itemKey?: string;
     rowClassName?: string;
     keyboardProps?: KeyboardRowProps;
@@ -108,6 +114,7 @@ export function ResponsiveTable<T>({
     emptyState,
     mobileRenderer,
     onRowClick,
+    onRowHover,
     rowClassName,
     className,
     virtualize,
@@ -198,6 +205,7 @@ export function ResponsiveTable<T>({
                         <div
                             key={keyExtractor(item)}
                             onClick={() => onRowClick && onRowClick(item)}
+                            onMouseEnter={() => onRowHover && onRowHover(item)}
                             className={cn(
                                 "bg-card text-card-foreground rounded-lg border shadow-sm p-4",
                                 onRowClick && "cursor-pointer active:scale-[0.98] transition-transform"
@@ -239,6 +247,7 @@ export function ResponsiveTable<T>({
                                         item={item}
                                         columns={columns}
                                         onRowClick={onRowClick}
+                                        onRowHover={onRowHover}
                                         itemKey={keyExtractor(item)}
                                         rowClassName={rowClassName?.(item)}
                                         keyboardProps={getRowProps(index)}
