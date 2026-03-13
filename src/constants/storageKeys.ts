@@ -242,6 +242,15 @@ export const STORAGE_KEYS = {
   LIVE_ORDERS_VIEW: 'live_orders_view',
   // Storefront getting started checklist dismissed (tenant-scoped)
   STOREFRONT_CHECKLIST_DISMISSED_PREFIX: 'storefront_checklist_dismissed_',
+
+  // Mutation queue (offline mode)
+  MUTATION_QUEUE: 'floraiq-mutation-queue',
+
+  // Dashboard widget customization
+  DASHBOARD_WIDGET_CUSTOMIZATION: 'floraiq-dashboard-widgets',
+
+  // Admin saved searches prefix (per entity type)
+  ADMIN_SAVED_SEARCHES_PREFIX: 'floraiq-saved-searches-',
 } as const;
 
 /**

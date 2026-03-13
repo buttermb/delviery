@@ -29,3 +29,17 @@ export { default as StorefrontNotFound } from './StorefrontNotFound';
 
 export { default as ProductSearchFilters } from './ProductSearchFilters';
 export type { ProductFilters } from './ProductSearchFilters';
+
+export { default as ProductReviewDisplay } from './ProductReviewDisplay';
+
+export { default as StorefrontAnalytics } from './StorefrontAnalytics';
+export { useStorefrontAnalytics } from './StorefrontAnalytics';
+
+export { default as WishlistButton } from './WishlistButton';
+export type { WishlistItem } from './WishlistButton';
+
+export { default as WishlistDrawer } from './WishlistDrawer';
+
+export { default as SocialShareButtons } from './SocialShareButtons';
+
+export { default as LoyaltyRewardsDisplay } from './LoyaltyRewardsDisplay';
