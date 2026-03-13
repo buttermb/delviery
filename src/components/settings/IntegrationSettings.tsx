@@ -61,7 +61,7 @@ export function IntegrationSettings() {
     if (!tenant?.id) return;
 
     try {
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => Promise<{data: Integration[] | null; error: unknown}> } } }>).from('custom_integrations').select('*').eq('tenant_id', tenant.id);
+      const { data, error } = await (supabase as any).from('custom_integrations').select('*').eq('tenant_id', tenant.id);
 
       if (error) throw error;
       setIntegrations(data || []);
