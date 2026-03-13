@@ -76,7 +76,7 @@ export function WebhookConfiguration() {
 
     setLoading(true);
     try {
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { order: (col: string, opts: {ascending: boolean}) => Promise<{data: WebhookConfig[] | null; error: unknown}> } } } }>).from('webhooks').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      const { data, error } = await (supabase as any).from('webhooks').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
 
       if (error) throw error;
       setWebhooks(data || []);
