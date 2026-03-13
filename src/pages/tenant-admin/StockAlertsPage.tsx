@@ -76,9 +76,9 @@ export default function StockAlertsPage() {
           id: item.id,
           product_name: item.name || 'Unknown',
           current_quantity: currentQty,
-          threshold: threshold,
+          reorder_point: threshold,
           severity,
-          status: 'active',
+          is_resolved: false,
           created_at: item.updated_at || new Date().toISOString(),
         };
       });
