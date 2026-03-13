@@ -46,8 +46,8 @@ export function TenantGeneralSettings() {
     if (tenant) {
       form.reset({
         business_name: tenant.business_name || '',
-        owner_name: tenant.owner_name || '',
-        owner_email: tenant.owner_email || '',
+        owner_name: (tenant as any).owner_name || '',
+        owner_email: (tenant as any).owner_email || '',
         phone: (tenant as unknown as Record<string, unknown>).phone as string || '',
         address: '',
         description: '',

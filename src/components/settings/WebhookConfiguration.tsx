@@ -76,7 +76,7 @@ export function WebhookConfiguration() {
 
     setLoading(true);
     try {
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { order: (col: string, opts: {ascending: boolean}) => Promise<{data: WebhookConfig[] | null; error: unknown}> } } } }>).from('webhooks').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      const { data, error } = await (supabase as any).from('webhooks').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
 
       if (error) throw error;
       setWebhooks(data || []);
@@ -97,7 +97,7 @@ export function WebhookConfiguration() {
     try {
       const secret = `whsec_${Math.random().toString(36).substring(2, 15)}`;
 
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { insert: (data: unknown) => Promise<{error: unknown}> } }>).from('webhooks').insert({
+      const { error } = await (supabase as any).from('webhooks').insert({
         tenant_id: tenant.id,
         name: data.name,
         url: data.url,
@@ -123,7 +123,7 @@ export function WebhookConfiguration() {
     if (!tenant?.id) return;
 
     try {
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { delete: () => { eq: (col: string, val: string) => Promise<{error: unknown}> } } }>).from('webhooks').delete().eq('id', webhookId);
+      const { error } = await (supabase as any).from('webhooks').delete().eq('id', webhookId);
 
       if (error) throw error;
 

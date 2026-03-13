@@ -69,7 +69,7 @@ export default function ProductReviewDisplay({
 
       if (!tenant) return [];
 
-      const { data, error } = await (supabase as unknown as Record<string, unknown>)
+      const { data, error } = await (supabase as any)
         .from('product_reviews')
         .select('id, reviewer_name, rating, comment, created_at')
         .eq('product_id', productId)

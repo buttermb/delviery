@@ -59,6 +59,7 @@ export const queryKeys = {
     statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
     live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
     byProduct: (tenantId: string, productId: string) => [...queryKeys.orders.byTenant(tenantId), 'product', productId] as const,
+    byCustomer: (customerId: string, tenantSlug?: string) => [...queryKeys.orders.all, 'customer', customerId, tenantSlug] as const,
   },
 
   // Wholesale Orders
@@ -803,6 +804,7 @@ export const queryKeys = {
     byUser: (tenantId: string, userId: string) => [...queryKeys.notifications.byTenant(tenantId), 'user', userId] as const,
     byType: (tenantId: string, type: string) => [...queryKeys.notifications.byTenant(tenantId), 'type', type] as const,
     preferences: (tenantId: string, userId: string) => [...queryKeys.notifications.byUser(tenantId, userId), 'preferences'] as const,
+    badgeCounts: (tenantId: string) => [...queryKeys.notifications.all, 'badges', tenantId] as const,
   },
 
   // Messages
@@ -1454,6 +1456,8 @@ export const queryKeys = {
   // Delivery Zones
   deliveryZones: {
     all: ['delivery-zones'] as const,
+    detail: (tenantId: string, zoneId: string) =>
+      ['delivery-zones', 'detail', tenantId, zoneId] as const,
     byTenant: (tenantId?: string) =>
       [...queryKeys.deliveryZones.all, tenantId] as const,
   },
@@ -2664,6 +2668,8 @@ export const queryKeys = {
   deliveryAnalytics: {
     byTenant: (tenantId?: string) =>
       ['delivery-analytics', tenantId] as const,
+    summary: (tenantId?: string) =>
+      ['delivery-analytics', 'summary', tenantId] as const,
   },
 
   // Products for Barcode
@@ -3211,15 +3217,7 @@ export const queryKeys = {
       ['external-apis', 'supported-currencies'] as const,
   },
 
-  // Notifications
-  notifications: {
-    all: () => ['notifications'] as const,
-    lists: () => [...queryKeys.notifications.all(), 'list'] as const,
-    list: (tenantId: string, filters?: Record<string, unknown>) =>
-      [...queryKeys.notifications.lists(), tenantId, filters] as const,
-    badgeCounts: (tenantId: string) =>
-      [...queryKeys.notifications.all(), 'badges', tenantId] as const,
-  },
+  // (notifications key merged into main block above)
 
   // Onboarding
   onboarding: {

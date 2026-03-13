@@ -28,7 +28,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       logger.info('[RealtimeNotifications] New notification', { notification });
 
       // Invalidate notification queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
       // Show toast if enabled
       if (showToast && notification.status === 'delivered') {
@@ -52,7 +52,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       logger.info('[RealtimeNotifications] Notification updated', { notification });
 
       // Invalidate notification queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
       // Show toast for failed notifications
       if (showToast && notification.status === 'failed' && payload.old.status !== 'failed') {
@@ -74,7 +74,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
     let channel: RealtimeChannel;
 
     try {
-      channel = supabase
+      channel = (supabase as any)
         .channel(`notifications:tenant_${tenantId}`)
         .on(
           'postgres_changes',

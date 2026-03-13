@@ -47,7 +47,7 @@ export function APIKeyManagement() {
 
     setLoading(true);
     try {
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { order: (col: string, opts: {ascending: boolean}) => Promise<{data: APIKey[] | null; error: unknown}> } } } }>).from('api_keys').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      const { data, error } = await (supabase as any).from('api_keys').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
 
       if (error) throw error;
       setApiKeys(data || []);
@@ -70,7 +70,7 @@ export function APIKeyManagement() {
       // Generate a random API key
       const key = `sk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { insert: (data: unknown) => { select: () => { single: () => Promise<{data: APIKey | null; error: unknown}> } } } }>).from('api_keys').insert({
+      const { data, error } = await (supabase as any).from('api_keys').insert({
         tenant_id: tenant.id,
         name: newKeyName,
         key,
@@ -97,7 +97,7 @@ export function APIKeyManagement() {
     if (!tenant?.id) return;
 
     try {
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { delete: () => { eq: (col: string, val: string) => Promise<{error: unknown}> } } }>).from('api_keys').delete().eq('id', keyId);
+      const { error } = await (supabase as any).from('api_keys').delete().eq('id', keyId);
 
       if (error) throw error;
 

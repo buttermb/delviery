@@ -40,7 +40,7 @@ export function DeliveryDriverAssignmentPanel({
 
   // Fetch available couriers
   const { data: couriers } = useQuery({
-    queryKey: queryKeys.couriers.list(tenant?.id || ''),
+    queryKey: queryKeys.couriers.list({ tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase

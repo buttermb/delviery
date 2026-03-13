@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Layers, Plus, MoreVertical, Edit, Trash2, Package } from 'lucide-react';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Category {
   id: string;
@@ -366,7 +366,7 @@ export function ProductCategories() {
         confirmText="Delete Category"
         variant="destructive"
         onConfirm={handleDelete}
-        isLoading={deleteMutation.isPending}
+        
       />
     </div>
   );

@@ -39,7 +39,7 @@ export function ComplianceReports() {
 
   // Fetch data retention policy
   const { data: retentionPolicy, isLoading: policyLoading } = useQuery({
-    queryKey: [...queryKeys.settings.all, 'retention-policy', tenantId],
+    queryKey: ['compliance', 'settings', 'retention-policy', tenantId],
     queryFn: async () => {
       // Default retention policy
       return {
@@ -55,7 +55,7 @@ export function ComplianceReports() {
 
   // Fetch recent IP access logs
   const { data: ipLogs, isLoading: logsLoading } = useQuery({
-    queryKey: [...queryKeys.auditLog.all, 'ip-logs', tenantId],
+    queryKey: ['compliance', 'audit-log', 'ip-logs', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
 

@@ -49,7 +49,8 @@ interface ProcessSaleParams {
 
 export const usePOSSale = () => {
   const [items, setItems] = useState<CartItem[]>([]);
-  const { tenantId } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
   const queryClient = useQueryClient();
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
