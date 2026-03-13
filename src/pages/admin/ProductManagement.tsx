@@ -628,7 +628,7 @@ export default function ProductManagement() {
         low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
-        thca_percentage: null,
+        thca_percentage: data.thc_percent ? parseFloat(String(data.thc_percent)) : 0,
 
       };
 
