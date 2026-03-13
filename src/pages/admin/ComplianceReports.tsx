@@ -39,7 +39,7 @@ export function ComplianceReports() {
 
   // Fetch data retention policy
   const { data: retentionPolicy, isLoading: policyLoading } = useQuery({
-    queryKey: [...queryKeys.settings.all, 'retention-policy', tenantId],
+    queryKey: ['compliance', 'settings', 'retention-policy', tenantId],
     queryFn: async () => {
       // Default retention policy
       return {
