@@ -28,7 +28,6 @@ export interface VendorWithStats {
   zip_code: string | null;
   license_number: string | null;
   payment_terms: string | null;
-  lead_time_days: number | null;
   status: string | null;
   notes: string | null;
   // Computed stats
