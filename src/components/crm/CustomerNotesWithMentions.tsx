@@ -44,7 +44,7 @@ export function CustomerNotesWithMentions({
   customerId,
   customerName,
 }: CustomerNotesWithMentionsProps) {
-  const { tenant, userId } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [noteContent, setNoteContent] = useState('');
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
