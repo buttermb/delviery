@@ -450,7 +450,7 @@ const DisposableMenuOrders = () => {
       {/* Order Details Dialog */}
       {selectedOrder && (
         <OrderDetailsDialog
-          order={selectedOrder}
+          order={selectedOrder as any}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdate={() => {

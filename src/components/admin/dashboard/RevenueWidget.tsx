@@ -10,7 +10,6 @@ import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from './KPICard';
 
@@ -20,7 +19,6 @@ interface RevenueWidgetProps {
 
 export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
   const { data: stats, isLoading } = useDashboardStats(period);
-  const { tenantSlug } = useTenantAdminAuth();
 
   return (
     <div className="space-y-3">
@@ -39,7 +37,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
               icon={<DollarSign className="h-5 w-5" />}
               description="Completed orders today"
               variant="success"
-              href={`/${tenantSlug}/admin/finance-hub`}
+              href="/admin/finance-hub"
             />
             <KPICard
               title="Month to Date"
@@ -51,7 +49,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
                 value: stats.revenueGrowthPercent,
                 label: 'vs last month'
               } : undefined}
-              href={`/${tenantSlug}/admin/finance-hub`}
+              href="/admin/finance-hub"
             />
             <KPICard
               title="Avg Order Value"
@@ -59,7 +57,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
               icon={<ShoppingCart className="h-5 w-5" />}
               description="Per order this month"
               variant="default"
-              href={`/${tenantSlug}/admin/finance-hub`}
+              href="/admin/finance-hub"
             />
           </>
         )}
