@@ -111,6 +111,7 @@ export function useFreeTierLimits() {
     },
     enabled: !!tenantId && isFreeTier,
     staleTime: 30 * 1000, // Cache for 30 seconds (balance can change)
+    retry: 2,
   });
 
   const hasPurchasedCredits = purchaseAndBalanceData?.hasPurchased ?? false;
@@ -185,6 +186,7 @@ export function useFreeTierLimits() {
     },
     enabled: !!tenantId && isFreeTier,
     staleTime: 30000, // Cache for 30 seconds
+    retry: 2,
   });
 
   // Increment usage mutation

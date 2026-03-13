@@ -85,6 +85,7 @@ export default function StrategicDashboardPage() {
             };
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     if (isLoading) {

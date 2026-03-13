@@ -56,6 +56,7 @@ export default function ComplianceVaultPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const filteredDocuments = documents?.filter((doc) => {

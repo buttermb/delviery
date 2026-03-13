@@ -158,6 +158,7 @@ export default function OrderTrackingPage() {
     },
     enabled: !!orderId && !!tenantId && (!!customerId || !!customerEmail),
     refetchInterval: 10000, // Poll every 10 seconds as fallback
+    retry: 2,
   });
 
   // Track previous status to show toast on change

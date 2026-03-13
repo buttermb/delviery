@@ -35,6 +35,7 @@ export default function CustomReportsPage() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const deleteReportMutation = useMutation({

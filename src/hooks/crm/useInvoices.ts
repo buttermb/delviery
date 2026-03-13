@@ -82,6 +82,7 @@ export function useInvoices() {
         enabled: !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 
     const useInvoiceQuery = (id: string) => useQuery({
@@ -100,6 +101,7 @@ export function useInvoices() {
         enabled: !!id && !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 
     const useMarkInvoicePaid = () => {
@@ -288,6 +290,7 @@ export function useClientInvoices(clientId: string | undefined) {
         enabled: !!clientId && !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 }
 

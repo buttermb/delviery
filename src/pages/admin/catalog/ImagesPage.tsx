@@ -79,6 +79,7 @@ export default function ImagesPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Load products for assignment
@@ -96,6 +97,7 @@ export default function ImagesPage() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Upload image

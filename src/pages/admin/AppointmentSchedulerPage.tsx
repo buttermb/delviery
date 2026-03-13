@@ -62,6 +62,7 @@ export default function AppointmentSchedulerPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   return (

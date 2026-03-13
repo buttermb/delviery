@@ -101,6 +101,7 @@ export function useRecentClients() {
     },
     enabled: !!tenant?.id && recentClientIds.length > 0,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
   });
 
   // Add a client to recent list

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
 import { logger } from "@/lib/logger";
+import { logAuditEvent } from "@/lib/auditLog";
 import { humanizeError } from "@/lib/humanizeError";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -289,6 +290,13 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             }
 
             if (insertedCount > 0) {
+                // Log audit event for bulk import
+                logAuditEvent({
+                    action: 'customer.bulk_imported',
+                    resourceType: 'customer',
+                    tenantId: tenant.id,
+                    changes: { count: insertedCount },
+                });
                 onSuccess?.();
                 onOpenChange(false);
                 resetState();

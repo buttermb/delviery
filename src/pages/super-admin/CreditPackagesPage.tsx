@@ -66,6 +66,7 @@ export default function CreditPackagesPage() {
   const { data: packages, isLoading, refetch } = useQuery({
     queryKey: queryKeys.superAdminTools.creditPackages(),
     queryFn: getAllCreditPackages,
+    retry: 2,
   });
 
   // Calculate price per credit

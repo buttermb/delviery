@@ -45,6 +45,7 @@ export default function ZReportPanel() {
         },
         enabled: !!tenantId,
         refetchInterval: 30000,
+        retry: 2,
     });
 
     if (isLoading) {

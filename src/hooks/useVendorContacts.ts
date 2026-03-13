@@ -114,6 +114,7 @@ export function useVendorContacts(vendorId: string) {
       return (data ?? []) as VendorContact[];
     },
     enabled: !!tenantId && !!vendorId,
+    retry: 2,
   });
 
   // Create contact mutation
@@ -379,6 +380,7 @@ export function useVendorContactHistory(contactId: string) {
       return (data ?? []) as VendorContactHistory[];
     },
     enabled: !!tenantId && !!contactId,
+    retry: 2,
   });
 }
 

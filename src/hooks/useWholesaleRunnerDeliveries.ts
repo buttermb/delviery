@@ -76,6 +76,7 @@ export function useWholesaleRunnerDeliveries(runnerId?: string) {
     },
     enabled: !!runnerId,
     refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2,
   });
 }
 
@@ -121,5 +122,6 @@ export function useRunnerStats(runnerId?: string) {
       };
     },
     enabled: !!runnerId,
+    retry: 2,
   });
 }

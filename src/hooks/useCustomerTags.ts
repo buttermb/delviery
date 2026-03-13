@@ -75,6 +75,7 @@ export function useTags() {
     },
     enabled: !!tenant?.id,
     staleTime: 30000,
+    retry: 2,
   });
 }
 
@@ -104,6 +105,7 @@ export function useContactTags(contactId: string | undefined, options?: { enable
     },
     enabled: (options?.enabled ?? true) && !!tenant?.id && !!contactId,
     staleTime: 30000,
+    retry: 2,
   });
 }
 
@@ -140,6 +142,7 @@ export function useContactTagsBatch(contactIds: string[]) {
     },
     enabled: !!tenant?.id && normalizedIds.length > 0,
     staleTime: 30000,
+    retry: 2,
   });
 }
 

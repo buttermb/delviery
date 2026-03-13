@@ -46,6 +46,7 @@ export const useDisposableMenus = (tenantId?: string) => {
     enabled: !!tenantId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -214,6 +215,7 @@ export const useMenuWhitelist = (menuId: string) => {
     enabled: !!menuId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -288,6 +290,7 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
     // Performance: cache for 15 seconds (orders change more frequently)
     staleTime: 15 * 1000,
     gcTime: 2 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -352,6 +355,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
     enabled: !!tenantId,
     staleTime: 60 * 1000, // Security events change less frequently
     gcTime: 10 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -372,5 +376,6 @@ export const useMenuAccessLogs = (menuId: string) => {
     enabled: !!menuId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };

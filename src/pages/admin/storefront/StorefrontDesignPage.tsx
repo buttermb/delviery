@@ -60,6 +60,7 @@ export function StorefrontDesignPage() {
             }
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Save mutation for unsaved changes dialog

@@ -64,6 +64,7 @@ export function useSettingsVersions({
     },
     enabled: enabled && !!tenantId,
     staleTime: 30000, // 30 seconds
+    retry: 2,
   });
 
   const saveVersionMutation = useMutation({

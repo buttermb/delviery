@@ -110,6 +110,7 @@ export default function CustomerCRMPage() {
       }
     },
     enabled: !!tenant?.id && encryptionIsReady,
+    retry: 2,
   });
 
   // Calculate lifecycle stage for each customer

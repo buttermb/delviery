@@ -145,6 +145,7 @@ export default function SecuritySettings() {
       });
     },
     enabled: !!admin?.id,
+    retry: 2,
   });
 
   // Revoke session mutation

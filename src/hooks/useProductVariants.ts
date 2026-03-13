@@ -95,6 +95,7 @@ export function useProductVariants(productId: string | undefined) {
       return data as ProductVariant[];
     },
     enabled: !!tenant?.id && !!productId,
+    retry: 2,
   });
 }
 

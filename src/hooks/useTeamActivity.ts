@@ -130,6 +130,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Set up realtime subscription for live updates

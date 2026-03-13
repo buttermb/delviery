@@ -47,6 +47,7 @@ export default function AdminPricingPage() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Update pricing mutation

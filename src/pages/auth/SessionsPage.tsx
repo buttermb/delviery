@@ -74,6 +74,7 @@ export function SessionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       return user;
     },
+    retry: 2,
   });
 
   const {

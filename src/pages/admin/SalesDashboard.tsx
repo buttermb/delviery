@@ -79,6 +79,7 @@ export default function SalesDashboard() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const { salesData, statusData, totalRevenue, totalOrders, avgOrderValue } = useMemo(() => {

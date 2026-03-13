@@ -164,6 +164,7 @@ export function useDashboardActivity() {
     },
     enabled: !!tenantId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 

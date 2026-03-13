@@ -50,6 +50,7 @@ export function useCheckoutFlow() {
     },
     enabled: !!store?.id,
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   // Preconnect to Stripe when card payment is available

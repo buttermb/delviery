@@ -60,6 +60,7 @@ export default function DealsPage() {
             return (data ?? []) as unknown as Deal[];
         },
         enabled: !!store?.id,
+        retry: 2,
     });
 
     const getDayNames = (days: number[]) => {

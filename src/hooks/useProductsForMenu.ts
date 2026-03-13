@@ -42,5 +42,6 @@ export const useProductsForMenu = (tenantId?: string) => {
     },
     enabled: !!tenantId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 2,
   });
 };

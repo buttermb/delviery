@@ -99,6 +99,7 @@ export function useVendorsWithStats() {
         },
         enabled: !!tenant?.id,
         staleTime: 30000, // 30 seconds
+        retry: 2,
     });
 }
 
@@ -126,5 +127,6 @@ export function useVendorOrders(vendorId: string | null) {
         },
         enabled: !!tenant?.id && !!vendorId,
         staleTime: 30000, // 30 seconds
+        retry: 2,
     });
 }

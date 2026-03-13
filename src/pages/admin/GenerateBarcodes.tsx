@@ -89,6 +89,7 @@ export default function GenerateBarcodes() {
       return data ?? [];
     },
     enabled: !!tenant?.id && !tenantLoading && mode === 'product',
+    retry: 2,
   });
 
   // Fetch batches

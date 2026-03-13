@@ -54,7 +54,8 @@ export default function MarketplaceCategoryManager() {
             if (error) throw error;
             return (data ?? []) as unknown as MarketplaceCategory[];
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Mutations

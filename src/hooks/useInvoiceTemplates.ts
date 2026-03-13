@@ -105,7 +105,8 @@ export function useInvoiceTemplates() {
         template_data: d.template_data as unknown as InvoiceTemplateData
       })) as InvoiceTemplate[];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const createTemplate = useMutation({

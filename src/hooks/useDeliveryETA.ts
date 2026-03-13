@@ -96,6 +96,7 @@ export function useDeliveryETA(orderIds: string[]) {
     staleTime: 30_000,
     gcTime: 60_000,
     refetchInterval: 120_000, // 2 minutes (realtime handles live updates)
+    retry: 2,
   });
 
   // Fetch historical average delivery time for this tenant
@@ -142,6 +143,7 @@ export function useDeliveryETA(orderIds: string[]) {
     enabled: !!tenant?.id,
     staleTime: 300_000, // Cache for 5 minutes
     gcTime: 600_000,
+    retry: 2,
   });
 
   // Fetch runner stop counts (how many active deliveries each runner has ahead)
@@ -178,6 +180,7 @@ export function useDeliveryETA(orderIds: string[]) {
     enabled: !!tenant?.id && runnerIds.length > 0,
     staleTime: 15_000,
     gcTime: 60_000,
+    retry: 2,
   });
 
   // Real-time subscription for delivery and runner updates

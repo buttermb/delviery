@@ -59,6 +59,7 @@ export function useStaticMenuPages(tenantId?: string) {
     enabled: !!tenantId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 }
 

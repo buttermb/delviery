@@ -67,6 +67,7 @@ export default function PurchaseOrderDetailPage() {
             return data;
         },
         enabled: !!orderId && !!tenant?.id,
+        retry: 2,
     });
 
     // Mark Received Mutation

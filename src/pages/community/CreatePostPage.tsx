@@ -28,6 +28,7 @@ export function CreatePostPage() {
   const { data: categories } = useQuery({
     queryKey: queryKeys.forum.categories.all(),
     queryFn: () => forumApi.getCategories(),
+    retry: 2,
   });
   const { data: profile } = useForumProfile();
   const createPostMutation = useCreatePost();
@@ -43,6 +44,7 @@ export function CreatePostPage() {
   const { data: listings = [] } = useQuery({
     queryKey: queryKeys.marketplaceListings.forForum(),
     queryFn: () => marketplaceApi.getActiveMarketplaceListings(100),
+    retry: 2,
   });
 
   const filteredListings = listings.filter(listing =>

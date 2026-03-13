@@ -16,6 +16,7 @@ export function useForumApproval() {
     queryKey: queryKeys.forum.approval.current(),
     queryFn: () => forumApi.getForumApproval(),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 

@@ -82,6 +82,7 @@ export default function Webhooks() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createWebhookMutation = useMutation({

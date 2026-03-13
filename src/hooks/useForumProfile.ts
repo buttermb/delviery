@@ -16,6 +16,7 @@ export function useForumProfile() {
     queryKey: queryKeys.forum.profile.current(),
     queryFn: () => forumApi.getForumProfile(),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 
@@ -28,6 +29,7 @@ export function useForumProfileByUsername(username: string | undefined) {
     },
     enabled: !!username,
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 }
 

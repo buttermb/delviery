@@ -82,6 +82,7 @@ export default function CommissionTracking() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Toggle commission status

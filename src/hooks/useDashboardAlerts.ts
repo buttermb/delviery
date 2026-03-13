@@ -184,6 +184,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
     enabled: !!tenantId,
     refetchInterval: 60000, // Refresh every minute
     staleTime: 30000, // Consider stale after 30 seconds
+    retry: 2,
   });
 
   // Process alerts with read/dismissed state

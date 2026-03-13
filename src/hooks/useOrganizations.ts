@@ -318,6 +318,7 @@ export function useOrganizations({
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: organizationKeys.list(tenantId ?? '', filters),
     queryFn: () => fetchOrganizations(tenantId!, filters),
     enabled: enabled && !!tenantId,
@@ -614,6 +615,7 @@ export function useOrganizationDetail({
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: organizationKeys.detail(tenantId ?? '', organizationId ?? ''),
     queryFn: () => fetchOrganizationDetail(tenantId!, organizationId!),
     enabled: enabled && !!tenantId && !!organizationId,
@@ -626,6 +628,7 @@ export function useOrganizationDetail({
     isLoading: isLoadingMembers,
     refetch: refetchMembers,
   } = useQuery({
+  retry: 2,
     queryKey: organizationKeys.members(tenantId ?? '', organizationId ?? ''),
     queryFn: () => fetchOrganizationMembers(tenantId!, organizationId!),
     enabled: enabled && !!tenantId && !!organizationId,
@@ -862,6 +865,7 @@ export function useOrganizationSearch(searchTerm: string) {
     },
     enabled: !!tenantId && !!searchTerm && searchTerm.length >= 2,
     staleTime: 30000,
+    retry: 2,
   });
 
   return {
@@ -912,6 +916,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
       return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
+    retry: 2,
   });
 
   interface MemberWithOrg {

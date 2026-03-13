@@ -47,6 +47,7 @@ export default function CustomerAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const { data: orders, isLoading: ordersLoading, error: ordersError, refetch: refetchOrders } = useQuery({
@@ -69,6 +70,7 @@ export default function CustomerAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (customersLoading || ordersLoading) {

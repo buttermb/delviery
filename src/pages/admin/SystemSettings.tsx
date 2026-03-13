@@ -101,6 +101,7 @@ const SystemSettings = () => {
     },
     enabled: !!tenant,
     refetchInterval: 30000, // Refresh every 30s
+    retry: 2,
   });
 
   // Database statistics
@@ -134,6 +135,7 @@ const SystemSettings = () => {
       };
     },
     enabled: !!tenant,
+    retry: 2,
   });
 
   const saveFraudRules = useMutation({

@@ -59,6 +59,7 @@ export default function ShoppingCartPage() {
     },
     enabled: !!user,
     staleTime: Infinity,
+    retry: 2,
   });
 
   // Fetch product details for guest cart items
@@ -76,6 +77,7 @@ export default function ShoppingCartPage() {
     },
     enabled: !user && guestCart.length > 0,
     staleTime: Infinity,
+    retry: 2,
   });
 
   // Combine guest cart items with product data

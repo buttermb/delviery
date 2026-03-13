@@ -38,6 +38,7 @@ export default function VerifyEmailPage() {
     },
     enabled: !!admin?.id,
     refetchInterval: 10000, // Check every 10 seconds
+    retry: 2,
   });
 
   const handleResendVerification = async () => {

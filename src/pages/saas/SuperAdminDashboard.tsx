@@ -100,6 +100,7 @@ export default function SuperAdminDashboard() {
         churnRate,
       };
     },
+    retry: 2,
   });
 
   // All Tenants
@@ -118,6 +119,7 @@ export default function SuperAdminDashboard() {
         healthScore: calculateHealthScore(tenant as unknown as Tenant),
       }));
     },
+    retry: 2,
   });
 
   // Feature Flags
@@ -128,6 +130,7 @@ export default function SuperAdminDashboard() {
       if (error) throw error;
       return data;
     },
+    retry: 2,
   });
 
   const filteredTenants = tenants?.filter((tenant) =>

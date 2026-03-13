@@ -71,6 +71,7 @@ export default function RunnersPage() {
       return runnersWithDeliveries;
     },
     enabled: !!account?.id,
+    retry: 2,
   });
 
   const columns: ColumnDef<Runner>[] = [

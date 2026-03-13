@@ -69,6 +69,7 @@ export function StockAlerts() {
       return (data ?? []) as StockAlert[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fallback function to calculate alerts from products table

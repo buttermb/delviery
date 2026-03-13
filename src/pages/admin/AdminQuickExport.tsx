@@ -105,6 +105,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       return data;
     },
     enabled: false, // Don't auto-fetch
+    retry: 2,
   });
 
   const handleExport = async () => {

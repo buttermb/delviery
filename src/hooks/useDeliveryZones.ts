@@ -28,6 +28,7 @@ export function useDeliveryZones() {
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.deliveryZones.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];

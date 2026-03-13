@@ -161,6 +161,7 @@ export default function SuperAdminEnhanced() {
         openTickets: 8, // Placeholder
       };
     },
+    retry: 2,
   });
 
   // Fetch tenant list
@@ -235,6 +236,7 @@ export default function SuperAdminEnhanced() {
 
       return tenantsWithHealth;
     },
+    retry: 2,
   });
 
   // Calculate filter counts
@@ -268,6 +270,7 @@ export default function SuperAdminEnhanced() {
 
       return atRisk;
     },
+    retry: 2,
   });
 
   const defaultStats = (): PlatformStats => ({
@@ -799,6 +802,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
       if (error) throw error;
       return data;
     },
+    retry: 2,
   });
 
   if (!tenant) {
@@ -1010,6 +1014,7 @@ function UsageMonitoring({ tenant }: { tenant: Record<string, unknown> }) {
         .maybeSingle();
       return data || { usage: {}, limits: {} };
     },
+    retry: 2,
   });
 
   const usageData = (usage?.usage || tenant?.usage || {}) as Record<string, number>;
@@ -1169,6 +1174,7 @@ function ActivityTimeline({ tenantId }: { tenantId: string }) {
 
       return subscriptionEvents ?? [];
     },
+    retry: 2,
   });
 
   return (

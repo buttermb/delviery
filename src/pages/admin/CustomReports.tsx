@@ -69,6 +69,7 @@ export default function CustomReports() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createReportMutation = useMutation({

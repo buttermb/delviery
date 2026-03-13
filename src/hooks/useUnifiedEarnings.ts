@@ -120,5 +120,6 @@ export function useUnifiedEarnings(
       return { earnings, totals };
     },
     enabled: !!userId,
+    retry: 2,
   });
 }

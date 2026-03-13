@@ -303,6 +303,7 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
       return data;
     },
     enabled: !!customerUser.tenant_id,
+    retry: 2,
   });
 
   // Populate form when profile loads

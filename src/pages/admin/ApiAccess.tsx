@@ -41,6 +41,7 @@ export default function ApiAccess() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createKeyMutation = useMutation({

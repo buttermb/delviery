@@ -124,6 +124,7 @@ export default function ReturnsManagementPage() {
 
       return (data ?? []) as unknown as ReturnAuthorization[];
     },
+    retry: 2,
   });
 
   const deleteMutation = useMutation({

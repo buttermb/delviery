@@ -372,6 +372,7 @@ export function CreditsPage() {
     },
     enabled: !!tenantId,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 
   if (!tenant || !tenantSlug) {

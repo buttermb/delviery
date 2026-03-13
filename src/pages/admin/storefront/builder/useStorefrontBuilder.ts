@@ -149,6 +149,7 @@ export function useStorefrontBuilder() {
             }
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Hydrate state from DB

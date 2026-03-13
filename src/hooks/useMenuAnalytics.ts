@@ -115,7 +115,8 @@ export const useMenuAnalytics = (menuId: string) => {
 
       return analytics;
     },
-    enabled: !!menuId && !!tenant?.id
+    enabled: !!menuId && !!tenant?.id,
+    retry: 2,
   });
 };
 
@@ -174,7 +175,8 @@ export const useProductImageAnalytics = (menuId: string) => {
 
       return analytics;
     },
-    enabled: !!menuId
+    enabled: !!menuId,
+    retry: 2,
   });
 };
 

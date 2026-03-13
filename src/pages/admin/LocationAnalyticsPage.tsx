@@ -54,6 +54,7 @@ export default function LocationAnalyticsPage() {
       };
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   if (isLoading) {

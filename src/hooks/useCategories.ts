@@ -141,6 +141,7 @@ export function useCategories() {
     },
     enabled: !!tenant?.id,
     ...STATIC_QUERY_CONFIG,
+    retry: 2,
   });
 }
 

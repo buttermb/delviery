@@ -74,6 +74,7 @@ export default function TenantDetailPage() {
       return data;
     },
     enabled: !!tenantId && isValidUUID,
+    retry: 2,
   });
 
   // Early return for invalid UUID logic handled in render
@@ -95,6 +96,7 @@ export default function TenantDetailPage() {
       return data;
     },
     enabled: !!tenant?.subscription_plan,
+    retry: 2,
   });
 
   // Fetch recent invoices
@@ -113,6 +115,7 @@ export default function TenantDetailPage() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch tenant users
@@ -130,6 +133,7 @@ export default function TenantDetailPage() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch activity logs for this tenant
@@ -148,6 +152,7 @@ export default function TenantDetailPage() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Suspend/Resume tenant

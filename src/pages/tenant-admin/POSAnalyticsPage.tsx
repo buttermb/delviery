@@ -88,6 +88,7 @@ export default function POSAnalyticsPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Calculate metrics

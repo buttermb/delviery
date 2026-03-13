@@ -47,6 +47,7 @@ export default function DataExport() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const handleExport = async () => {

@@ -39,6 +39,7 @@ export default function OrderAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (isLoading) {

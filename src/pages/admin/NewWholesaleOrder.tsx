@@ -130,6 +130,7 @@ export default function NewWholesaleOrder() {
       return pricingConfig?.tiers ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Products catalog for wholesale orders

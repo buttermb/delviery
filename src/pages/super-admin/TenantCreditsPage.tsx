@@ -97,6 +97,7 @@ export default function TenantCreditsPage() {
       search: search || undefined,
       limit: 100,
     }),
+    retry: 2,
   });
 
   // Fetch detail for selected tenant
@@ -104,6 +105,7 @@ export default function TenantCreditsPage() {
     queryKey: queryKeys.superAdminTools.tenantCreditDetail(detailTenantId),
     queryFn: () => detailTenantId ? getTenantCreditDetail(detailTenantId) : null,
     enabled: !!detailTenantId,
+    retry: 2,
   });
 
   // Bulk grant mutation

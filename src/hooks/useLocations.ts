@@ -90,6 +90,7 @@ export const useLocations = (filters?: { status?: string }) => {
       return (data ?? []) as Location[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch operations summary for locations
@@ -187,6 +188,7 @@ export const useLocations = (filters?: { status?: string }) => {
       return summaries;
     },
     enabled: !!tenant?.id && (locationsQuery.data?.length ?? 0) > 0,
+    retry: 2,
   });
 
   // Create a new location

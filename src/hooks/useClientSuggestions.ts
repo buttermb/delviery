@@ -107,6 +107,7 @@ export function useClientSuggestions() {
     },
     enabled: !!tenant?.id,
     staleTime: 1000 * 60 * 10, // 10 minutes
+    retry: 2,
   });
 
   // Generate smart suggestions

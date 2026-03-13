@@ -73,7 +73,8 @@ export default function ProductSyncPage() {
             }
             return data as { id: string; store_name: string } | null;
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // 2. Fetch Products with Sync Status
@@ -111,7 +112,8 @@ export default function ProductSyncPage() {
             }
             return data as unknown as ProductWithSync[];
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // 3. Sync Mutation

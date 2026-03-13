@@ -57,6 +57,7 @@ export default function ExecutiveDashboardPage() {
         paybackPeriod: cac > 0 ? cac / (avgMRR * 12) : 0,
       };
     },
+    retry: 2,
   });
 
   if (isLoading) {

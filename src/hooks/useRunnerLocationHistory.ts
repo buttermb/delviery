@@ -79,6 +79,7 @@ export function useRunnerLocationHistory({
     },
     enabled: !!runnerId,
     refetchInterval: enableRealtime ? false : 30000, // Refetch every 30 seconds if not using realtime
+    retry: 2,
   });
 
   // Fetch route statistics
@@ -103,6 +104,7 @@ export function useRunnerLocationHistory({
       return data?.[0] as RouteStatistics | null;
     },
     enabled: !!runnerId && locations.length > 0,
+    retry: 2,
   });
 
   // Set up realtime subscription

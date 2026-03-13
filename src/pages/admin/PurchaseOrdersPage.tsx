@@ -105,6 +105,7 @@ export default function PurchaseOrdersPage() {
       return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const deleteMutation = deletePurchaseOrder;

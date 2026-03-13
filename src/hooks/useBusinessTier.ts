@@ -135,6 +135,7 @@ export function useBusinessTier() {
     },
     enabled: !!tenant?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Mutation to manually set tier

@@ -80,6 +80,7 @@ export default function PromoCodeManagementPage() {
   const { data: promoCodes, isLoading, refetch } = useQuery({
     queryKey: queryKeys.superAdminTools.promoCodes(),
     queryFn: getAdminPromoCodes,
+    retry: 2,
   });
 
   // Fetch redemptions for selected code
@@ -87,6 +88,7 @@ export default function PromoCodeManagementPage() {
     queryKey: queryKeys.superAdminTools.promoRedemptions(selectedCode?.id),
     queryFn: () => selectedCode ? getPromoCodeRedemptions(selectedCode.id) : null,
     enabled: !!selectedCode && showRedemptions,
+    retry: 2,
   });
 
   // Filter codes by search

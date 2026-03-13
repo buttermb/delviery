@@ -65,6 +65,7 @@ export default function ForumApprovalsPage() {
       logger.debug('Fetched forum approvals', { count: approvalsData?.length ?? 0, component: 'ForumApprovalsPage' });
       return (approvalsData ?? []) as ForumApproval[];
     },
+    retry: 2,
   });
 
   // Log query error if present

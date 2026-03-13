@@ -63,6 +63,7 @@ export default function PrioritySupport() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createTicketMutation = useMutation({

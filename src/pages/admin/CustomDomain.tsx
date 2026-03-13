@@ -42,6 +42,7 @@ export default function CustomDomain() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const addDomainMutation = useMutation({

@@ -75,6 +75,7 @@ export default function MarketplacePurchasesPage() {
             return data ?? [];
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Filter local search

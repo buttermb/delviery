@@ -287,6 +287,7 @@ export function useCustomerLTV({
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   return {
@@ -469,6 +470,7 @@ export function useBulkCustomerLTV({
     enabled: enabled && !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   // Create map for quick lookups

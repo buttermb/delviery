@@ -67,6 +67,7 @@ export default function Notifications() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createTemplateMutation = useMutation({

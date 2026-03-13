@@ -127,6 +127,7 @@ export function RoleManagement() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Create role mutation

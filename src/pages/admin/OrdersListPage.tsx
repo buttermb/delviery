@@ -250,6 +250,7 @@ export function OrdersListPage() {
     enabled: !!tenant?.id,
     staleTime: 30000,
     gcTime: 120000,
+    retry: 2,
   });
 
   // Apply client-side filters with AND logic

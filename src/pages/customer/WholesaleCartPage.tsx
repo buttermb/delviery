@@ -87,6 +87,7 @@ export default function WholesaleCartPage() {
       return data ?? [];
     },
     enabled: !!buyerTenantId,
+    retry: 2,
   });
 
   // Update quantity mutation

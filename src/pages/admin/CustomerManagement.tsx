@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuditEvent } from '@/lib/auditLog';
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -262,6 +263,7 @@ export function CustomerManagement() {
       };
     },
     enabled: !!tenant && !accountLoading,
+    retry: 2,
   });
 
   const customers = customerResult?.customers ?? [];
@@ -297,6 +299,7 @@ export function CustomerManagement() {
     },
     enabled: !!tenant && !accountLoading,
     staleTime: 30_000, // Stats don't need to refresh as often
+    retry: 2,
   });
 
   const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
@@ -365,6 +368,15 @@ export function CustomerManagement() {
         triggerHaptic('light');
         toast.success("Customer deleted successfully");
       }
+
+      // Log audit event
+      logAuditEvent({
+        action: 'customer.deleted',
+        resourceType: 'customer',
+        resourceId: customerToDelete.id,
+        tenantId: tenant.id,
+        changes: { name: customerToDelete.name },
+      });
 
       invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', tenant.id, { customerId: customerToDelete.id });
       setCustomerToDelete(null);

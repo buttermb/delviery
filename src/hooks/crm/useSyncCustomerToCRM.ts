@@ -67,6 +67,7 @@ export function useContactCRMLinks(contactId: string | undefined) {
     },
     enabled: !!contactId && !!tenant?.id,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 
@@ -102,6 +103,7 @@ export function useCRMClientContacts(clientId: string | undefined) {
     },
     enabled: !!clientId && !!accountId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 
@@ -132,6 +134,7 @@ export function useCustomerCRMTimeline(contactId: string | undefined, limit: num
     },
     enabled: !!contactId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 

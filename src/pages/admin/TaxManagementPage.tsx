@@ -92,6 +92,7 @@ export default function TaxManagementPage() {
       };
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const handleExportReport = () => {

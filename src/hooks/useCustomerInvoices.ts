@@ -91,6 +91,7 @@ export function useCustomerInvoices() {
       enabled: !!tenant?.id,
       staleTime: 30_000,
       gcTime: 300_000,
+      retry: 2,
     });
 
   const useInvoiceQuery = (id: string) =>
@@ -106,6 +107,7 @@ export function useCustomerInvoices() {
       },
       enabled: !!id,
       staleTime: 30_000,
+      retry: 2,
     });
 
   const useInvoiceStatsQuery = () =>
@@ -163,6 +165,7 @@ export function useCustomerInvoices() {
       },
       enabled: !!tenant?.id,
       staleTime: 60_000,
+      retry: 2,
     });
 
   const useCreateInvoice = () =>
@@ -399,5 +402,6 @@ export function useCustomersList() {
     },
     enabled: !!tenant?.id,
     staleTime: 60_000,
+    retry: 2,
   });
 }

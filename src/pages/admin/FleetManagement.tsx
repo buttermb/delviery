@@ -106,6 +106,7 @@ export default function FleetManagement() {
     enabled: !!tenantId,
     // Realtime sync is enabled, so we don't need aggressive polling
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
   });
 
   // Fetch runners
@@ -129,7 +130,8 @@ export default function FleetManagement() {
         success_rate: runner.rating ? Math.min(100, Math.max(0, runner.rating * 20)) : 100
       }));
     },
-    enabled: !!tenantId
+    enabled: !!tenantId,
+    retry: 2,
   });
 
   const getStatusColor = (status: string) => {

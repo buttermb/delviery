@@ -172,6 +172,7 @@ export default function StorefrontSettings() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Initialize form data when store loads
@@ -205,6 +206,7 @@ export default function StorefrontSettings() {
       return (data ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
     },
     enabled: !!tenantId && (formData.featured_product_ids ?? []).length > 0,
+    retry: 2,
   });
 
   // Memoize preview settings to avoid unnecessary re-renders

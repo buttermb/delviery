@@ -131,6 +131,7 @@ export default function OfflineOrderCreate() {
     },
     enabled: !!tenant?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   async function loadProductsFromIDB(): Promise<ProductForOrder[]> {

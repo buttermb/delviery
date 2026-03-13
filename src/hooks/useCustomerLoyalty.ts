@@ -396,6 +396,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: customerLoyaltyKeys.config(tenantId ?? ''),
     queryFn: () => fetchLoyaltyConfig(tenantId!),
     enabled: !!tenantId,
@@ -545,6 +546,7 @@ export function useCustomerLoyaltyStatus({
     queryFn: () => fetchCustomerLoyaltyStatus(tenantId!, customerId!, config),
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 30000, // 30 seconds
+    retry: 2,
   });
 
   return {
@@ -585,6 +587,7 @@ export function usePointsHistory({
     queryFn: () => fetchPointsHistory(tenantId!, customerId!, limit),
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 30000,
+    retry: 2,
   });
 
   return {

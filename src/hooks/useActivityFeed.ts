@@ -147,6 +147,7 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const logActivity = useMutation({

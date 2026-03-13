@@ -77,6 +77,7 @@ export default function SupplierManagementPage() {
       return (data ?? []) as Supplier[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const deleteMutation = useMutation({

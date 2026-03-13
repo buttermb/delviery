@@ -111,6 +111,7 @@ export function useCreditPackages(
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.creditPackages.list(tenantId),
     queryFn: async (): Promise<CreditPackageRow[]> => {
       let query = supabase

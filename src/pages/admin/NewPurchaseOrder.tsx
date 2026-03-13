@@ -66,7 +66,8 @@ export default function NewPurchaseOrder() {
                 image_url: p.image_url
             }));
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     const [step, setStep] = useState(1);

@@ -39,6 +39,7 @@ export default function ZReportPage() {
     },
     enabled: !!tenantId,
     refetchInterval: 30000, // Backup polling
+    retry: 2,
   });
 
   if (isLoading) {

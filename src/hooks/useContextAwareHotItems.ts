@@ -412,6 +412,7 @@ export function useContextAwareHotItems({
     isLoading,
     error,
   } = useQuery({
+  retry: 2,
     // Include isWeekend in query key for proper cache separation
     queryKey: [...queryKeys.shopProducts.list(storeId), 'hot-items', context.timePeriod, context.isWeekend],
     queryFn: async () => {
@@ -433,7 +434,6 @@ export function useContextAwareHotItems({
     },
     enabled: enabled && !!storeId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
   });
 
   // Score and sort products based on current context (time of day + weekend/weekday)

@@ -96,6 +96,7 @@ export function useOperationSize() {
     },
     enabled: !!tenant?.id && !!admin?.userId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: 2,
   });
 
   // Detect operation size

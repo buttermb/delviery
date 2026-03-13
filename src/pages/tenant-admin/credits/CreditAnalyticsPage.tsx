@@ -231,6 +231,7 @@ export function CreditAnalyticsPage() {
     },
     enabled: !!tenantId && isFreeTier,
     staleTime: 60 * 1000, // 1 minute
+    retry: 2,
   });
 
   // Fetch purchase history
@@ -257,6 +258,7 @@ export function CreditAnalyticsPage() {
     },
     enabled: !!tenantId && isFreeTier,
     staleTime: 60 * 1000,
+    retry: 2,
   });
 
   const handleRefresh = () => {

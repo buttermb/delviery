@@ -54,6 +54,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
     },
     enabled: !!storeId,
     ...SETTINGS_QUERY_CONFIG,
+    retry: 2,
   });
 }
 
@@ -82,6 +83,7 @@ export function useCustomerLoyalty(storeId: string | undefined, customerEmail: s
     },
     enabled: !!storeId && !!customerEmail,
     staleTime: 30 * 1000, // 30 seconds
+    retry: 2,
   });
 }
 

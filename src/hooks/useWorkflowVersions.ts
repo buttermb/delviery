@@ -64,6 +64,7 @@ export function useWorkflowVersions(workflowId: string | null) {
       return (data as WorkflowVersion[]) ?? [];
     },
     enabled: !!workflowId && !!tenant?.id,
+    retry: 2,
   });
 
   const restoreVersion = useMutation({
@@ -158,6 +159,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
       return (data as WorkflowVersion[]) ?? [];
     },
     enabled: !!workflowId && !!tenant?.id,
+    retry: 2,
   });
 
   const stats = {

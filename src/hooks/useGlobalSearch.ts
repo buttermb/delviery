@@ -284,6 +284,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
     },
     enabled: shouldSearch,
     staleTime: 30000,
+    retry: 2,
   });
 
   const clear = useCallback(() => {

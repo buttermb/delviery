@@ -70,6 +70,7 @@ export default function PosAnalytics() {
     },
     enabled: !!tenantId,
     refetchInterval: 30000, // Backup polling every 30s
+    retry: 2,
   });
 
   // Get shift summary
@@ -89,6 +90,7 @@ export default function PosAnalytics() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (isLoading) {

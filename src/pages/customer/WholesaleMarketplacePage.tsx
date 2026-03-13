@@ -90,6 +90,7 @@ export default function WholesaleMarketplacePage() {
 
       return data ?? [];
     },
+    retry: 2,
   });
 
   // Filter listings by search query

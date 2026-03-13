@@ -77,6 +77,7 @@ export default function BillingDashboard() {
       return stats;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   if (!tenant) {

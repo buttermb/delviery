@@ -55,6 +55,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
         },
         enabled: !!storeId,
         staleTime: 1000 * 60 * 5,
+        retry: 2,
     });
 
     // Fetch customer order count for first-time deals
@@ -82,6 +83,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
         },
         enabled: !!storeId && !!customerEmail,
         staleTime: 1000 * 60 * 2,
+        retry: 2,
     });
 
     // Calculate applied deals

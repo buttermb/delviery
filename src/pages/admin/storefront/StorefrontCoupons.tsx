@@ -119,6 +119,7 @@ export default function StorefrontCoupons() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch coupons
@@ -137,6 +138,7 @@ export default function StorefrontCoupons() {
       return (data ?? []) as unknown as Coupon[];
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Create/Update coupon mutation

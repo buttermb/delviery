@@ -208,6 +208,7 @@ export default function VendorDashboard() {
       };
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch top vendors by spend
@@ -297,6 +298,7 @@ export default function VendorDashboard() {
         .slice(0, 10);
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch recent PO activity
@@ -335,6 +337,7 @@ export default function VendorDashboard() {
       }));
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch vendor distribution by category
@@ -371,6 +374,7 @@ export default function VendorDashboard() {
         .sort((a, b) => b.count - a.count);
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const handleRefresh = async () => {

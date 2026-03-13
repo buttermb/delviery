@@ -47,6 +47,7 @@ export function useExistingRating(trackingToken: string | undefined) {
     },
     enabled: !!trackingToken,
     staleTime: 60_000,
+    retry: 2,
   });
 }
 
@@ -120,5 +121,6 @@ export function useRecentDeliveryRatings(
     },
     enabled: !!tenantId,
     staleTime: 30_000,
+    retry: 2,
   });
 }

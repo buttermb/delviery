@@ -146,6 +146,7 @@ function CashRegisterContent() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Enable realtime updates for shifts and cash drawer
@@ -232,6 +233,7 @@ function CashRegisterContent() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Load categories (uses useCategories hook — tenant_id filtered, graceful 42P01 handling)
@@ -267,6 +269,7 @@ function CashRegisterContent() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Load recent transactions
@@ -292,6 +295,7 @@ function CashRegisterContent() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Calculate totals with discount and tax

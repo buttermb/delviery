@@ -100,5 +100,6 @@ export const useCRMDashboard = () => {
         enabled: !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 };

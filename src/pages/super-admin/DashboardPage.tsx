@@ -164,6 +164,7 @@ export default function SuperAdminDashboardPage() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 30000, // Refetch every 30 seconds for near real-time updates
+    retry: 2,
   });
 
   // Fetch at-risk tenants
@@ -191,6 +192,7 @@ export default function SuperAdminDashboardPage() {
         .slice(0, 10);
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Fetch active trials
@@ -204,6 +206,7 @@ export default function SuperAdminDashboardPage() {
 
       return tenants ?? [];
     },
+    retry: 2,
   });
 
   // Fetch revenue data over time (last 12 months)
@@ -249,6 +252,7 @@ export default function SuperAdminDashboardPage() {
       }));
     },
     refetchInterval: 300000, // Refetch every 5 minutes
+    retry: 2,
   });
 
   // Fetch recent activity from audit logs
@@ -310,6 +314,7 @@ export default function SuperAdminDashboardPage() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 30000, // Refetch every 30 seconds for near real-time updates
+    retry: 2,
   });
 
   const platformStats = stats || {
@@ -365,6 +370,7 @@ export default function SuperAdminDashboardPage() {
           ? Math.round((convertedTrials / totalTrials) * 100)
           : 0;
     },
+    retry: 2,
   });
 
   // Calculate expiring soon (within 7 days)

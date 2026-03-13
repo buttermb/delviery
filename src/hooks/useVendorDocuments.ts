@@ -138,6 +138,7 @@ export function useVendorDocuments(vendorId: string) {
       return (data ?? []) as VendorDocument[];
     },
     enabled: !!tenantId && !!vendorId,
+    retry: 2,
   });
 
   // Filter documents client-side

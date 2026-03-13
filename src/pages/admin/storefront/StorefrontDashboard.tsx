@@ -119,6 +119,7 @@ export default function StorefrontDashboard() {
       return data as MarketplaceStore[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Auto-select first store if none selected and stores exist
@@ -155,6 +156,7 @@ export default function StorefrontDashboard() {
       return data as RecentOrder[];
     },
     enabled: !!activeStoreId,
+    retry: 2,
   });
 
   // Fetch product count for active store
@@ -177,6 +179,7 @@ export default function StorefrontDashboard() {
       return { total: total ?? 0, visible: visible ?? 0 };
     },
     enabled: !!activeStoreId && !!tenantId,
+    retry: 2,
   });
 
   // Fetch revenue trend (today vs yesterday)
@@ -221,6 +224,7 @@ export default function StorefrontDashboard() {
     },
     enabled: !!activeStoreId,
     refetchInterval: 30000, // Refresh every 30 seconds for "live" feel
+    retry: 2,
   });
 
   // Toggle store status

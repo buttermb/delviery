@@ -190,6 +190,7 @@ export function useSidebarBadges(): UseSidebarBadgesResult {
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.sidebarBadges.counts(tenant?.id),
     queryFn: fetchBadgeCounts,
     enabled: !!tenant?.id,

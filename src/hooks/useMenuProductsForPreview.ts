@@ -88,5 +88,6 @@ export const useMenuProductsForPreview = (menuId: string | undefined, enabled = 
     enabled: enabled && !!menuId,
     staleTime: 60 * 1000, // Cache for 1 minute
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };

@@ -70,6 +70,7 @@ export default function VendorDetailPage() {
       return data as Vendor | null;
     },
     enabled: !!tenant?.id && !!vendorId,
+    retry: 2,
   });
 
   // Set breadcrumb label to show vendor name

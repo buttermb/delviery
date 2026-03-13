@@ -117,6 +117,7 @@ export default function ReceivingPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Create receiving record

@@ -32,6 +32,7 @@ export default function LocationAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (isLoading) {

@@ -55,6 +55,7 @@ export default function FeatureFlagsPage() {
       }));
     },
     refetchInterval: 30000,
+    retry: 2,
   });
 
   // Toggle feature flag mutation with optimistic UI

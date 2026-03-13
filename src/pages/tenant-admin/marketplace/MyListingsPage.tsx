@@ -88,6 +88,7 @@ export default function MyListingsPage() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch listings
@@ -116,6 +117,7 @@ export default function MyListingsPage() {
       return (allListings as unknown as MarketplaceListing[]).filter((item) => item.status === statusFilter);
     },
     enabled: !!tenantId && !!profile?.id,
+    retry: 2,
   });
 
   // Filter listings by search query

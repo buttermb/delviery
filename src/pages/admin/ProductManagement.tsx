@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuditEvent } from '@/lib/auditLog';
 import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedChangesDialog } from "@/components/unsaved-changes";
@@ -34,6 +35,7 @@ import {
   Printer,
   MoreVertical,
   Store,
+  RefreshCw,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -168,13 +170,15 @@ export default function ProductManagement() {
   const availableColumns = [
     { id: "image", label: "Image" },
     { id: "name", label: "Product Details" },
+    { id: "sku", label: "SKU" },
     { id: "category", label: "Category" },
+    { id: "vendor", label: "Vendor" },
     { id: "price", label: "Price" },
     { id: "margin", label: "Margin" },
     { id: "stock", label: "Stock" },
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    () => (preferences.customFilters?.visibleColumns as string[]) || ["image", "name", "category", "price", "stock"]
+    () => (preferences.customFilters?.visibleColumns as string[]) || ["image", "name", "category", "vendor", "sku", "price", "stock"]
   );
 
   // Margin threshold for alerts (default 20%)
@@ -210,7 +214,8 @@ export default function ProductManagement() {
 
       return store;
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Track previous filter values to avoid unnecessary saves
@@ -276,10 +281,11 @@ export default function ProductManagement() {
       return data;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch products via useQuery
-  const { data: productsData, isLoading: productsLoading, isError: productsError, refetch: refetchProductsQuery } = useQuery({
+  const { data: productsData, isLoading: productsLoading, isFetching: productsFetching, isError: productsError, refetch: refetchProductsQuery } = useQuery({
     queryKey: queryKeys.products.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -295,6 +301,7 @@ export default function ProductManagement() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Sync query data into optimistic list
@@ -541,6 +548,15 @@ export default function ProductManagement() {
         // Update state with new version
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
 
+        // Log audit event
+        logAuditEvent({
+          action: 'product.updated',
+          resourceType: 'product',
+          resourceId: editingProduct.id,
+          tenantId: tenant.id,
+          changes: { name: productData.name, sku: productData.sku },
+        });
+
         // Warn if price changed and product is on active menus
         const priceChanged =
           productData.wholesale_price !== editingProduct.wholesale_price ||
@@ -583,6 +599,15 @@ export default function ProductManagement() {
         toast.success("Product created");
         // Manually update state
         setProducts(prev => [newProduct, ...prev]);
+
+        // Log audit event
+        logAuditEvent({
+          action: 'product.created',
+          resourceType: 'product',
+          resourceId: newProduct.id,
+          tenantId: tenant.id,
+          changes: { name: productData.name, sku: productData.sku },
+        });
 
         // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
         // this handles marketplace_products with additional fields like slug)
@@ -669,6 +694,15 @@ export default function ProductManagement() {
             .eq('id', productToDelete.id)
             .eq('tenant_id', tenantId);
           if (error) throw error;
+
+          // Log audit event
+          logAuditEvent({
+            action: 'product.deleted',
+            resourceType: 'product',
+            resourceId: productToDelete.id,
+            tenantId,
+            changes: { name: productToDelete.name, sku: productToDelete.sku },
+          });
 
           // Invalidate all product caches so storefront reflects deletion
           invalidateProductCaches({
@@ -998,7 +1032,7 @@ export default function ProductManagement() {
             type="text"
             className="font-medium text-foreground"
           />
-          {product.sku && (
+          {product.sku && visibleColumns.includes("sku") && (
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               SKU: {product.sku}
               <CopyButton text={product.sku} label="SKU" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1007,15 +1041,22 @@ export default function ProductManagement() {
         </div>
       )
     },
-    {
+    ...(visibleColumns.includes("category") ? [{
       header: "Category",
-      accessorKey: "category",
-      cell: (product) => (
+      accessorKey: "category" as keyof Product,
+      cell: (product: Product) => (
         <Badge variant="outline" className="capitalize">
           {product.category || 'Uncategorized'}
         </Badge>
       )
-    },
+    }] : []),
+    ...(visibleColumns.includes("vendor") ? [{
+      header: "Vendor",
+      accessorKey: "vendor_name" as keyof Product,
+      cell: (product: Product) => (
+        <span className="text-sm">{product.vendor_name || '—'}</span>
+      )
+    }] : []),
     {
       header: "Price",
       accessorKey: "wholesale_price",
@@ -1181,6 +1222,9 @@ export default function ProductManagement() {
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1 sm:mb-2">
             <h1 className="text-xl font-bold truncate">Product Management</h1>
+            {productsFetching && !productsLoading && (
+              <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
             {tenant?.id && (
               <TooltipGuide
                 title="Product Management"
@@ -1291,6 +1335,41 @@ export default function ProductManagement() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Filter Presets */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={categoryFilter === 'all' && stockStatusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            setCategoryFilter('all');
+            setStockStatusFilter('all');
+          }}
+        >
+          All
+        </Button>
+        <Button
+          variant={stockStatusFilter === 'in_stock' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStockStatusFilter('in_stock')}
+        >
+          In Stock
+        </Button>
+        <Button
+          variant={stockStatusFilter === 'low_stock' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStockStatusFilter('low_stock')}
+        >
+          Low Stock
+        </Button>
+        <Button
+          variant={stockStatusFilter === 'out_of_stock' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStockStatusFilter('out_of_stock')}
+        >
+          Out of Stock
+        </Button>
       </div>
 
       <AdminToolbar

@@ -74,6 +74,7 @@ export function useStorefrontOrders({
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey,
     queryFn: async (): Promise<StorefrontOrder[]> => {
       if (!storeId || !customerId) return [];
@@ -245,5 +246,6 @@ export function useStorefrontOrderByToken(trackingToken: string | undefined) {
       if (!data) return false;
       return ACTIVE_STATUSES.includes(data.status) ? 30000 : false;
     },
+    retry: 2,
   });
 }

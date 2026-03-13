@@ -72,6 +72,7 @@ export default function MarketplaceBrowsePage() {
             if (error) throw error;
             return data as unknown as MarketplaceListing[];
         },
+        retry: 2,
     });
 
     const filteredListings = listings?.filter(listing => {

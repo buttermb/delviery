@@ -94,6 +94,7 @@ export default function QualityControlPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const filteredBatches = batches?.filter((batch) => {

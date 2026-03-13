@@ -87,6 +87,7 @@ export function useRevenueChart() {
     },
     enabled: !!tenantId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 
@@ -148,6 +149,7 @@ export function useOrdersByStatus() {
     },
     enabled: !!tenantId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 
@@ -213,6 +215,7 @@ export function useTopProducts() {
     },
     enabled: !!tenantId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 

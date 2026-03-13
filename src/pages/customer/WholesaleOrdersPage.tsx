@@ -97,6 +97,7 @@ export default function WholesaleOrdersPage() {
       return data ?? [];
     },
     enabled: !!buyerTenantId,
+    retry: 2,
   });
 
   // Filter orders by search query

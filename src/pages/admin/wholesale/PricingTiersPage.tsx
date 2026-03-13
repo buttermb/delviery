@@ -98,6 +98,7 @@ export default function PricingTiersPage() {
             return data;
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     const tiers: PricingTier[] = (settings?.integration_settings as unknown as Record<string, unknown>)?.pricing_tiers as PricingTier[] || DEFAULT_TIERS;

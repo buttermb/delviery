@@ -93,6 +93,7 @@ export default function POReceivingPage() {
       return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch items for selected PO
@@ -115,6 +116,7 @@ export default function POReceivingPage() {
       return (data ?? []) as PurchaseOrderItem[];
     },
     enabled: !!selectedPO?.id && receiveDialogOpen,
+    retry: 2,
   });
 
   // Fetch vendor info for display
@@ -140,6 +142,7 @@ export default function POReceivingPage() {
       return vendorMap;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const filteredPOs = purchaseOrders?.filter((po) => {

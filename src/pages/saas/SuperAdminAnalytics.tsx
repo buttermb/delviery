@@ -125,6 +125,7 @@ export default function SuperAdminAnalytics() {
         planDistribution,
       };
     },
+    retry: 2,
   });
 
   const getPeriodStart = (range: string): Date => {

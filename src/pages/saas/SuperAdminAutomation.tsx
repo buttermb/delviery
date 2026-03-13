@@ -165,6 +165,7 @@ export default function SuperAdminAutomation() {
 
       return data ?? [];
     },
+    retry: 2,
   });
 
   return (

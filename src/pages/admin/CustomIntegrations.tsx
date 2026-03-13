@@ -70,6 +70,7 @@ export default function CustomIntegrations() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createIntegrationMutation = useMutation({

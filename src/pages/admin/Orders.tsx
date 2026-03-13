@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuditEvent } from '@/lib/auditLog';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
 import { useState, useMemo, useCallback } from 'react';
@@ -10,8 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Filter } from 'lucide-react';
+import { Package, ShoppingBag, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Filter, Settings2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -183,6 +185,11 @@ export default function Orders() {
   const sortField = (filters.sort || 'created_at') as OrderSortField;
   const sortOrder = (filters.dir || 'desc') as SortOrder;
 
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
+    new Set(['order_number', 'customer', 'status', 'total', 'date', 'actions', 'source', 'method', 'eta'])
+  );
+
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
     tenantId: tenant?.id,
@@ -305,6 +312,7 @@ export default function Orders() {
     enabled: !!tenant?.id,
     staleTime: 15_000,
     gcTime: 120_000,
+    retry: 2,
   });
 
   // Delivery ETA tracking for in-transit orders
@@ -339,6 +347,14 @@ export default function Orders() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
+      // Log audit event
+      logAuditEvent({
+        action: 'order.status_updated',
+        resourceType: 'order',
+        resourceId: data.id,
+        tenantId: tenant?.id,
+        changes: { status: data.status },
+      });
       // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
       if (tenant?.id) {
         invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: data.id });
@@ -875,7 +891,7 @@ export default function Orders() {
     {
       header: "Source",
       cell: (order) => getSourceBadge(order.order_source),
-      className: "w-[120px] hidden lg:table-cell"
+      className: `w-[120px] ${visibleColumns.has('source') ? 'hidden lg:table-cell' : 'hidden'}`
     },
     {
       header: <SortableHeader field="customer" label="Customer" />,
@@ -946,7 +962,7 @@ export default function Orders() {
     },
     {
       header: "Method",
-      className: "max-w-[120px] hidden lg:table-cell",
+      className: `max-w-[120px] ${visibleColumns.has('method') ? 'hidden lg:table-cell' : 'hidden'}`,
       cell: (order) => (
         <TruncatedText
           text={order.delivery_method || '—'}
@@ -957,7 +973,7 @@ export default function Orders() {
     },
     {
       header: "ETA",
-      className: "w-[130px] hidden lg:table-cell",
+      className: `w-[130px] ${visibleColumns.has('eta') ? 'hidden lg:table-cell' : 'hidden'}`,
       cell: (order) => (
         <DeliveryETACell
           eta={etaMap[order.id]}
@@ -1013,7 +1029,12 @@ export default function Orders() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-xl font-bold">Orders Management</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold">Orders Management</h1>
+                {isFetching && !isLoading && (
+                  <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1079,6 +1100,51 @@ export default function Orders() {
           {/* Controls */}
           <Card className="p-3 sm:p-4 border-none shadow-sm">
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
+              {/* Filter Presets */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={statusFilter === 'all' && !dateRange.from && !dateRange.to ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    handleStatusFilterChange('all');
+                    handleDateRangeChange({ from: undefined, to: undefined });
+                  }}
+                >
+                  All
+                </Button>
+                <Button
+                  variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleStatusFilterChange('pending')}
+                >
+                  Pending
+                </Button>
+                <Button
+                  variant={statusFilter === 'preparing' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleStatusFilterChange('preparing')}
+                >
+                  Processing
+                </Button>
+                <Button
+                  variant={statusFilter === 'delivered' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleStatusFilterChange('delivered')}
+                >
+                  Completed
+                </Button>
+                <Button
+                  variant={dateRange.from && formatSmartDate(dateRange.from.toISOString()) === formatSmartDate(new Date().toISOString()) ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    const today = new Date();
+                    handleDateRangeChange({ from: startOfDay(today), to: endOfDay(today) });
+                  }}
+                >
+                  Today
+                </Button>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 {activeFilterCount > 0 && (
                   <div className="flex items-center gap-1.5 self-center">
@@ -1127,6 +1193,49 @@ export default function Orders() {
                     <span className="sm:hidden">Clear</span>
                   </Button>
                 )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-10 px-2 sm:px-3">
+                      <Settings2 className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Columns</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.has('source')}
+                      onCheckedChange={(checked) => {
+                        const newColumns = new Set(visibleColumns);
+                        if (checked) newColumns.add('source');
+                        else newColumns.delete('source');
+                        setVisibleColumns(newColumns);
+                      }}
+                    >
+                      Source
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.has('method')}
+                      onCheckedChange={(checked) => {
+                        const newColumns = new Set(visibleColumns);
+                        if (checked) newColumns.add('method');
+                        else newColumns.delete('method');
+                        setVisibleColumns(newColumns);
+                      }}
+                    >
+                      Delivery Method
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.has('eta')}
+                      onCheckedChange={(checked) => {
+                        const newColumns = new Set(visibleColumns);
+                        if (checked) newColumns.add('eta');
+                        else newColumns.delete('eta');
+                        setVisibleColumns(newColumns);
+                      }}
+                    >
+                      ETA
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Active filter badges */}

@@ -35,6 +35,7 @@ export function useClientNotes(clientId: string | undefined) {
             return data as CRMNote[];
         },
         enabled: !!clientId && !!accountId,
+        retry: 2,
     });
 }
 

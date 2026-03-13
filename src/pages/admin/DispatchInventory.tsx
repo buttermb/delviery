@@ -88,6 +88,7 @@ export default function DispatchInventory() {
       return data as SelectedClient | null;
     },
     enabled: !!preselectedClientId && !!tenant?.id,
+    retry: 2,
   });
 
   // Set pre-selected client when data loads

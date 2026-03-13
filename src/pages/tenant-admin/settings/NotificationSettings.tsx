@@ -94,6 +94,7 @@ export default function NotificationSettings() {
       return data;
     },
     enabled: !!admin?.id,
+    retry: 2,
   });
 
   // Sync state from DB when loaded

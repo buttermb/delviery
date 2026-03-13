@@ -79,6 +79,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
     },
     enabled: !!tenant?.id,
     refetchInterval: autoRefresh ? 5000 : false,
+    retry: 2,
   });
 
   // Calculate metrics

@@ -54,5 +54,6 @@ export function usePublicInvoice(token: string | undefined) {
             } as CRMInvoice & { public_view_count?: number; last_viewed_at?: string };
         },
         enabled: !!token,
+        retry: 2,
     });
 }

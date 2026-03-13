@@ -36,6 +36,7 @@ export default function CompliancePage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const complianceChecks = [

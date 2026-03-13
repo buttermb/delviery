@@ -24,6 +24,7 @@ export default function APIUsagePage() {
       return data ?? [];
     },
     refetchInterval: 60000, // Refetch every minute
+    retry: 2,
   });
 
   // Calculate daily usage data

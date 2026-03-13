@@ -40,6 +40,7 @@ export default function CreditsOverviewPage() {
     queryKey: queryKeys.superAdminTools.platformCreditStats(),
     queryFn: getPlatformCreditStats,
     refetchInterval: 60000, // Refresh every minute
+    retry: 2,
   });
 
   // Fetch tenants needing attention (critical + depleted)
@@ -53,6 +54,7 @@ export default function CreditsOverviewPage() {
         depleted: depleted.tenants,
       };
     },
+    retry: 2,
   });
 
   // Format large numbers

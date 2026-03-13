@@ -264,6 +264,7 @@ export function useRevenueGoalProgress(options: UseRevenueGoalProgressOptions = 
     enabled: !!tenantId && enabled,
     staleTime: 30_000, // 30 seconds for near real-time updates
     gcTime: 300_000, // 5 minutes cache
+    retry: 2,
   });
 
   return query;

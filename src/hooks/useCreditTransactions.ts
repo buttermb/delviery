@@ -99,6 +99,7 @@ export function useCreditTransactions(
     },
     enabled: !!tenantId,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 
   // Fetch transactions with pagination
@@ -109,6 +110,7 @@ export function useCreditTransactions(
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.creditTransactionsExt.list(tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString(), loadedPages),
     queryFn: async () => {
       if (!tenantId) return [];

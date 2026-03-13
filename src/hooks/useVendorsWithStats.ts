@@ -155,6 +155,7 @@ export function useVendorsWithStats() {
     },
     enabled: !!tenantId,
     staleTime: 30000, // Cache for 30 seconds
+    retry: 2,
   });
 }
 
@@ -237,5 +238,6 @@ export function useVendorDetails(vendorName: string | null | undefined) {
       };
     },
     enabled: !!tenantId && !!vendorName,
+    retry: 2,
   });
 }

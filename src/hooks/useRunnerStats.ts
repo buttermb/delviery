@@ -68,5 +68,6 @@ export function useRunnerStats(runnerId?: string) {
     },
     enabled: !!runnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 2,
   });
 }

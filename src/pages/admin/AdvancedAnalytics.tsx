@@ -45,6 +45,7 @@ export default function AdvancedAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const { data: customers, isLoading: customersLoading } = useQuery({
@@ -68,6 +69,7 @@ export default function AdvancedAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (ordersLoading || customersLoading) {

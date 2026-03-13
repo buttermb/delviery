@@ -64,6 +64,7 @@ export default function StorefrontAnalytics() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch summary metrics
@@ -108,6 +109,7 @@ export default function StorefrontAnalytics() {
       return { totalOrders, totalRevenue: Math.round(totalRevenue * 100) / 100, conversionRate, averageOrderValue };
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Build share URL for the store

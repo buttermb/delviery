@@ -65,6 +65,7 @@ export default function CustomerDashboardPage() {
       return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
+    retry: 2,
   });
 
   // Fetch marketplace profile to check if customer is a business buyer and verified
@@ -88,6 +89,7 @@ export default function CustomerDashboardPage() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Check if customer is a verified business buyer

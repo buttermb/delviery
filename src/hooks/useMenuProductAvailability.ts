@@ -126,6 +126,7 @@ export const useMenuProductAvailabilityRules = (menuId?: string, tenantId?: stri
     },
     enabled: !!menuId && !!tenantId,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 };
 
@@ -163,6 +164,7 @@ export const useProductAvailabilityRules = (
     },
     enabled: !!menuId && !!productId && !!tenantId,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 };
 

@@ -99,6 +99,7 @@ export function useEventNotifications({
     },
     enabled: !!admin?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Check if notifications are enabled for a specific type

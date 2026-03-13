@@ -116,6 +116,7 @@ export function OrderConfirmationPage() {
       return activeStatuses.includes(data.status) ? 30000 : false;
     },
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   // Verify Stripe payment session

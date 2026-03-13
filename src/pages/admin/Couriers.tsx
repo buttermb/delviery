@@ -69,6 +69,7 @@ export default function Couriers() {
       return data as Courier[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const deleteMutation = useMutation({

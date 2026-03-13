@@ -36,6 +36,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
     enabled: !!tenant?.id,
     staleTime: 30_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -64,6 +65,7 @@ export const useWholesaleOrders = () => {
     enabled: !!tenant?.id,
     staleTime: 15_000,
     gcTime: 120_000,
+    retry: 2,
   });
 };
 
@@ -308,6 +310,7 @@ export const useWholesaleInventory = (tenantId?: string) => {
       }));
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 };
 
@@ -332,7 +335,8 @@ export const useWholesaleCouriers = () => {
       if (error) throw error;
       return data ?? [];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    retry: 2,
   });
 };
 
@@ -370,7 +374,8 @@ export const useProductsForWholesale = () => {
         source: 'products' as const,
       }));
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    retry: 2,
   });
 };
 
@@ -409,6 +414,7 @@ export const useWholesalePayments = () => {
     enabled: !!tenant?.id,
     staleTime: 30_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -437,6 +443,7 @@ export const useWholesaleDeliveries = () => {
     enabled: !!tenant?.id,
     staleTime: 15_000,
     gcTime: 120_000,
+    retry: 2,
   });
 };
 
@@ -461,6 +468,7 @@ export const useClientDetail = (clientId: string) => {
     enabled: !!clientId && !!tenant?.id,
     staleTime: 30_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -486,6 +494,7 @@ export const useClientOrders = (clientId: string) => {
     enabled: !!clientId && !!tenant?.id,
     staleTime: 15_000,
     gcTime: 120_000,
+    retry: 2,
   });
 };
 
@@ -512,5 +521,6 @@ export const useClientPayments = (clientId: string) => {
     enabled: !!clientId && !!tenant?.id,
     staleTime: 30_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };

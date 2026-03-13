@@ -91,6 +91,7 @@ export default function PayoutsPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch orders that are ready for payout (delivered but not yet paid)
@@ -120,6 +121,7 @@ export default function PayoutsPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Calculate payout schedule based on pending orders

@@ -16,6 +16,7 @@ export function usePosts(options: GetPostsOptions = {}) {
     queryKey: queryKeys.forum.posts.list(options as Record<string, unknown>),
     queryFn: () => forumApi.getPosts(options),
     staleTime: 60 * 1000, // 1 minute
+    retry: 2,
   });
 }
 
@@ -28,6 +29,7 @@ export function usePost(postId: string | undefined) {
     },
     enabled: !!postId,
     staleTime: 60 * 1000,
+    retry: 2,
   });
 }
 

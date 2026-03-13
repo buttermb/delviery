@@ -66,6 +66,7 @@ export default function TrialExpiredPage() {
       };
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const trialEndsAt = tenant?.trial_ends_at;

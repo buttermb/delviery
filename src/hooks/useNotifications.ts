@@ -90,6 +90,7 @@ export function useNotifications(): UseNotificationsResult {
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: notificationsQueryKey,
     queryFn: async (): Promise<Notification[]> => {
       if (!tenantId) return [];

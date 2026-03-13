@@ -64,6 +64,7 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000,
     placeholderData: {},
+    retry: 2,
   });
 
   // Merge defaults with DB overrides (DB values take precedence)

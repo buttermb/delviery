@@ -22,6 +22,7 @@ export function usePreOrders() {
             return (data ?? []).map(normalizePreOrder);
         },
         enabled: !!accountId,
+        retry: 2,
     });
 }
 
@@ -36,6 +37,7 @@ export function useClientPreOrders(clientId: string | undefined) {
             return (data ?? []).map(normalizePreOrder);
         },
         enabled: !!clientId && !!accountId,
+        retry: 2,
     });
 }
 
@@ -50,6 +52,7 @@ export function usePreOrder(preOrderId: string | undefined) {
             return normalizePreOrder(data);
         },
         enabled: !!preOrderId && !!accountId,
+        retry: 2,
     });
 }
 

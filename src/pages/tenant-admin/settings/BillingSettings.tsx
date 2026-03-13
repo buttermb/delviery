@@ -215,6 +215,7 @@ export default function BillingSettings() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch subscription plans from database
@@ -231,6 +232,7 @@ export default function BillingSettings() {
       return data ?? [];
     },
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   // Usage data from tenant

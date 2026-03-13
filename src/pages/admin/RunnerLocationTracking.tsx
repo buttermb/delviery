@@ -70,6 +70,7 @@ export default function RunnerLocationTracking() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch deliveries for selected runner (all active ones for ETA tracking)
@@ -96,6 +97,7 @@ export default function RunnerLocationTracking() {
     },
     enabled: !!selectedRunnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 2,
   });
 
   // Fetch all active deliveries for live tracking ETA display
@@ -123,6 +125,7 @@ export default function RunnerLocationTracking() {
     },
     enabled: !!tenant?.id,
     refetchInterval: 15000, // Refresh every 15 seconds for live data
+    retry: 2,
   });
 
   // Get location history for replay

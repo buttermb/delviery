@@ -170,6 +170,7 @@ export function useSidebarPreferences() {
       ...DEFAULT_PREFERENCES,
       collapsedSections: localStorageCollapsedSections.current,
     },
+    retry: 2,
   });
 
   // Auto-patch missing integrations for existing users (run only once per session)

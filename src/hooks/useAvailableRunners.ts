@@ -64,5 +64,6 @@ export function useAvailableRunners(options: UseAvailableRunnersOptions = {}) {
     },
     enabled: enabled && !!tenant?.id,
     staleTime: 1000 * 30, // 30 seconds - runners status changes frequently
+    retry: 2,
   });
 }

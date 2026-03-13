@@ -299,6 +299,7 @@ export function useProductVelocity({
     enabled: enabled && !!tenantId && !!productId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   return {
@@ -510,6 +511,7 @@ export function useBulkProductVelocity({
     enabled: enabled && !!tenantId && productIds.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   return {

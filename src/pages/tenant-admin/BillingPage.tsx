@@ -133,6 +133,7 @@ export default function TenantAdminBillingPage() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch subscription plans
@@ -177,6 +178,7 @@ export default function TenantAdminBillingPage() {
       return data;
     },
     enabled: !!tenant?.subscription_plan,
+    retry: 2,
   });
 
   const limits = (tenant?.limits as Record<string, number>) || {};

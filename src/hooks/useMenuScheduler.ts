@@ -75,6 +75,7 @@ export const useMenuSchedule = (menuId?: string) => {
     enabled: !!menuId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -117,6 +118,7 @@ export const useMenuScheduleHistory = (menuId?: string) => {
     enabled: !!menuId,
     staleTime: 60 * 1000,
     gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 20 minutes for admin queries
+    retry: 2,
   });
 };
 
@@ -290,5 +292,6 @@ export const useScheduledMenus = (tenantId?: string) => {
     enabled: !!tenantId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };

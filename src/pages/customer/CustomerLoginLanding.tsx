@@ -40,6 +40,7 @@ export default function CustomerLoginLanding() {
       return data ?? [];
     },
     enabled: true,
+    retry: 2,
   });
 
   const handleBusinessSelect = (slug: string) => {

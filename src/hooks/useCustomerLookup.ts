@@ -166,6 +166,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
     },
     enabled: shouldSearch,
     staleTime: 30000,
+    retry: 2,
   });
 
   // Create customer mutation

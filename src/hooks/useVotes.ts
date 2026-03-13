@@ -36,6 +36,7 @@ export function useUserVote(votableType: 'post' | 'comment', votableId: string |
     },
     enabled: !!votableId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 

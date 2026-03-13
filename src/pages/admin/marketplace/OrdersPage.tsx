@@ -74,6 +74,7 @@ export default function OrdersPage() {
             return data;
         },
         enabled: !!tenantId,
+        retry: 2,
     });
 
     // Fetch orders
@@ -113,6 +114,7 @@ export default function OrdersPage() {
             return data ?? [];
         },
         enabled: !!tenantId && !!profile?.id,
+        retry: 2,
     });
 
     // Filter orders by search query

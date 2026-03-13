@@ -28,6 +28,7 @@ export default function ReferralManagementPage() {
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: queryKeys.superAdminTools.referralStats(),
     queryFn: getAdminReferralStats,
+    retry: 2,
   });
 
   return (

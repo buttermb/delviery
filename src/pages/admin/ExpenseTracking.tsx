@@ -118,6 +118,7 @@ export default function ExpenseTracking() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Add expense mutation

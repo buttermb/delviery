@@ -196,6 +196,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
     error,
     refetch,
   } = useQuery<AdminSessionInfo[], Error>({
+  retry: 2,
     queryKey: adminQueryKey,
     queryFn: async (): Promise<AdminSessionInfo[]> => {
       if (!admin?.userId) return [];

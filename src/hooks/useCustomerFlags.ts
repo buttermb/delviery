@@ -220,6 +220,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: customerFlagsKeys.active(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchActiveFlags(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,
@@ -231,6 +232,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
     data: flagHistory,
     isLoading: isLoadingHistory,
   } = useQuery({
+  retry: 2,
     queryKey: customerFlagsKeys.history(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchFlagHistory(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,

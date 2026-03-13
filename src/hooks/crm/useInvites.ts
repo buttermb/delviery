@@ -42,6 +42,7 @@ export function useInvites(status?: 'pending' | 'accepted' | 'archived') {
             return data as CRMInvite[];
         },
         enabled: !!accountId,
+        retry: 2,
     });
 }
 

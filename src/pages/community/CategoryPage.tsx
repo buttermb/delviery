@@ -29,6 +29,7 @@ export function CategoryPage() {
       return categories.find(c => c.slug === categorySlug);
     },
     enabled: !!categorySlug,
+    retry: 2,
   });
 
   const { data: posts, isLoading } = usePosts({

@@ -24,6 +24,7 @@ export function SearchPage() {
     queryKey: queryKeys.forum.search.posts(query),
     queryFn: () => forumApi.searchPosts(query),
     enabled: !!query,
+    retry: 2,
   });
 
   const handleSearch = (e: React.FormEvent) => {

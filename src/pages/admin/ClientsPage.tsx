@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClients } from '@/hooks/crm/useClients';
 import { CreateClientDialog } from '@/components/crm/CreateClientDialog';
@@ -12,12 +12,15 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
+import { toast } from 'sonner';
+import { ExportButton } from '@/components/ui/ExportButton';
 
 interface Client {
     id: string;
@@ -116,10 +119,18 @@ export default function ClientsPage() {
     const searchTerm = sanitizeSearchInput(filters.q);
     const statusFilter = (filters.status || 'active') as 'active' | 'archived';
 
+    // Bulk selection state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
     const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
 
-    const { data: clients, isLoading, isError, refetch } = useClients(statusFilter);
+    const { data: clients, isLoading, isError, isFetching, refetch } = useClients(statusFilter);
+
+    // Clear selection on page/filter change
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [searchTerm, statusFilter]);
 
     if (isLoading && !clients) {
         return <ClientsPageSkeleton />;
@@ -143,7 +154,49 @@ export default function ClientsPage() {
         (client.phone && client.phone.includes(searchTerm))
     ) ?? [];
 
+    // Bulk actions
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(new Set(filteredClients.map(c => c.id)));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleSelectClient = (id: string, checked: boolean) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            if (checked) {
+                newSet.add(id);
+            } else {
+                newSet.delete(id);
+            }
+            return newSet;
+        });
+    };
+
+    const handleBulkDelete = () => {
+        toast.info(`Delete ${selectedIds.size} clients - feature coming soon`);
+    };
+
     const columns: ResponsiveColumn<Client>[] = [
+        {
+            header: (
+                <Checkbox
+                    checked={filteredClients.length > 0 && selectedIds.size === filteredClients.length}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                />
+            ) as unknown as string,
+            className: "w-[50px]",
+            cell: (client) => (
+                <Checkbox
+                    checked={selectedIds.has(client.id)}
+                    onCheckedChange={(checked) => handleSelectClient(client.id, checked as boolean)}
+                    onClick={(e) => e.stopPropagation()}
+                />
+            )
+        },
         {
             header: 'Name',
             cell: (client) => (
@@ -250,12 +303,42 @@ export default function ClientsPage() {
         <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-4 space-y-4 sm:space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Clients</h1>
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Clients</h1>
+                        {isFetching && !isLoading && (
+                            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
+                    </div>
                     <p className="text-sm sm:text-base text-muted-foreground">
                         Manage your client relationships and track their activity.
                     </p>
                 </div>
-                <CreateClientDialog />
+                <div className="flex gap-2">
+                    <ExportButton
+                        data={filteredClients.map(c => ({
+                            name: c.name,
+                            email: c.email ?? '',
+                            phone: c.phone ?? '',
+                            open_balance: c.open_balance,
+                            status: c.status,
+                        }))}
+                        filename="clients"
+                        columns={[
+                            { key: "name", label: "Name" },
+                            { key: "email", label: "Email" },
+                            { key: "phone", label: "Phone" },
+                            { key: "open_balance", label: "Open Balance" },
+                            { key: "status", label: "Status" },
+                        ]}
+                    />
+                    {selectedIds.size > 0 && (
+                        <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete ({selectedIds.size})
+                        </Button>
+                    )}
+                    <CreateClientDialog />
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">

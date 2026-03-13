@@ -70,6 +70,7 @@ export default function Automation() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createRuleMutation = useMutation({

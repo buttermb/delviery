@@ -509,6 +509,7 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
     enabled: !!tenantId,
     refetchInterval: 30_000,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 

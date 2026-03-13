@@ -56,6 +56,7 @@ export default function AdvancedReportingPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   return (

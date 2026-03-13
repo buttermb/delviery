@@ -60,6 +60,7 @@ export function useDeadLetterQueue() {
     },
     enabled: !!tenant?.id,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 2,
   });
 
   const retryExecution = useMutation({

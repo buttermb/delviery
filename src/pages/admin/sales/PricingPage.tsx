@@ -106,6 +106,7 @@ export default function PricingPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const { data: products } = useQuery({
@@ -133,6 +134,7 @@ export default function PricingPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const columns: ColumnDef<PricingTier>[] = [

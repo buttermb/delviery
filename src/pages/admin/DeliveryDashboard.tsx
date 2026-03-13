@@ -132,6 +132,7 @@ export default function DeliveryDashboard() {
     enabled: !!tenant?.id,
     staleTime: 30000,
     refetchInterval: 60000,
+    retry: 2,
   });
 
   // Fetch runners with current load

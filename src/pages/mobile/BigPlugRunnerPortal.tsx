@@ -34,6 +34,7 @@ export function BigPlugRunnerPortal() {
       return data;
     },
     enabled: !!runnerId,
+    retry: 2,
   });
 
   // Active deliveries
@@ -60,6 +61,7 @@ export function BigPlugRunnerPortal() {
     },
     enabled: !!runnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 2,
   });
 
   // Today's stats
@@ -88,6 +90,7 @@ export function BigPlugRunnerPortal() {
       };
     },
     enabled: !!runnerId,
+    retry: 2,
   });
 
   // Mark delivery complete - uses centralized payment service

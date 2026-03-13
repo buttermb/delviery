@@ -112,6 +112,7 @@ export default function UnifiedOrdersPage() {
       }));
     },
     enabled: !!tenantId && !!customerId && (orderTypeFilter === 'all' || orderTypeFilter === 'retail'),
+    retry: 2,
   });
 
   // Fetch wholesale orders
@@ -155,6 +156,7 @@ export default function UnifiedOrdersPage() {
       }));
     },
     enabled: !!tenantId && (orderTypeFilter === 'all' || orderTypeFilter === 'wholesale'),
+    retry: 2,
   });
 
   // Fetch storefront orders (placed via checkout, stored in marketplace_orders by customer_email)
@@ -192,6 +194,7 @@ export default function UnifiedOrdersPage() {
       }));
     },
     enabled: !!tenantId && !!customerEmail && (orderTypeFilter === 'all' || orderTypeFilter === 'retail'),
+    retry: 2,
   });
 
   // Combine orders (deduplicate by ID since storefront and wholesale both query marketplace_orders)

@@ -84,6 +84,7 @@ export default function InventoryTransfers() {
       return data ?? [];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch locations for dropdowns
@@ -117,6 +118,7 @@ export default function InventoryTransfers() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const { data: transfers, isLoading, isError, refetch } = useQuery({
@@ -141,6 +143,7 @@ export default function InventoryTransfers() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const createTransferMutation = useMutation({

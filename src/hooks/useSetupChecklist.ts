@@ -191,6 +191,7 @@ export function useSetupChecklist() {
     },
     enabled: !!tenantId && !!tenantSlug,
     staleTime: 60_000,
+    retry: 2,
   });
 }
 

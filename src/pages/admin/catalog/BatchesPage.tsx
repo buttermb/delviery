@@ -97,6 +97,7 @@ export default function BatchesPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch products for dropdown
@@ -123,6 +124,7 @@ export default function BatchesPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Create batch

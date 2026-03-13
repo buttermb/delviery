@@ -97,6 +97,7 @@ export default function StorefrontCustomers() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch customers aggregated from orders
@@ -156,6 +157,7 @@ export default function StorefrontCustomers() {
       return Array.from(customerMap.values());
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Filter and sort customers

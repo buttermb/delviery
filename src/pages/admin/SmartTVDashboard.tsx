@@ -122,6 +122,7 @@ export default function SmartTVDashboard() {
         },
         refetchInterval: refreshInterval,
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Fetch hourly revenue data
@@ -161,6 +162,7 @@ export default function SmartTVDashboard() {
         },
         refetchInterval: refreshInterval,
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Fetch inventory alerts
@@ -194,6 +196,7 @@ export default function SmartTVDashboard() {
         },
         refetchInterval: refreshInterval * 2, // Less frequent for inventory
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Real-time subscription for orders

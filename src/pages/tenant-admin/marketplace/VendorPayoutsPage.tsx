@@ -45,6 +45,7 @@ export default function VendorPayoutsPage() {
             return (data ?? []) as MarketplacePayout[];
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Calculate Available Balance (Orders delivered but not yet paid out)
@@ -79,6 +80,7 @@ export default function VendorPayoutsPage() {
             return { pending, available };
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     const getStatusBadge = (status: string) => {

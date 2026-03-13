@@ -231,6 +231,7 @@ export function useInventoryHistory(filters: InventoryHistoryFilters = {}) {
       return (data ?? []) as unknown as InventoryHistoryEntry[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Memoize formatted entries with running totals

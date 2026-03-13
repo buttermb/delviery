@@ -113,6 +113,7 @@ export function usePinnedOrderNotes() {
     enabled: !!tenantId,
     staleTime: 30000, // 30 seconds
     refetchInterval: 60000, // Refetch every minute
+    retry: 2,
   });
 
   // Pin a note mutation

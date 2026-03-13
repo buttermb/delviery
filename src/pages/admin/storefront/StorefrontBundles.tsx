@@ -112,6 +112,7 @@ export default function StorefrontBundles() {
       return data;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch bundles
@@ -128,6 +129,7 @@ export default function StorefrontBundles() {
       return (data ?? []) as Bundle[];
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Fetch products for selection
@@ -144,6 +146,7 @@ export default function StorefrontBundles() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Create bundle mutation

@@ -140,6 +140,7 @@ export default function TenantsListPage() {
       if (error) throw error;
       return data ?? [];
     },
+    retry: 2,
   });
 
   // Filter tenants by health score

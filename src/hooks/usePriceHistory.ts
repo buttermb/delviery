@@ -122,6 +122,7 @@ export function usePriceHistory(productId: string | undefined, timeRange: '30d' 
     },
     enabled: !!productId && !!tenant?.id,
     staleTime: 60_000, // 1 minute
+    retry: 2,
   });
 }
 
@@ -192,6 +193,7 @@ export function useRecentPriceChange(productId: string | undefined, withinDays: 
     },
     enabled: !!productId && !!tenant?.id,
     staleTime: 30_000, // 30 seconds
+    retry: 2,
   });
 }
 

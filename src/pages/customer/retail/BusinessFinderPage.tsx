@@ -97,6 +97,7 @@ export default function BusinessFinderPage() {
 
       return data ?? [];
     },
+    retry: 2,
   });
 
   // Filter businesses by search query

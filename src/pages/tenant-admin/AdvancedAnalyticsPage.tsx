@@ -40,6 +40,7 @@ export default function AdvancedAnalyticsPage() {
       return (data ?? []) as unknown as AnalyticsOrder[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Revenue trends

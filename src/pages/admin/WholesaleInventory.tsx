@@ -157,6 +157,7 @@ export default function WholesaleInventory() {
       return aggregated;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const getStatusColor = (status: string) => {

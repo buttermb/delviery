@@ -96,6 +96,7 @@ export function useCashDrawer(shiftId: string | undefined) {
       return (data ?? []) as CashDrawerEvent[];
     },
     enabled: !!shiftId && !!tenantId,
+    retry: 2,
   });
 
   // Calculate current drawer state from events

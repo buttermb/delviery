@@ -79,6 +79,7 @@ export default function WholesaleOrderDetailPage() {
       return data;
     },
     enabled: !!orderId,
+    retry: 2,
   });
 
   const getStatusBadge = (status: string) => {

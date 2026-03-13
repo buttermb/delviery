@@ -170,6 +170,7 @@ export default function InventoryDashboard() {
       };
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch category-wise stock breakdown
@@ -209,6 +210,7 @@ export default function InventoryDashboard() {
       return Array.from(categoryMap.values()).sort((a, b) => b.value - a.value);
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch stock level distribution
@@ -260,6 +262,7 @@ export default function InventoryDashboard() {
       ].filter((d) => d.value > 0);
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch low stock products for alerts
@@ -287,6 +290,7 @@ export default function InventoryDashboard() {
       })) as LowStockProduct[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Quick reorder mutation

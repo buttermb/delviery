@@ -137,6 +137,7 @@ export function useVendorCommunications(vendorId: string) {
       return (data ?? []) as VendorCommunicationLog[];
     },
     enabled: !!tenantId && !!vendorId,
+    retry: 2,
   });
 
   // Filter communications client-side
@@ -395,5 +396,6 @@ export function useVendorPurchaseOrders(vendorId: string) {
       return data ?? [];
     },
     enabled: !!tenantId && !!vendorId,
+    retry: 2,
   });
 }

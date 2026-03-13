@@ -135,6 +135,7 @@ export function StoreOrdersTab({
       return data;
     },
     enabled: !!tenantId && !propStoreId,
+    retry: 2,
   });
 
   const effectiveStoreId = propStoreId || store?.id;
@@ -163,6 +164,7 @@ export function StoreOrdersTab({
       return (data ?? []) as unknown as StoreOrder[];
     },
     enabled: !!effectiveStoreId,
+    retry: 2,
   });
 
   // Filter orders by search

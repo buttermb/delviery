@@ -144,6 +144,7 @@ function useLazyQuery<T>(
     queryKey,
     queryFn,
     enabled: enabled && !!deps.accountId && !!deps.entityId,
+    retry: 2,
   });
 
   const enable = useCallback(() => {

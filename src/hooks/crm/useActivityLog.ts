@@ -36,6 +36,7 @@ export function useClientActivity(clientId: string | undefined) {
             return data as CRMActivityLog[];
         },
         enabled: !!clientId && !!accountId,
+        retry: 2,
     });
 }
 
@@ -63,6 +64,7 @@ export function useRecentActivity(limit: number = 10) {
             return data as CRMActivityLog[];
         },
         enabled: !!accountId,
+        retry: 2,
     });
 }
 

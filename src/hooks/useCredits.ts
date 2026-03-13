@@ -192,6 +192,7 @@ export function useCredits(): UseCreditsReturn {
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.credits.balance(tenantId),
     queryFn: () => fetchCreditsBalance(),
     enabled: !!tenantId && isAuthenticated && !!accessToken,

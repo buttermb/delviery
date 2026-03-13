@@ -135,6 +135,7 @@ export default function TeamSettings() {
       })) as TenantUser[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const inviteMutation = useMutation({

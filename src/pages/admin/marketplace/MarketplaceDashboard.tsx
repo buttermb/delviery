@@ -67,7 +67,8 @@ export default function MarketplaceDashboard() {
             }
             return data;
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Fetch analytics
@@ -84,7 +85,8 @@ export default function MarketplaceDashboard() {
             }
             return data as unknown as AnalyticsData;
         },
-        enabled: !!profile?.id
+        enabled: !!profile?.id,
+        retry: 2,
     });
 
     const copyStoreUrl = () => {

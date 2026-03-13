@@ -207,6 +207,7 @@ export function useVendorCompliance(vendorId: string) {
       return (data ?? []) as VendorCompliance[];
     },
     enabled: !!tenantId && !!vendorId,
+    retry: 2,
   });
 
   // Create compliance mutation
@@ -495,6 +496,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
       return (data ?? []) as ComplianceDocument[];
     },
     enabled: !!tenantId && !!complianceId,
+    retry: 2,
   });
 
   const uploadDocumentMutation = useMutation({
@@ -624,5 +626,6 @@ export function useVendorComplianceAudit(complianceId: string) {
       return (data ?? []) as ComplianceAuditEntry[];
     },
     enabled: !!tenantId && !!complianceId,
+    retry: 2,
   });
 }

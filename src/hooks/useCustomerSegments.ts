@@ -341,6 +341,7 @@ export function useCustomerSegment({
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   return {
@@ -491,6 +492,7 @@ export function useCustomerSegments({
     enabled: enabled && !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   // Build lookup map

@@ -103,6 +103,7 @@ export function useProductTags() {
     },
     enabled: !!tenant?.id,
     staleTime: 30000,
+    retry: 2,
   });
 }
 
@@ -163,6 +164,7 @@ export function usePopularProductTags(limit = 10) {
     },
     enabled: !!tenant?.id,
     staleTime: 60000,
+    retry: 2,
   });
 }
 
@@ -216,6 +218,7 @@ export function useProductTagAssignments(productId: string | undefined) {
     },
     enabled: !!tenant?.id && !!productId,
     staleTime: 30000,
+    retry: 2,
   });
 }
 
@@ -474,6 +477,7 @@ export function useSearchProductTags(searchTerm: string) {
     },
     enabled: !!tenant?.id && searchTerm.length > 0,
     staleTime: 10000,
+    retry: 2,
   });
 }
 
@@ -507,5 +511,6 @@ export function useProductTagsByIds(tagIds: string[]) {
     },
     enabled: !!tenant?.id && tagIds.length > 0,
     staleTime: 30000,
+    retry: 2,
   });
 }

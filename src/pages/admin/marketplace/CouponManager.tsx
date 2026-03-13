@@ -73,7 +73,8 @@ export default function CouponManager() {
                 amount: c.discount_value
             })) as Coupon[];
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Mutations

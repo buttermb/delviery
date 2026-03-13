@@ -102,7 +102,7 @@ export default function WholesaleClients() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
 
-  const { data: clients, isLoading, isError, error, refetch } = useQuery({
+  const { data: clients, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -134,7 +134,8 @@ export default function WholesaleClients() {
         monthly_volume_lbs: client.monthly_volume,
         total_spent: client.wholesale_payments?.reduce((sum: number, p: { amount: number | null }) => sum + (Number(p.amount) || 0), 0) ?? 0
       })) as WholesaleClient[];
-    }
+    },
+    retry: 2,
   });
 
   const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
@@ -599,6 +600,9 @@ export default function WholesaleClients() {
       <div className="w-full max-w-full space-y-4 p-2 sm:p-4 md:p-4 overflow-x-hidden">
         {/* Table Toolbar & Data */}
         <div className="space-y-4">
+          {isFetching && !isLoading && (
+            <span className="text-xs text-muted-foreground animate-pulse">Refreshing...</span>
+          )}
           <AdminToolbar
             searchQuery={searchTerm}
             onSearchChange={setSearchTerm}

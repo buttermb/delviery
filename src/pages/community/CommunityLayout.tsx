@@ -22,6 +22,7 @@ export function CommunityLayout() {
   const { data: categories } = useQuery({
     queryKey: queryKeys.forum.categories.lists(),
     queryFn: () => forumApi.getCategories(),
+    retry: 2,
   });
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {

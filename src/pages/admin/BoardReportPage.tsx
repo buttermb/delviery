@@ -88,6 +88,7 @@ export default function BoardReportPage() {
             };
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     const reportRef = useRef<HTMLDivElement>(null);

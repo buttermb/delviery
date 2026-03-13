@@ -108,6 +108,7 @@ export function useStorefrontChecklist(storeId: string | null | undefined) {
     },
     enabled: !!storeId && !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes — store config changes infrequently
+    retry: 2,
   });
 }
 

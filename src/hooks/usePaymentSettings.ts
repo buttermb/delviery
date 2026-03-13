@@ -92,6 +92,7 @@ export function useTenantPaymentSettings() {
     },
     enabled: !!tenant?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 
@@ -146,6 +147,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
     },
     enabled: !!menuId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 

@@ -124,6 +124,7 @@ export default function PointOfSale() {
     },
     enabled: !!tenantId,
     staleTime: 60_000,
+    retry: 2,
   });
 
   useEffect(() => {

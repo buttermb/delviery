@@ -53,6 +53,7 @@ export function VendorOrderDetailPage() {
             if (error) throw error;
             return data as unknown as MarketplaceOrder;
         },
+        retry: 2,
     });
 
     // Update Status Mutation

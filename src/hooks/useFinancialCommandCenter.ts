@@ -203,7 +203,8 @@ export const useQuickStats = () => {
     },
     enabled: !!tenant?.id,
     staleTime: 60_000,
-    refetchInterval: 300_000 // 5 minutes (realtime handles live updates)
+    refetchInterval: 300_000, // 5 minutes (realtime handles live updates)
+    retry: 2,
   });
 };
 
@@ -322,7 +323,8 @@ export const useCashFlowPulse = () => {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 60 * 1000
+    staleTime: 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -386,7 +388,8 @@ export const useARCommand = () => {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 60 * 1000
+    staleTime: 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -484,7 +487,8 @@ export const useFrontedInventory = () => {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 60 * 1000
+    staleTime: 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -639,7 +643,8 @@ export const usePerformancePulse = () => {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 5 * 60 * 1000 // 5 minutes for performance data
+    staleTime: 5 * 60 * 1000, // 5 minutes for performance data
+    retry: 2,
   });
 };
 

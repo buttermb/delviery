@@ -35,6 +35,7 @@ export default function AuditLogsPage() {
       return data ?? [];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2,
   });
 
   // Fetch tenant names for display
@@ -54,6 +55,7 @@ export default function AuditLogsPage() {
       return data ?? [];
     },
     enabled: tenantIds.length > 0,
+    retry: 2,
   });
 
   const tenantMap = useMemo(() => 
@@ -78,6 +80,7 @@ export default function AuditLogsPage() {
       return (data ?? []) as { id: string; email: string }[];
     },
     enabled: actorIds.length > 0,
+    retry: 2,
   });
 
   const actorMap = useMemo(() => 

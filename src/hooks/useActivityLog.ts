@@ -171,6 +171,7 @@ export function useActivityLog(options: UseActivityLogOptions = {}): UseActivity
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey,
     queryFn: () => {
       if (!tenantId) {

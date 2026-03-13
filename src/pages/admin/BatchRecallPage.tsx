@@ -65,6 +65,7 @@ export default function BatchRecallPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   if (error) {

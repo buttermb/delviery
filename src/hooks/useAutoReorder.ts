@@ -271,6 +271,7 @@ export function useAutoReorder(): AutoReorderSummary {
       highCount: suggestions.filter((s) => s.priority === 'high').length,
       totalEstimatedCost: suggestions.reduce((sum, s) => sum + s.estimatedCost, 0),
     }),
+    retry: 2,
   });
 
   const selected = data ?? {
@@ -389,6 +390,7 @@ export function useProductReorder(productId: string | undefined): ProductReorder
     },
     enabled: !!tenantId && !!productId,
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   return {

@@ -218,6 +218,7 @@ export function ProductsListPage() {
     isFetching,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.products.byTenant(tenant?.id ?? ''),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('Tenant required');

@@ -316,6 +316,7 @@ export function StorefrontBuilder({
             return data as MarketplaceStore | null;
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Easy Mode Builder Hook

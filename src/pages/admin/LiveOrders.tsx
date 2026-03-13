@@ -270,6 +270,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     enabled: !!tenant?.id,
     refetchInterval: 30000, // Fallback poll every 30s
     refetchOnWindowFocus: true, // Re-fetch when admin switches back to tab
+    retry: 2,
   });
 
   // Apply client-side filters

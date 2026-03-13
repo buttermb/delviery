@@ -54,6 +54,7 @@ export function useClients(status?: 'active' | 'archived') {
         enabled: !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 }
 
@@ -85,6 +86,7 @@ export function useClient(clientId: string | undefined) {
         enabled: !!clientId && !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
+        retry: 2,
     });
 }
 
@@ -412,5 +414,6 @@ export function useSearchClients(searchTerm: string) {
             return data as CRMClient[];
         },
         enabled: searchTerm.length >= 2 && !!accountId,
+        retry: 2,
     });
 }

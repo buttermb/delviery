@@ -38,6 +38,7 @@ export default function CustomerInsights() {
       }
     },
     enabled: !!id && !!tenantId,
+    retry: 2,
   });
 
   const customerRecord = (customer as unknown) as Record<string, unknown> | null;
@@ -65,6 +66,7 @@ export default function CustomerInsights() {
       }
     },
     enabled: !!id && !!tenantId,
+    retry: 2,
   });
 
   if (customerLoading || ordersLoading) {

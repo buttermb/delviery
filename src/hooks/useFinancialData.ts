@@ -73,6 +73,7 @@ export const useFinancialSnapshot = () => {
     enabled: !!tenant?.id,
     staleTime: 30_000, // Reduced for more real-time updates
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -127,6 +128,7 @@ export const useCashFlow = () => {
     enabled: !!tenant?.id,
     staleTime: 60_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -174,6 +176,7 @@ export const useCreditOut = () => {
     enabled: !!tenant?.id,
     staleTime: 60_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };
 
@@ -304,6 +307,7 @@ export const useMonthlyPerformance = () => {
     enabled: !!tenant?.id,
     staleTime: 60_000, // Reduced for more real-time updates
     gcTime: 600_000,
+    retry: 2,
   });
 };
 
@@ -417,5 +421,6 @@ export const useExpenseSummary = () => {
     enabled: !!tenant?.id,
     staleTime: 60_000,
     gcTime: 300_000,
+    retry: 2,
   });
 };

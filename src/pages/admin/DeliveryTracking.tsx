@@ -39,7 +39,8 @@ export default function DeliveryTracking() {
       return data;
     },
     enabled: !!id && !!tenant,
-    refetchInterval: 10000 // Refresh every 10 seconds
+    refetchInterval: 10000, // Refresh every 10 seconds
+    retry: 2,
   });
 
   const deliveryOrders = delivery?.orders as Record<string, unknown> | null;

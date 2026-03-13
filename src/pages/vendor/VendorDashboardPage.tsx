@@ -56,6 +56,7 @@ export default function VendorDashboardPage() {
         return [];
       }
     },
+    retry: 2,
   });
 
   // Calculate stats

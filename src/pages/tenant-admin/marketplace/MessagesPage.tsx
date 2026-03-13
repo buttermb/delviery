@@ -136,6 +136,7 @@ export default function MessagesPage() {
     },
     enabled: !!tenantId,
     refetchInterval: 30000,
+    retry: 2,
   });
 
   // Group messages into conversations

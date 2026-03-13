@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers } from "lucide-react";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { useRealTimeSubscription } from '@/hooks/useRealtimeSubscription';
 
 
 interface Product {
@@ -157,6 +159,17 @@ export function InventoryManagement() {
   useEffect(() => {
     loadInventory();
   }, [loadInventory]);
+
+  // Real-time subscription for product updates
+  useRealTimeSubscription({
+    table: 'products',
+    tenantId: tenant?.id ?? null,
+    event: 'UPDATE',
+    callback: () => {
+      loadInventory();
+    },
+    enabled: !!tenant?.id,
+  });
 
   const handleRefresh = useCallback(async () => {
     await loadInventory();
@@ -345,6 +358,33 @@ export function InventoryManagement() {
               Bulk Adjust ({selectedProductIds.size})
             </Button>
           )}
+          <ExportButton
+            data={products.map(p => ({
+              name: p.name,
+              sku: p.sku,
+              category: p.category,
+              batch_number: p.batch_number,
+              available_quantity: p.available_quantity,
+              low_stock_alert: p.low_stock_alert,
+              cost_per_unit: p.cost_per_unit ?? '',
+              wholesale_price: p.wholesale_price ?? '',
+              total_value: getProductTotalValue(p),
+              status: getStockStatus(Number(p.available_quantity ?? 0), p.low_stock_alert).label,
+            }))}
+            filename="inventory"
+            columns={[
+              { key: "name", label: "Product" },
+              { key: "sku", label: "SKU" },
+              { key: "category", label: "Category" },
+              { key: "batch_number", label: "Batch" },
+              { key: "available_quantity", label: "Quantity (lbs)" },
+              { key: "low_stock_alert", label: "Low Stock Alert" },
+              { key: "cost_per_unit", label: "Cost/Unit" },
+              { key: "wholesale_price", label: "Wholesale Price" },
+              { key: "total_value", label: "Total Value" },
+              { key: "status", label: "Stock Status" },
+            ]}
+          />
           <BulkImageGenerator products={products} />
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"

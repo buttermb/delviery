@@ -189,5 +189,6 @@ export function useCouponUsageStats() {
     },
     enabled: !!tenant?.id,
     staleTime: 30000, // 30 seconds
+    retry: 2,
   });
 }

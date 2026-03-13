@@ -208,6 +208,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
     enabled: enabled && !!tenant?.id,
     staleTime: 30000, // 30 seconds
     gcTime: 300000, // 5 minutes
+    retry: 2,
   });
 
   /**
@@ -300,6 +301,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
     },
     enabled: !!tenant?.id && !!orderId,
     staleTime: 30000, // 30 seconds
+    retry: 2,
   });
 }
 
@@ -1013,6 +1015,7 @@ export function useOrderStats(orderType: OrderType = 'all') {
     },
     enabled: !!tenant?.id,
     staleTime: 30000, // 30 seconds
+    retry: 2,
   });
 }
 

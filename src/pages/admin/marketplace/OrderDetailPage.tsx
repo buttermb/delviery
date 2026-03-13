@@ -85,6 +85,7 @@ export default function OrderDetailPage() {
             return data;
         },
         enabled: !!orderId,
+        retry: 2,
     });
 
     useBreadcrumbLabel(order ? `Order #${order.order_number}` : null);

@@ -60,6 +60,7 @@ export default function SupportTicketsPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const filteredTickets = tickets?.filter((ticket) => {

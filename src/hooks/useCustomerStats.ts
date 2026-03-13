@@ -52,5 +52,6 @@ export function useCustomerStats(customerId: string | undefined) {
     },
     enabled: !!tenant?.id && !!customerId,
     staleTime: 60000,
+    retry: 2,
   });
 }

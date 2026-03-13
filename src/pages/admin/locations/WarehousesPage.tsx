@@ -111,6 +111,7 @@ export default function WarehousesPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   const columns: ColumnDef<WarehouseLocation>[] = [

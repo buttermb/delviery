@@ -536,6 +536,7 @@ export function useCustomerCompliance(
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey: complianceKeys.customer(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchCustomerComplianceData(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,

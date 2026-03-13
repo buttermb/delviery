@@ -40,6 +40,7 @@ export default function AuditTrail() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (isLoading) {

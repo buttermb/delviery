@@ -24,6 +24,7 @@ export default function CommissionTrackingPage() {
             };
         },
         enabled: isPlatformAdmin,
+        retry: 2,
     });
 
     if (isLoading) return <EnhancedLoadingState variant="table" message="Loading commissions..." />;

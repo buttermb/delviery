@@ -68,6 +68,7 @@ export default function PlatformPayoutsPage() {
             return data;
         },
         enabled: isPlatformAdmin,
+        retry: 2,
     });
 
     // Approve Mutation

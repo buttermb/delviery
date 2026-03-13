@@ -26,6 +26,7 @@ export function UserProfilePage() {
       return forumApi.getUserReputation(profile.id);
     },
     enabled: !!profile?.id,
+    retry: 2,
   });
 
   const { data: posts, isLoading: postsLoading } = useQuery({
@@ -36,6 +37,7 @@ export function UserProfilePage() {
       return allPosts.filter(p => p.author_id === profile.id);
     },
     enabled: !!profile?.id,
+    retry: 2,
   });
 
   if (profileLoading) {

@@ -53,7 +53,8 @@ export default function ProductVisibilityManager() {
             if (error) throw error;
             return data as MarketplaceListing[];
         },
-        enabled: !!tenant?.id
+        enabled: !!tenant?.id,
+        retry: 2,
     });
 
     // Toggle visibility mutation

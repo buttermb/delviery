@@ -217,6 +217,7 @@ export function useAnalyticsData(filters: AnalyticsFilters = {}) {
     enabled: !!tenantId,
     staleTime: 60_000, // 1 minute
     gcTime: 300_000, // 5 minutes
+    retry: 2,
   });
 }
 
@@ -691,6 +692,7 @@ export function useOrderAnalytics(filters: AnalyticsFilters = {}) {
     },
     enabled: !!tenantId,
     staleTime: 60_000,
+    retry: 2,
   });
 }
 
@@ -714,6 +716,7 @@ export function useInventoryAnalytics() {
     },
     enabled: !!tenantId,
     staleTime: 120_000,
+    retry: 2,
   });
 }
 
@@ -737,6 +740,7 @@ export function useCustomerAnalytics(filters: AnalyticsFilters = {}) {
     },
     enabled: !!tenantId,
     staleTime: 120_000,
+    retry: 2,
   });
 }
 
@@ -785,5 +789,6 @@ export function useFinanceAnalytics() {
     },
     enabled: !!tenantId,
     staleTime: 60_000,
+    retry: 2,
   });
 }

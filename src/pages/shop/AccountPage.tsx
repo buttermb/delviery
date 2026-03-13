@@ -795,6 +795,7 @@ function WishlistSection({
       return productsData.filter((p) => wishlistIds.includes(p.product_id as string));
     },
     enabled: wishlistIds.length > 0,
+    retry: 2,
   });
 
   // Remove from wishlist with error handling
@@ -1237,6 +1238,7 @@ function ProfileSection({
       return data;
     },
     enabled: !!customerId && !!tenantId,
+    retry: 2,
   });
 
   // Populate form when profile loads

@@ -47,6 +47,7 @@ export function useProduct({ productId, enabled = true }: UseProductOptions) {
         },
         enabled: enabled && !!productId && !!tenant?.id,
         staleTime: 30_000, // 30 seconds
+        retry: 2,
     });
 }
 
@@ -78,6 +79,7 @@ export function useProductInventoryHistory(productId: string | undefined) {
             return data ?? [];
         },
         enabled: !!productId && !!tenant?.id,
+        retry: 2,
     });
 }
 
@@ -111,6 +113,7 @@ export function useProductFrontedInventory(productId: string | undefined) {
             return data ?? [];
         },
         enabled: !!productId && !!tenant?.id,
+        retry: 2,
     });
 }
 
@@ -228,6 +231,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
         },
         enabled: !!productId && !!tenant?.id,
         staleTime: 60_000, // 1 minute
+        retry: 2,
     });
 }
 
@@ -334,5 +338,6 @@ export function useProductOrders(productId: string | undefined) {
         },
         enabled: !!productId && !!tenant?.id,
         staleTime: 30_000,
+        retry: 2,
     });
 }

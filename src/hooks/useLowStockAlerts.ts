@@ -167,6 +167,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
         lowStockIds: new Set(products.map((p) => p.id)),
       };
     },
+    retry: 2,
   });
 
   const selected = data ?? {

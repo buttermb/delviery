@@ -55,6 +55,7 @@ export default function ListingDetailPage() {
       return asListing(data);
     },
     enabled: !!listingId,
+    retry: 2,
   });
 
   if (isLoading) {

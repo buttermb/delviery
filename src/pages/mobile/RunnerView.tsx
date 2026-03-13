@@ -210,6 +210,7 @@ export default function RunnerView() {
     },
     enabled: !!runnerId,
     refetchInterval: isOnline ? 30000 : false, // Refresh every 30 seconds when online
+    retry: 2,
   });
 
   // Set up realtime subscription for delivery updates

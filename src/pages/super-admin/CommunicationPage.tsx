@@ -30,6 +30,7 @@ export default function CommunicationPage() {
       return data ?? [];
     },
     refetchInterval: 60000, // Refetch every minute
+    retry: 2,
   });
 
   // Calculate stats

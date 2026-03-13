@@ -79,6 +79,7 @@ export function useVendorPriceHistory(vendorId: string, productId?: string) {
       return (data ?? []) as unknown as VendorPriceHistoryEntry[];
     },
     enabled: !!tenant?.id && !!vendorId,
+    retry: 2,
   });
 }
 
@@ -120,6 +121,7 @@ export function useVendorPriceAlerts(vendorId?: string) {
       return (data ?? []) as VendorPriceAlert[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 }
 
@@ -193,6 +195,7 @@ export function useVendorPriceAlertSettings(vendorId: string) {
       return (data ?? []) as VendorPriceAlertSettings[];
     },
     enabled: !!tenant?.id && !!vendorId,
+    retry: 2,
   });
 }
 
@@ -343,5 +346,6 @@ export function useProductPriceTrend(vendorId: string, productId: string) {
       }));
     },
     enabled: !!tenant?.id && !!vendorId && !!productId,
+    retry: 2,
   });
 }

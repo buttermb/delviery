@@ -94,6 +94,7 @@ export default function StorefrontProducts() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch all products
@@ -111,6 +112,7 @@ export default function StorefrontProducts() {
       return (data ?? []) as unknown as Product[];
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch product settings
@@ -127,6 +129,7 @@ export default function StorefrontProducts() {
       return (data ?? []) as unknown as ProductSetting[];
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Create settings map for quick lookup

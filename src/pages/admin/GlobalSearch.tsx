@@ -131,6 +131,7 @@ const GlobalSearch = () => {
       };
     },
     enabled: searchTerm.length >= 2 && !!tenant,
+    retry: 2,
   });
 
   return (

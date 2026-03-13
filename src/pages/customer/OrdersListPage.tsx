@@ -97,6 +97,7 @@ export default function OrdersListPage() {
       return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
+    retry: 2,
   });
 
   // Pagination

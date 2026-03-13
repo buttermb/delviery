@@ -125,6 +125,7 @@ export function OrderDetailPage() {
       const activeStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery'];
       return activeStatuses.includes(data.status) ? 30000 : false;
     },
+    retry: 2,
   });
 
   // Realtime subscription for instant order status updates

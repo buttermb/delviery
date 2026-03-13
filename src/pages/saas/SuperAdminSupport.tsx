@@ -119,6 +119,7 @@ export default function SuperAdminSupport() {
         },
       }));
     },
+    retry: 2,
   });
 
   const handleResolveTicket = async (ticketId: string) => {

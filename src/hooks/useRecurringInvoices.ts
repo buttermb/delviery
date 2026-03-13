@@ -62,7 +62,8 @@ export function useRecurringInvoices() {
         line_items: (d.line_items ?? []) as unknown as RecurringLineItem[]
       })) as RecurringSchedule[];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const createSchedule = useMutation({

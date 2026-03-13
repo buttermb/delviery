@@ -84,6 +84,7 @@ export default function CustomerMenuViewPage() {
       };
     },
     enabled: !!menuId && !!tenantId && !!customerId,
+    retry: 2,
   });
 
   // Fetch menu products
@@ -113,6 +114,7 @@ export default function CustomerMenuViewPage() {
       return data ?? [];
     },
     enabled: !!menuId && !!tenantId,
+    retry: 2,
   });
 
   // Memoize total items calculation (using guest cart hook or local state if needed, but here we rely on cart query for auth user)
@@ -128,7 +130,8 @@ export default function CustomerMenuViewPage() {
         .eq("user_id", user.id);
       return data ?? [];
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    retry: 2,
   });
 
   // Calculate totals

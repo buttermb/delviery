@@ -84,6 +84,7 @@ export default function MarketplaceModerationPage() {
 
       return data ?? [];
     },
+    retry: 2,
   });
 
   // Filter profiles by search query

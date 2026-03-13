@@ -354,6 +354,7 @@ export function useAttentionQueue() {
     enabled: !!tenant?.id,
     staleTime: 30 * 1000, // 30 seconds
     refetchInterval: 60 * 1000, // Refresh every minute
+    retry: 2,
   });
 
   // Get counts for badges

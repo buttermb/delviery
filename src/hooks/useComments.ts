@@ -20,6 +20,7 @@ export function useComments(postId: string | undefined) {
     },
     enabled: !!postId,
     staleTime: 60 * 1000,
+    retry: 2,
   });
 }
 

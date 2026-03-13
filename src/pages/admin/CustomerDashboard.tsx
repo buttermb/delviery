@@ -149,6 +149,7 @@ function useCustomerGrowth(tenantId: string | undefined) {
     },
     enabled: !!tenantId,
     staleTime: 60000,
+    retry: 2,
   });
 }
 
@@ -222,6 +223,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
     },
     enabled: !!tenantId,
     staleTime: 30000,
+    retry: 2,
   });
 }
 

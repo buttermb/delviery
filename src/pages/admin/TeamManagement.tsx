@@ -97,6 +97,7 @@ export default function TeamManagement() {
     error: membersError,
     refetch: refetchMembers,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
@@ -151,6 +152,7 @@ export default function TeamManagement() {
     data: pendingInvitations = [],
     isLoading: loadingInvitations,
   } = useQuery({
+  retry: 2,
     queryKey: queryKeys.team.invitations(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];

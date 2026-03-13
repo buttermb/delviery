@@ -284,6 +284,7 @@ export function useCustomersByTags(tagIds: string[]) {
     },
     enabled: !!tenant?.id && tagIds.length > 0,
     staleTime: 30000,
+    retry: 2,
   });
 }
 
@@ -319,5 +320,6 @@ export function useTagCounts() {
     },
     enabled: !!tenant?.id && !!tags,
     staleTime: 30000,
+    retry: 2,
   });
 }

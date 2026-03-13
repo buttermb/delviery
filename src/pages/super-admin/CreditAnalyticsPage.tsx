@@ -63,12 +63,14 @@ export default function CreditAnalyticsPage() {
   const { data: analytics, isLoading, refetch } = useQuery({
     queryKey: queryKeys.superAdminTools.creditAnalytics(startDate, endDate),
     queryFn: () => getCreditAnalytics({ startDate, endDate }),
+    retry: 2,
   });
 
   // Fetch platform stats
   const { data: stats } = useQuery({
     queryKey: queryKeys.superAdminTools.creditPlatformStats(),
     queryFn: getPlatformCreditStats,
+    retry: 2,
   });
 
   // Calculate totals from analytics

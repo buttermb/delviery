@@ -76,6 +76,7 @@ export default function DataExplorerPage() {
       }
     },
     enabled: !!queryToRun,
+    retry: 2,
   });
 
   const handleRunQuery = () => {

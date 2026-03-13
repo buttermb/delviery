@@ -46,6 +46,7 @@ export function useDeliveryCostByOrder(orderId: string | undefined) {
     },
     enabled: !!tenantId && !!orderId,
     staleTime: 30_000,
+    retry: 2,
   });
 }
 
@@ -91,6 +92,7 @@ export function useDeliveryCostAnalytics(dateFrom?: string, dateTo?: string) {
     },
     enabled: !!tenantId,
     staleTime: 60_000,
+    retry: 2,
   });
 }
 

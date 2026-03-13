@@ -73,6 +73,7 @@ export function useStoreStatus(storeId: string | undefined) {
             }
 
             return { isOpen: true };
-        }
+        },
+        retry: 2,
     });
 }

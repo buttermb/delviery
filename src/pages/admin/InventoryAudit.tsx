@@ -116,6 +116,7 @@ export default function InventoryAudit() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch audit history
@@ -165,6 +166,7 @@ export default function InventoryAudit() {
       return Array.from(auditSessions.values());
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Initialize audit entry for a product

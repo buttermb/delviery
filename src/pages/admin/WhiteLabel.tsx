@@ -45,6 +45,7 @@ export default function WhiteLabel() {
       return data?.white_label || null;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Initialize form data when branding data loads

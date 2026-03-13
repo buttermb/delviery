@@ -140,6 +140,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       return data;
     },
     enabled: !!listingId,
+    retry: 2,
   });
 
   // Fetch marketplace profile
@@ -158,6 +159,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       return data;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const form = useForm<ListingFormData>({

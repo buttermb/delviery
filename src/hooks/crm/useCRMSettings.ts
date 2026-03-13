@@ -58,6 +58,7 @@ export function useCRMSettings() {
             } as CRMSettings;
         },
         enabled: !!accountId,
+        retry: 2,
     });
 }
 

@@ -32,6 +32,7 @@ import {
     ArrowDown,
     ArrowUpDown,
 } from "lucide-react";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
@@ -1075,11 +1076,42 @@ export function InvoicesPage() {
                 onSearchChange={setSearchQuery}
                 searchPlaceholder="Search invoices..."
                 actions={
-                    <ShortcutHint keys={[mod, "N"]} label="New">
-                        <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
-                            <Plus className="mr-2 h-4 w-4" /> Create Invoice
-                        </Button>
-                    </ShortcutHint>
+                    <>
+                        <ExportButton
+                            data={(filteredInvoices ?? []).map(inv => ({
+                                invoice_number: inv.invoice_number,
+                                client_name: inv.client?.name ?? 'Unknown',
+                                invoice_date: inv.invoice_date,
+                                due_date: inv.due_date,
+                                subtotal: inv.subtotal,
+                                tax_amount: inv.tax_amount,
+                                total: inv.total,
+                                amount_paid: inv.amount_paid ?? 0,
+                                balance: inv.total - (inv.amount_paid ?? 0),
+                                status: inv.status,
+                                notes: inv.notes ?? '',
+                            }))}
+                            filename="invoices"
+                            columns={[
+                                { key: "invoice_number", label: "Invoice #" },
+                                { key: "client_name", label: "Client" },
+                                { key: "invoice_date", label: "Invoice Date" },
+                                { key: "due_date", label: "Due Date" },
+                                { key: "subtotal", label: "Subtotal" },
+                                { key: "tax_amount", label: "Tax" },
+                                { key: "total", label: "Total" },
+                                { key: "amount_paid", label: "Paid" },
+                                { key: "balance", label: "Balance" },
+                                { key: "status", label: "Status" },
+                                { key: "notes", label: "Notes" },
+                            ]}
+                        />
+                        <ShortcutHint keys={[mod, "N"]} label="New">
+                            <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                                <Plus className="mr-2 h-4 w-4" /> Create Invoice
+                            </Button>
+                        </ShortcutHint>
+                    </>
                 }
                 filters={
                     <DropdownMenu>

@@ -50,5 +50,6 @@ export function useStorefrontProductVariants(listingId: string | undefined) {
       return (data as StorefrontVariant[]) ?? [];
     },
     enabled: !!listingId,
+    retry: 2,
   });
 }

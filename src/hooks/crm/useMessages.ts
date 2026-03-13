@@ -35,6 +35,7 @@ export function useClientMessages(clientId: string | undefined) {
             return data as CRMMessage[];
         },
         enabled: !!clientId && !!accountId,
+        retry: 2,
     });
 }
 

@@ -26,6 +26,7 @@ export default function OrderAnalytics() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Calculate metrics

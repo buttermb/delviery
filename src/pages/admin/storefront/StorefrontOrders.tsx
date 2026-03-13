@@ -114,6 +114,7 @@ export default function StorefrontOrders() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch orders from storefront_orders view (has correct aliased columns)
@@ -137,6 +138,7 @@ export default function StorefrontOrders() {
       return (data ?? []) as unknown as MarketplaceOrder[];
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Filter orders by search

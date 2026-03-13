@@ -56,6 +56,7 @@ export default function AdminUsersPage() {
       }
       return (data ?? []) as AdminUser[];
     },
+    retry: 2,
   });
 
   // Toggle admin active status

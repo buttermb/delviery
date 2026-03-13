@@ -76,6 +76,7 @@ export default function MarketingAutomationPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const deleteCampaignMutation = useMutation({

@@ -69,6 +69,7 @@ export default function MarketplaceProductDetailPage() {
             if (error) throw error;
             return data;
         },
+        retry: 2,
     });
 
     // Calculate total price

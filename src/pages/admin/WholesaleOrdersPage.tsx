@@ -288,7 +288,7 @@ export default function WholesaleOrdersPage() {
   });
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
-  const { data: orders = [], isLoading, isError, error, refetch } = useQuery({
+  const { data: orders = [], isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: queryKeys.orders.list(tenant?.id, { viewMode }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -356,6 +356,7 @@ export default function WholesaleOrdersPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const filteredOrders = useMemo((): OrderType[] => {
@@ -896,6 +897,9 @@ export default function WholesaleOrdersPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               {viewMode === 'selling' ? <><Package className="h-6 w-6" /> Wholesale Orders</> : <><Warehouse className="h-6 w-6" /> Purchase Orders</>}
+              {isFetching && !isLoading && (
+                <span className="text-xs text-muted-foreground animate-pulse font-normal">Refreshing...</span>
+              )}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               {viewMode === 'selling'

@@ -117,6 +117,7 @@ export default function DeliveryManagement() {
       }));
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch Couriers
@@ -134,6 +135,7 @@ export default function DeliveryManagement() {
       return data;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const loading = loadingDeliveries;

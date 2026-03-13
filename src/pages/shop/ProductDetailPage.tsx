@@ -129,6 +129,7 @@ export function ProductDetailPage() {
       }
     },
     enabled: !!store?.id && !!identifier,
+    retry: 2,
   });
 
   const { data: reviews = [] } = useQuery({
@@ -149,6 +150,7 @@ export function ProductDetailPage() {
       return data as ProductReview[];
     },
     enabled: !!store?.id && !!product?.product_id,
+    retry: 2,
   });
 
   const { data: relatedProducts = [] } = useQuery({
@@ -166,6 +168,7 @@ export function ProductDetailPage() {
         .slice(0, 4);
     },
     enabled: !!store?.id && !!product?.category,
+    retry: 2,
   });
 
   // --- Derived State ---

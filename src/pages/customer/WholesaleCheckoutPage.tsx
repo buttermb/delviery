@@ -118,6 +118,7 @@ export default function WholesaleCheckoutPage() {
       return data ?? [];
     },
     enabled: !!buyerTenantId,
+    retry: 2,
   });
 
   // Group cart items by seller

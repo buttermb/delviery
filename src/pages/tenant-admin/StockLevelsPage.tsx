@@ -108,6 +108,7 @@ export default function StockLevelsPage() {
       }));
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Get unique categories for filter

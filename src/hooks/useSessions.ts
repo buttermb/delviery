@@ -135,6 +135,7 @@ export function useSessions(): UseSessionsReturn {
     error,
     refetch,
   } = useQuery<SessionInfo[], Error>({
+  retry: 2,
     queryKey: queryKeys.sessions.list(customer?.id),
     queryFn: async (): Promise<SessionInfo[]> => {
       if (!customer?.id) return [];

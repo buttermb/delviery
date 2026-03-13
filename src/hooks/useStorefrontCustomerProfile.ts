@@ -88,6 +88,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     error: profileError,
     refetch: refetchProfile,
   } = useQuery({
+  retry: 2,
     queryKey: [...queryKeys.customers.all, 'storefront-profile', tenantId, customerEmail],
     queryFn: async (): Promise<UnifiedCustomerProfile | null> => {
       if (!customerEmail || !tenantId) return null;
@@ -212,6 +213,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     isLoading: isLoadingHistory,
     refetch: refetchHistory,
   } = useQuery({
+  retry: 2,
     queryKey: [...queryKeys.customers.all, 'browsing-history', tenantId, profile?.id],
     queryFn: async (): Promise<BrowsingHistoryItem[]> => {
       if (!profile?.id || !tenantId) return [];
@@ -267,6 +269,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     isLoading: isLoadingWishlist,
     refetch: refetchWishlist,
   } = useQuery({
+  retry: 2,
     queryKey: [...queryKeys.customers.all, 'wishlist', tenantId, profile?.id],
     queryFn: async (): Promise<WishlistItem[]> => {
       if (!profile?.id || !tenantId) return [];

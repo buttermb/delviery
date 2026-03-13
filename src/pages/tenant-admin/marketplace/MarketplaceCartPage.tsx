@@ -51,6 +51,7 @@ export default function MarketplaceCartPage() {
             if (error) throw error;
             return data;
         },
+        retry: 2,
     });
 
     // Remove Item

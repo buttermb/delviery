@@ -160,6 +160,7 @@ export default function IntegrationsSettings() {
       })) as WebhookEndpoint[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Add webhook mutation

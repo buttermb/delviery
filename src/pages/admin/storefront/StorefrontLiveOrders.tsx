@@ -202,6 +202,7 @@ export function StorefrontLiveOrders() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch Telegram link from account_settings for contact shortcuts
@@ -218,6 +219,7 @@ export function StorefrontLiveOrders() {
     },
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   // Fetch live orders
@@ -246,6 +248,7 @@ export function StorefrontLiveOrders() {
     },
     enabled: !!store?.id,
     refetchInterval: autoRefresh ? 10000 : false,
+    retry: 2,
   });
 
   // Initialize audio on first user interaction

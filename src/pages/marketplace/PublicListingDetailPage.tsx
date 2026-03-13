@@ -56,6 +56,7 @@ export default function PublicListingDetailPage() {
       return data;
     },
     enabled: !!listingId,
+    retry: 2,
   });
 
   const handleSignUpPrompt = () => {

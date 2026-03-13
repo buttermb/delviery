@@ -254,6 +254,7 @@ export default function LoyaltyProgramPage() {
       return (data as unknown as LoyaltyConfig) || null;
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch loyalty tiers
@@ -273,6 +274,7 @@ export default function LoyaltyProgramPage() {
       return (data as unknown as LoyaltyTier[]) ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch loyalty rewards
@@ -292,6 +294,7 @@ export default function LoyaltyProgramPage() {
       return (data as unknown as LoyaltyReward[]) ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch loyalty stats
@@ -333,6 +336,7 @@ export default function LoyaltyProgramPage() {
       }
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   return (

@@ -34,6 +34,7 @@ export default function DeliveryAnalytics() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (isLoading) {

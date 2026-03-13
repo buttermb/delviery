@@ -124,6 +124,7 @@ export default function PurchaseOrders() {
       return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch vendors for display
@@ -145,6 +146,7 @@ export default function PurchaseOrders() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const vendorMap = new Map(vendors?.map(v => [v.id, v.name]) ?? []);

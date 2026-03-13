@@ -41,6 +41,7 @@ export default function StorefrontGiftCards() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   if (storeLoading) {

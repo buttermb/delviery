@@ -134,6 +134,7 @@ export default function BulkOperationsPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Execute bulk operation

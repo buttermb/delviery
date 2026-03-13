@@ -64,6 +64,7 @@ export default function RealtimeDashboard() {
     },
     enabled: !!tenantId,
     // Rely on realtime subscription below for live updates instead of polling
+    retry: 2,
   });
 
   useEffect(() => {

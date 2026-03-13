@@ -28,5 +28,6 @@ export const useInventoryBatch = (productIds: string[]) => {
     },
     enabled: productIds.length > 0 && !!tenant?.id,
     staleTime: 30000, // Cache for 30 seconds
+    retry: 2,
   });
 };

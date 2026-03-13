@@ -43,6 +43,7 @@ export default function SellerProfilePage() {
       return data;
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Check subscription tier (must be Medium+ to access marketplace)

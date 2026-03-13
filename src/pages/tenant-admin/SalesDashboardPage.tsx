@@ -62,6 +62,7 @@ export default function SalesDashboardPage() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch previous period for comparison
@@ -84,6 +85,7 @@ export default function SalesDashboardPage() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Calculate metrics

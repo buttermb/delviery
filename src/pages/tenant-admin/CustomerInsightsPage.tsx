@@ -41,6 +41,7 @@ export default function CustomerInsightsPage() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Fetch orders for frequency analysis
@@ -61,6 +62,7 @@ export default function CustomerInsightsPage() {
       return data ?? [];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Calculate metrics
@@ -214,6 +216,7 @@ export default function CustomerInsightsPage() {
       }));
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   // Orders by hour of day

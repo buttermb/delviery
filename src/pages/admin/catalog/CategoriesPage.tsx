@@ -152,6 +152,7 @@ export default function CategoriesPage() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Fetch product counts per category
@@ -185,6 +186,7 @@ export default function CategoriesPage() {
     },
     enabled: !!tenantId && !!categories && categories.length > 0,
     staleTime: 30000,
+    retry: 2,
   });
 
   // --- Tree Building ---

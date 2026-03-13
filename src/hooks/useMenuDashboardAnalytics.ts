@@ -76,6 +76,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000,
+    retry: 2,
   });
 
   // Fetch access logs for this tenant's menus
@@ -101,6 +102,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     },
     enabled: !!tenantId && menuIds.length > 0,
     staleTime: 60 * 1000,
+    retry: 2,
   });
 
   // Fetch orders for this tenant's menus
@@ -121,6 +123,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     },
     enabled: !!tenantId,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 
   // Real-time subscription for live updates

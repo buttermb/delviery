@@ -68,6 +68,7 @@ export default function CreditAuditLogPage() {
       limit: pageSize,
       offset: page * pageSize,
     }),
+    retry: 2,
   });
 
   // Filter by search (client-side for now)

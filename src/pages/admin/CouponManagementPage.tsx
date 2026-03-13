@@ -104,6 +104,7 @@ export default function CouponManagementPage() {
       return (data ?? []) as Coupon[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
   });
 
   const deleteMutation = useMutation({

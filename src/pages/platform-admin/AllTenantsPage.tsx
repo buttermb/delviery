@@ -36,6 +36,7 @@ export default function AllTenantsPage() {
             return data;
         },
         enabled: isPlatformAdmin,
+        retry: 2,
     });
 
     const accessMutation = useMutation({

@@ -60,6 +60,7 @@ export function useKnownDevices(userId?: string) {
       return (data ?? []) as KnownDevice[];
     },
     enabled: !!userId,
+    retry: 2,
   });
 
   const alertsQuery = useQuery({
@@ -77,6 +78,7 @@ export function useKnownDevices(userId?: string) {
       return (data ?? []) as SuspiciousLoginAlert[];
     },
     enabled: !!userId,
+    retry: 2,
   });
 
   const trustDeviceMutation = useMutation({

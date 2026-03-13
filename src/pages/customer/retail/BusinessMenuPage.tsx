@@ -93,6 +93,7 @@ export default function BusinessMenuPage() {
       return data;
     },
     enabled: !!targetBusinessSlug,
+    retry: 2,
   });
 
   const businessId = business?.id;
@@ -125,6 +126,7 @@ export default function BusinessMenuPage() {
       return data ?? [];
     },
     enabled: !!businessId,
+    retry: 2,
   });
 
   // Fetch categories
@@ -150,6 +152,7 @@ export default function BusinessMenuPage() {
       return uniqueCategories;
     },
     enabled: !!businessId,
+    retry: 2,
   });
 
   // Filter products by search query

@@ -340,6 +340,7 @@ export function OrderDetailsPage() {
       } as unknown as OrderDetails;
     },
     enabled: !!tenant?.id && !!orderId,
+    retry: 2,
   });
 
   // Set breadcrumb label to show order number
@@ -568,6 +569,7 @@ export function OrderDetailsPage() {
       return data;
     },
     enabled: !!orderId,
+    retry: 2,
   });
 
   // Create invoice from order data

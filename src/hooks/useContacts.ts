@@ -179,6 +179,7 @@ export function useContacts(options: UseContactsOptions = {}) {
     enabled: enabled && !!tenant?.id,
     staleTime: 30000,
     gcTime: 300000,
+    retry: 2,
   });
 
   // Real-time subscription
@@ -256,6 +257,7 @@ export function useContact(contactId: string | undefined) {
       return data as Contact;
     },
     enabled: !!tenant?.id && !!contactId,
+    retry: 2,
   });
 }
 
@@ -723,6 +725,7 @@ export function useContactStats(contactType?: ContactType) {
     },
     enabled: !!tenant?.id,
     staleTime: 60000,
+    retry: 2,
   });
 }
 

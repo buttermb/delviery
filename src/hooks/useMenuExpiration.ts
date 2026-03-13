@@ -70,6 +70,7 @@ export const useExpiringSoonMenus = (tenantId: string | undefined, hoursAhead: n
     staleTime: 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    retry: 2,
   });
 };
 
@@ -102,6 +103,7 @@ export const useArchivedMenus = (tenantId: string | undefined) => {
     enabled: !!tenantId,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: 2,
   });
 };
 

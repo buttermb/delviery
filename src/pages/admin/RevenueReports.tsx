@@ -96,6 +96,7 @@ export default function RevenueReports() {
       }
     },
     enabled: !!tenantId,
+    retry: 2,
   });
 
   // Analytics Processing

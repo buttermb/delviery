@@ -169,7 +169,8 @@ function useCollectionData() {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 30 * 1000
+    staleTime: 30 * 1000,
+    retry: 2,
   });
 }
 
@@ -205,7 +206,8 @@ function useClientActivities(clientId: string | null) {
         performedBy: a.performed_by
       }));
     },
-    enabled: !!clientId && !!tenant?.id
+    enabled: !!clientId && !!tenant?.id,
+    retry: 2,
   });
 }
 

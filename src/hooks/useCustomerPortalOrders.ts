@@ -74,6 +74,7 @@ export function useCustomerPortalOrders({
     error,
     refetch,
   } = useQuery({
+  retry: 2,
     queryKey,
     queryFn: async (): Promise<CustomerPortalOrder[]> => {
       if (!customerEmail || !tenantId) return [];

@@ -74,6 +74,7 @@ export function useStorefrontDeals(storeId: string | undefined) {
         },
         enabled: !!storeId,
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+        retry: 2,
     });
 }
 

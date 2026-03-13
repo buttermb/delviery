@@ -42,6 +42,7 @@ export function useVendors() {
             }));
         },
         enabled: !!tenant?.id,
+        retry: 2,
     });
 }
 
