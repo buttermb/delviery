@@ -28,8 +28,8 @@ export default function StockAlertsPage() {
       if (!tenant?.id) return [];
 
       // Query stock_alerts table for active alerts
-      const { data: alertData, error: alertError } = await supabase
-        .from('stock_alerts')
+      const { data: alertData, error: alertError } = await (supabase as any)
+        .from('inventory_alerts')
         .select('id, product_name, current_quantity, threshold, severity, status, created_at')
         .eq('tenant_id', tenant.id)
         .eq('status', 'active')

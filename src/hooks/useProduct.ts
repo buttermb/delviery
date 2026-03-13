@@ -34,7 +34,7 @@ export function useProduct({ productId, enabled = true }: UseProductOptions) {
 
             const { data, error } = await supabase
                 .from('products')
-                .select('id, tenant_id, name, description, category, subcategory, brand, vendor_name, sku, barcode, price, wholesale_price, retail_price, cost_per_unit, stock_quantity, available_quantity, low_stock_alert, unit, weight, thc_percent, cbd_percent, strain_type, image_url, images, is_active, is_featured, tags, metrc_id, exclude_from_discounts, minimum_price, created_at, updated_at')
+                .select('id, tenant_id, name, description, category, subcategory, brand, vendor_name, sku, barcode, price, wholesale_price, retail_price, cost_per_unit, stock_quantity, available_quantity, low_stock_alert, unit, weight, thc_percent, cbd_percent, strain_type, image_url, images, is_active, is_featured, tags, metrc_id, created_at, updated_at')
                 .eq('id', productId)
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();

@@ -353,7 +353,7 @@ export default function ProductManagement() {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, sku, category, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number, cost_per_unit, wholesale_price, retail_price, available_quantity, description, image_url, low_stock_alert, exclude_from_discounts, minimum_price, version, price, thca_percentage, fronted_quantity, barcode, barcode_image_url, tenant_id, created_at, coa_url, lab_results_url, menu_visibility')
+        .select('id, name, sku, category, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number, cost_per_unit, wholesale_price, retail_price, available_quantity, description, image_url, low_stock_alert, version, price, thca_percentage, fronted_quantity, barcode, barcode_image_url, tenant_id, created_at, coa_url, lab_results_url, menu_visibility')
         .eq('tenant_id', tenant.id)
         .order('name');
       if (error) {
