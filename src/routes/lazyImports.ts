@@ -5,8 +5,8 @@
 import { lazy } from "react";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 
-// NotFoundPage: lazy-loaded since it's rarely needed
-export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+// Eager-loaded critical pages
+export { default as NotFoundPage } from "@/pages/NotFoundPage";
 
 // Admin shell
 export const AdminNotFoundPage = lazy(() => import("@/pages/admin/AdminNotFoundPage"));
@@ -185,15 +185,15 @@ export const ProductSyncPage = lazy(() => import("@/pages/admin/marketplace/Prod
 export const ShopLayout = lazy(() => import("@/pages/shop/ShopLayout"));
 export const ShopStorefrontPage = lazy(() => import("@/pages/shop/StorefrontPage"));
 export const ShopProductCatalogPage = lazy(() => import("@/pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })));
-export const ShopProductDetailPage = lazyWithRetry(() => import("@/pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
+export const ShopProductDetailPage = lazy(() => import("@/pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
 export const ShopCartPage = lazy(() => import("@/pages/shop/CartPage"));
-export const ShopCheckoutPage = lazy(() => import("@/pages/shop/CheckoutPage"));
+export const ShopCheckoutPage = lazyWithRetry(() => import("@/pages/shop/CheckoutPage"));
 export const ShopOrderConfirmationPage = lazy(() => import("@/pages/shop/OrderConfirmationPage"));
 export const ShopAccountPage = lazy(() => import("@/pages/shop/AccountPage"));
 export const ShopOrderTrackingPage = lazy(() => import("@/pages/shop/OrderTrackingPage"));
 export const ShopOrderDetailPage = lazy(() => import("@/pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
 export const ShopDealsPage = lazy(() => import("@/pages/shop/DealsPage"));
-export const SinglePageCheckout = lazy(() => import("@/components/shop/SinglePageCheckout"));
+export const SinglePageCheckout = lazyWithRetry(() => import("@/components/shop/SinglePageCheckout"));
 export const EncryptedStorePage = lazy(() => import("@/pages/shop/EncryptedStorePage"));
 export const StoreLandingPage = lazy(() => import("@/pages/store/StoreLandingPage"));
 export const StoreMenuPage = lazy(() => import("@/pages/store/StoreMenuPage"));
@@ -287,14 +287,14 @@ export const CustomerPortal = lazy(() => import("@/pages/customer/CustomerPortal
 export const CustomerDashboardPage = lazy(() => import("@/pages/customer/DashboardPage"));
 export const CustomerSettingsPage = lazy(() => import("@/pages/customer/SettingsPage"));
 export const ShoppingCartPage = lazy(() => import("@/pages/customer/ShoppingCartPage"));
-export const CheckoutPage = lazy(() => import("@/pages/customer/CheckoutPage"));
+export const CheckoutPage = lazyWithRetry(() => import("@/pages/customer/CheckoutPage"));
 export const OrderTrackingPage = lazy(() => import("@/pages/customer/OrderTrackingPage"));
 export const SecureMenuAccess = lazy(() => import("@/pages/customer/SecureMenuAccess").then(m => ({ default: m.SecureMenuAccess })));
 export const SecureMenuView = lazy(() => import("@/pages/customer/SecureMenuView"));
 export const StaticMenuPage = lazy(() => import("@/pages/public/StaticMenuPage"));
 export const WholesaleMarketplacePage = lazy(() => import("@/pages/customer/WholesaleMarketplacePage"));
 export const WholesaleCartPage = lazy(() => import("@/pages/customer/WholesaleCartPage"));
-export const WholesaleCheckoutPage = lazy(() => import("@/pages/customer/WholesaleCheckoutPage"));
+export const WholesaleCheckoutPage = lazyWithRetry(() => import("@/pages/customer/WholesaleCheckoutPage"));
 export const CustomerWholesaleOrdersPage = lazy(() => import("@/pages/customer/WholesaleOrdersPage"));
 export const WholesaleOrderDetailPage = lazy(() => import("@/pages/customer/WholesaleOrderDetailPage"));
 export const BusinessFinderPage = lazy(() => import("@/pages/customer/retail/BusinessFinderPage"));
