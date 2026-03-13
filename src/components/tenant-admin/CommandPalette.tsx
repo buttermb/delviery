@@ -286,7 +286,7 @@ export function TenantAdminCommandPalette() {
     { id: 'dashboard', title: 'Dashboard', icon: LayoutDashboard, href: buildUrl('dashboard'), shortcut: '⌘D', keywords: ['home', 'overview'] },
     { id: 'command-center', title: 'Financial Command Center', icon: Wallet, href: buildUrl('command-center'), shortcut: '⌘F', keywords: ['money', 'finance', 'cash'] },
     { id: 'orders', title: 'Wholesale Orders', icon: ShoppingCart, href: buildUrl('orders'), shortcut: '⌘O', keywords: ['sales', 'purchases'] },
-    { id: 'products', title: 'Products', icon: Package, href: buildUrl('inventory/products'), keywords: ['inventory', 'items', 'catalog'] },
+    { id: 'products', title: 'Products', icon: Package, href: buildUrl('inventory-hub?tab=products'), keywords: ['inventory', 'items', 'catalog'] },
     { id: 'clients', title: 'Clients', icon: Users, href: buildUrl('big-plug-clients'), keywords: ['customers', 'businesses'] },
     { id: 'menus', title: 'Disposable Menus', icon: Menu, href: buildUrl('disposable-menus'), shortcut: '⌘M', keywords: ['big plug', 'qr'] },
     { id: 'invoices', title: 'Invoices', icon: FileText, href: buildUrl('crm/invoices'), keywords: ['billing', 'payments'] },
@@ -305,7 +305,7 @@ export function TenantAdminCommandPalette() {
 
   const quickActions: QuickAction[] = useMemo(() => [
     { id: 'new-order', title: 'Create New Order', icon: Plus, href: buildUrl('orders/new'), keywords: ['add', 'create', 'order'] },
-    { id: 'new-product', title: 'Add Product', icon: Plus, href: buildUrl('inventory/products?action=new'), keywords: ['add', 'create', 'product'] },
+    { id: 'new-product', title: 'Add Product', icon: Plus, href: buildUrl('inventory-hub?tab=products&action=new'), keywords: ['add', 'create', 'product'] },
     { id: 'new-client', title: 'Add Client', icon: Plus, href: buildUrl('big-plug-clients?action=new'), keywords: ['add', 'create', 'customer'] },
     { id: 'new-invoice', title: 'Create Invoice', icon: Plus, href: buildUrl('crm/invoices/new'), keywords: ['add', 'create', 'invoice'] },
     { id: 'new-menu', title: 'Create Menu', icon: Plus, href: buildUrl('disposable-menus?action=new'), keywords: ['add', 'create', 'menu'] },
@@ -506,7 +506,7 @@ export function TenantAdminCommandPalette() {
                   value={`product-${product.id}-${product.name}`}
                   onSelect={() =>
                     handleSelect(
-                      buildUrl(`inventory/products?id=${product.id}`),
+                      buildUrl(`inventory-hub?tab=products&id=${product.id}`),
                       {
                         id: product.id,
                         type: 'product',

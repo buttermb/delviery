@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { publish } from '@/lib/eventBus';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -129,6 +130,30 @@ export function useCreateCRMOrder() {
                 }
             } else {
                 toast.success('Order created successfully');
+                // Cross-panel invalidation — pre-order affects orders, dashboard, badge counts
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'ORDER_CREATED', accountId, {
+                        customerId: (result.data as CRMPreOrder)?.client_id,
+                    });
+                }
+            }
+
+            // Publish eventBus event so Hotbox, notifications, and toasts fire
+            if (accountId) {
+                publish('order_created', {
+                    orderId: result.data?.id ?? '',
+                    tenantId: accountId,
+                    customerId: result.type === 'invoice'
+                        ? (result.data as CRMInvoice)?.client_id
+                        : (result.data as CRMPreOrder)?.client_id,
+                });
+            }
+
+            // Telegram notification for admin-created orders
+            if (accountId && result.data?.id) {
+                supabase.functions.invoke('forward-order-telegram', {
+                    body: { orderId: result.data.id, tenantId: accountId },
+                }).catch(() => { /* best-effort */ });
             }
         },
         onSettled: () => {

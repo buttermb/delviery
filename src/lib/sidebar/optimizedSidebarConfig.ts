@@ -209,7 +209,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-orders',
         name: 'Store Orders',
-        path: '/admin/storefront/orders',
+        path: '/admin/storefront?tab=orders',
         icon: ShoppingCart,
         tier: 'PROFESSIONAL',
         keywords: ['online orders', 'ecommerce'],
@@ -217,7 +217,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-live',
         name: 'Live Store Orders',
-        path: '/admin/storefront/live-orders',
+        path: '/admin/storefront?tab=live',
         icon: Activity,
         tier: 'PROFESSIONAL',
         keywords: ['realtime', 'live'],
@@ -225,7 +225,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-builder',
         name: 'Store Builder',
-        path: '/admin/storefront/builder',
+        path: '/admin/storefront?tab=builder',
         icon: Layers,
         tier: 'ENTERPRISE',
         keywords: ['customize', 'design', 'theme'],
@@ -234,7 +234,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-products',
         name: 'Store Products',
-        path: '/admin/storefront/products',
+        path: '/admin/storefront?tab=products',
         icon: Package,
         tier: 'PROFESSIONAL',
         keywords: ['catalog', 'listings'],
@@ -242,7 +242,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-settings',
         name: 'Store Settings',
-        path: '/admin/storefront/settings',
+        path: '/admin/storefront?tab=settings',
         icon: Settings,
         tier: 'PROFESSIONAL',
         keywords: ['store config', 'delivery', 'payment methods'],
@@ -250,7 +250,7 @@ const SELL: NavItem[] = [
     {
         id: 'storefront-analytics',
         name: 'Store Analytics',
-        path: '/admin/storefront/analytics',
+        path: '/admin/storefront?tab=analytics',
         icon: BarChart3,
         tier: 'PROFESSIONAL',
         keywords: ['store metrics', 'revenue', 'sales data'],

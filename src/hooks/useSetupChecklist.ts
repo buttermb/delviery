@@ -87,6 +87,7 @@ export function useSetupChecklist() {
         couriersResult,
         ordersResult,
         storefrontResult,
+        storeResult,
         paymentResult,
       ] = await Promise.allSettled([
         // 1. Profile: tenant has business_name and phone
@@ -121,11 +122,20 @@ export function useSetupChecklist() {
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId),
 
-        // 6. Storefront customized (has logo or primary color)
+        // 6a. Storefront customized — legacy (has logo or primary color)
         supabase
           .from('storefront_settings')
           .select('logo_url, primary_color')
           .eq('tenant_id', tenantId)
+          .maybeSingle(),
+
+        // 6b. Storefront customized — new template system (has theme_config or layout_config)
+        supabase
+          .from('marketplace_stores')
+          .select('theme_config, layout_config')
+          .eq('tenant_id', tenantId)
+          .or('theme_config.not.is.null,layout_config.not.is.null')
+          .limit(1)
           .maybeSingle(),
 
         // 7. Payment configured
@@ -149,12 +159,18 @@ export function useSetupChecklist() {
       const hasDriver = extractCount(couriersResult as PromiseSettledResult<{ count: number | null; error: { message: string } | null }>, 'couriers') > 0;
       const hasOrders = extractCount(ordersResult as PromiseSettledResult<{ count: number | null; error: { message: string } | null }>, 'orders') > 0;
 
-      // 6. Storefront customized
+      // 6. Storefront customized (legacy OR new template system)
       const sf = extractData<{ logo_url?: string | null; primary_color?: string | null }>(
         storefrontResult as PromiseSettledResult<{ data: { logo_url?: string | null; primary_color?: string | null } | null; error: { message: string } | null }>,
         'storefront settings',
       );
-      const storefrontCustomized = Boolean(sf?.logo_url || sf?.primary_color);
+      const store = extractData<{ theme_config?: unknown; layout_config?: unknown }>(
+        storeResult as PromiseSettledResult<{ data: { theme_config?: unknown; layout_config?: unknown } | null; error: { message: string } | null }>,
+        'marketplace store',
+      );
+      const storefrontCustomized = Boolean(
+        sf?.logo_url || sf?.primary_color || store?.theme_config || store?.layout_config,
+      );
 
       // 7. Payment configured (row exists = configured)
       const pay = extractData<Record<string, unknown>>(
@@ -195,14 +211,14 @@ function buildChecklist(prefix: string, flags: CompletionFlags): SetupChecklistD
       label: 'Complete your profile',
       description: 'Add your business name and phone number',
       completed: flags.profileComplete ?? false,
-      href: `${prefix}/settings`,
+      href: `${prefix}/settings?tab=business`,
     },
     {
       id: 'product',
       label: 'Add your first product',
       description: 'Create at least one product in your catalog',
       completed: flags.hasProducts ?? false,
-      href: `${prefix}/products`,
+      href: `${prefix}/inventory-hub?tab=products`,
     },
     {
       id: 'delivery-zone',
@@ -216,7 +232,7 @@ function buildChecklist(prefix: string, flags: CompletionFlags): SetupChecklistD
       label: 'Approve your first driver',
       description: 'Add and activate a courier',
       completed: flags.hasDriver ?? false,
-      href: `${prefix}/fleet`,
+      href: `${prefix}/fulfillment-hub?tab=couriers`,
     },
     {
       id: 'order',
@@ -237,7 +253,7 @@ function buildChecklist(prefix: string, flags: CompletionFlags): SetupChecklistD
       label: 'Configure payment methods',
       description: 'Set up how you accept payments',
       completed: flags.paymentConfigured ?? false,
-      href: `${prefix}/storefront?tab=payments`,
+      href: `${prefix}/settings?tab=payments`,
     },
   ];
 

@@ -71,7 +71,7 @@ export function OnboardingChecklist({
       title: 'Add Your First Product',
       description: 'Import or manually add inventory items',
       icon: Package,
-      path: `/${tenantSlug}/admin/inventory/products`,
+      path: `/${tenantSlug}/admin/inventory-hub?tab=products`,
       checkComplete: async () => {
         if (!tenant?.id) return false;
         const { count } = await supabase

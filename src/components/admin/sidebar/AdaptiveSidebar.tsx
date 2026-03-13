@@ -156,7 +156,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   }, [navigate, tenantSlug]);
 
   const handleNavigateToNewProduct = useCallback(() => {
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/inventory/products/new`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/inventory-hub?tab=products&action=new`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToPOS = useCallback(() => {

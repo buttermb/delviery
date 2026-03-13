@@ -124,6 +124,27 @@ export interface EventPayloads {
     reason?: string;
     cancelledAt: string;
   };
+  // Payment received (wholesale or direct)
+  payment_received: {
+    paymentId: string;
+    tenantId: string;
+    amount: number;
+    customerId?: string;
+  };
+  // POS sale completed
+  pos_sale_completed: {
+    transactionId: string;
+    tenantId: string;
+    total: number;
+    customerId?: string;
+  };
+  // Fraud alert from fraud_flags table
+  fraud_alert: {
+    flagId: string;
+    tenantId: string;
+    severity: string;
+    flagType?: string;
+  };
 }
 
 // Event names derived from payload types

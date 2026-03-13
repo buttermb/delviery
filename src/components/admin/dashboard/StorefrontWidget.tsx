@@ -116,7 +116,7 @@ export function StorefrontWidget() {
               icon={<ShoppingCart className="h-5 w-5" />}
               description="Storefront orders today"
               variant={stats?.todayOrders && stats.todayOrders > 0 ? 'success' : 'default'}
-              href="/admin/storefront/orders"
+              href="/admin/storefront?tab=orders"
             />
             <KPICard
               title="Today's Revenue"
@@ -124,7 +124,7 @@ export function StorefrontWidget() {
               icon={<DollarSign className="h-5 w-5" />}
               description="Storefront revenue today"
               variant="success"
-              href="/admin/storefront/analytics"
+              href="/admin/storefront?tab=analytics"
             />
             <KPICard
               title="Customers"
@@ -132,7 +132,7 @@ export function StorefrontWidget() {
               icon={<Users className="h-5 w-5" />}
               description="Total storefront customers"
               variant="default"
-              href="/admin/storefront/customers"
+              href="/admin/storefront?tab=customers"
             />
           </>
         )}

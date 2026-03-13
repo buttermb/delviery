@@ -76,7 +76,15 @@ export function useCreatePreOrder() {
             logger.error('Pre-order creation failed', error, { component: 'useCreatePreOrder' });
             toast.error('Pre-order creation failed', { description: humanizeError(error, 'Failed to create pre-order') });
         },
-        onSuccess: () => { toast.success('Pre-order created'); },
+        onSuccess: (data) => {
+            toast.success('Pre-order created');
+            // Cross-panel invalidation — new pre-order affects orders, dashboard, badge counts
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'ORDER_CREATED', accountId, {
+                    customerId: data?.client_id,
+                });
+            }
+        },
         onSettled: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() }); },
     });
 }
@@ -109,7 +117,13 @@ export function useCancelPreOrder() {
             logger.error('Pre-order cancellation failed', error, { component: 'useCancelPreOrder' });
             toast.error('Pre-order cancellation failed', { description: humanizeError(error, 'Failed to cancel pre-order') });
         },
-        onSuccess: () => { toast.success('Pre-order cancelled'); },
+        onSuccess: () => {
+            toast.success('Pre-order cancelled');
+            // Cross-panel invalidation — status change affects orders, dashboard
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', accountId);
+            }
+        },
         onSettled: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() }); },
     });
 }

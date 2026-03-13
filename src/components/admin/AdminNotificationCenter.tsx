@@ -3,10 +3,13 @@
  * Real-time notification bell for the admin header.
  * Shows unread count badge, grouped notifications by type,
  * clickable links to relevant pages, and mark-as-read functionality.
+ *
+ * Phase 2: Replaced 8 Supabase realtime channels with eventBus subscriptions.
+ * Events flow: DB → useRealtimeSync → eventBus → this component.
  */
 
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Bell,
   AlertTriangle,
@@ -29,14 +32,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '@/lib/formatters';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { eventBus } from '@/lib/eventBus';
 
 // ============================================================================
 // Types
@@ -116,24 +118,6 @@ function persistReadIds(ids: Set<string>): void {
   }
 }
 
-function hasPayloadField(obj: unknown, field: string): boolean {
-  return typeof obj === 'object' && obj !== null && field in obj;
-}
-
-function getPayloadString(obj: unknown, field: string, fallback: string = ''): string {
-  if (hasPayloadField(obj, field)) {
-    return String((obj as Record<string, unknown>)[field] ?? fallback);
-  }
-  return fallback;
-}
-
-function getPayloadNumber(obj: unknown, field: string, fallback: number = 0): number {
-  if (hasPayloadField(obj, field)) {
-    return Number((obj as Record<string, unknown>)[field] ?? fallback);
-  }
-  return fallback;
-}
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -142,7 +126,6 @@ export const AdminNotificationCenter = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(getReadIds);
   const [open, setOpen] = useState(false);
-  const channelsRef = useRef<RealtimeChannel[]>([]);
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
@@ -187,289 +170,166 @@ export const AdminNotificationCenter = () => {
     [tenantSlug]
   );
 
-  // Set up realtime subscriptions
+  // Set up eventBus subscriptions (replaces 8 Supabase realtime channels)
   useEffect(() => {
     if (!tenantId) return;
 
-    // Cleanup previous channels
-    channelsRef.current.forEach((ch) => {
-      supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'AdminNotificationCenter' }));
-    });
-    channelsRef.current = [];
+    const unsubscribers: Array<() => void> = [];
 
-    // --- Order tables ---
-    const orderTables = ['orders', 'menu_orders', 'storefront_orders', 'wholesale_orders'];
-    orderTables.forEach((table) => {
-      const channel = supabase
-        .channel(`notif-center-${table}-${tenantId}`)
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table, filter: `tenant_id=eq.${tenantId}` },
-          (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-            if (!payload.new) return;
-            const orderNum = getPayloadString(payload.new, 'order_number') ||
-              getPayloadString(payload.new, 'id', '').slice(0, 8);
-            const amount = getPayloadNumber(payload.new, 'total_amount');
-            const amountStr = amount ? ` - ${formatCurrency(amount)}` : '';
-
-            addNotification({
-              type: 'new_order',
-              severity: 'info',
-              title: 'New Order Received',
-              message: `Order #${orderNum}${amountStr}`,
-              link: adminLink('orders'),
-              entityId: getPayloadString(payload.new, 'id'),
-            });
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table, filter: `tenant_id=eq.${tenantId}` },
-          (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-            if (!payload.new || !payload.old) return;
-            const newStatus = getPayloadString(payload.new, 'status');
-            const oldStatus = getPayloadString(payload.old, 'status');
-            if (newStatus !== oldStatus && (newStatus === 'ready' || newStatus === 'ready_for_pickup')) {
-              const orderNum = getPayloadString(payload.new, 'order_number') ||
-                getPayloadString(payload.new, 'id', '').slice(0, 8);
-              addNotification({
-                type: 'order_ready',
-                severity: 'success',
-                title: 'Order Ready',
-                message: `Order #${orderNum} is ready for pickup/delivery`,
-                link: adminLink('orders'),
-                entityId: getPayloadString(payload.new, 'id'),
-              });
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            logger.debug(`Notification center subscribed to ${table}`, {
-              component: 'AdminNotificationCenter',
-            });
-          }
+    // --- New orders (replaces 4 order table channels + marketplace) ---
+    unsubscribers.push(
+      eventBus.subscribe('order_created', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        const orderNum = payload.orderId.slice(0, 8);
+        addNotification({
+          type: 'new_order',
+          severity: 'info',
+          title: 'New Order Received',
+          message: `Order #${orderNum}`,
+          link: adminLink('orders'),
+          entityId: payload.orderId,
         });
-      channelsRef.current.push(channel);
-    });
+      })
+    );
 
-    // --- Marketplace orders (storefront checkout uses seller_tenant_id) ---
-    const marketplaceChannel = supabase
-      .channel(`notif-center-marketplace-orders-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'marketplace_orders', filter: `seller_tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          const orderNum = getPayloadString(payload.new, 'order_number') ||
-            getPayloadString(payload.new, 'id', '').slice(0, 8);
-          const amount = getPayloadNumber(payload.new, 'total_amount') ||
-            getPayloadNumber(payload.new, 'total');
-          const amountStr = amount ? ` - ${formatCurrency(amount)}` : '';
-          const customerName = getPayloadString(payload.new, 'customer_name', 'Storefront Customer');
+    unsubscribers.push(
+      eventBus.subscribe('menu_order_created', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        const orderNum = payload.orderId.slice(0, 8);
+        const amountStr = payload.totalAmount ? ` - ${formatCurrency(payload.totalAmount)}` : '';
+        addNotification({
+          type: 'new_order',
+          severity: 'info',
+          title: 'New Menu Order',
+          message: `Order #${orderNum}${amountStr}`,
+          link: adminLink('orders'),
+          entityId: payload.orderId,
+        });
+      })
+    );
 
+    // --- Order ready (delivery status changes) ---
+    unsubscribers.push(
+      eventBus.subscribe('delivery_status_changed', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        if (payload.newStatus === 'ready' || payload.newStatus === 'ready_for_pickup') {
           addNotification({
-            type: 'new_order',
-            severity: 'info',
-            title: 'New Storefront Order',
-            message: `Order #${orderNum} from ${customerName}${amountStr}`,
-            link: adminLink('orders'),
-            entityId: getPayloadString(payload.new, 'id'),
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'marketplace_orders', filter: `seller_tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new || !payload.old) return;
-          const newStatus = getPayloadString(payload.new, 'status');
-          const oldStatus = getPayloadString(payload.old, 'status');
-          if (newStatus !== oldStatus && (newStatus === 'ready' || newStatus === 'ready_for_pickup')) {
-            const orderNum = getPayloadString(payload.new, 'order_number') ||
-              getPayloadString(payload.new, 'id', '').slice(0, 8);
-            addNotification({
-              type: 'order_ready',
-              severity: 'success',
-              title: 'Order Ready',
-              message: `Order #${orderNum} is ready for pickup/delivery`,
-              link: adminLink('orders'),
-              entityId: getPayloadString(payload.new, 'id'),
-            });
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.debug('Notification center subscribed to marketplace_orders', {
-            component: 'AdminNotificationCenter',
-          });
-        }
-      });
-    channelsRef.current.push(marketplaceChannel);
-
-    // --- Products (low stock) ---
-    const productsChannel = supabase
-      .channel(`notif-center-products-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          const name = getPayloadString(payload.new, 'name', 'Unknown Product');
-          const available = getPayloadNumber(payload.new, 'available_quantity',
-            getPayloadNumber(payload.new, 'stock_quantity'));
-          const threshold = getPayloadNumber(payload.new, 'low_stock_alert', 10);
-
-          if (available <= threshold && available >= 0) {
-            const oldAvailable = payload.old
-              ? getPayloadNumber(payload.old, 'available_quantity',
-                  getPayloadNumber(payload.old, 'stock_quantity'))
-              : threshold + 1;
-
-            if (oldAvailable > threshold) {
-              addNotification({
-                type: 'low_stock',
-                severity: available <= 0 ? 'error' : 'warning',
-                title: available <= 0 ? 'Out of Stock' : 'Low Stock Alert',
-                message: `${name} (${available} remaining)`,
-                link: adminLink('inventory'),
-                entityId: getPayloadString(payload.new, 'id'),
-              });
-            }
-          }
-        }
-      )
-      .subscribe();
-    channelsRef.current.push(productsChannel);
-
-    // --- Payments ---
-    const paymentsChannel = supabase
-      .channel(`notif-center-payments-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'payments', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          const amount = getPayloadNumber(payload.new, 'amount');
-          addNotification({
-            type: 'payment_received',
+            type: 'order_ready',
             severity: 'success',
-            title: 'Payment Received',
-            message: `${formatCurrency(amount)} payment processed`,
-            link: adminLink('finance'),
-            entityId: getPayloadString(payload.new, 'id'),
+            title: 'Order Ready',
+            message: `Order is ready for pickup/delivery`,
+            link: adminLink('orders'),
+            entityId: payload.orderId,
           });
         }
-      )
-      .subscribe();
-    channelsRef.current.push(paymentsChannel);
+      })
+    );
 
-    // --- Refunds ---
-    const refundsChannel = supabase
-      .channel(`notif-center-refunds-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'refunds', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          const amount = getPayloadNumber(payload.new, 'amount');
+    // --- Order status → ready notification (from order_updated) ---
+    unsubscribers.push(
+      eventBus.subscribe('order_updated', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        if (payload.status === 'ready' || payload.status === 'ready_for_pickup') {
+          const orderNum = payload.orderId.slice(0, 8);
           addNotification({
-            type: 'refund_processed',
-            severity: 'warning',
-            title: 'Refund Processed',
-            message: `${formatCurrency(amount)} refund issued`,
-            link: adminLink('finance'),
-            entityId: getPayloadString(payload.new, 'id'),
+            type: 'order_ready',
+            severity: 'success',
+            title: 'Order Ready',
+            message: `Order #${orderNum} is ready for pickup/delivery`,
+            link: adminLink('orders'),
+            entityId: payload.orderId,
           });
         }
-      )
-      .subscribe();
-    channelsRef.current.push(refundsChannel);
+      })
+    );
 
-    // --- Customers ---
-    const customersChannel = supabase
-      .channel(`notif-center-customers-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'customers', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          const name = getPayloadString(payload.new, 'name') ||
-            getPayloadString(payload.new, 'full_name') ||
-            getPayloadString(payload.new, 'email', 'New Customer');
-          addNotification({
-            type: 'new_customer',
-            severity: 'info',
-            title: 'New Customer Signup',
-            message: name,
-            link: adminLink('customers'),
-            entityId: getPayloadString(payload.new, 'id'),
-          });
-        }
-      )
-      .subscribe();
-    channelsRef.current.push(customersChannel);
+    // --- Low stock (replaces products channel) ---
+    unsubscribers.push(
+      eventBus.subscribe('inventory_changed', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        if (payload.newQuantity > 10 || payload.newQuantity < 0) return;
 
-    // --- Disposable menus (burned) ---
-    const menusChannel = supabase
-      .channel(`notif-center-menus-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'disposable_menus', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new || !payload.old) return;
-          const newStatus = getPayloadString(payload.new, 'status');
-          const oldStatus = getPayloadString(payload.old, 'status');
-          if (newStatus === 'burned' && oldStatus !== 'burned') {
-            const menuName = getPayloadString(payload.new, 'name', 'Menu');
-            addNotification({
-              type: 'menu_burned',
-              severity: 'info',
-              title: 'Menu Burned',
-              message: `${menuName} has been burned`,
-              link: adminLink('menus'),
-              entityId: getPayloadString(payload.new, 'id'),
-            });
-          }
-        }
-      )
-      .subscribe();
-    channelsRef.current.push(menusChannel);
+        addNotification({
+          type: 'low_stock',
+          severity: payload.newQuantity <= 0 ? 'error' : 'warning',
+          title: payload.newQuantity <= 0 ? 'Out of Stock' : 'Low Stock Alert',
+          message: `${payload.newQuantity} remaining`,
+          link: adminLink('inventory'),
+          entityId: payload.productId,
+        });
+      })
+    );
 
-    // --- Fraud flags ---
-    const fraudChannel = supabase
-      .channel(`notif-center-fraud-${tenantId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'fraud_flags', filter: `tenant_id=eq.${tenantId}` },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (!payload.new) return;
-          addNotification({
-            type: 'fraud_alert',
-            severity: 'error',
-            title: 'Fraud Alert',
-            message: `New fraud flag: ${getPayloadString(payload.new, 'flag_type', 'Unknown')}`,
-            link: adminLink('security'),
-            entityId: getPayloadString(payload.new, 'id'),
-          });
-        }
-      )
-      .subscribe();
-    channelsRef.current.push(fraudChannel);
+    // --- Payments (replaces payments channel) ---
+    unsubscribers.push(
+      eventBus.subscribe('payment_received', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        addNotification({
+          type: 'payment_received',
+          severity: 'success',
+          title: 'Payment Received',
+          message: `${formatCurrency(payload.amount)} payment processed`,
+          link: adminLink('finance'),
+          entityId: payload.paymentId,
+        });
+      })
+    );
 
-    logger.info('Notification center initialized', {
+    // --- New customers (replaces customers channel) ---
+    unsubscribers.push(
+      eventBus.subscribe('customer_updated', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        if (payload.changes?.type !== 'insert') return;
+        addNotification({
+          type: 'new_customer',
+          severity: 'info',
+          title: 'New Customer Signup',
+          message: 'New customer registered',
+          link: adminLink('customers'),
+          entityId: payload.customerId,
+        });
+      })
+    );
+
+    // --- Fraud alerts (replaces fraud_flags channel) ---
+    unsubscribers.push(
+      eventBus.subscribe('fraud_alert', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        addNotification({
+          type: 'fraud_alert',
+          severity: 'error',
+          title: 'Fraud Alert',
+          message: `New fraud flag: ${payload.flagType ?? 'Unknown'}`,
+          link: adminLink('security'),
+          entityId: payload.flagId,
+        });
+      })
+    );
+
+    // --- Order cancelled ---
+    unsubscribers.push(
+      eventBus.subscribe('order_cancelled', (payload) => {
+        if (payload.tenantId !== tenantId) return;
+        const orderNum = payload.orderId.slice(0, 8);
+        addNotification({
+          type: 'new_order',
+          severity: 'warning',
+          title: 'Order Cancelled',
+          message: `Order #${orderNum} was cancelled${payload.reason ? `: ${payload.reason}` : ''}`,
+          link: adminLink('orders'),
+          entityId: payload.orderId,
+        });
+      })
+    );
+
+    logger.info('Notification center initialized (eventBus mode)', {
       tenantId,
-      channelCount: channelsRef.current.length,
+      subscriptionCount: unsubscribers.length,
       component: 'AdminNotificationCenter',
     });
 
-    const channels = channelsRef.current;
     return () => {
-      channels.forEach((ch) => {
-        supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'AdminNotificationCenter' }));
-      });
-      channelsRef.current = [];
+      unsubscribers.forEach((unsub) => unsub());
     };
   }, [tenantId, addNotification, adminLink]);
 

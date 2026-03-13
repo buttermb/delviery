@@ -34,7 +34,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     label: 'Add Product',
     icon: Package,
     permission: 'products:create',
-    path: 'inventory/products',
+    path: 'inventory-hub?tab=products',
   },
   {
     id: 'send-broadcast',

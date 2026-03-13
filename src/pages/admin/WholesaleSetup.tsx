@@ -57,7 +57,7 @@ export default function WholesaleSetup() {
             <Button
               size="lg"
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-lg py-6"
-              onClick={() => navigateToAdmin("inventory/products")}
+              onClick={() => navigateToAdmin("inventory-hub?tab=products")}
             >
               <Package className="h-5 w-5 mr-2" />
               Add Your First Product

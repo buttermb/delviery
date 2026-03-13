@@ -116,24 +116,24 @@ const AdminLayout = () => {
   // Sidebar mode toggle (Classic vs Optimized)
   const { isOptimized } = useSidebarMode();
 
-  // Enable real-time event notifications for orders and stock alerts
+  // Enable real-time event notifications for orders and stock alerts (all admin pages)
   useEventNotifications({
-    enabled: isOrdersSurface || isOpsSurface,
+    enabled: !!tenant?.id,
     playSound: true,
     showBrowserNotification: true,
   });
 
-  // Enable cross-panel toast notifications (separate from above)
-  useEventToasts({ enabled: !!tenant?.id && (isOrdersSurface || isOpsSurface) });
+  // Enable cross-panel toast notifications (all admin pages)
+  useEventToasts({ enabled: !!tenant?.id });
 
   // Enable menu order notifications to admin (sound + push)
   useMenuOrderNotifications({ enabled: !!tenant?.id && isOrdersSurface });
 
   // Initialize browser push notifications on first admin load
   useEffect(() => {
-    if (!(isOrdersSurface || isOpsSurface)) return;
+    if (!tenant?.id) return;
     initBrowserNotifications();
-  }, [isOrdersSurface, isOpsSurface]);
+  }, [tenant?.id]);
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

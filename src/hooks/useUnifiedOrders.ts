@@ -679,6 +679,14 @@ export function useUpdateOrderStatus() {
           customerId: data.customer_id || undefined,
         });
 
+        // Telegram notification for key status transitions (best-effort)
+        const telegramStatuses = ['confirmed', 'ready', 'ready_for_pickup', 'delivered'];
+        if (telegramStatuses.includes(variables.status)) {
+          supabase.functions.invoke('forward-order-telegram', {
+            body: { orderId: data.id, tenantId: tenant.id, status: variables.status },
+          }).catch(() => { /* best-effort */ });
+        }
+
         // Status-specific targeted invalidation for optimal panel refresh
         const status = variables.status;
 

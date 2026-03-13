@@ -48,7 +48,7 @@ export default function TenantAdminWelcomePage() {
       icon: Package,
       completed: setupStatus?.hasProducts ?? false,
       action: "Add Products",
-      link: `/${tenantSlug}/admin/inventory/products`,
+      link: `/${tenantSlug}/admin/inventory-hub?tab=products`,
       tip: "💡 You can import products via CSV to save time",
     },
     {

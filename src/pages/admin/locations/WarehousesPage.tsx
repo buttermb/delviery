@@ -155,7 +155,7 @@ export default function WarehousesPage() {
             size="sm"
             onClick={() => {
               // Navigate to inventory filtered by warehouse
-              if (tenant?.slug) { navigate(`/${tenant.slug}/admin/inventory/products?warehouse=${encodeURIComponent(
+              if (tenant?.slug) { navigate(`/${tenant.slug}/admin/inventory-hub?tab=products&warehouse=${encodeURIComponent(
                 original.location
               )}`); }
             }}

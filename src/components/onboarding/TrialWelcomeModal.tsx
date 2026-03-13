@@ -99,7 +99,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
       description: "Import or manually add your inventory",
       action: () => {
         handleClose();
-        navigate(`/${tenantSlug}/admin/inventory/products`);
+        navigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
       },
     },
     {
@@ -255,7 +255,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
             className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
             onClick={() => {
               handleClose();
-              navigate(`/${tenantSlug}/admin/inventory/products`);
+              navigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
             }}
           >
             Add First Product

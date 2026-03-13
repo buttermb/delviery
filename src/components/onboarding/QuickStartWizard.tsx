@@ -22,7 +22,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete: _onComplete }
 
   const handleAddProducts = () => {
     onOpenChange(false);
-    navigate(`/${tenantSlug}/admin/inventory/products`);
+    navigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
   };
 
   const handleAddClients = () => {

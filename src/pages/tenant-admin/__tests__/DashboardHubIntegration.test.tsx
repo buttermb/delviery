@@ -1,7 +1,7 @@
 /**
  * Dashboard Hub Integration Tests
  * Verifies all 5 stat cards load with real data and links work:
- * 1. Products (usage/limit) - links to inventory/products
+ * 1. Products (usage/limit) - links to inventory-hub?tab=products
  * 2. Customers (usage/limit) - links to big-plug-clients
  * 3. Menus (usage/limit) - links to disposable-menus
  * 4. Total Revenue (from UnifiedAnalyticsDashboard)
@@ -387,7 +387,7 @@ describe('Dashboard Hub Integration - 5 Stat Cards', () => {
 
       if (productsCard) {
         await user.click(productsCard);
-        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/inventory/products');
+        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/inventory-hub?tab=products');
       }
     });
 
@@ -589,7 +589,7 @@ describe('Dashboard Hub Integration - 5 Stat Cards', () => {
       const productsCard = screen.getByText('15/100').closest('[class*="cursor-pointer"]');
       if (productsCard) {
         await user.click(productsCard);
-        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/inventory/products');
+        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/inventory-hub?tab=products');
       }
 
       mockNavigate.mockClear();

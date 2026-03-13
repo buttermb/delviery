@@ -26,7 +26,7 @@ export function QuickActionsBar() {
     {
       label: 'Receive Inventory',
       icon: <Plus className="h-4 w-4" />,
-      href: 'inventory/products',
+      href: 'inventory-hub?tab=products',
       shortcut: '⌘R',
     },
     {

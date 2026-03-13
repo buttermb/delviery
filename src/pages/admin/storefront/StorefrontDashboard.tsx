@@ -782,7 +782,7 @@ export default function StorefrontDashboard() {
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer"
-                    onClick={() => navigate(`/${tenantSlug}/admin/storefront/orders/${order.id}`)}
+                    onClick={() => navigate(`/${tenantSlug}/admin/storefront?tab=orders&orderId=${order.id}`)}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />

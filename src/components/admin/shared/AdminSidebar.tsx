@@ -101,7 +101,7 @@ const navigationSections: NavSection[] = [
     id: 'products-inventory',
     label: 'Products & Inventory',
     items: [
-      { id: 'products', label: 'Products', icon: Package, href: '/admin/inventory/products' },
+      { id: 'products', label: 'Products', icon: Package, href: '/admin/inventory-hub?tab=products' },
       { id: 'inventory', label: 'Inventory', icon: Package, href: '/admin/inventory-hub', badgeKey: 'lowStock' },
     ],
   },

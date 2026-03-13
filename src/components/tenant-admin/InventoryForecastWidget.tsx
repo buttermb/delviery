@@ -253,7 +253,7 @@ export function InventoryForecastWidget() {
                                     size="sm"
                                     variant="outline"
                                     className="h-8 w-8 p-0"
-                                    onClick={() => navigate(`/${tenantSlug}/admin/inventory/products?highlight=${item.id}&search=${encodeURIComponent(item.product_name)}`)}
+                                    onClick={() => navigate(`/${tenantSlug}/admin/inventory-hub?tab=products&highlight=${item.id}&search=${encodeURIComponent(item.product_name)}`)}
                                 >
                                     <ArrowRight className="h-4 w-4" />
                                 </Button>

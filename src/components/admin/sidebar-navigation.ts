@@ -491,49 +491,49 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Products',
-        href: '/admin/storefront/products',
+        href: '/admin/storefront?tab=products',
         icon: Package
       },
       {
         title: 'Orders',
-        href: '/admin/storefront/orders',
+        href: '/admin/storefront?tab=orders',
         icon: ShoppingCart
       },
       {
         title: 'Live Orders',
-        href: '/admin/storefront/live-orders',
+        href: '/admin/storefront?tab=live',
         icon: Activity,
         badge: 'LIVE',
         tier: 'professional'
       },
       {
         title: 'Customers',
-        href: '/admin/storefront/customers',
+        href: '/admin/storefront?tab=customers',
         icon: Users,
         tier: 'professional'
       },
       {
         title: 'Coupons',
-        href: '/admin/storefront/coupons',
+        href: '/admin/storefront?tab=coupons',
         icon: Tags,
         tier: 'professional',
         featureFlag: 'marketing_hub'
       },
       {
         title: 'Analytics',
-        href: '/admin/storefront/analytics',
+        href: '/admin/storefront?tab=analytics',
         icon: BarChart3,
         tier: 'professional'
       },
       {
         title: 'Bundles',
-        href: '/admin/storefront/bundles',
+        href: '/admin/storefront?tab=bundles',
         icon: Boxes,
         tier: 'professional'
       },
       {
         title: 'Store Settings',
-        href: '/admin/storefront/settings',
+        href: '/admin/storefront?tab=settings',
         icon: Settings
       }
     ]
@@ -587,7 +587,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Products',
-        href: '/admin/inventory/products',
+        href: '/admin/inventory-hub?tab=products',
         icon: Package
       },
       {

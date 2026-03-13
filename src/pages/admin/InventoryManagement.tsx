@@ -350,7 +350,7 @@ export function InventoryManagement() {
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
             data-tutorial="add-product"
             onClick={() => {
-              navigateToAdmin('inventory/products');
+              navigateToAdmin('inventory-hub?tab=products');
               import("sonner").then(({ toast }) => {
                 toast.info("Manage your product catalog and create new products here.", {
                   duration: 3000,

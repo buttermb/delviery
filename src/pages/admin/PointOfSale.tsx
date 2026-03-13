@@ -28,6 +28,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { publish } from '@/lib/eventBus';
 import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -331,10 +332,8 @@ export default function PointOfSale() {
               .eq('tenant_id', tenantId);
           }
 
-          // Invalidate dashboard stats so Low Stock KPI updates
-          if (tenantId) {
-            invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenantId);
-          }
+          // Note: INVENTORY_ADJUSTED invalidation is covered by the
+          // POS_SALE_COMPLETED event fired below, no need to duplicate here.
 
           // Update loyalty
           if (selectedCustomer) {
@@ -414,6 +413,25 @@ export default function PointOfSale() {
       }
 
       toast.success('Sale completed!', { description: `Transaction ${transactionNumber}${changeMsg}` });
+
+      // Cross-panel invalidation — POS sale affects inventory, finance, orders, dashboard
+      invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenantId, {
+        customerId: selectedCustomer?.id,
+      });
+
+      // Publish eventBus event so Hotbox, notifications, and toasts fire
+      publish('order_created', {
+        orderId: transactionId ?? '',
+        tenantId,
+        customerId: selectedCustomer?.id,
+      });
+
+      // Telegram notification for POS sales (best-effort)
+      if (transactionId) {
+        supabase.functions.invoke('forward-order-telegram', {
+          body: { orderId: transactionId, tenantId },
+        }).catch(() => { /* best-effort */ });
+      }
 
       clearCart();
       loadProducts();
