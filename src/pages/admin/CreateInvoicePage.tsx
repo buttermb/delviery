@@ -100,11 +100,6 @@ export default function CreateInvoicePage() {
         isDirty: form.formState.isDirty || lineItems.length > 0,
     });
 
-    // Calculate totals
-    const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
-    const taxRate = form.watch("tax_rate");
-    const taxAmount = subtotal * (taxRate / 100);
-    const total = subtotal + taxAmount;
 
     const { execute: executeCreditAction } = useCreditGatedAction();
 
