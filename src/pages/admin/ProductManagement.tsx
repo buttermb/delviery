@@ -75,6 +75,9 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
 import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
+import { StandardPagination } from "@/components/shared/StandardPagination";
+import { usePagination } from "@/hooks/usePagination";
+import { cn } from "@/lib/utils";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -165,6 +168,7 @@ export default function ProductManagement() {
   const [categoryFilter, setCategoryFilter] = useState<string>(String(preferences.customFilters?.category || "all"));
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(String(preferences.customFilters?.stockStatus || "all"));
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
+  const [activePreset, setActivePreset] = useState<string>('all');
 
   // Column visibility - margin column hidden by default
   const availableColumns = [
@@ -183,6 +187,59 @@ export default function ProductManagement() {
 
   // Margin threshold for alerts (default 20%)
   const marginThreshold = 20;
+
+  // Filter presets configuration
+  const filterPresets = useMemo(() => [
+    { id: 'all', label: 'All Products', filter: () => true },
+    {
+      id: 'in_stock',
+      label: 'In Stock',
+      filter: (product: Product) => (product.available_quantity ?? 0) > 0
+    },
+    {
+      id: 'low_stock',
+      label: 'Low Stock',
+      filter: (product: Product) => {
+        const qty = product.available_quantity ?? 0;
+        const lowStockLimit = product.low_stock_alert || 10;
+        return qty > 0 && qty <= lowStockLimit;
+      }
+    },
+    {
+      id: 'out_of_stock',
+      label: 'Out of Stock',
+      filter: (product: Product) => (product.available_quantity ?? 0) === 0
+    },
+    {
+      id: 'hidden',
+      label: 'Hidden',
+      filter: (product: Product) => product.menu_visibility === false
+    },
+  ], []);
+
+  // Apply preset filter handler
+  const handlePresetClick = useCallback((presetId: string) => {
+    setActivePreset(presetId);
+
+    // Update stock status filter based on preset
+    if (presetId === 'all') {
+      setStockStatusFilter('all');
+    } else if (['in_stock', 'low_stock', 'out_of_stock'].includes(presetId)) {
+      setStockStatusFilter(presetId);
+    } else if (presetId === 'hidden') {
+      // Hidden is a special filter - we'll handle it in the filtering logic
+      setStockStatusFilter('all');
+    }
+  }, []);
+
+  // Sync activePreset with stockStatusFilter changes
+  useEffect(() => {
+    if (stockStatusFilter === 'all' && activePreset !== 'hidden') {
+      setActivePreset('all');
+    } else if (['in_stock', 'low_stock', 'out_of_stock'].includes(stockStatusFilter)) {
+      setActivePreset(stockStatusFilter);
+    }
+  }, [stockStatusFilter, activePreset]);
 
   // Auto-open create dialog when ?new=true is in URL
   useEffect(() => {
@@ -351,7 +408,10 @@ export default function ProductManagement() {
           else if (stockStatusFilter === "low_stock") matchesStock = qty > 0 && qty <= lowStockLimit;
         }
 
-        return matchesSearch && matchesCategory && matchesStock;
+        // Hidden filter (special preset)
+        const matchesHidden = activePreset !== 'hidden' || p.menu_visibility === false;
+
+        return matchesSearch && matchesCategory && matchesStock && matchesHidden;
       })
       .sort((a, b) => {
         // Helper for profit margin
@@ -376,7 +436,22 @@ export default function ProductManagement() {
             return 0;
         }
       });
-  }, [products, debouncedSearchTerm, categoryFilter, sortBy, stockStatusFilter]);
+  }, [products, debouncedSearchTerm, categoryFilter, sortBy, stockStatusFilter, activePreset]);
+
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredProducts, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
 
   // Combined batch products (scanned + selected)
   const combinedBatchProducts = useMemo(() => {
@@ -1338,38 +1413,21 @@ export default function ProductManagement() {
       </div>
 
       {/* Filter Presets */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={categoryFilter === 'all' && stockStatusFilter === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => {
-            setCategoryFilter('all');
-            setStockStatusFilter('all');
-          }}
-        >
-          All
-        </Button>
-        <Button
-          variant={stockStatusFilter === 'in_stock' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setStockStatusFilter('in_stock')}
-        >
-          In Stock
-        </Button>
-        <Button
-          variant={stockStatusFilter === 'low_stock' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setStockStatusFilter('low_stock')}
-        >
-          Low Stock
-        </Button>
-        <Button
-          variant={stockStatusFilter === 'out_of_stock' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setStockStatusFilter('out_of_stock')}
-        >
-          Out of Stock
-        </Button>
+      <div className="flex items-center gap-1.5">
+        {filterPresets.map(preset => (
+          <button
+            key={preset.id}
+            onClick={() => handlePresetClick(preset.id)}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              activePreset === preset.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {preset.label}
+          </button>
+        ))}
       </div>
 
       <AdminToolbar
@@ -1400,22 +1458,27 @@ export default function ProductManagement() {
             {canExport('products') && (
               <ExportButton
                 data={filteredProducts.map(p => ({
-                  ...p,
-                  margin_percent: p.wholesale_price && p.cost_per_unit
-                    ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
-                    : null,
+                  name: p.name,
+                  sku: p.sku,
+                  category: p.category,
+                  strain_type: p.strain_type,
+                  thc_percent: p.thc_percent,
+                  cbd_percent: p.cbd_percent,
+                  price: p.wholesale_price,
+                  stock: p.available_quantity,
+                  status: (p.available_quantity ?? 0) > 0 ? 'In Stock' : 'Out of Stock',
                 }))}
-                filename="products"
+                filename="products-export"
                 columns={[
                   { key: "name", label: "Name" },
                   { key: "sku", label: "SKU" },
                   { key: "category", label: "Category" },
-                  { key: "cost_per_unit", label: "Cost" },
-                  { key: "wholesale_price", label: "Price" },
-                  { key: "margin_percent", label: "Margin %" },
-                  { key: "available_quantity", label: "Stock" },
-                  { key: "strain_name", label: "Strain" },
-                  { key: "vendor_name", label: "Vendor" },
+                  { key: "strain_type", label: "Strain Type" },
+                  { key: "thc_percent", label: "THC%" },
+                  { key: "cbd_percent", label: "CBD%" },
+                  { key: "price", label: "Price" },
+                  { key: "stock", label: "Stock" },
+                  { key: "status", label: "Status" },
                 ]}
               />
             )}
@@ -1508,8 +1571,8 @@ export default function ProductManagement() {
       />
 
       <AdminDataTable
-        title={`Products (${filteredProducts.length})`}
-        data={filteredProducts}
+        title={`Products (${totalItems})`}
+        data={paginatedItems}
         columns={columns}
         isLoading={productsLoading}
         isError={productsError}
@@ -1551,6 +1614,33 @@ export default function ProductManagement() {
             : undefined
         }
       />
+
+      {/* Bulk Action Bar */}
+      {selectedProducts.length > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2 text-sm">
+          <span className="font-medium">{selectedProducts.length} {selectedProducts.length === 1 ? 'product' : 'products'} selected</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedProducts([])}
+          >
+            Clear selection
+          </Button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <StandardPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          pageSizeOptions={pageSizeOptions}
+          onPageChange={goToPage}
+          onPageSizeChange={changePageSize}
+        />
+      )}
 
       {/* Product Label Dialog */}
       {labelProduct && (

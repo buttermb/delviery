@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
+import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -306,7 +306,7 @@ export default function ClientsPage() {
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Clients</h1>
                         {isFetching && !isLoading && (
-                            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground animate-pulse ml-2">Refreshing...</span>
                         )}
                     </div>
                     <p className="text-sm sm:text-base text-muted-foreground">
@@ -319,15 +319,23 @@ export default function ClientsPage() {
                             name: c.name,
                             email: c.email ?? '',
                             phone: c.phone ?? '',
-                            open_balance: c.open_balance,
+                            type: '', // Not available in current data model
+                            tags: '', // Not available in current data model
+                            created: new Date(c.created_at).toLocaleDateString(),
+                            total_orders: '', // Not available in current data model
+                            total_spent: '', // Not available in current data model
                             status: c.status,
                         }))}
-                        filename="clients"
+                        filename="clients-export"
                         columns={[
                             { key: "name", label: "Name" },
                             { key: "email", label: "Email" },
                             { key: "phone", label: "Phone" },
-                            { key: "open_balance", label: "Open Balance" },
+                            { key: "type", label: "Type" },
+                            { key: "tags", label: "Tags" },
+                            { key: "created", label: "Created" },
+                            { key: "total_orders", label: "Total Orders" },
+                            { key: "total_spent", label: "Total Spent" },
                             { key: "status", label: "Status" },
                         ]}
                     />
@@ -362,6 +370,20 @@ export default function ClientsPage() {
                     </SelectContent>
                 </Select>
             </div>
+
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2 text-sm">
+                    <span className="font-medium">{selectedIds.size} {selectedIds.size === 1 ? 'client' : 'clients'} selected</span>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedIds(new Set())}
+                    >
+                        Clear selection
+                    </Button>
+                </div>
+            )}
 
             <ResponsiveTable
                 columns={columns}

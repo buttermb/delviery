@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { logAuditEvent } from '@/lib/auditLog';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +52,7 @@ import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
 import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
 import { OrderActionsDropdown } from "@/components/admin/orders/OrderActionsDropdown";
 import type { OrderAction } from "@/components/admin/orders/OrderActionsDropdown";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
@@ -66,6 +67,7 @@ import { formatSmartDate } from "@/lib/utils/formatDate";
 import { formatCurrency, displayValue } from "@/lib/formatters";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
+import { cn } from "@/lib/utils";
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
 import { queryKeys } from '@/lib/queryKeys';
@@ -166,6 +168,7 @@ export default function Orders() {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activePreset, setActivePreset] = useState<string>('all');
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     open: boolean;
     type: 'single' | 'bulk';
@@ -189,6 +192,43 @@ export default function Orders() {
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
     new Set(['order_number', 'customer', 'status', 'total', 'date', 'actions', 'source', 'method', 'eta'])
   );
+
+  // Filter presets configuration
+  const filterPresets = useMemo(() => [
+    { id: 'all', label: 'All Orders', filter: () => true },
+    { id: 'pending', label: 'Pending', filter: (order: Order) => order.status === 'pending' },
+    { id: 'processing', label: 'Processing', filter: (order: Order) => order.status === 'processing' },
+    { id: 'completed', label: 'Completed', filter: (order: Order) => ['completed', 'delivered'].includes(order.status) },
+    { id: 'cancelled', label: 'Cancelled', filter: (order: Order) => order.status === 'cancelled' },
+  ], []);
+
+  // Apply preset filter handler
+  const handlePresetClick = useCallback((presetId: string) => {
+    setActivePreset(presetId);
+    const preset = filterPresets.find(p => p.id === presetId);
+    if (!preset) return;
+
+    // Update URL filters based on preset
+    if (presetId === 'all') {
+      setFilters({ status: 'all' });
+    } else if (presetId === 'completed') {
+      // For completed, we'll use the status filter to show delivered
+      setFilters({ status: 'delivered' });
+    } else {
+      setFilters({ status: presetId });
+    }
+  }, [filterPresets, setFilters]);
+
+  // Sync activePreset with statusFilter changes
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setActivePreset('all');
+    } else if (statusFilter === 'delivered') {
+      setActivePreset('completed');
+    } else if (['pending', 'processing', 'cancelled'].includes(statusFilter)) {
+      setActivePreset(statusFilter);
+    }
+  }, [statusFilter]);
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -1032,20 +1072,46 @@ export default function Orders() {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">Orders Management</h1>
                 {isFetching && !isLoading && (
-                  <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground animate-pulse ml-2">Refreshing...</span>
                 )}
               </div>
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex flex-wrap gap-2">
               {canExport('orders') && (
-                <OrderExportButton
-                  orders={sortedOrders}
-                  filenamePrefix="orders-export"
-                  variant="outline"
-                  className="min-h-[44px] sm:min-h-[48px] touch-manipulation text-xs sm:text-sm"
-                  disabled={sortedOrders.length === 0}
-                />
+                <>
+                  <OrderExportButton
+                    orders={sortedOrders}
+                    filenamePrefix="orders-export"
+                    variant="outline"
+                    className="min-h-[44px] sm:min-h-[48px] touch-manipulation text-xs sm:text-sm"
+                    disabled={sortedOrders.length === 0}
+                  />
+                  <ExportButton
+                    data={sortedOrders.map(order => ({
+                      'Order #': order.order_number || order.id.slice(0, 8),
+                      'Customer': order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown',
+                      'Date': order.created_at ? formatSmartDate(order.created_at, { includeTime: true }) : 'N/A',
+                      'Status': order.status,
+                      'Payment Method': order.delivery_method || 'N/A',
+                      'Total': formatCurrency(order.total_amount),
+                      'Items Count': order.order_items?.length || 0,
+                      'Notes': ''
+                    }))}
+                    filename="orders-export"
+                    columns={[
+                      { key: 'Order #', label: 'Order #' },
+                      { key: 'Customer', label: 'Customer' },
+                      { key: 'Date', label: 'Date' },
+                      { key: 'Status', label: 'Status' },
+                      { key: 'Payment Method', label: 'Payment Method' },
+                      { key: 'Total', label: 'Total' },
+                      { key: 'Items Count', label: 'Items Count' },
+                      { key: 'Notes', label: 'Notes' }
+                    ]}
+                    disabled={sortedOrders.length === 0}
+                  />
+                </>
               )}
               {canEdit('orders') && (
                 <Button
@@ -1101,48 +1167,21 @@ export default function Orders() {
           <Card className="p-3 sm:p-4 border-none shadow-sm">
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
               {/* Filter Presets */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={statusFilter === 'all' && !dateRange.from && !dateRange.to ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => {
-                    handleStatusFilterChange('all');
-                    handleDateRangeChange({ from: undefined, to: undefined });
-                  }}
-                >
-                  All
-                </Button>
-                <Button
-                  variant={statusFilter === 'pending' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleStatusFilterChange('pending')}
-                >
-                  Pending
-                </Button>
-                <Button
-                  variant={statusFilter === 'preparing' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleStatusFilterChange('preparing')}
-                >
-                  Processing
-                </Button>
-                <Button
-                  variant={statusFilter === 'delivered' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleStatusFilterChange('delivered')}
-                >
-                  Completed
-                </Button>
-                <Button
-                  variant={dateRange.from && formatSmartDate(dateRange.from.toISOString()) === formatSmartDate(new Date().toISOString()) ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => {
-                    const today = new Date();
-                    handleDateRangeChange({ from: startOfDay(today), to: endOfDay(today) });
-                  }}
-                >
-                  Today
-                </Button>
+              <div className="flex items-center gap-1.5">
+                {filterPresets.map(preset => (
+                  <button
+                    key={preset.id}
+                    onClick={() => handlePresetClick(preset.id)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      activePreset === preset.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
