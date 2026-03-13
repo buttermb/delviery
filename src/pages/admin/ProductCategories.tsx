@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Layers, Plus, MoreVertical, Edit, Trash2, Package } from 'lucide-react';
-// ConfirmDialog used below for delete confirmation
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Category {
   id: string;

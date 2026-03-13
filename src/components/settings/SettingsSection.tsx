@@ -61,7 +61,8 @@ export function SettingsCard({ children, className }: SettingsCardProps) {
 interface SettingsRowProps {
   label: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
+  action?: ReactNode;
   className?: string;
   /** If true, children will take full width on mobile */
   fullWidthOnMobile?: boolean;

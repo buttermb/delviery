@@ -320,7 +320,7 @@ export function OrdersListPage() {
         tenant_id: order.tenant_id ?? '',
         order_source: undefined,
         payment_status: order.payment_status || undefined,
-        delivery_status: deliveryStatusMap[order.id] || undefined,
+        delivery_status: deliveryStatusMap[order.id as string] || undefined,
         delivery_method: undefined,
         priority: (order.priority as OrderPriority | undefined) || undefined,
         user: order.user_id ? profilesMap[order.user_id as string] : undefined,

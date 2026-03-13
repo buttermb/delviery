@@ -74,7 +74,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
     let channel: RealtimeChannel;
 
     try {
-      channel = supabase
+      channel = (supabase as any)
         .channel(`notifications:tenant_${tenantId}`)
         .on(
           'postgres_changes',
