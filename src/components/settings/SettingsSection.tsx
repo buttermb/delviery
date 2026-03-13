@@ -72,6 +72,7 @@ export function SettingsRow({
   label,
   description,
   children,
+  action,
   className,
   fullWidthOnMobile = true,
 }: SettingsRowProps) {
