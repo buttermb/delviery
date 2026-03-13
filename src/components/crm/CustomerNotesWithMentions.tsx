@@ -55,7 +55,7 @@ export function CustomerNotesWithMentions({
 
   // Fetch team members for mentions
   const { data: teamMembers = [] } = useQuery({
-    queryKey: queryKeys.tenants.members(tenant?.id),
+    queryKey: ['tenants', 'members', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 

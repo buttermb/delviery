@@ -65,7 +65,7 @@ function calculateTier(lifetimePoints: number): 'bronze' | 'silver' | 'gold' | '
  * Allows admins to adjust points manually.
  */
 export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoyaltyPointsProps) {
-  const { tenant, userId } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [adjustAmount, setAdjustAmount] = useState('');

@@ -115,9 +115,9 @@ export function RevenueAnalyticsDashboard({ tenantId }: RevenueAnalyticsDashboar
         return acc;
       }, {} as Record<string, number>);
 
-      const revenueBySource = Object.entries(bySource).map(([name, value]) => ({
+      const revenueBySource: Array<{ name: string; value: number }> = Object.entries(bySource).map(([name, value]) => ({
         name: name === 'pos' ? 'POS' : name === 'wholesale' ? 'Wholesale' : 'Menu',
-        value
+        value: value as number
       }));
 
       return {
