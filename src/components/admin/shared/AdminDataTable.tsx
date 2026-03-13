@@ -156,7 +156,7 @@ export function AdminDataTable<T>({
                             title={emptyStateTitle}
                             description={emptyStateDescription}
                             icon={emptyStateIcon as React.ReactNode}
-                            primaryAction={emptyStateAction as any}
+                            primaryAction={emptyStateAction}
                         />
                     </div>
                 ) : viewMode === "grid" && renderGridItem ? (

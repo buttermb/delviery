@@ -356,6 +356,8 @@ export default function WholesaleOrdersPage() {
       }
     },
     enabled: !!tenant?.id,
+    staleTime: 60_000,
+    retry: 2,
   });
 
   const filteredOrders = useMemo((): OrderType[] => {

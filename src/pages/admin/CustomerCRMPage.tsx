@@ -35,6 +35,7 @@ import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 
 interface Customer {
   id: string;
@@ -185,7 +186,7 @@ export default function CustomerCRMPage() {
     return matchesSearch && matchesLifecycle && matchesSegment;
   }) ?? [];
 
-  const crmColumns = [
+  const crmColumns: ResponsiveColumn<EnrichedCustomer>[] = [
     {
       header: 'Customer',
       cell: (customer: EnrichedCustomer) => (
@@ -463,7 +464,7 @@ export default function CustomerCRMPage() {
         <TabsContent value="overview" className="space-y-4">
           <AdminDataTable
             data={filteredCustomers}
-            columns={crmColumns as any}
+            columns={crmColumns}
             keyExtractor={(customer: EnrichedCustomer) => customer.id as string}
             isLoading={isLoading}
             emptyStateIcon={Users}

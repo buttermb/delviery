@@ -262,6 +262,8 @@ export function CustomerManagement() {
       };
     },
     enabled: !!tenant && !accountLoading,
+    staleTime: 60_000,
+    retry: 2,
   });
 
   const customers = customerResult?.customers ?? [];

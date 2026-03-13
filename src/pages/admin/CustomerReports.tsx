@@ -13,6 +13,15 @@ import { SEOHead } from '@/components/SEOHead';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { formatCurrency } from '@/lib/formatters';
 
+interface TopCustomer {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  total_spent: number | null;
+  loyalty_tier: string | null;
+}
+
 export default function CustomerReports() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
@@ -25,8 +34,7 @@ export default function CustomerReports() {
     totalRevenue: 0,
     avgOrderValue: 0,
     avgLifetimeValue: 0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    topCustomers: [] as any[]
+    topCustomers: [] as TopCustomer[]
   });
 
   useEffect(() => {

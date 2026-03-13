@@ -179,7 +179,7 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const columns = [
+  const columns: ColumnDef<TenantWithHealth>[] = [
     {
       accessorKey: 'business_name',
       header: 'Business',
@@ -371,7 +371,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         <DataTable
-          columns={columns as any}
+          columns={columns}
           data={filteredTenants ?? []}
           loading={isLoading}
           emptyMessage="No tenants found"

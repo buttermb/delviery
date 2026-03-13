@@ -65,7 +65,7 @@ export class TurnstileWrapper extends Component<TurnstileWrapperProps, Turnstile
           action: 'signup',
           appearance: 'always',
         }}
-        ref={this.props.turnstileRef as React.LegacyRef<unknown> as any}
+        ref={this.props.turnstileRef as React.LegacyRef<typeof Turnstile>}
       />
     );
   }

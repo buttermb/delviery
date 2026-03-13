@@ -266,7 +266,7 @@ export default function StorefrontCustomers() {
             </Tooltip>
           </TooltipProvider>
           <ExportButton
-            data={filteredCustomers as any}
+            data={filteredCustomers as Record<string, unknown>[]}
             filename="storefront-customers"
             columns={exportColumns}
           />

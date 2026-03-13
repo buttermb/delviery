@@ -295,6 +295,8 @@ export default function ProductManagement() {
       return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
+    staleTime: 60_000,
+    retry: 2,
   });
 
   // Sync query data into optimistic list
@@ -957,7 +959,7 @@ export default function ProductManagement() {
   };
 
   // --- Table Columns Definition ---
-  const columns: any[] = [
+  const columns: Record<string, unknown>[] = [
     {
       header: (
         <Checkbox
