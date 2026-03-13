@@ -2665,6 +2665,8 @@ export const queryKeys = {
   deliveryAnalytics: {
     byTenant: (tenantId?: string) =>
       ['delivery-analytics', tenantId] as const,
+    summary: (tenantId?: string) =>
+      ['delivery-analytics', 'summary', tenantId] as const,
   },
 
   // Products for Barcode
