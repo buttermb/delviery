@@ -80,11 +80,11 @@ export default function StorefrontClosedState({
   const getHeading = () => {
     switch (reason) {
       case 'maintenance':
-        return 'We'll Be Right Back';
+        return "We'll Be Right Back";
       case 'suspended':
         return 'Store Temporarily Unavailable';
       case 'scheduled':
-        return 'We're Closed Right Now';
+        return "We're Closed Right Now";
       default:
         return 'Store Closed';
     }
@@ -93,13 +93,13 @@ export default function StorefrontClosedState({
   const getDefaultMessage = () => {
     switch (reason) {
       case 'maintenance':
-        return 'We're performing scheduled maintenance to improve your experience. Please check back soon!';
+        return "We're performing scheduled maintenance to improve your experience. Please check back soon!";
       case 'suspended':
         return 'This store is temporarily unavailable. Please contact support for more information.';
       case 'scheduled':
-        return 'Thanks for visiting! We're currently closed but will reopen during our business hours.';
+        return "Thanks for visiting! We're currently closed but will reopen during our business hours.";
       default:
-        return 'We're currently closed. Please check our business hours below.';
+        return "We're currently closed. Please check our business hours below.";
     }
   };
 
