@@ -154,7 +154,7 @@ export default function StockAlertsPage() {
                 <TableRow key={alert.id}>
                   <TableCell className="font-medium">{alert.product_name}</TableCell>
                   <TableCell>{alert.current_quantity}</TableCell>
-                  <TableCell>{alert.threshold}</TableCell>
+                  <TableCell>{alert.reorder_point}</TableCell>
                   <TableCell>
                     <Badge variant={alert.severity === 'critical' ? 'destructive' : 'default'}>
                       {alert.severity}
