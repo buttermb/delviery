@@ -1455,6 +1455,8 @@ export const queryKeys = {
   // Delivery Zones
   deliveryZones: {
     all: ['delivery-zones'] as const,
+    detail: (tenantId: string, zoneId: string) =>
+      ['delivery-zones', 'detail', tenantId, zoneId] as const,
     byTenant: (tenantId?: string) =>
       [...queryKeys.deliveryZones.all, tenantId] as const,
   },
