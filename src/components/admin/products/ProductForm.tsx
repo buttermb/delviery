@@ -311,9 +311,6 @@ export function ProductForm({
                                         {selectedVendor.payment_terms && (
                                             <span>Terms: {selectedVendor.payment_terms}</span>
                                         )}
-                                        {selectedVendor.lead_time_days !== null && (
-                                            <span className="ml-2">Lead: {selectedVendor.lead_time_days}d</span>
-                                        )}
                                     </div>
                                 )}
                             </div>

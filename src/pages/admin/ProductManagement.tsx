@@ -630,9 +630,6 @@ export default function ProductManagement() {
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
         thca_percentage: null,
 
-        exclude_from_discounts: data.exclude_from_discounts,
-        minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
-        tags: data.tags || [],
       };
 
       if (editingProduct) {

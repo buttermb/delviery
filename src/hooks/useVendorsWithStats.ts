@@ -227,7 +227,6 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         zip_code: vendor.zip_code,
         license_number: vendor.license_number,
         payment_terms: vendor.payment_terms,
-        lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
         status: vendor.status,
         notes: vendor.notes,
         product_count: productCount ?? 0,
