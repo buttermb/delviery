@@ -140,7 +140,7 @@ export function BulkEmailDialog({
       // Simulate sending emails
       const emailPromises = selectedCustomerData.map(async (customer) => {
         const personalizedSubject = subject
-          .replace("{business_name}", tenant.name)
+          .replace("{business_name}", tenant.business_name)
           .replace(
             "{customer_name}",
             `${customer.first_name} ${customer.last_name}`
