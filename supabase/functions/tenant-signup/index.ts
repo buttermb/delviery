@@ -268,7 +268,6 @@ serve(async (req) => {
         p_industry: industry || null,
         p_company_size: company_size || null,
         p_slug: slug,
-        p_plan: 'free', // Default to free tier - users get credits immediately (spec: new signups = free with 10K credits)
       });
 
     if (atomicError) {
