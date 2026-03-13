@@ -803,6 +803,7 @@ export const queryKeys = {
     byUser: (tenantId: string, userId: string) => [...queryKeys.notifications.byTenant(tenantId), 'user', userId] as const,
     byType: (tenantId: string, type: string) => [...queryKeys.notifications.byTenant(tenantId), 'type', type] as const,
     preferences: (tenantId: string, userId: string) => [...queryKeys.notifications.byUser(tenantId, userId), 'preferences'] as const,
+    badgeCounts: (tenantId: string) => [...queryKeys.notifications.all, 'badges', tenantId] as const,
   },
 
   // Messages
