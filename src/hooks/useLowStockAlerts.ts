@@ -76,7 +76,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
 
       // First try to fetch from stock_alerts table
       const { data: alerts, error: alertError } = await supabase
-        .from('stock_alerts')
+        .from('inventory_alerts')
         .select('id, product_id, product_name, current_quantity, threshold, severity')
         .eq('tenant_id', tenant.id)
         .eq('status', 'active')
