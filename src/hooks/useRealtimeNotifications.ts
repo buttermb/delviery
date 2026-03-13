@@ -28,7 +28,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       logger.info('[RealtimeNotifications] New notification', { notification });
 
       // Invalidate notification queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
       // Show toast if enabled
       if (showToast && notification.status === 'delivered') {
