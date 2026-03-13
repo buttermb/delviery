@@ -13,9 +13,9 @@ interface StockAlertRow {
   id: string;
   product_name: string;
   current_quantity: number;
-  threshold: number;
+  reorder_point: number;
   severity: 'critical' | 'warning' | 'info';
-  status: string;
+  is_resolved: boolean;
   created_at: string;
 }
 
@@ -30,9 +30,9 @@ export default function StockAlertsPage() {
       // Query stock_alerts table for active alerts
       const { data: alertData, error: alertError } = await (supabase as any)
         .from('inventory_alerts')
-        .select('id, product_name, current_quantity, threshold, severity, status, created_at')
+        .select('id, product_name, current_quantity, reorder_point, severity, is_resolved, created_at')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
+        .eq('is_resolved', false)
         .order('created_at', { ascending: false });
 
       // If table doesn't exist, fall back to products-based calculation
@@ -76,9 +76,9 @@ export default function StockAlertsPage() {
           id: item.id,
           product_name: item.name || 'Unknown',
           current_quantity: currentQty,
-          threshold: threshold,
+          reorder_point: threshold,
           severity,
-          status: 'active',
+          is_resolved: false,
           created_at: item.updated_at || new Date().toISOString(),
         };
       });
@@ -154,7 +154,7 @@ export default function StockAlertsPage() {
                 <TableRow key={alert.id}>
                   <TableCell className="font-medium">{alert.product_name}</TableCell>
                   <TableCell>{alert.current_quantity}</TableCell>
-                  <TableCell>{alert.threshold}</TableCell>
+                  <TableCell>{alert.reorder_point}</TableCell>
                   <TableCell>
                     <Badge variant={alert.severity === 'critical' ? 'destructive' : 'default'}>
                       {alert.severity}

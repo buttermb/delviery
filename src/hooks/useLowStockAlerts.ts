@@ -53,7 +53,7 @@ interface StockAlertRow {
   product_id: string;
   product_name: string;
   current_quantity: number;
-  threshold: number;
+  reorder_point: number;
   severity: string;
 }
 
@@ -77,9 +77,9 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // First try to fetch from stock_alerts table
       const { data: alerts, error: alertError } = await (supabase as any)
         .from('inventory_alerts')
-        .select('id, product_id, product_name, current_quantity, threshold, severity')
+        .select('id, product_id, product_name, current_quantity, reorder_point, severity')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
+        .eq('is_resolved', false)
         .order('current_quantity', { ascending: true });
 
       if (alertError) {
@@ -101,7 +101,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
             name: alert.product_name,
             stockQuantity: alert.current_quantity,
             availableQuantity: alert.current_quantity,
-            lowStockThreshold: alert.threshold,
+            lowStockThreshold: alert.reorder_point,
             category: '', // Category not stored in alerts
             alertLevel,
           };
