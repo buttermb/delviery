@@ -52,7 +52,7 @@ export function CustomerBirthdayTracking({
 
   // For upcoming birthdays/anniversaries
   const { data: upcomingEvents = [], isLoading: isLoadingUpcoming } = useQuery({
-    queryKey: queryKeys.customers.list(tenant?.id, 'upcoming-events'),
+    queryKey: queryKeys.customers.list(tenant?.id, { filter: 'upcoming-events' }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

@@ -35,7 +35,7 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
     try {
       const { error } = await supabase.from("feedback").insert({
         tenant_id: tenant?.id ?? null,
-        user_id: user?.id ?? null,
+        user_id: admin?.id ?? null,
         type,
         description: description.trim(),
         metadata: {

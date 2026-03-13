@@ -92,8 +92,8 @@ export function OrderAnalyticsWithFunnel({ tenantId }: OrderAnalyticsWithFunnelP
         return acc;
       }, {} as Record<string, number>) ?? {};
 
-      const statusBreakdown = Object.entries(statusCounts)
-        .map(([status, count]) => ({ status, count }))
+      const statusBreakdown: { status: string; count: number }[] = Object.entries(statusCounts)
+        .map(([status, count]) => ({ status, count: count as number }))
         .sort((a, b) => b.count - a.count);
 
       return {

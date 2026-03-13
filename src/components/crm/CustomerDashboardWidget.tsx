@@ -30,7 +30,7 @@ export function CustomerDashboardWidget() {
   const navigate = useNavigate();
 
   const { data: metrics, isLoading } = useQuery({
-    queryKey: queryKeys.customers.metrics(tenant?.id),
+    queryKey: ['customers', 'metrics', tenant?.id],
     queryFn: async (): Promise<CustomerMetrics> => {
       if (!tenant?.id) {
         return {
@@ -155,7 +155,7 @@ export function CustomerDashboardWidget() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/admin/${tenant?.tenant_slug}/customers`)}
+            onClick={() => navigate(`/admin/${tenant?.slug}/customers`)}
           >
             View All
           </Button>

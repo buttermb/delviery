@@ -65,7 +65,7 @@ function calculateTier(lifetimePoints: number): 'bronze' | 'silver' | 'gold' | '
  * Allows admins to adjust points manually.
  */
 export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoyaltyPointsProps) {
-  const { tenant, userId } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [adjustAmount, setAdjustAmount] = useState('');
@@ -133,7 +133,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
   // Adjust points mutation
   const adjustPointsMutation = useMutation({
     mutationFn: async ({ points, reason }: { points: number; reason: string }) => {
-      if (!tenant?.id || !userId) throw new Error('Not authenticated');
+      if (!tenant?.id || !admin?.id) throw new Error('Not authenticated');
 
       const isPositive = points > 0;
       const transactionType = isPositive ? 'earn' : 'redeem';
@@ -147,7 +147,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
           points_change: points,
           transaction_type: 'adjust',
           description: reason,
-          created_by: userId,
+          created_by: admin?.id,
         });
 
       if (txError) throw txError;

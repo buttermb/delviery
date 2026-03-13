@@ -49,7 +49,7 @@ export function RevenueAnalyticsDashboard({ tenantId }: RevenueAnalyticsDashboar
   const [dateRange, setDateRange] = useState<DateRange>('30d');
 
   const { data: revenueStats, isLoading } = useQuery({
-    queryKey: queryKeys.analytics.revenue(tenantId, dateRange),
+    queryKey: queryKeys.analytics.revenue(tenantId, { range: dateRange }),
     queryFn: async (): Promise<RevenueStats> => {
       const days = parseInt(dateRange);
       const endDate = endOfDay(new Date());
@@ -115,9 +115,9 @@ export function RevenueAnalyticsDashboard({ tenantId }: RevenueAnalyticsDashboar
         return acc;
       }, {} as Record<string, number>);
 
-      const revenueBySource = Object.entries(bySource).map(([name, value]) => ({
+      const revenueBySource: Array<{ name: string; value: number }> = Object.entries(bySource).map(([name, value]) => ({
         name: name === 'pos' ? 'POS' : name === 'wholesale' ? 'Wholesale' : 'Menu',
-        value
+        value: value as number
       }));
 
       return {

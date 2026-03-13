@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { useQuery } from '@tanstack/query';
+import { useQuery } from '@tanstack/react-query';
 import { DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,7 @@ export function FinancialSummaryDashboard() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: financials } = useQuery({
-    queryKey: queryKeys.analytics.financials(tenant?.id || ''),
+    queryKey: ['analytics', 'financials', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return null;
 

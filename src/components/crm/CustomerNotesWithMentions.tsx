@@ -44,7 +44,7 @@ export function CustomerNotesWithMentions({
   customerId,
   customerName,
 }: CustomerNotesWithMentionsProps) {
-  const { tenant, userId } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [noteContent, setNoteContent] = useState('');
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
@@ -55,7 +55,7 @@ export function CustomerNotesWithMentions({
 
   // Fetch team members for mentions
   const { data: teamMembers = [] } = useQuery({
-    queryKey: queryKeys.tenants.members(tenant?.id),
+    queryKey: ['tenants', 'members', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -131,7 +131,7 @@ export function CustomerNotesWithMentions({
   // Add note mutation
   const addNoteMutation = useMutation({
     mutationFn: async (content: string) => {
-      if (!tenant?.id || !userId) throw new Error('Not authenticated');
+      if (!tenant?.id || !admin?.id) throw new Error('Not authenticated');
 
       const mentions = extractMentions(content);
 
@@ -141,7 +141,7 @@ export function CustomerNotesWithMentions({
           tenant_id: tenant.id,
           customer_id: customerId,
           content,
-          created_by: userId,
+          created_by: admin?.id,
           mentions: mentions.length > 0 ? mentions : null,
         });
 
@@ -386,7 +386,7 @@ export function CustomerNotesWithMentions({
                       </p>
                     )}
                   </div>
-                  {note.created_by === userId && editingNoteId !== note.id && (
+                  {note.created_by === admin?.id && editingNoteId !== note.id && (
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
