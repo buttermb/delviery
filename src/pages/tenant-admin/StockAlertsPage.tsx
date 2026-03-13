@@ -30,9 +30,9 @@ export default function StockAlertsPage() {
       // Query stock_alerts table for active alerts
       const { data: alertData, error: alertError } = await (supabase as any)
         .from('inventory_alerts')
-        .select('id, product_name, current_quantity, threshold, severity, status, created_at')
+        .select('id, product_name, current_quantity, reorder_point, severity, is_resolved, created_at')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
+        .eq('is_resolved', false)
         .order('created_at', { ascending: false });
 
       // If table doesn't exist, fall back to products-based calculation
