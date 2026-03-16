@@ -428,7 +428,36 @@ export default function LiveMap() {
       supabase.removeChannel(couriersChannel);
       clearInterval(refreshInterval);
     };
-  }, [loadCourierLocations, loadActiveOrders, tenant?.id, updateMarkerPinColor]);
+  }, [loadCourierLocations, loadActiveOrders, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pin color helpers — amber for active delivery, green for available
+  const getPinColor = useCallback((orderStatus: string | undefined) => {
+    switch (orderStatus) {
+      case 'assigned':
+      case 'picking_up':
+      case 'in_transit':
+      case 'out_for_delivery':
+        return { from: '#f59e0b', to: '#d97706', shadow: '#f59e0b', ping: '#f59e0b' };
+      case 'delivered':
+      default:
+        return { from: '#34d399', to: '#059669', shadow: '#10b981', ping: '#10b981' };
+    }
+  }, []);
+
+  /** Patch a single courier marker's DOM to reflect a new pin color */
+  const updateMarkerPinColor = useCallback((courierId: string, orderStatus: string | undefined) => {
+    const marker = markers.current[courierId];
+    if (!marker) return;
+    const el = marker.getElement();
+    if (!el) return;
+    const colors = getPinColor(orderStatus);
+    const pinBg = el.querySelector<HTMLElement>('.pin-bg');
+    if (pinBg) pinBg.style.background = `linear-gradient(135deg, ${colors.from}, ${colors.to})`;
+    const pinShadow = el.querySelector<HTMLElement>('.pin-shadow');
+    if (pinShadow) pinShadow.style.background = colors.shadow;
+    const pingEl = el.querySelector<HTMLElement>('.pin-ping');
+    if (pingEl) pingEl.style.borderColor = colors.ping;
+  }, [getPinColor]);
 
   // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
   useEffect(() => {

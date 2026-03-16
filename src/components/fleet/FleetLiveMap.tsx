@@ -187,7 +187,7 @@ export function FleetLiveMap({
       </Map>
 
       {/* Popup */}
-      {popupDriver && popupDriver.current_lat != null && (
+      {popupDriver && (
         <div className="absolute left-4 bottom-4 z-10">
           <DriverMapPopup
             driver={popupDriver}

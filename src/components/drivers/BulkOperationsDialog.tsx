@@ -481,7 +481,7 @@ function BulkUpdateTab({
         </span>
         <select
           value={field}
-          onChange={(e) => { setField(e.target.value); setValue(''); }}
+          onChange={(e) => { setField(e.target.value as UpdateFieldValue); setValue(''); }}
           className="h-9 w-full rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
         >
           {UPDATE_FIELDS.map((f) => (
