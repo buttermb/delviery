@@ -1,56 +1,59 @@
 
 
-# Fix: Static Menu Page "Menu Not Found"
+# Fix: Live Order Views — Wire Marketplace-Aware Courier Assignment
 
-## Root Cause
+## Problem
 
-The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
+Three live order views import the **legacy** `AssignToFleetDialog` from `src/components/admin/AssignToFleetDialog.tsx`, which only updates the `orders` table when assigning a courier. The **fulfillment version** at `src/components/admin/fulfillment/AssignToFleetDialog.tsx` already supports `isMarketplace` prop and correctly targets `marketplace_orders`, but none of the live order views use it.
 
-1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
-2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
-3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
-
-These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
-
-## Fix
-
-### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
-
-Update the `loadMenuDirect` function's product query:
-
-**Before (broken):**
 ```
-.select(`
-  product_id, custom_price, prices, display_order,
-  is_visible, vendor_name, badge,
-  products (name, price, description, image_url, category, strain_type, created_at)
-`)
-.eq('is_visible', true)
+Legacy (used by live views):     orders.update({ courier_id, status })
+Fulfillment (unused by live):    marketplace_orders.update({ courier_id, status })  ← when isMarketplace=true
 ```
 
-**After (fixed):**
+## Approach
+
+### 1. Add `source_table` to `LiveOrder` type
+
+Add an optional `source_table?: 'orders' | 'menu_orders' | 'marketplace_orders'` field to the `LiveOrder` interface in `LiveOrdersKanban.tsx`. This lets each order carry its origin so the dialog knows which table to target.
+
+### 2. Switch all 3 live order views to the fulfillment dialog
+
+Replace the import in these files:
+
+- `src/components/admin/live-orders/LiveOrdersKanban.tsx`
+- `src/components/admin/live-orders/LiveOrdersListView.tsx`
+- `src/components/admin/live-orders/LiveOrdersMobileList.tsx`
+
+Change from:
+```ts
+import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 ```
-.select(`
-  product_id, custom_price, prices, display_order, display_availability,
-  wholesale_inventory!product_id (
-    product_name, base_price, description, image_url,
-    category, strain_type, created_at
-  )
-`)
-.eq('display_availability', true)
+To:
+```ts
+import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 ```
 
-Then update the mapping code (lines 350-397) to use the correct field names:
-- `mp.products` becomes `mp.wholesale_inventory`
-- `inv.name` becomes `inv.product_name`
-- `inv.price` becomes `inv.base_price`
-- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+And pass `isMarketplace={order.source_table === 'marketplace_orders'}` to each dialog instance.
 
-## Also Fix: Pre-existing build errors in unrelated edge functions
+### 3. Populate `source_table` where live orders are fetched
 
-The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+Find where live orders are queried/merged (the hook or page that feeds orders into these views) and tag each order with its `source_table` value so the prop is available downstream.
 
-## Result
+### 4. Reconcile prop differences
 
-The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+The two dialogs have slightly different prop signatures:
+- Legacy: `isWholesale` (default `true`)
+- Fulfillment: `isWholesale` (default `false`) + `isMarketplace`
+
+The fulfillment version already handles the 3-way table selection (`marketplace_orders` / `wholesale_orders` / `orders`), so it's a drop-in replacement — just need to pass the right boolean.
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `LiveOrdersKanban.tsx` | Add `source_table` to `LiveOrder`, switch dialog import, pass `isMarketplace` |
+| `LiveOrdersListView.tsx` | Switch dialog import, pass `isMarketplace` |
+| `LiveOrdersMobileList.tsx` | Switch dialog import, pass `isMarketplace` |
+| Live orders data hook/page | Tag orders with `source_table` when fetching |
 
