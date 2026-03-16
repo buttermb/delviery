@@ -27,7 +27,7 @@ import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
-import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
+import { FeaturesOverviewPanel } from '@/components/admin/settings/FeaturesOverviewPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { toast } from "sonner";
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
@@ -946,17 +946,17 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           )}
         </TabsContent>
 
-        {/* Feature Toggles */}
+        {/* Features Overview */}
         <TabsContent value="features">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <ToggleRight className="h-5 w-5" />
-              Feature Toggles
+              Features Overview
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Enable or disable optional features for your account. Core features like Orders, Products, and Invoices are always available.
+              View all platform features, enable optional ones, and see which features require a plan upgrade.
             </p>
-            <FeatureTogglesPanel />
+            <FeaturesOverviewPanel />
           </Card>
         </TabsContent>
       </Tabs>
