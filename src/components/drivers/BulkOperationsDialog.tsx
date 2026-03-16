@@ -35,13 +35,13 @@ interface ColumnMapping {
 }
 
 const DB_FIELDS = [
-  { value: 'full_name', label: 'Full Name' },
-  { value: 'email', label: 'Email' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'vehicle_type', label: 'Vehicle Type' },
-  { value: 'vehicle_plate', label: 'License Plate' },
-  { value: 'zone_name', label: 'Zone' },
-  { value: '', label: '— Skip —' },
+  { value: 'full_name' as const, label: 'Full Name' },
+  { value: 'email' as const, label: 'Email' },
+  { value: 'phone' as const, label: 'Phone' },
+  { value: 'vehicle_type' as const, label: 'Vehicle Type' },
+  { value: 'vehicle_plate' as const, label: 'License Plate' },
+  { value: 'zone_name' as const, label: 'Zone' },
+  { value: '' as const, label: '— Skip —' },
 ] as const;
 
 const UPDATE_FIELDS = [
