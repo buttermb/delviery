@@ -430,22 +430,6 @@ export default function LiveMap() {
     };
   }, [loadCourierLocations, loadActiveOrders, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
-  useEffect(() => {
-    const statusMap: Record<string, string> = {};
-    for (const order of activeOrders) {
-      if (order.courier_id) {
-        statusMap[order.courier_id] = order.status;
-      }
-    }
-    courierOrderStatusRef.current = statusMap;
-
-    // Update existing marker pin colors to match
-    for (const [courierId, status] of Object.entries(statusMap)) {
-      updateMarkerPinColor(courierId, status);
-    }
-  }, [activeOrders, updateMarkerPinColor]);
-
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
     if (!courier.current_lat || !courier.current_lng) {
