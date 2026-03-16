@@ -35,21 +35,23 @@ interface ColumnMapping {
 }
 
 const DB_FIELDS = [
-  { value: 'full_name', label: 'Full Name' },
-  { value: 'email', label: 'Email' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'vehicle_type', label: 'Vehicle Type' },
-  { value: 'vehicle_plate', label: 'License Plate' },
-  { value: 'zone_name', label: 'Zone' },
-  { value: '', label: '— Skip —' },
+  { value: 'full_name' as const, label: 'Full Name' },
+  { value: 'email' as const, label: 'Email' },
+  { value: 'phone' as const, label: 'Phone' },
+  { value: 'vehicle_type' as const, label: 'Vehicle Type' },
+  { value: 'vehicle_plate' as const, label: 'License Plate' },
+  { value: 'zone_name' as const, label: 'Zone' },
+  { value: '' as const, label: '— Skip —' },
 ] as const;
 
 const UPDATE_FIELDS = [
-  { value: 'status', label: 'Status' },
-  { value: 'zone_id', label: 'Zone' },
-  { value: 'commission_rate', label: 'Commission Rate' },
-  { value: 'vehicle_type', label: 'Vehicle Type' },
+  { value: 'status' as const, label: 'Status' },
+  { value: 'zone_id' as const, label: 'Zone' },
+  { value: 'commission_rate' as const, label: 'Commission Rate' },
+  { value: 'vehicle_type' as const, label: 'Vehicle Type' },
 ] as const;
+
+type UpdateFieldValue = (typeof UPDATE_FIELDS)[number]['value'];
 
 const EXPORT_FORMATS = ['CSV', 'XLSX'] as const;
 
@@ -211,7 +213,7 @@ function ImportTab({
 
   const importMutation = useMutation({
     mutationFn: async () => {
-      const ALLOWED_FIELDS = new Set(DB_FIELDS.map((f) => f.value).filter(Boolean));
+      const ALLOWED_FIELDS = new Set<string>(DB_FIELDS.map((f) => f.value).filter(Boolean));
 
       const body = rows.map((row) => {
         const mapped: Record<string, string> = {};
@@ -413,7 +415,7 @@ function BulkUpdateTab({
   queryClient: ReturnType<typeof useQueryClient>;
   onClose: () => void;
 }) {
-  const [field, setField] = useState(UPDATE_FIELDS[0].value);
+  const [field, setField] = useState<UpdateFieldValue>(UPDATE_FIELDS[0].value);
   const [value, setValue] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -479,7 +481,7 @@ function BulkUpdateTab({
         </span>
         <select
           value={field}
-          onChange={(e) => { setField(e.target.value); setValue(''); }}
+          onChange={(e) => { setField(e.target.value as UpdateFieldValue); setValue(''); }}
           className="h-9 w-full rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
         >
           {UPDATE_FIELDS.map((f) => (

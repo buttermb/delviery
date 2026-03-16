@@ -901,6 +901,22 @@ export const FEATURES = {
     category: 'Settings',
     route: '/admin/priority-support',
   },
+  'drivers': {
+    id: 'drivers',
+    name: 'Drivers',
+    description: 'Manage delivery drivers and assignments',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/drivers',
+  },
+  'fleet-map': {
+    id: 'fleet-map',
+    name: 'Fleet Map',
+    description: 'Real-time fleet tracking map view',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/fleet',
+  },
 } satisfies Record<string, Feature>;
 
 // Derived from FEATURES so invalid IDs fail at compile-time

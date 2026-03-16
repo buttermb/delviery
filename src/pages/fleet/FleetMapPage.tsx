@@ -192,16 +192,17 @@ export default function FleetMapPage() {
 
     return (deliveriesQuery.data ?? []).map((o) => {
       const courier = o.courier_id ? courierMap.get(o.courier_id) : undefined;
+      const typedCourier = courier as { full_name?: string; zone_id?: string } | undefined;
       return {
         id: o.id,
         order_number: o.order_number ?? o.id.slice(0, 8),
         status: o.status as ActiveDelivery['status'],
         customer_name: o.customer_name ?? 'Unknown',
         delivery_address: o.delivery_address,
-        driver_name: courier?.full_name ?? 'Unassigned',
+        driver_name: typedCourier?.full_name ?? 'Unassigned',
         driver_id: o.courier_id ?? '',
         eta_minutes: o.eta_minutes,
-        zone_name: courier?.zone_id ? zoneMap.get(courier.zone_id) ?? null : null,
+        zone_name: typedCourier?.zone_id ? zoneMap.get(typedCourier.zone_id) ?? null : null,
         created_at: o.created_at ?? '',
       };
     });

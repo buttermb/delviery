@@ -428,23 +428,7 @@ export default function LiveMap() {
       supabase.removeChannel(couriersChannel);
       clearInterval(refreshInterval);
     };
-  }, [loadCourierLocations, loadActiveOrders, tenant?.id, updateMarkerPinColor]);
-
-  // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
-  useEffect(() => {
-    const statusMap: Record<string, string> = {};
-    for (const order of activeOrders) {
-      if (order.courier_id) {
-        statusMap[order.courier_id] = order.status;
-      }
-    }
-    courierOrderStatusRef.current = statusMap;
-
-    // Update existing marker pin colors to match
-    for (const [courierId, status] of Object.entries(statusMap)) {
-      updateMarkerPinColor(courierId, status);
-    }
-  }, [activeOrders, updateMarkerPinColor]);
+  }, [loadCourierLocations, loadActiveOrders, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
@@ -544,6 +528,22 @@ export default function LiveMap() {
       pinEl.style.boxShadow = `0 10px 15px -3px ${colors.shadow}4d`;
     }
   }, [getPinColor]);
+
+  // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
+  useEffect(() => {
+    const statusMap: Record<string, string> = {};
+    for (const order of activeOrders) {
+      if (order.courier_id) {
+        statusMap[order.courier_id] = order.status;
+      }
+    }
+    courierOrderStatusRef.current = statusMap;
+
+    // Update existing marker pin colors to match
+    for (const [courierId, status] of Object.entries(statusMap)) {
+      updateMarkerPinColor(courierId, status);
+    }
+  }, [activeOrders, updateMarkerPinColor]);
 
   /** Build order-marker popup HTML (used on create + live update) */
   const buildOrderPopupHTML = useCallback((order: ActiveOrder) => {
