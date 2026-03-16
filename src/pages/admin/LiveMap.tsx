@@ -529,6 +529,22 @@ export default function LiveMap() {
     }
   }, [getPinColor]);
 
+  // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
+  useEffect(() => {
+    const statusMap: Record<string, string> = {};
+    for (const order of activeOrders) {
+      if (order.courier_id) {
+        statusMap[order.courier_id] = order.status;
+      }
+    }
+    courierOrderStatusRef.current = statusMap;
+
+    // Update existing marker pin colors to match
+    for (const [courierId, status] of Object.entries(statusMap)) {
+      updateMarkerPinColor(courierId, status);
+    }
+  }, [activeOrders, updateMarkerPinColor]);
+
   /** Build order-marker popup HTML (used on create + live update) */
   const buildOrderPopupHTML = useCallback((order: ActiveOrder) => {
     const statusColor = getOrderStatusColor(order.status);
