@@ -26,6 +26,7 @@ import {
     Plug,
     Palette,
     BadgeDollarSign,
+    ToggleLeft,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
