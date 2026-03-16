@@ -415,7 +415,7 @@ function BulkUpdateTab({
   queryClient: ReturnType<typeof useQueryClient>;
   onClose: () => void;
 }) {
-  const [field, setField] = useState(UPDATE_FIELDS[0].value);
+  const [field, setField] = useState<UpdateFieldValue>(UPDATE_FIELDS[0].value);
   const [value, setValue] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
 
