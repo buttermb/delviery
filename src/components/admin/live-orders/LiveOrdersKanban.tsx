@@ -53,6 +53,7 @@ export interface LiveOrder {
   user_id: string;
   courier_id?: string;
   source?: 'menu' | 'app';
+  source_table?: 'orders' | 'menu_orders' | 'marketplace_orders';
   menu_title?: string;
   total_amount?: number;
   customer_name?: string;
