@@ -366,6 +366,7 @@ function KanbanCardContent({
           orderId={order.id}
           orderNumber={order.order_number}
           isWholesale={false}
+          isMarketplace={order.source_table === 'marketplace_orders'}
           deliveryAddress={order.delivery_address}
         />
       )}
