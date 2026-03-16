@@ -43,6 +43,7 @@ interface AssignToFleetDialogProps {
   orderId: string;
   orderNumber: string;
   isWholesale?: boolean;
+  isMarketplace?: boolean;
   deliveryAddress?: string;
 }
 
@@ -52,6 +53,7 @@ export function AssignToFleetDialog({
   orderId,
   orderNumber,
   isWholesale = false,
+  isMarketplace = false,
   deliveryAddress,
 }: AssignToFleetDialogProps) {
   const { tenant } = useTenantAdminAuth();
@@ -83,16 +85,32 @@ export function AssignToFleetDialog({
     mutationFn: async (courierId: string) => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const table = isWholesale ? 'wholesale_orders' : 'orders';
-      const { error } = await supabase
+      const table = isMarketplace
+        ? 'marketplace_orders'
+        : isWholesale
+          ? 'wholesale_orders'
+          : 'orders';
+
+      // marketplace_orders derives tenant_id from store_id, not a direct column
+      const updatePayload: Record<string, unknown> = {
+        courier_id: courierId,
+        status: 'out_for_delivery',
+      };
+      if (!isMarketplace) {
+        updatePayload.courier_assigned_at = new Date().toISOString();
+      }
+
+      let query = supabase
         .from(table)
-        .update({
-          courier_id: courierId,
-          status: 'out_for_delivery',
-          courier_assigned_at: new Date().toISOString(),
-        })
-        .eq('id', orderId)
-        .eq('tenant_id', tenant.id);
+        .update(updatePayload)
+        .eq('id', orderId);
+
+      // marketplace_orders doesn't have tenant_id column directly
+      if (!isMarketplace) {
+        query = query.eq('tenant_id', tenant.id);
+      }
+
+      const { error } = await query;
 
       if (error) throw error;
       return { courierId };

@@ -291,6 +291,18 @@ export const navigationSections: NavSection[] = [
         featureFlag: 'delivery_tracking'
       },
       {
+        title: 'Drivers',
+        href: '/admin/drivers',
+        icon: Users,
+        featureFlag: 'delivery_tracking'
+      },
+      {
+        title: 'Fleet Map',
+        href: '/admin/fleet',
+        icon: MapPin,
+        featureFlag: 'delivery_tracking'
+      },
+      {
         title: 'Fleet',
         href: '/admin/fulfillment-hub?tab=fleet',
         icon: Car,

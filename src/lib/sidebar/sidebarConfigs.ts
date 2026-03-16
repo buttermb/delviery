@@ -296,6 +296,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Fulfillment',
     items: [
       createItem('delivery-management', 'Deliveries', '/admin/fulfillment-hub', Truck, { featureFlag: 'delivery_tracking' }),
+      createItem('drivers', 'Drivers', '/admin/drivers', Users, { featureFlag: 'delivery_tracking' }),
+      createItem('fleet-map', 'Fleet Map', '/admin/fleet', MapPinned, { featureFlag: 'delivery_tracking' }),
       createItem('fleet-management', 'Fleet', '/admin/fulfillment-hub?tab=fleet', Truck, { featureFlag: 'fleet_management' }),
       createItem('couriers', 'Couriers', '/admin/fulfillment-hub?tab=couriers', Users, { featureFlag: 'courier_portal' }),
       createItem('delivery-tracking', 'Tracking', '/admin/fulfillment-hub?tab=map', MapPinned, { featureFlag: 'delivery_tracking' }),

@@ -992,6 +992,8 @@ export const queryKeys = {
       [...queryKeys.stockAlerts.all, 'active', tenantId] as const,
     byProduct: (productId: string) =>
       [...queryKeys.stockAlerts.all, 'product', productId] as const,
+    history: (tenantId?: string) =>
+      [...queryKeys.stockAlerts.all, 'history', tenantId] as const,
   },
 
   // Customer Invoices

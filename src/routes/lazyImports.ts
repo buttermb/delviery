@@ -222,6 +222,13 @@ export const DashboardHubPage = lazy(() => import("@/pages/admin/hubs/DashboardH
 export const SmartTVDashboard = lazy(() => import("@/pages/admin/SmartTVDashboard"));
 export const MarketingHubPage = lazy(() => import("@/pages/admin/hubs/MarketingHubPage"));
 
+// Driver Management
+export const DriverDirectoryPage = lazy(() => import("@/pages/drivers/DriverDirectoryPage"));
+export const DriverProfilePage = lazy(() => import("@/pages/drivers/DriverProfilePage"));
+
+// Fleet
+export const FleetMapPage = lazy(() => import("@/pages/fleet/FleetMapPage"));
+
 // Tenant Admin Enterprise
 export const RoleManagement = lazy(() => import("@/pages/admin/RoleManagement"));
 export const ActivityLogsPage = lazy(() => import("@/pages/tenant-admin/ActivityLogsPage").then(m => ({ default: m.ActivityLogsPage })));

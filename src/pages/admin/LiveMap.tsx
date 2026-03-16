@@ -77,6 +77,8 @@ export default function LiveMap() {
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const orderMarkers = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const routeLayers = useRef<Set<string>>(new Set());
+  /** Maps courier_id → active order status for reactive pin coloring */
+  const courierOrderStatusRef = useRef<Record<string, string>>({});
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
@@ -287,71 +289,162 @@ export default function LiveMap() {
     }
   }, [mapStyle, mapLoaded, mapStyles]);
 
-  // Load couriers and orders on mount and set up realtime subscriptions
+  // -------------------------------------------------------------------------
+  // Realtime subscriptions — mutate local state only, never refetch
+  // -------------------------------------------------------------------------
+
   useEffect(() => {
+    // Initial data load
     loadCourierLocations();
     loadActiveOrders();
 
-    // Set up realtime subscription for couriers
-    const couriersChannel = supabase
-      .channel(`couriers-changes-${tenant?.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'couriers',
-          filter: `tenant_id=eq.${tenant?.id}`,
-        },
-        () => {
-          loadCourierLocations();
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.info('Realtime subscription active', { component: 'LiveMap', table: 'couriers' });
-        } else if (status === 'CHANNEL_ERROR') {
-          logger.warn('Realtime subscription error, retrying', { component: 'LiveMap' });
-          setTimeout(() => loadCourierLocations(), 5000);
-        } else if (status === 'TIMED_OUT') {
-          logger.error('Realtime subscription timed out', null, { component: 'LiveMap' });
-          loadCourierLocations();
-        }
-      });
+    const ACTIVE_ORDER_STATUSES = new Set([
+      'pending', 'confirmed', 'preparing', 'ready_for_pickup',
+      'assigned', 'out_for_delivery', 'in_transit',
+    ]);
 
-    // Set up realtime subscription for orders
+    const DELIVERY_PIN_STATUSES = new Set([
+      'assigned', 'picking_up', 'in_transit', 'out_for_delivery',
+    ]);
+
+    // --- Orders channel: status → pin color + delivery card update ----------
     const ordersChannel = supabase
-      .channel(`orders-map-changes-${tenant?.id}`)
+      .channel(`fleet-orders-${tenant?.id}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'orders',
           filter: `tenant_id=eq.${tenant?.id}`,
         },
-        () => {
-          loadActiveOrders();
+        (payload) => {
+          const updated = payload.new as ActiveOrder & { tenant_id: string };
+
+          // Mutate activeOrders in-place
+          setActiveOrders((prev) => {
+            if (ACTIVE_ORDER_STATUSES.has(updated.status)) {
+              const idx = prev.findIndex((o) => o.id === updated.id);
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = { ...prev[idx], ...updated };
+                return next;
+              }
+              return [...prev, updated];
+            }
+            // Order left the active set (delivered / cancelled / etc.) — remove
+            return prev.filter((o) => o.id !== updated.id);
+          });
+
+          // Update courier pin color based on this order's status
+          if (updated.courier_id) {
+            if (DELIVERY_PIN_STATUSES.has(updated.status)) {
+              courierOrderStatusRef.current[updated.courier_id] = updated.status;
+              updateMarkerPinColor(updated.courier_id, updated.status);
+            } else {
+              // Order completed / cancelled — courier is available again
+              delete courierOrderStatusRef.current[updated.courier_id];
+              updateMarkerPinColor(updated.courier_id, undefined);
+            }
+          }
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.info('Realtime subscription active', { component: 'LiveMap', table: 'orders' });
+          logger.info('Realtime subscription active', { component: 'LiveMap', channel: 'fleet-orders' });
         }
       });
 
-    // Auto-refresh every 30 seconds
+    // --- Couriers channel: availability / location updates ------------------
+    const couriersChannel = supabase
+      .channel(`fleet-couriers-${tenant?.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'couriers',
+          filter: `tenant_id=eq.${tenant?.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as CourierLocation & { tenant_id: string };
+
+          // Mutate allCouriers in-place
+          setAllCouriers((prev) => {
+            const idx = prev.findIndex((c) => c.id === updated.id);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = { ...prev[idx], ...updated };
+              return next;
+            }
+            return prev;
+          });
+
+          // Mutate online couriers list
+          setCouriers((prev) => {
+            const isOnlineWithLocation =
+              updated.is_online &&
+              updated.current_lat != null &&
+              updated.current_lng != null;
+            const idx = prev.findIndex((c) => c.id === updated.id);
+
+            if (isOnlineWithLocation) {
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = { ...prev[idx], ...updated };
+                return next;
+              }
+              return [...prev, updated];
+            }
+            // Went offline or lost location — remove from online list
+            if (idx >= 0) {
+              return prev.filter((c) => c.id !== updated.id);
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.info('Realtime subscription active', { component: 'LiveMap', channel: 'fleet-couriers' });
+        } else if (status === 'CHANNEL_ERROR') {
+          logger.warn('Realtime courier subscription error, falling back to poll', { component: 'LiveMap' });
+          setTimeout(() => loadCourierLocations(), 5000);
+        } else if (status === 'TIMED_OUT') {
+          logger.error('Realtime courier subscription timed out', null, { component: 'LiveMap' });
+          loadCourierLocations();
+        }
+      });
+
+    // Safety-net poll (reduced — realtime handles most updates)
+    const SAFETY_POLL_MS = 60_000;
     const refreshInterval = setInterval(() => {
       loadCourierLocations();
       loadActiveOrders();
-    }, 30000);
+    }, SAFETY_POLL_MS);
 
     return () => {
-      supabase.removeChannel(couriersChannel);
       supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(couriersChannel);
       clearInterval(refreshInterval);
     };
-  }, [loadCourierLocations, loadActiveOrders]);
+  }, [loadCourierLocations, loadActiveOrders, tenant?.id, updateMarkerPinColor]);
+
+  // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
+  useEffect(() => {
+    const statusMap: Record<string, string> = {};
+    for (const order of activeOrders) {
+      if (order.courier_id) {
+        statusMap[order.courier_id] = order.status;
+      }
+    }
+    courierOrderStatusRef.current = statusMap;
+
+    // Update existing marker pin colors to match
+    for (const [courierId, status] of Object.entries(statusMap)) {
+      updateMarkerPinColor(courierId, status);
+    }
+  }, [activeOrders, updateMarkerPinColor]);
 
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
@@ -413,6 +506,95 @@ export default function LiveMap() {
     }
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // Pin color helpers — amber for active delivery, green for available
+  // ---------------------------------------------------------------------------
+
+  const getPinColor = useCallback((orderStatus: string | undefined) => {
+    switch (orderStatus) {
+      case 'assigned':
+      case 'picking_up':
+      case 'in_transit':
+      case 'out_for_delivery':
+        return { from: '#f59e0b', to: '#d97706', shadow: '#f59e0b', ping: '#f59e0b' };
+      case 'delivered':
+      default:
+        return { from: '#34d399', to: '#059669', shadow: '#10b981', ping: '#10b981' };
+    }
+  }, []);
+
+  /** Patch a single courier marker's DOM to reflect a new pin color */
+  const updateMarkerPinColor = useCallback((courierId: string, orderStatus: string | undefined) => {
+    const marker = markers.current[courierId];
+    if (!marker) return;
+
+    const el = marker.getElement();
+    const colors = getPinColor(orderStatus);
+    const wrapper = el.firstElementChild;
+    if (!wrapper) return;
+
+    const pingEl = wrapper.children[0] as HTMLElement | undefined;
+    const pulseEl = wrapper.children[1] as HTMLElement | undefined;
+    const pinEl = wrapper.children[2] as HTMLElement | undefined;
+
+    if (pingEl) pingEl.style.backgroundColor = `${colors.ping}4d`;
+    if (pulseEl) pulseEl.style.backgroundColor = `${colors.ping}33`;
+    if (pinEl) {
+      pinEl.style.background = `linear-gradient(to bottom right, ${colors.from}, ${colors.to})`;
+      pinEl.style.boxShadow = `0 10px 15px -3px ${colors.shadow}4d`;
+    }
+  }, [getPinColor]);
+
+  /** Build order-marker popup HTML (used on create + live update) */
+  const buildOrderPopupHTML = useCallback((order: ActiveOrder) => {
+    const statusColor = getOrderStatusColor(order.status);
+    const statusLabel = getOrderStatusLabel(order.status);
+    return `
+      <div class="p-4 min-w-[220px]">
+        <div class="flex items-center justify-between mb-3">
+          <div class="font-bold text-sm">#${escapeHtml(order.order_number || 'N/A')}</div>
+          <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: ${statusColor.hex}20; color: ${statusColor.hex};">
+            ${statusLabel}
+          </span>
+        </div>
+        <div class="space-y-2 text-xs text-gray-600">
+          ${order.customer_name ? `
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <span class="font-medium">${escapeHtml(order.customer_name)}</span>
+            </div>
+          ` : ''}
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            </svg>
+            <span class="line-clamp-2">${escapeHtml(order.delivery_address)}</span>
+          </div>
+          ${order.eta_minutes ? `
+            <div class="flex items-center gap-2 text-emerald-600 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>ETA: ${order.eta_minutes} mins</span>
+            </div>
+          ` : ''}
+          <div class="pt-2 border-t mt-2">
+            <div class="font-semibold text-gray-900">${formatCurrency(order.total_amount)}</div>
+          </div>
+          ${order.customer_phone ? `
+            <a href="tel:${escapeHtml(order.customer_phone)}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              Call Customer
+            </a>
+          ` : ''}
+        </div>
+      </div>`;
+  }, [getOrderStatusColor, getOrderStatusLabel]);
+
   // Center map on all active couriers
   const centerOnActivity = useCallback(() => {
     if (!map.current || couriers.length === 0) {
@@ -471,14 +653,15 @@ export default function LiveMap() {
         // Update existing marker
         markers.current[courier.id].setLngLat([courier.current_lng, courier.current_lat]);
       } else {
-        // Create new marker with enhanced styling
+        // Create new marker with enhanced styling — color driven by delivery status
+        const pinC = getPinColor(courierOrderStatusRef.current[courier.id]);
         const el = document.createElement('div');
         el.className = 'courier-marker';
         el.innerHTML = `
           <div class="relative group cursor-pointer">
-            <div class="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
-            <div class="absolute inset-0 bg-emerald-500/20 rounded-full animate-pulse scale-150"></div>
-            <div class="relative bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-emerald-500/30 border-2 border-white/80 hover:scale-110 transition-all duration-300">
+            <div class="absolute inset-0 rounded-full animate-ping" style="background-color:${pinC.ping}4d;"></div>
+            <div class="absolute inset-0 rounded-full animate-pulse scale-150" style="background-color:${pinC.ping}33;"></div>
+            <div class="relative text-white rounded-full w-12 h-12 flex items-center justify-center border-2 border-white/80 hover:scale-110 transition-all duration-300" style="background:linear-gradient(to bottom right,${pinC.from},${pinC.to});box-shadow:0 10px 15px -3px ${pinC.shadow}4d;">
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
                 <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
@@ -494,14 +677,14 @@ export default function LiveMap() {
         }).setHTML(`
           <div class="p-4 min-w-[200px]">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:linear-gradient(to bottom right,${pinC.from},${pinC.to});">
                 ${escapeHtml(courier.full_name.charAt(0).toUpperCase())}
               </div>
               <div>
                 <div class="font-semibold text-sm">${escapeHtml(courier.full_name)}</div>
                 <div class="flex items-center gap-1">
-                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span class="text-xs text-gray-500">Online</span>
+                  <span class="inline-block w-2 h-2 rounded-full animate-pulse" style="background-color:${pinC.from};"></span>
+                  <span class="text-xs text-gray-500">${courierOrderStatusRef.current[courier.id] ? 'On Delivery' : 'Online'}</span>
                 </div>
               </div>
             </div>
@@ -546,7 +729,7 @@ export default function LiveMap() {
         map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
       }
     }
-  }, [couriers, mapLoaded, selectedCourier, selectedOrder]);
+  }, [couriers, mapLoaded, selectedCourier, selectedOrder, getPinColor]);
 
   // Update order markers and routes when orders change
   useEffect(() => {
@@ -575,11 +758,25 @@ export default function LiveMap() {
       if (!order.dropoff_lat || !order.dropoff_lng) return;
 
       const statusColor = getOrderStatusColor(order.status);
-      const statusLabel = getOrderStatusLabel(order.status);
 
       if (orderMarkers.current[order.id]) {
-        // Update existing marker position
-        orderMarkers.current[order.id].setLngLat([order.dropoff_lng, order.dropoff_lat]);
+        // Update existing marker position + popup (status / ETA may have changed)
+        const existing = orderMarkers.current[order.id];
+        existing.setLngLat([order.dropoff_lng, order.dropoff_lat]);
+        const popup = existing.getPopup();
+        if (popup) {
+          popup.setHTML(buildOrderPopupHTML(order));
+        }
+        // Update the order-marker pin tint
+        const markerEl = existing.getElement();
+        const pulseRing = markerEl.querySelector('.animate-pulse') as HTMLElement | null;
+        if (pulseRing) {
+          pulseRing.style.backgroundColor = `${statusColor.hex}20`;
+        }
+        const pinDiv = markerEl.querySelector('.relative.rounded-full.w-10') as HTMLElement | null;
+        if (pinDiv) {
+          pinDiv.style.background = `linear-gradient(135deg, ${statusColor.hex}, ${statusColor.hex}dd)`;
+        }
       } else {
         // Create new customer/order marker
         const el = document.createElement('div');
@@ -599,51 +796,7 @@ export default function LiveMap() {
           offset: 25,
           closeButton: false,
           className: 'order-popup'
-        }).setHTML(`
-          <div class="p-4 min-w-[220px]">
-            <div class="flex items-center justify-between mb-3">
-              <div class="font-bold text-sm">#${escapeHtml(order.order_number || 'N/A')}</div>
-              <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: ${statusColor.hex}20; color: ${statusColor.hex};">
-                ${statusLabel}
-              </span>
-            </div>
-            <div class="space-y-2 text-xs text-gray-600">
-              ${order.customer_name ? `
-                <div class="flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
-                  <span class="font-medium">${escapeHtml(order.customer_name)}</span>
-                </div>
-              ` : ''}
-              <div class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                </svg>
-                <span class="line-clamp-2">${escapeHtml(order.delivery_address)}</span>
-              </div>
-              ${order.eta_minutes ? `
-                <div class="flex items-center gap-2 text-emerald-600 font-medium">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span>ETA: ${order.eta_minutes} mins</span>
-                </div>
-              ` : ''}
-              <div class="pt-2 border-t mt-2">
-                <div class="font-semibold text-gray-900">${formatCurrency(order.total_amount)}</div>
-              </div>
-              ${order.customer_phone ? `
-                <a href="tel:${escapeHtml(order.customer_phone)}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                  Call Customer
-                </a>
-              ` : ''}
-            </div>
-          </div>
-        `);
+        }).setHTML(buildOrderPopupHTML(order));
 
         const marker = new mapboxgl.Marker(el)
           .setLngLat([order.dropoff_lng, order.dropoff_lat])
@@ -714,7 +867,7 @@ export default function LiveMap() {
       });
       routeLayers.current.clear();
     }
-  }, [activeOrders, couriers, mapLoaded, showRoutes, getOrderStatusColor, getOrderStatusLabel]);
+  }, [activeOrders, couriers, mapLoaded, showRoutes, getOrderStatusColor, getOrderStatusLabel, buildOrderPopupHTML]);
 
   // Toggle heatmap
   useEffect(() => {

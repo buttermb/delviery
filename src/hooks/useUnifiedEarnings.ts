@@ -67,11 +67,11 @@ export function useUnifiedEarnings(
             id: e.id,
             order_number: e.orders?.order_number || 'N/A',
             created_at: e.created_at,
-            total_earned: e.total_earned,
+            total_earned: e.net_earnings,
             type: 'courier',
             commission_amount: e.commission_amount,
-            tip_amount: e.tip_amount ?? 0,
-            bonus_amount: e.bonus_amount ?? 0,
+            tip_amount: e.tip ?? 0,
+            bonus_amount: e.bonus ?? 0,
           });
         });
       } else {

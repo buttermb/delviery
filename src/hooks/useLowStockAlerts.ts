@@ -3,6 +3,9 @@
  *
  * Fetches stock alerts from the stock_alerts table for a given tenant.
  * Falls back to products-based calculation if the table doesn't exist.
+ * Also pulls timestamped history from low_inventory_log so admins can
+ * see *when* items went low, not just current state.
+ *
  * Used by the LowStockBanner component and order forms to identify
  * out-of-stock and low-stock products.
  */
@@ -23,6 +26,16 @@ export interface LowStockProduct {
   alertLevel: 'out_of_stock' | 'critical' | 'warning';
 }
 
+export interface LowStockHistoryEntry {
+  id: string;
+  productId: string;
+  productName: string;
+  quantityAfter: number;
+  threshold: number;
+  triggeredByOrderId: string | null;
+  createdAt: string;
+}
+
 export interface LowStockAlertsSummary {
   products: LowStockProduct[];
   outOfStockCount: number;
@@ -31,6 +44,8 @@ export interface LowStockAlertsSummary {
   totalAlerts: number;
   outOfStockIds: Set<string>;
   lowStockIds: Set<string>;
+  history: LowStockHistoryEntry[];
+  historyLoading: boolean;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -61,14 +76,24 @@ interface ProductRow {
   id: string;
   name: string;
   stock_quantity: number | null;
-  available_quantity: number | null;
-  low_stock_alert: number | null;
+  low_stock_threshold: number | null;
   category: string;
+}
+
+interface LowInventoryLogRow {
+  id: string;
+  product_id: string;
+  quantity_after: number;
+  threshold: number;
+  triggered_by_order_id: string | null;
+  created_at: string;
+  products: { name: string } | null;
 }
 
 export function useLowStockAlerts(): LowStockAlertsSummary {
   const { tenant } = useTenantAdminAuth();
 
+  // ── Current alerts query (unchanged logic) ──────────────────────
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.stockAlerts.active(tenant?.id),
     queryFn: async (): Promise<LowStockProduct[]> => {
@@ -116,7 +141,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // Fallback: fetch from products table
       const { data: products, error: fetchError } = await supabase
         .from('products')
-        .select('id, name, stock_quantity, available_quantity, low_stock_alert, category')
+        .select('id, name, stock_quantity, low_stock_threshold, category')
         .eq('tenant_id', tenant.id)
         .order('stock_quantity', { ascending: true });
 
@@ -128,21 +153,21 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // Filter and map results - include products where available quantity is at or below threshold
       return ((products ?? []) as ProductRow[])
         .filter((p) => {
-          const available = p.available_quantity ?? p.stock_quantity ?? 0;
-          const threshold = p.low_stock_alert ?? 10;
-          return available <= threshold;
+          const stock = p.stock_quantity ?? 0;
+          const threshold = p.low_stock_threshold ?? 10;
+          return stock <= threshold;
         })
         .map((p) => {
-          const available = p.available_quantity ?? p.stock_quantity ?? 0;
-          const threshold = p.low_stock_alert ?? 10;
+          const stock = p.stock_quantity ?? 0;
+          const threshold = p.low_stock_threshold ?? 10;
           return {
             id: p.id,
             name: p.name,
-            stockQuantity: p.stock_quantity ?? 0,
-            availableQuantity: available,
+            stockQuantity: stock,
+            availableQuantity: stock,
             lowStockThreshold: threshold,
             category: p.category,
-            alertLevel: getAlertLevel(available, threshold),
+            alertLevel: getAlertLevel(stock, threshold),
           };
         });
     },
@@ -170,6 +195,49 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
     retry: 2,
   });
 
+  // ── Low-inventory history from trigger log ──────────────────────
+  const { data: historyData, isLoading: historyLoading } = useQuery({
+    queryKey: queryKeys.stockAlerts.history(tenant?.id),
+    queryFn: async (): Promise<LowStockHistoryEntry[]> => {
+      if (!tenant?.id) return [];
+
+      const { data: logs, error: logError } = await (supabase as unknown as {
+        from: (table: string) => ReturnType<typeof supabase.from>;
+      })
+        .from('low_inventory_log')
+        .select('id, product_id, quantity_after, threshold, triggered_by_order_id, created_at, products(name)')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (logError) {
+        // Table may not exist yet in older deployments — fail silently
+        if (logError.code === '42P01') {
+          return [];
+        }
+        logger.warn('Failed to fetch low inventory history', {
+          component: 'useLowStockAlerts',
+          error: logError,
+        });
+        return [];
+      }
+
+      return ((logs ?? []) as LowInventoryLogRow[]).map((row) => ({
+        id: row.id,
+        productId: row.product_id,
+        productName: row.products?.name ?? 'Unknown product',
+        quantityAfter: row.quantity_after,
+        threshold: row.threshold,
+        triggeredByOrderId: row.triggered_by_order_id,
+        createdAt: row.created_at,
+      }));
+    },
+    enabled: !!tenant?.id,
+    staleTime: 120_000, // 2 minutes — history changes less frequently
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
   const selected = data ?? {
     products: [],
     outOfStockCount: 0,
@@ -188,6 +256,8 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
     totalAlerts: selected.totalAlerts,
     outOfStockIds: selected.outOfStockIds,
     lowStockIds: selected.lowStockIds,
+    history: historyData ?? [],
+    historyLoading,
     isLoading,
     error: error as Error | null,
     refetch,

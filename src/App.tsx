@@ -131,7 +131,8 @@ import {
   POSHubPage, OrdersHubPage, OrderDetailsPage, InventoryHubPage, CustomerHubPage,
   AnalyticsHubPage, SettingsHubPage, FinanceHubPage, StorefrontHubPage,
   OperationsHubPage, FulfillmentHubPage, DashboardHubPage, SmartTVDashboard,
-  MarketingHubPage, RoleManagement, ActivityLogsPage, LocationAnalyticsPage,
+  MarketingHubPage, DriverDirectoryPage, DriverProfilePage, FleetMapPage,
+  RoleManagement, ActivityLogsPage, LocationAnalyticsPage,
   BulkOperationsPage, APIAccessPage, WebhooksPage, CustomIntegrationsPage,
   DataExportPage, AuditTrailPage, CompliancePage, WhiteLabelPage, CustomDomainPage,
   PrioritySupportPage, CreditPurchaseSuccessPage, CreditPurchaseCancelledPage,
@@ -716,6 +717,9 @@ const App = () => {
                                         <Route path="fleet-management" element={<FeatureProtectedRoute feature="fleet_management"><Navigate to="fulfillment-hub?tab=fleet" replace /></FeatureProtectedRoute>} />
                                         <Route path="delivery-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="fulfillment-hub" replace /></FeatureProtectedRoute>} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><FulfillmentHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="drivers" element={<FeatureProtectedRoute feature="delivery_tracking"><Suspense fallback={<LoadingFallback />}><DriverDirectoryPage /></Suspense></FeatureProtectedRoute>} />
+                                        <Route path="drivers/:driverId" element={<FeatureProtectedRoute feature="delivery_tracking"><Suspense fallback={<LoadingFallback />}><DriverProfilePage /></Suspense></FeatureProtectedRoute>} />
+                                        <Route path="fleet" element={<FeatureProtectedRoute feature="delivery_tracking"><Suspense fallback={<LoadingFallback />}><FleetMapPage /></Suspense></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                         <Route path="settings-hub" element={<Navigate to="../settings" replace />} />
                                         <Route path="integrations-hub" element={<Navigate to="settings?tab=integrations" replace />} />
