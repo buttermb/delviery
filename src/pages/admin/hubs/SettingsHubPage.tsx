@@ -69,6 +69,7 @@ const tabs = [
     { id: 'integrations', label: 'Integrations', icon: Plug, group: 'Config' },
     { id: 'appearance', label: 'Appearance', icon: Palette, group: 'Config' },
     { id: 'crm', label: 'CRM', icon: BadgeDollarSign, group: 'Config' },
+    { id: 'features', label: 'Features', icon: ToggleLeft, group: 'Config' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
