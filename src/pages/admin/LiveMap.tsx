@@ -289,6 +289,45 @@ export default function LiveMap() {
     }
   }, [mapStyle, mapLoaded, mapStyles]);
 
+  // ---------------------------------------------------------------------------
+  // Pin color helpers — amber for active delivery, green for available
+  // ---------------------------------------------------------------------------
+
+  const getPinColor = useCallback((orderStatus: string | undefined) => {
+    switch (orderStatus) {
+      case 'assigned':
+      case 'picking_up':
+      case 'in_transit':
+      case 'out_for_delivery':
+        return { from: '#f59e0b', to: '#d97706', shadow: '#f59e0b', ping: '#f59e0b' };
+      case 'delivered':
+      default:
+        return { from: '#34d399', to: '#059669', shadow: '#10b981', ping: '#10b981' };
+    }
+  }, []);
+
+  /** Patch a single courier marker's DOM to reflect a new pin color */
+  const updateMarkerPinColor = useCallback((courierId: string, orderStatus: string | undefined) => {
+    const marker = markers.current[courierId];
+    if (!marker) return;
+
+    const el = marker.getElement();
+    const colors = getPinColor(orderStatus);
+    const wrapper = el.firstElementChild;
+    if (!wrapper) return;
+
+    const pingEl = wrapper.children[0] as HTMLElement | undefined;
+    const pulseEl = wrapper.children[1] as HTMLElement | undefined;
+    const pinEl = wrapper.children[2] as HTMLElement | undefined;
+
+    if (pingEl) pingEl.style.backgroundColor = `${colors.ping}4d`;
+    if (pulseEl) pulseEl.style.backgroundColor = `${colors.ping}33`;
+    if (pinEl) {
+      pinEl.style.background = `linear-gradient(to bottom right, ${colors.from}, ${colors.to})`;
+      pinEl.style.boxShadow = `0 10px 15px -3px ${colors.shadow}4d`;
+    }
+  }, [getPinColor]);
+
   // -------------------------------------------------------------------------
   // Realtime subscriptions — mutate local state only, never refetch
   // -------------------------------------------------------------------------
@@ -489,45 +528,6 @@ export default function LiveMap() {
       default: return status;
     }
   }, []);
-
-  // ---------------------------------------------------------------------------
-  // Pin color helpers — amber for active delivery, green for available
-  // ---------------------------------------------------------------------------
-
-  const getPinColor = useCallback((orderStatus: string | undefined) => {
-    switch (orderStatus) {
-      case 'assigned':
-      case 'picking_up':
-      case 'in_transit':
-      case 'out_for_delivery':
-        return { from: '#f59e0b', to: '#d97706', shadow: '#f59e0b', ping: '#f59e0b' };
-      case 'delivered':
-      default:
-        return { from: '#34d399', to: '#059669', shadow: '#10b981', ping: '#10b981' };
-    }
-  }, []);
-
-  /** Patch a single courier marker's DOM to reflect a new pin color */
-  const updateMarkerPinColor = useCallback((courierId: string, orderStatus: string | undefined) => {
-    const marker = markers.current[courierId];
-    if (!marker) return;
-
-    const el = marker.getElement();
-    const colors = getPinColor(orderStatus);
-    const wrapper = el.firstElementChild;
-    if (!wrapper) return;
-
-    const pingEl = wrapper.children[0] as HTMLElement | undefined;
-    const pulseEl = wrapper.children[1] as HTMLElement | undefined;
-    const pinEl = wrapper.children[2] as HTMLElement | undefined;
-
-    if (pingEl) pingEl.style.backgroundColor = `${colors.ping}4d`;
-    if (pulseEl) pulseEl.style.backgroundColor = `${colors.ping}33`;
-    if (pinEl) {
-      pinEl.style.background = `linear-gradient(to bottom right, ${colors.from}, ${colors.to})`;
-      pinEl.style.boxShadow = `0 10px 15px -3px ${colors.shadow}4d`;
-    }
-  }, [getPinColor]);
 
   // Sync courierOrderStatusRef whenever activeOrders changes (initial + updates)
   useEffect(() => {
