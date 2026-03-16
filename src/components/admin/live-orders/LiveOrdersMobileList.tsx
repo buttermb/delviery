@@ -15,7 +15,7 @@ import {
   XCircle,
   ChevronDown,
 } from 'lucide-react';
-import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
+import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
 import { LiveOrderStatusBadge } from '@/components/admin/live-orders/LiveOrderStatusBadge';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
