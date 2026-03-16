@@ -213,7 +213,7 @@ function ImportTab({
 
   const importMutation = useMutation({
     mutationFn: async () => {
-      const ALLOWED_FIELDS = new Set(DB_FIELDS.map((f) => f.value).filter(Boolean));
+      const ALLOWED_FIELDS = new Set<string>(DB_FIELDS.map((f) => f.value).filter(Boolean));
 
       const body = rows.map((row) => {
         const mapped: Record<string, string> = {};
