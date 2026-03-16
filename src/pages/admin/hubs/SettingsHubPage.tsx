@@ -180,6 +180,11 @@ export default function SettingsHubPage() {
                         <Suspense fallback={<TabSkeleton />}><CRMSettingsPage /></Suspense>
                     </ModuleErrorBoundary>
                 </TabsContent>
+                <TabsContent value="features" className="m-0">
+                    <ModuleErrorBoundary moduleName="Features">
+                        <Suspense fallback={<TabSkeleton />}><FeatureTogglesPanel /></Suspense>
+                    </ModuleErrorBoundary>
+                </TabsContent>
             </Tabs>
         </div>
     );
