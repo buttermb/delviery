@@ -215,6 +215,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           created_at: o.created_at,
           user_id: o.user_id,
           source: 'app' as const,
+          source_table: 'orders' as const,
           total_amount: Number(o.total_amount ?? 0),
           customer_name: o.customer_name ?? undefined,
           customer_phone: o.customer_phone ?? undefined,
