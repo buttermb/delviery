@@ -26,6 +26,7 @@ import {
     Plug,
     Palette,
     BadgeDollarSign,
+    ToggleLeft,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,6 +46,7 @@ const NotificationSettings = lazy(() => import('@/pages/tenant-admin/settings/No
 const IntegrationsSettings = lazy(() => import('@/pages/tenant-admin/settings/IntegrationsSettings'));
 const AppearanceSettings = lazy(() => import('@/pages/tenant-admin/settings/AppearanceSettings'));
 const CRMSettingsPage = lazy(() => import('@/pages/admin/CRMSettingsPage'));
+const FeatureTogglesPanel = lazy(() => import('@/components/admin/settings/FeatureTogglesPanel').then(m => ({ default: m.FeatureTogglesPanel })));
 
 const TabSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -67,6 +69,7 @@ const tabs = [
     { id: 'integrations', label: 'Integrations', icon: Plug, group: 'Config' },
     { id: 'appearance', label: 'Appearance', icon: Palette, group: 'Config' },
     { id: 'crm', label: 'CRM', icon: BadgeDollarSign, group: 'Config' },
+    { id: 'features', label: 'Features', icon: ToggleLeft, group: 'Config' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -175,6 +178,11 @@ export default function SettingsHubPage() {
                 <TabsContent value="crm" className="m-0">
                     <ModuleErrorBoundary moduleName="CRM">
                         <Suspense fallback={<TabSkeleton />}><CRMSettingsPage /></Suspense>
+                    </ModuleErrorBoundary>
+                </TabsContent>
+                <TabsContent value="features" className="m-0">
+                    <ModuleErrorBoundary moduleName="Features">
+                        <Suspense fallback={<TabSkeleton />}><FeatureTogglesPanel /></Suspense>
                     </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>

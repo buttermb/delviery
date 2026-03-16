@@ -168,7 +168,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   }, [navigate, tenantSlug]);
 
   const handleNavigateToFeatures = useCallback(() => {
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/settings-hub?tab=features`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/settings?tab=features`);
   }, [navigate, tenantSlug]);
 
   // Guard against missing tenant slug - AFTER all hooks are called

@@ -1,30 +1,56 @@
 
 
-# Fix "7 features enabled · Manage" Link
+# Fix: Static Menu Page "Menu Not Found"
 
-## Problem
-The "Manage" link in the sidebar footer points to `/admin/settings-hub?tab=features`, but:
-1. The route is `/admin/settings`, not `/admin/settings-hub`
-2. The SettingsHubPage has no "features" tab
-3. A `FeatureTogglesPanel` component exists at `src/components/admin/settings/FeatureTogglesPanel.tsx` but is never imported or rendered anywhere
+## Root Cause
 
-## Fix (3 files)
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-### 1. Add "Features" tab to SettingsHubPage
-**File**: `src/pages/admin/hubs/SettingsHubPage.tsx`
-- Add a `ToggleLeft` icon import from lucide-react
-- Add `{ id: 'features', label: 'Features', icon: ToggleLeft, group: 'Config' }` to the tabs array
-- Lazy-import the existing `FeatureTogglesPanel` from `@/components/admin/settings/FeatureTogglesPanel`
-- Add a `TabsContent` for `features` that renders the panel
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-### 2. Fix sidebar link URL (AdaptiveSidebar)
-**File**: `src/components/admin/sidebar/AdaptiveSidebar.tsx` (line 171)
-- Change `settings-hub` to `settings` in the navigate call:
-  `navigate(\`/\${tenantSlug}/admin/settings?tab=features\`)`
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
-### 3. Fix sidebar link URL (Sidebar)
-**File**: `src/components/admin/Sidebar.tsx` (line 268)
-- Change `settings-hub?tab=features` to `settings?tab=features`
+## Fix
 
-This wires the existing (but orphaned) feature toggles panel into the settings page and fixes both sidebar links to navigate there correctly.
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
+
+Update the `loadMenuDirect` function's product query:
+
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
+```
+
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
+```
+
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+
+## Also Fix: Pre-existing build errors in unrelated edge functions
+
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+
+## Result
+
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
 
