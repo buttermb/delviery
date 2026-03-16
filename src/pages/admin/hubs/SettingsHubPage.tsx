@@ -46,6 +46,7 @@ const NotificationSettings = lazy(() => import('@/pages/tenant-admin/settings/No
 const IntegrationsSettings = lazy(() => import('@/pages/tenant-admin/settings/IntegrationsSettings'));
 const AppearanceSettings = lazy(() => import('@/pages/tenant-admin/settings/AppearanceSettings'));
 const CRMSettingsPage = lazy(() => import('@/pages/admin/CRMSettingsPage'));
+const FeatureTogglesPanel = lazy(() => import('@/components/admin/settings/FeatureTogglesPanel').then(m => ({ default: m.FeatureTogglesPanel })));
 
 const TabSkeleton = () => (
     <div className="p-4 space-y-4">
