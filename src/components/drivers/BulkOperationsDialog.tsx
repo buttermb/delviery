@@ -45,11 +45,13 @@ const DB_FIELDS = [
 ] as const;
 
 const UPDATE_FIELDS = [
-  { value: 'status', label: 'Status' },
-  { value: 'zone_id', label: 'Zone' },
-  { value: 'commission_rate', label: 'Commission Rate' },
-  { value: 'vehicle_type', label: 'Vehicle Type' },
+  { value: 'status' as const, label: 'Status' },
+  { value: 'zone_id' as const, label: 'Zone' },
+  { value: 'commission_rate' as const, label: 'Commission Rate' },
+  { value: 'vehicle_type' as const, label: 'Vehicle Type' },
 ] as const;
+
+type UpdateFieldValue = (typeof UPDATE_FIELDS)[number]['value'];
 
 const EXPORT_FORMATS = ['CSV', 'XLSX'] as const;
 
