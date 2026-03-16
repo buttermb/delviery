@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
+import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
 import { LiveOrderStatusBadge } from '@/components/admin/live-orders/LiveOrderStatusBadge';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
@@ -137,6 +137,7 @@ const OrderRow = memo(function OrderRow({ order, onStatusChange }: OrderRowProps
         orderId={order.id}
         orderNumber={order.order_number}
         isWholesale={false}
+        isMarketplace={order.source_table === 'marketplace_orders'}
         deliveryAddress={order.delivery_address}
       />
     </>
