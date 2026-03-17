@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { AdminLayout } from '@/components/admin/shared/AdminLayout';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileHeader } from '@/components/drivers/profile/ProfileHeader';
@@ -151,35 +151,30 @@ export default function DriverProfilePage() {
 
   if (driverQuery.isLoading) {
     return (
-      <AdminLayout title="Driver Profile" subtitle="Loading...">
-        <div className="space-y-4">
-          <Skeleton className="h-32 rounded-lg bg-[#1E293B]" />
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-lg bg-[#1E293B]" />
-            ))}
-          </div>
+      <div className="space-y-4">
+        <Skeleton className="h-32 rounded-lg bg-muted" />
+        <div className="grid grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg bg-muted" />
+          ))}
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   if (!driver) {
     return (
-      <AdminLayout title="Driver Profile" subtitle="Not found">
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-lg font-medium text-[#F8FAFC]">Driver not found</p>
-          <p className="mt-1 text-sm text-[#64748B]">
-            This driver may have been removed or you don't have access.
-          </p>
-        </div>
-      </AdminLayout>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-lg font-medium text-foreground">Driver not found</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This driver may have been removed or you don't have access.
+        </p>
+      </div>
     );
   }
 
   return (
-    <AdminLayout title={driver.display_name || driver.full_name} subtitle="Driver Profile">
-      <div className="space-y-0">
+    <div className="space-y-0">
         <ProfileHeader driver={driver} tenantId={tenantId} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -228,7 +223,6 @@ export default function DriverProfilePage() {
             </TabsContent>
           </Suspense>
         </Tabs>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

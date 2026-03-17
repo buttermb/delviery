@@ -9,7 +9,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { AdminLayout } from '@/components/admin/shared/AdminLayout';
+
 import { Button } from '@/components/ui/button';
 
 import { DriverStatsStrip } from '@/components/drivers/DriverStatsStrip';
@@ -325,15 +325,16 @@ export default function DriverDirectoryPage() {
   // Render
   // -------------------------------------------------------------------
   return (
-    <AdminLayout
-      title="Driver Management"
-      subtitle="Manage your delivery fleet"
-      actions={
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Driver Management</h1>
+          <p className="text-sm text-muted-foreground">Manage your delivery fleet</p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="border-[#334155] bg-transparent text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
           >
             <Download className="mr-1.5 h-4 w-4" />
             Export
@@ -347,8 +348,7 @@ export default function DriverDirectoryPage() {
             Add Driver
           </Button>
         </div>
-      }
-    >
+      </div>
       <div className="space-y-4">
         {/* Stats strip */}
         <DriverStatsStrip
@@ -437,6 +437,6 @@ export default function DriverDirectoryPage() {
       </div>
 
       <AddDriverDialog open={addDriverOpen} onOpenChange={setAddDriverOpen} />
-    </AdminLayout>
+    </div>
   );
 }
