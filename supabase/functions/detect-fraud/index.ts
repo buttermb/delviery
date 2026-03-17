@@ -185,7 +185,7 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
 async function checkBinRisk(
   orderId: string | undefined,
   userId: string,
-  supabase: ReturnType<typeof createClient>
+  supabase: any
 ): Promise<Record<string, unknown>> {
   if (!orderId) return { flagged: false };
 
