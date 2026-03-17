@@ -239,7 +239,7 @@ serve(async (req) => {
     const { data: driver, error: insertError } = await supabase
       .from('couriers')
       .insert({
-        user_id: authData.user.id,
+        user_id: authUserId,
         tenant_id: tenantId,
         full_name: input.full_name,
         display_name: input.display_name || null,
