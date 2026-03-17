@@ -149,8 +149,6 @@ serve(async (req) => {
         availability: 'offline',
         is_active: false,
         is_online: false,
-        available_for_orders: false,
-        terminated_at: now,
       })
       .eq('id', driver.id);
 

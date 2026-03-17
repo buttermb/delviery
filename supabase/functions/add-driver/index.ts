@@ -240,7 +240,6 @@ serve(async (req) => {
         vehicle_year: input.vehicle_year,
         vehicle_color: input.vehicle_color,
         vehicle_plate: input.vehicle_plate,
-        insurance_expiry: input.insurance_expiry || null,
         commission_rate: input.commission_rate,
         zone_id: input.zone_id || null,
         notes: input.notes || null,

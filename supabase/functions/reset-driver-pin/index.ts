@@ -194,7 +194,7 @@ serve(async (req) => {
       .from('couriers')
       .update({
         pin_hash: pinHash,
-        pin_updated_at: new Date().toISOString(),
+        pin_set_at: new Date().toISOString(),
       })
       .eq('id', driver.id);
 
