@@ -1,5 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
 
 /**
  * SECURITY FIX: This function now derives the Stripe customer ID from the
