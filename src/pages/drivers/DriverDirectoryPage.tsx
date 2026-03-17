@@ -99,6 +99,7 @@ function countActiveFilters(filters: DriverFilterValues): number {
 
 export default function DriverDirectoryPage() {
   const { tenant } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
