@@ -81,8 +81,6 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
     },
   });
 
-  const daysLeft = insuranceDaysRemaining(driver.insurance_expiry);
-
   return (
     <div className="space-y-4">
       {/* Vehicle Information Card */}
