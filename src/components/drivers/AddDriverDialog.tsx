@@ -136,6 +136,7 @@ interface AddDriverDialogProps {
 
 export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
   const { tenant, token } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
