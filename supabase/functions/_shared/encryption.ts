@@ -179,7 +179,7 @@ export async function decryptCustomerFields(
     const encryptedField = `${field}_encrypted`;
     if (encryptedCustomer[encryptedField]) {
       const decryptedValue = await decryptData(
-        encryptedCustomer[encryptedField],
+        encryptedCustomer[encryptedField] as string,
         password
       );
       
