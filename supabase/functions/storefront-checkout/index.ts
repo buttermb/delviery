@@ -30,8 +30,7 @@ import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { checkRateLimit } from '../_shared/rateLimiting.ts';
 import { sanitizeString } from '../_shared/validation.ts';
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
 const logger = createLogger('storefront-checkout');
 

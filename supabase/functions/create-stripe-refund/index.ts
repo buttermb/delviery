@@ -1,5 +1,5 @@
 import { serve, createClient, z, corsHeaders } from "../_shared/deps.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
 
 const RefundSchema = z.object({
   customerId: z.string().min(1, "Customer ID is required"),
