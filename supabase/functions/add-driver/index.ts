@@ -310,7 +310,7 @@ serve(async (req) => {
 
     if (input.send_invite_email) {
       const resendApiKey = Deno.env.get('RESEND_API_KEY');
-      const portalUrl = Deno.env.get('COURIER_PORTAL_URL') || 'https://floraiq.app/courier';
+      const portalUrl = Deno.env.get('COURIER_PORTAL_URL') || `${Deno.env.get('SITE_URL') || ''}/courier`;
 
       if (resendApiKey) {
         try {

@@ -131,7 +131,7 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
   });
 
   const handleCopyLoginUrl = useCallback(async () => {
-    await navigator.clipboard.writeText('https://floraiq.app/courier');
+    await navigator.clipboard.writeText(`${window.location.origin}/courier`);
     toast.success('Login URL copied');
   }, []);
 

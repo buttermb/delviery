@@ -165,7 +165,7 @@ serve(async (req) => {
 
       // Send email with reset link via Resend
       const resendApiKey = Deno.env.get('RESEND_API_KEY');
-      const portalUrl = Deno.env.get('COURIER_PORTAL_URL') || 'https://floraiq.app/courier';
+      const portalUrl = Deno.env.get('COURIER_PORTAL_URL') || `${Deno.env.get('SITE_URL') || ''}/courier`;
 
       // Extract the hashed_token from the generated link properties
       const actionLink = linkData?.properties?.action_link || '';

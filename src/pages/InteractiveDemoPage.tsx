@@ -252,7 +252,7 @@ export default function InteractiveDemoPage() {
                                         <div className="w-3 h-3 rounded-full bg-green-400/80" />
                                         <div className="ml-4 px-3 py-1 rounded bg-neutral-200/50 text-[10px] font-mono text-neutral-500 flex items-center gap-2">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                            floraiq.app / {activeTab}
+                                            floraiqcrm.com / {activeTab}
                                         </div>
                                     </div>
 

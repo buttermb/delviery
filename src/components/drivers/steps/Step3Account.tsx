@@ -22,7 +22,13 @@ import {
 // ---------------------------------------------------------------------------
 
 const COMMISSION_TICKS = [10, 20, 30, 40, 50];
-const PORTAL_URL = 'floraiq.app/courier';
+/** Derived at render time so it works on any deploy domain. */
+function getPortalUrl() {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/courier`;
+  }
+  return '/courier';
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -65,11 +71,13 @@ export function Step3Account({ form, tenantId, previewPin, onRegeneratePin }: St
 
   const zones = zonesQuery.data ?? [];
 
+  const portalUrl = getPortalUrl();
+
   const handleCopyUrl = useCallback(async () => {
-    await navigator.clipboard.writeText(`https://${PORTAL_URL}`);
+    await navigator.clipboard.writeText(portalUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, []);
+  }, [portalUrl]);
 
   const pinDigits = previewPin.split('');
 
@@ -188,7 +196,7 @@ export function Step3Account({ form, tenantId, previewPin, onRegeneratePin }: St
         <div className="flex items-center gap-2">
           <div className="flex h-10 flex-1 items-center rounded-md border border-border bg-card px-3">
             <span className="truncate font-['JetBrains_Mono'] text-xs text-muted-foreground">
-              {PORTAL_URL}
+              {portalUrl}
             </span>
           </div>
           <button
@@ -257,7 +265,7 @@ export function Step3Account({ form, tenantId, previewPin, onRegeneratePin }: St
               >
                 <p style={{ margin: '0 0 12px 0' }}>
                   <strong>Portal:</strong>{' '}
-                  <span style={{ color: '#10b981' }}>https://{PORTAL_URL}</span>
+                  <span style={{ color: '#10b981' }}>{portalUrl}</span>
                 </p>
                 <p style={{ margin: '0 0 12px 0' }}>
                   <strong>Email:</strong> {driverEmail || 'driver@example.com'}
