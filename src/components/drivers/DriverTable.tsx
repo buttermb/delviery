@@ -71,6 +71,8 @@ export function DriverTable({
   pageSize,
   onPageChange,
   tenantId,
+  onViewProfile,
+  onEditDetails,
 }: DriverTableProps) {
   const allSelected = drivers.length > 0 && drivers.every((d) => selectedIds.has(d.id));
   const someSelected = drivers.some((d) => selectedIds.has(d.id)) && !allSelected;
