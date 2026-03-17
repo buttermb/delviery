@@ -142,7 +142,7 @@ export async function encryptCustomerFields(
     encrypted.phone_search_index = await createSearchHash(customer.phone as string);
   }
   if (customer.medical_card_number) {
-    encrypted.medical_card_number_search_index = await createSearchHash(customer.medical_card_number);
+    encrypted.medical_card_number_search_index = await createSearchHash(customer.medical_card_number as string);
   }
   
   // Mark as encrypted
