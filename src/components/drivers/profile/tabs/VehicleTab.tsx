@@ -33,11 +33,8 @@ type VehicleFormValues = z.infer<typeof vehicleSchema>;
 // Helpers
 // ---------------------------------------------------------------------------
 
-function insuranceDaysRemaining(dateStr: string | null): number | null {
-  if (!dateStr) return null;
-  const diff = new Date(dateStr).getTime() - Date.now();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
+// Insurance expiry is not yet tracked in the database
+// Placeholder for future implementation
 
 // ---------------------------------------------------------------------------
 // Component
