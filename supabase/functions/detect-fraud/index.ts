@@ -196,7 +196,7 @@ async function checkBinRisk(
     .eq('id', orderId)
     .maybeSingle();
 
-  if (!order?.payment_method_last4) return { flagged: false };
+  if (!order || !order.payment_method_last4) return { flagged: false };
 
   // BIN data would be passed from the frontend during checkout as bin_prefix
   // For now, check if BIN data was cached during checkout
