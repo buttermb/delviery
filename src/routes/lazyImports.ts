@@ -172,6 +172,7 @@ export const AnalyticsPage = lazy(() => import("@/pages/admin/AnalyticsPage"));
 export const AdvancedInvoicePage = lazy(() => import("@/pages/admin/AdvancedInvoicePage"));
 export const LocalAIPage = lazy(() => import("@/pages/admin/LocalAIPage"));
 export const WorkflowAutomationPage = lazy(() => import("@/pages/admin/WorkflowAutomationPage"));
+export const TaxManagementPage = lazy(() => import("@/pages/admin/TaxManagementPage"));
 
 // Marketplace Admin (B2C)
 export const MarketplaceDashboard = lazy(() => import("@/pages/admin/marketplace/MarketplaceDashboard"));

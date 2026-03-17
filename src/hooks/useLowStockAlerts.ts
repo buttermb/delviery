@@ -75,8 +75,8 @@ interface StockAlertRow {
 interface ProductRow {
   id: string;
   name: string;
-  stock_quantity: number | null;
-  low_stock_threshold: number | null;
+  available_quantity: number | null;
+  low_stock_alert: number | null;
   category: string;
 }
 
@@ -141,9 +141,9 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // Fallback: fetch from products table
       const { data: products, error: fetchError } = await supabase
         .from('products')
-        .select('id, name, stock_quantity, low_stock_threshold, category')
+        .select('id, name, available_quantity, low_stock_alert, category')
         .eq('tenant_id', tenant.id)
-        .order('stock_quantity', { ascending: true });
+        .order('available_quantity', { ascending: true });
 
       if (fetchError) {
         logger.error('Failed to fetch low stock products', { error: fetchError });
@@ -153,21 +153,21 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // Filter and map results - include products where available quantity is at or below threshold
       return ((products ?? []) as ProductRow[])
         .filter((p) => {
-          const stock = p.stock_quantity ?? 0;
-          const threshold = p.low_stock_threshold ?? 10;
-          return stock <= threshold;
+          const available = p.available_quantity ?? 0;
+          const threshold = p.low_stock_alert ?? 10;
+          return available <= threshold;
         })
         .map((p) => {
-          const stock = p.stock_quantity ?? 0;
-          const threshold = p.low_stock_threshold ?? 10;
+          const available = p.available_quantity ?? 0;
+          const threshold = p.low_stock_alert ?? 10;
           return {
             id: p.id,
             name: p.name,
-            stockQuantity: stock,
-            availableQuantity: stock,
+            stockQuantity: available,
+            availableQuantity: available,
             lowStockThreshold: threshold,
             category: p.category,
-            alertLevel: getAlertLevel(stock, threshold),
+            alertLevel: getAlertLevel(available, threshold),
           };
         });
     },

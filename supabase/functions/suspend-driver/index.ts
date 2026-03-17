@@ -99,7 +99,7 @@ serve(async (req) => {
     // -----------------------------------------------------------------------
     const { data: driver } = await supabase
       .from('couriers')
-      .select('id, tenant_id, user_id, email, full_name, status')
+      .select('id, tenant_id, user_id, email, full_name, status, notes')
       .eq('id', input.driver_id)
       .maybeSingle();
 

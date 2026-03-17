@@ -585,7 +585,7 @@ const GROW: NavItem[] = [
     {
         id: 'board-reports',
         name: 'Board Reports',
-        path: '/admin/board-reports',
+        path: '/admin/board-report',
         icon: Presentation,
         tier: 'ENTERPRISE',
         keywords: ['executive', 'summary', 'board'],
@@ -593,7 +593,7 @@ const GROW: NavItem[] = [
     {
         id: 'expansion',
         name: 'Expansion',
-        path: '/admin/expansion-analysis',
+        path: '/admin/expansion',
         icon: TrendingUp,
         tier: 'ENTERPRISE',
         keywords: ['growth', 'planning', 'markets'],
