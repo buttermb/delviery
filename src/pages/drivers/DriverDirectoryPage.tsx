@@ -437,6 +437,6 @@ export default function DriverDirectoryPage() {
       </div>
 
       <AddDriverDialog open={addDriverOpen} onOpenChange={setAddDriverOpen} />
-    </AdminLayout>
+    </div>
   );
 }

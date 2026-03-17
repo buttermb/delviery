@@ -223,7 +223,6 @@ export default function DriverProfilePage() {
             </TabsContent>
           </Suspense>
         </Tabs>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
