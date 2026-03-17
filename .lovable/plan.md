@@ -1,38 +1,56 @@
 
 
-# Fix "Driver not found" — Non-existent Column References
+# Fix: Static Menu Page "Menu Not Found"
 
 ## Root Cause
 
-The driver profile query on `DriverProfilePage.tsx` (line 122-133) selects three columns that do not exist on the `couriers` table:
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-| Referenced Column | Actual Column |
-|---|---|
-| `insurance_expiry` | Does not exist |
-| `suspension_reason` | `suspend_reason` |
-| `terminated_at` | Does not exist |
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-This causes a PostgREST 400 error, which makes `data` null, triggering the "Driver not found" message.
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
 ## Fix
 
-**File: `src/pages/drivers/DriverProfilePage.tsx`**
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
 
-1. Remove `insurance_expiry` and `terminated_at` from the select query (lines 126-128)
-2. Change `suspension_reason` to `suspend_reason`
-3. Update the `DriverProfile` interface (lines 26-55) to match:
-   - Remove `insurance_expiry` field
-   - Remove `terminated_at` field  
-   - Rename `suspension_reason` to `suspend_reason`
+Update the `loadMenuDirect` function's product query:
 
-4. Search all tab components that reference these fields and update accordingly:
-   - `ProfileHeader.tsx` — may reference `suspension_reason`
-   - `OverviewTab.tsx`, `VehicleTab.tsx` — may reference `insurance_expiry`
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
+```
 
-**Downstream files to check/fix** (same renames):
-- `src/components/drivers/profile/ProfileHeader.tsx`
-- `src/components/drivers/profile/tabs/OverviewTab.tsx`
-- `src/components/drivers/profile/tabs/VehicleTab.tsx`
-- `src/components/drivers/profile/tabs/ScheduleTab.tsx`
-- Any other component importing `DriverProfile` type
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
+```
+
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+
+## Also Fix: Pre-existing build errors in unrelated edge functions
+
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+
+## Result
+
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
 

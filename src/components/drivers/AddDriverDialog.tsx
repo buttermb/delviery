@@ -43,7 +43,7 @@ export const addDriverSchema = z.object({
   vehicle_year: z.coerce.number().int().min(1990).max(2030),
   vehicle_color: z.string().min(1, 'Vehicle color is required').max(30),
   vehicle_plate: z.string().min(1, 'License plate is required').max(20),
-  insurance_expiry: z.string().optional().or(z.literal('')),
+  
   // Step 3
   commission_rate: z.number().min(0).max(100).default(30),
   zone_id: z.string().optional().or(z.literal('')),
@@ -156,7 +156,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
       vehicle_year: new Date().getFullYear(),
       vehicle_color: '',
       vehicle_plate: '',
-      insurance_expiry: '',
+      
       commission_rate: 30,
       zone_id: '',
       send_invite_email: true,
@@ -177,7 +177,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
         vehicle_year: values.vehicle_year,
         vehicle_color: values.vehicle_color,
         vehicle_plate: values.vehicle_plate,
-        insurance_expiry: values.insurance_expiry || undefined,
+        
         commission_rate: values.commission_rate,
         zone_id: values.zone_id || undefined,
         send_invite_email: values.send_invite_email,

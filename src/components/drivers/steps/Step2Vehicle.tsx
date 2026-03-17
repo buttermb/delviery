@@ -41,20 +41,7 @@ function getColorSwatch(color: string): string | null {
   return COLOR_SWATCHES[lower] ?? null;
 }
 
-function getInsuranceWarning(dateStr: string): { text: string; color: string } | null {
-  if (!dateStr) return null;
-  const expiry = new Date(dateStr);
-  const now = new Date();
-  const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return { text: 'Expired', color: '#EF4444' };
-  }
-  if (diffDays <= 30) {
-    return { text: `Expiring in ${diffDays} day${diffDays !== 1 ? 's' : ''}`, color: '#F59E0B' };
-  }
-  return null;
-}
+// Insurance tracking not yet in database — helper kept for future use
 
 // ---------------------------------------------------------------------------
 // Component
@@ -68,13 +55,8 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
   const { register, watch, setValue, formState: { errors } } = form;
   const vehicleType = watch('vehicle_type');
   const vehicleColor = watch('vehicle_color');
-  const insuranceExpiry = watch('insurance_expiry');
 
   const colorSwatch = useMemo(() => getColorSwatch(vehicleColor ?? ''), [vehicleColor]);
-  const insuranceWarning = useMemo(
-    () => getInsuranceWarning(insuranceExpiry ?? ''),
-    [insuranceExpiry],
-  );
 
   return (
     <div className="space-y-5">
@@ -197,27 +179,6 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
         )}
       </div>
 
-      {/* Insurance Expiry */}
-      <div>
-        <Label className="mb-1.5 text-sm text-muted-foreground">
-          Insurance Expiry
-        </Label>
-        <Input
-          {...register('insurance_expiry')}
-          type="date"
-          className="h-10 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 dark:[&::-webkit-calendar-picker-indicator]:invert"
-        />
-        {insuranceWarning && (
-          <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: insuranceWarning.color }}>
-            {insuranceWarning.color === '#F59E0B' && (
-              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-              </svg>
-            )}
-            {insuranceWarning.text}
-          </p>
-        )}
-      </div>
     </div>
   );
 }

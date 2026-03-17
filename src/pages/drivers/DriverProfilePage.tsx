@@ -44,14 +44,12 @@ export interface DriverProfile {
   is_active: boolean;
   is_online: boolean;
   notes: string | null;
-  insurance_expiry: string | null;
   last_seen_at: string | null;
   created_at: string;
   updated_at: string;
   suspended_at: string | null;
   suspended_until: string | null;
-  suspension_reason: string | null;
-  terminated_at: string | null;
+  suspend_reason: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,9 +121,9 @@ export default function DriverProfilePage() {
           id, user_id, full_name, display_name, email, phone,
           vehicle_type, vehicle_make, vehicle_model, vehicle_year,
           vehicle_color, vehicle_plate, zone_id, status, availability,
-          commission_rate, is_active, is_online, notes, insurance_expiry,
+          commission_rate, is_active, is_online, notes,
           last_seen_at, created_at, updated_at,
-          suspended_at, suspended_until, suspension_reason, terminated_at,
+          suspended_at, suspended_until, suspend_reason,
           delivery_zones ( name )
         `)
         .eq('id', driverId)
