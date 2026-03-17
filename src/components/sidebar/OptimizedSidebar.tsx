@@ -38,6 +38,8 @@ import { Badge } from '@/components/ui/badge';
 import { useLiveBadge } from '@/components/admin/sidebar/LiveBadgeContext';
 import { LiveCountBadge } from '@/components/admin/sidebar/LiveCountBadge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import type { FeatureToggleKey } from '@/lib/featureFlags';
 import {
     Tooltip,
     TooltipContent,
@@ -89,8 +91,19 @@ export function OptimizedSidebar({
     // Get live badge counts
     const liveBadgeContext = useLiveBadge();
 
-    // Get sections filtered by tier
-    const sections = useMemo(() => getSidebarForTier(userTier), [userTier]);
+    // Get feature toggle state for this tenant
+    const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+
+    // Get sections filtered by tier, then by feature toggles
+    const sections = useMemo(() => {
+        const tierFiltered = getSidebarForTier(userTier);
+        return tierFiltered.map(section => ({
+            ...section,
+            items: section.items.filter(item =>
+                !item.featureFlag || isFeatureEnabled(item.featureFlag as FeatureToggleKey)
+            ),
+        })).filter(section => section.items.length > 0);
+    }, [userTier, isFeatureEnabled]);
 
     // Get locked items per section for upgrade prompts
     const lockedItemsBySection = useMemo(() => {
@@ -126,10 +139,12 @@ export function OptimizedSidebar({
         setExpandedSections(defaultExpanded);
     }, [sections]);
 
-    // Search results
+    // Search results (also filtered by feature toggles)
     const searchResults = useMemo(() => {
-        return searchSidebarItems(searchQuery, userTier);
-    }, [searchQuery, userTier]);
+        return searchSidebarItems(searchQuery, userTier).filter(item =>
+            !item.featureFlag || isFeatureEnabled(item.featureFlag as FeatureToggleKey)
+        );
+    }, [searchQuery, userTier, isFeatureEnabled]);
 
     // Keyboard shortcut for command palette
     useEffect(() => {
