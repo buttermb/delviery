@@ -71,7 +71,7 @@ CREATE POLICY "Tenant users can view their delivery zones"
   USING (
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.user_id = auth.uid() AND tu.is_active = true
+      WHERE tu.user_id = auth.uid() AND tu.status = 'active'
     )
   );
 
@@ -83,7 +83,7 @@ CREATE POLICY "Tenant admins can manage delivery zones"
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
       WHERE tu.user_id = auth.uid()
-      AND tu.is_active = true
+      AND tu.status = 'active'
       AND tu.role IN ('super_admin', 'admin', 'owner', 'manager')
     )
   );

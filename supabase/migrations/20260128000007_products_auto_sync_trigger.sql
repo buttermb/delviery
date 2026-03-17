@@ -19,10 +19,12 @@ AS $$
 DECLARE
     v_store_id UUID;
 BEGIN
-    -- Find the marketplace store for this tenant
-    SELECT id INTO v_store_id
-    FROM public.marketplace_stores
-    WHERE tenant_id = NEW.tenant_id
+    -- Find the marketplace store for the current user's tenant
+    -- (products table does not have tenant_id)
+    SELECT ms.id INTO v_store_id
+    FROM public.marketplace_stores ms
+    JOIN public.tenant_users tu ON tu.tenant_id = ms.tenant_id
+    WHERE tu.user_id = auth.uid()
     LIMIT 1;
 
     IF v_store_id IS NULL THEN
@@ -70,29 +72,8 @@ CREATE TRIGGER trigger_auto_sync_product_on_update
 
 GRANT EXECUTE ON FUNCTION public.auto_sync_product_to_marketplace() TO authenticated;
 
--- One-time backfill
-DO $$
-DECLARE
-    v_synced INTEGER := 0;
-BEGIN
-    INSERT INTO public.marketplace_product_settings (store_id, product_id, is_visible, display_order)
-    SELECT
-        ms.id,
-        p.id,
-        COALESCE(p.menu_visibility, true),
-        0
-    FROM public.products p
-    INNER JOIN public.marketplace_stores ms ON ms.tenant_id = p.tenant_id
-    WHERE NOT EXISTS (
-        SELECT 1 FROM public.marketplace_product_settings mps
-        WHERE mps.store_id = ms.id AND mps.product_id = p.id
-    )
-    ON CONFLICT (store_id, product_id) DO NOTHING;
-
-    GET DIAGNOSTICS v_synced = ROW_COUNT;
-    RAISE NOTICE 'Synced % existing products to marketplace_product_settings', v_synced;
-END;
-$$;
+-- One-time backfill (skipped: products table has no tenant_id, cannot reliably map to stores)
+-- Use sync_all_products_to_marketplace RPC manually if needed.
 
 COMMENT ON FUNCTION public.auto_sync_product_to_marketplace IS
 'Automatically syncs products to marketplace_product_settings when products are created or updated.';

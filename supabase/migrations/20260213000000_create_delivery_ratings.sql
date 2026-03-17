@@ -22,7 +22,7 @@ CREATE POLICY "Tenant users can view delivery ratings"
   FOR SELECT
   USING (
     tenant_id IN (
-      SELECT p.tenant_id FROM public.profiles p WHERE p.id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   );
 
@@ -49,4 +49,4 @@ CREATE INDEX idx_delivery_ratings_tracking ON public.delivery_ratings(tracking_t
 -- Updated timestamp trigger
 CREATE TRIGGER update_delivery_ratings_updated_at
   BEFORE UPDATE ON public.delivery_ratings
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

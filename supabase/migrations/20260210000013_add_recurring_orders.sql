@@ -76,9 +76,7 @@ CREATE POLICY "Super admins can view all recurring orders"
 ON recurring_orders
 FOR SELECT
 USING (
-  EXISTS (
-    SELECT 1 FROM super_admins WHERE user_id = auth.uid()
-  )
+  auth.jwt() ->> 'role' = 'service_role'
 );
 
 -- Policy: Super admins can manage all recurring orders
@@ -86,9 +84,7 @@ CREATE POLICY "Super admins can manage all recurring orders"
 ON recurring_orders
 FOR ALL
 USING (
-  EXISTS (
-    SELECT 1 FROM super_admins WHERE user_id = auth.uid()
-  )
+  auth.jwt() ->> 'role' = 'service_role'
 );
 
 -- Add trigger for updated_at

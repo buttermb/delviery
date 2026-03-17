@@ -20,6 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_marketplace_orders_seller_status
 CREATE INDEX IF NOT EXISTS idx_marketplace_orders_seller_customer
   ON public.marketplace_orders (seller_tenant_id, customer_id);
 
--- 4. Products by tenant + storefront visibility (storefront product listings)
-CREATE INDEX IF NOT EXISTS idx_products_tenant_menu_visibility
-  ON public.products (tenant_id, menu_visibility);
+-- 4. Products by storefront visibility (storefront product listings)
+CREATE INDEX IF NOT EXISTS idx_products_menu_visibility
+  ON public.products (menu_visibility);

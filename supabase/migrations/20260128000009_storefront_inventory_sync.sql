@@ -140,14 +140,14 @@ CREATE OR REPLACE FUNCTION public.create_storefront_order(
     p_customer_name TEXT,
     p_customer_email TEXT,
     p_customer_phone TEXT DEFAULT NULL,
-    p_delivery_address TEXT,
+    p_delivery_address TEXT DEFAULT NULL,
     p_delivery_notes TEXT DEFAULT NULL,
-    p_items JSONB, -- Array of {product_id, quantity, price, variant}
-    p_subtotal NUMERIC,
+    p_items JSONB DEFAULT '[]'::jsonb, -- Array of {product_id, quantity, price, variant}
+    p_subtotal NUMERIC DEFAULT 0,
     p_tax NUMERIC DEFAULT 0,
     p_delivery_fee NUMERIC DEFAULT 0,
-    p_total NUMERIC,
-    p_payment_method TEXT,
+    p_total NUMERIC DEFAULT 0,
+    p_payment_method TEXT DEFAULT 'cash',
     p_idempotency_key TEXT DEFAULT NULL
 )
 RETURNS UUID
@@ -169,7 +169,7 @@ BEGIN
     -- Check idempotency to prevent double orders
     IF p_idempotency_key IS NOT NULL THEN
         SELECT id INTO v_order_id
-        FROM public.storefront_orders
+        FROM public.marketplace_orders
         WHERE idempotency_key = p_idempotency_key;
 
         IF v_order_id IS NOT NULL THEN
@@ -220,37 +220,38 @@ BEGIN
     v_order_number := 'SF-' || to_char(NOW(), 'YYMMDD') || '-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0');
     v_tracking_token := encode(gen_random_bytes(16), 'hex');
 
-    -- Create the order
-    INSERT INTO public.storefront_orders (
+    -- Create the order (insert into marketplace_orders, the real table behind storefront_orders view)
+    INSERT INTO public.marketplace_orders (
         store_id,
-        tenant_id,
+        buyer_tenant_id,
+        seller_tenant_id,
         order_number,
         tracking_token,
         customer_name,
         customer_email,
         customer_phone,
-        delivery_address,
+        shipping_address,
         delivery_notes,
         items,
         subtotal,
         tax,
-        delivery_fee,
-        total,
-        payment_method,
+        shipping_cost,
+        total_amount,
+        shipping_method,
         status,
         payment_status,
-        idempotency_key,
         created_at,
         updated_at
     ) VALUES (
         p_store_id,
+        v_store.tenant_id,
         v_store.tenant_id,
         v_order_number,
         v_tracking_token,
         p_customer_name,
         p_customer_email,
         p_customer_phone,
-        p_delivery_address,
+        jsonb_build_object('address', p_delivery_address),
         p_delivery_notes,
         p_items,
         p_subtotal,
@@ -260,7 +261,6 @@ BEGIN
         p_payment_method,
         'pending',
         'pending',
-        p_idempotency_key,
         NOW(),
         NOW()
     )
@@ -294,36 +294,33 @@ GRANT EXECUTE ON FUNCTION public.restore_storefront_inventory(JSONB) TO authenti
 GRANT EXECUTE ON FUNCTION public.create_storefront_order(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB, NUMERIC, NUMERIC, NUMERIC, NUMERIC, TEXT, TEXT) TO anon, authenticated;
 
 -- ============================================================================
--- 5. Ensure storefront_orders table has required columns
+-- 5. Ensure marketplace_orders table has required columns
+-- (storefront_orders is a view on marketplace_orders)
 -- ============================================================================
 DO $$
 BEGIN
     -- Add idempotency_key column if it doesn't exist
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns
-        WHERE table_name = 'storefront_orders' AND column_name = 'idempotency_key'
+        WHERE table_name = 'marketplace_orders' AND column_name = 'idempotency_key'
     ) THEN
-        ALTER TABLE public.storefront_orders ADD COLUMN idempotency_key TEXT UNIQUE;
-    END IF;
-
-    -- Add tracking_token column if it doesn't exist
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_name = 'storefront_orders' AND column_name = 'tracking_token'
-    ) THEN
-        ALTER TABLE public.storefront_orders ADD COLUMN tracking_token TEXT UNIQUE;
+        ALTER TABLE public.marketplace_orders ADD COLUMN idempotency_key TEXT UNIQUE;
     END IF;
 END $$;
 
 -- Create index for idempotency key lookups
-CREATE INDEX IF NOT EXISTS idx_storefront_orders_idempotency_key
-ON public.storefront_orders(idempotency_key)
+CREATE INDEX IF NOT EXISTS idx_marketplace_orders_idempotency_key
+ON public.marketplace_orders(idempotency_key)
 WHERE idempotency_key IS NOT NULL;
 
 -- ============================================================================
 -- 6. UPDATE create_marketplace_order to decrement inventory
 -- ============================================================================
 -- This replaces the existing function to add inventory decrement
+
+-- Drop old overloads
+DROP FUNCTION IF EXISTS public.create_marketplace_order(UUID, JSONB, TEXT, TEXT, TEXT, JSONB, TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.create_marketplace_order(UUID, JSONB, TEXT, TEXT, TEXT, JSONB, TEXT, TEXT, JSONB);
 
 CREATE OR REPLACE FUNCTION public.create_marketplace_order(
   p_store_id UUID,
@@ -484,5 +481,5 @@ COMMENT ON FUNCTION public.restore_storefront_inventory IS
 COMMENT ON FUNCTION public.create_storefront_order IS
 'Creates a storefront order with inventory validation and decrement. Supports idempotency to prevent duplicate orders.';
 
-COMMENT ON FUNCTION public.create_marketplace_order IS
+COMMENT ON FUNCTION public.create_marketplace_order(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB, NUMERIC, NUMERIC, NUMERIC, NUMERIC, TEXT, TEXT) IS
 'Creates a marketplace order with inventory validation and decrement. Now includes stock checking and decrement from products table.';

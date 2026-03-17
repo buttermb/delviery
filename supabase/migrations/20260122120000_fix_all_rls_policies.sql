@@ -7,7 +7,7 @@
 -- HELPER FUNCTION: Get user's tenant IDs
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION auth.user_tenant_ids()
+CREATE OR REPLACE FUNCTION public.user_tenant_ids()
 RETURNS SETOF UUID
 LANGUAGE sql
 SECURITY DEFINER
@@ -32,19 +32,30 @@ DROP POLICY IF EXISTS "Enable insert for authenticated users" ON vendors;
 DROP POLICY IF EXISTS "Enable update for authenticated users" ON vendors;
 DROP POLICY IF EXISTS "Enable delete for authenticated users" ON vendors;
 
--- Create tenant-isolated policies
+-- Create policies using EXISTS check (vendors does NOT have tenant_id column)
+DROP POLICY IF EXISTS "vendors_tenant_select" ON vendors;
 CREATE POLICY "vendors_tenant_select" ON vendors FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  ));
 
+DROP POLICY IF EXISTS "vendors_tenant_insert" ON vendors;
 CREATE POLICY "vendors_tenant_insert" ON vendors FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "vendors_tenant_update" ON vendors;
 CREATE POLICY "vendors_tenant_update" ON vendors FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "vendors_tenant_delete" ON vendors;
 CREATE POLICY "vendors_tenant_delete" ON vendors FOR DELETE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
 -- ============================================================================
 -- PRODUCTS TABLE
@@ -64,18 +75,30 @@ DROP POLICY IF EXISTS "Tenant members can create products" ON products;
 DROP POLICY IF EXISTS "Tenant members can update products" ON products;
 DROP POLICY IF EXISTS "Tenant members can delete products" ON products;
 
-CREATE POLICY "products_tenant_select" ON products FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+-- Products is a public-readable table (no tenant_id column)
+-- SELECT: public read access for anon and authenticated
+DROP POLICY IF EXISTS "products_tenant_select" ON products;
+CREATE POLICY "products_tenant_select" ON products FOR SELECT TO anon, authenticated
+  USING (true);
 
+-- INSERT/UPDATE/DELETE: only admin/owner tenant members
+DROP POLICY IF EXISTS "products_tenant_insert" ON products;
 CREATE POLICY "products_tenant_insert" ON products FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "products_tenant_update" ON products;
 CREATE POLICY "products_tenant_update" ON products FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "products_tenant_delete" ON products;
 CREATE POLICY "products_tenant_delete" ON products FOR DELETE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
 -- ============================================================================
 -- ORDERS TABLE
@@ -95,23 +118,35 @@ DROP POLICY IF EXISTS "Authenticated users can create orders" ON orders;
 DROP POLICY IF EXISTS "Tenant members can update orders" ON orders;
 DROP POLICY IF EXISTS "Tenant members can delete orders" ON orders;
 
--- Staff can manage all tenant orders
+-- Staff can see all orders (orders does NOT have tenant_id column)
+DROP POLICY IF EXISTS "orders_staff_select" ON orders;
 CREATE POLICY "orders_staff_select" ON orders FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  ));
 
 -- Customers can see their own orders (for customer portal)
+DROP POLICY IF EXISTS "orders_customer_select" ON orders;
 CREATE POLICY "orders_customer_select" ON orders FOR SELECT
-  USING (customer_id = auth.uid());
+  USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "orders_tenant_insert" ON orders;
 CREATE POLICY "orders_tenant_insert" ON orders FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "orders_tenant_update" ON orders;
 CREATE POLICY "orders_tenant_update" ON orders FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "orders_tenant_delete" ON orders;
 CREATE POLICY "orders_tenant_delete" ON orders FOR DELETE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
 -- ============================================================================
 -- CUSTOMERS TABLE
@@ -127,18 +162,30 @@ DROP POLICY IF EXISTS "Enable insert for authenticated users" ON customers;
 DROP POLICY IF EXISTS "Enable update for authenticated users" ON customers;
 DROP POLICY IF EXISTS "Enable delete for authenticated users" ON customers;
 
+-- Customers does NOT have tenant_id column - use EXISTS check
+DROP POLICY IF EXISTS "customers_tenant_select" ON customers;
 CREATE POLICY "customers_tenant_select" ON customers FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  ));
 
+DROP POLICY IF EXISTS "customers_tenant_insert" ON customers;
 CREATE POLICY "customers_tenant_insert" ON customers FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "customers_tenant_update" ON customers;
 CREATE POLICY "customers_tenant_update" ON customers FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "customers_tenant_delete" ON customers;
 CREATE POLICY "customers_tenant_delete" ON customers FOR DELETE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
 -- ============================================================================
 -- INVOICES TABLE
@@ -162,18 +209,30 @@ DROP POLICY IF EXISTS "invoices_tenant_insert" ON invoices;
 DROP POLICY IF EXISTS "invoices_tenant_update" ON invoices;
 DROP POLICY IF EXISTS "invoices_tenant_delete" ON invoices;
 
+-- Invoices does NOT have tenant_id column - use EXISTS check
+DROP POLICY IF EXISTS "invoices_tenant_select" ON invoices;
 CREATE POLICY "invoices_tenant_select" ON invoices FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  ));
 
+DROP POLICY IF EXISTS "invoices_tenant_insert" ON invoices;
 CREATE POLICY "invoices_tenant_insert" ON invoices FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "invoices_tenant_update" ON invoices;
 CREATE POLICY "invoices_tenant_update" ON invoices FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
+DROP POLICY IF EXISTS "invoices_tenant_delete" ON invoices;
 CREATE POLICY "invoices_tenant_delete" ON invoices FOR DELETE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
+  ));
 
 -- ============================================================================
 -- POS_TRANSACTIONS TABLE
@@ -193,15 +252,18 @@ DROP POLICY IF EXISTS "pos_transactions_tenant_insert" ON pos_transactions;
 DROP POLICY IF EXISTS "pos_transactions_tenant_update" ON pos_transactions;
 DROP POLICY IF EXISTS "pos_transactions_tenant_delete" ON pos_transactions;
 
+DROP POLICY IF EXISTS "pos_transactions_tenant_select" ON pos_transactions;
 CREATE POLICY "pos_transactions_tenant_select" ON pos_transactions FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (tenant_id IN (SELECT public.user_tenant_ids()));
 
+DROP POLICY IF EXISTS "pos_transactions_tenant_insert" ON pos_transactions;
 CREATE POLICY "pos_transactions_tenant_insert" ON pos_transactions FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()));
 
+DROP POLICY IF EXISTS "pos_transactions_tenant_update" ON pos_transactions;
 CREATE POLICY "pos_transactions_tenant_update" ON pos_transactions FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (tenant_id IN (SELECT public.user_tenant_ids()))
+  WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()));
 
 -- No delete policy - POS transactions should never be deleted, only voided
 
@@ -215,15 +277,18 @@ DROP POLICY IF EXISTS "pos_shifts_insert" ON pos_shifts;
 DROP POLICY IF EXISTS "pos_shifts_update" ON pos_shifts;
 DROP POLICY IF EXISTS "pos_shifts_delete" ON pos_shifts;
 
+DROP POLICY IF EXISTS "pos_shifts_tenant_select" ON pos_shifts;
 CREATE POLICY "pos_shifts_tenant_select" ON pos_shifts FOR SELECT
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (tenant_id IN (SELECT public.user_tenant_ids()));
 
+DROP POLICY IF EXISTS "pos_shifts_tenant_insert" ON pos_shifts;
 CREATE POLICY "pos_shifts_tenant_insert" ON pos_shifts FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()));
 
+DROP POLICY IF EXISTS "pos_shifts_tenant_update" ON pos_shifts;
 CREATE POLICY "pos_shifts_tenant_update" ON pos_shifts FOR UPDATE
-  USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-  WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()));
+  USING (tenant_id IN (SELECT public.user_tenant_ids()))
+  WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()));
 
 -- ============================================================================
 -- INVENTORY / STOCK TABLES
@@ -254,11 +319,18 @@ DECLARE
     'tax_rates'
   ];
   tbl TEXT;
+  has_tenant_id BOOLEAN;
 BEGIN
   FOREACH tbl IN ARRAY tables_to_fix
   LOOP
     -- Check if table exists
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = tbl AND table_schema = 'public') THEN
+      -- Check if table has a tenant_id column
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = tbl AND table_schema = 'public' AND column_name = 'tenant_id'
+      ) INTO has_tenant_id;
+
       -- Drop old policies
       EXECUTE format('DROP POLICY IF EXISTS "Allow all for authenticated" ON %I', tbl);
       EXECUTE format('DROP POLICY IF EXISTS "%s_select" ON %I', tbl, tbl);
@@ -270,29 +342,60 @@ BEGIN
       EXECUTE format('DROP POLICY IF EXISTS "Enable update for authenticated users" ON %I', tbl);
       EXECUTE format('DROP POLICY IF EXISTS "Enable delete for authenticated users" ON %I', tbl);
 
-      -- Create new tenant-isolated policies
-      EXECUTE format('
-        CREATE POLICY "%s_tenant_select" ON %I FOR SELECT
-          USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-      ', tbl, tbl);
+      IF has_tenant_id THEN
+        -- Table HAS tenant_id: use tenant_id-based isolation
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_select" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_select" ON %I FOR SELECT
+            USING (tenant_id IN (SELECT public.user_tenant_ids()))
+        ', tbl, tbl);
 
-      EXECUTE format('
-        CREATE POLICY "%s_tenant_insert" ON %I FOR INSERT
-          WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()))
-      ', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_insert" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_insert" ON %I FOR INSERT
+            WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()))
+        ', tbl, tbl);
 
-      EXECUTE format('
-        CREATE POLICY "%s_tenant_update" ON %I FOR UPDATE
-          USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-          WITH CHECK (tenant_id IN (SELECT auth.user_tenant_ids()))
-      ', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_update" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_update" ON %I FOR UPDATE
+            USING (tenant_id IN (SELECT public.user_tenant_ids()))
+            WITH CHECK (tenant_id IN (SELECT public.user_tenant_ids()))
+        ', tbl, tbl);
 
-      EXECUTE format('
-        CREATE POLICY "%s_tenant_delete" ON %I FOR DELETE
-          USING (tenant_id IN (SELECT auth.user_tenant_ids()))
-      ', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_delete" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_delete" ON %I FOR DELETE
+            USING (tenant_id IN (SELECT public.user_tenant_ids()))
+        ', tbl, tbl);
+      ELSE
+        -- Table does NOT have tenant_id: use EXISTS check against tenant_users
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_select" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_select" ON %I FOR SELECT
+            USING (EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()))
+        ', tbl, tbl);
 
-      RAISE NOTICE 'Fixed RLS policies for table: %', tbl;
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_insert" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_insert" ON %I FOR INSERT
+            WITH CHECK (EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (''admin'', ''owner'')))
+        ', tbl, tbl);
+
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_update" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_update" ON %I FOR UPDATE
+            USING (EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (''admin'', ''owner'')))
+        ', tbl, tbl);
+
+        EXECUTE format('DROP POLICY IF EXISTS "%s_tenant_delete" ON %I', tbl, tbl);
+        EXECUTE format('
+          CREATE POLICY "%s_tenant_delete" ON %I FOR DELETE
+            USING (EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (''admin'', ''owner'')))
+        ', tbl, tbl);
+      END IF;
+
+      RAISE NOTICE 'Fixed RLS policies for table: % (has_tenant_id: %)', tbl, has_tenant_id;
     END IF;
   END LOOP;
 END $$;
@@ -315,11 +418,7 @@ BEGIN
     JOIN pg_namespace n ON p.pronamespace = n.oid
     WHERE p.prosecdef = true
       AND n.nspname = 'public'
-      AND NOT EXISTS (
-        SELECT 1 FROM pg_proc_info
-        WHERE oid = p.oid
-        AND proconfig @> ARRAY['search_path=public']
-      )
+      AND (p.proconfig IS NULL OR NOT p.proconfig @> ARRAY['search_path=public'])
   LOOP
     BEGIN
       EXECUTE format(

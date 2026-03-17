@@ -1,3 +1,6 @@
+-- Drop old overload with varchar signature
+DROP FUNCTION IF EXISTS public.consume_credits(UUID, INTEGER, CHARACTER VARYING, TEXT, CHARACTER VARYING, JSONB);
+
 -- Enhanced consume_credits with rate limiting and idempotency
 CREATE OR REPLACE FUNCTION public.consume_credits(
   p_tenant_id UUID,
@@ -145,5 +148,5 @@ END;
 $$;
 
 -- Grant permissions
-GRANT EXECUTE ON FUNCTION public.consume_credits TO authenticated;
-GRANT EXECUTE ON FUNCTION public.consume_credits TO service_role;
+GRANT EXECUTE ON FUNCTION public.consume_credits(UUID, INTEGER, TEXT, TEXT, TEXT, JSONB) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.consume_credits(UUID, INTEGER, TEXT, TEXT, TEXT, JSONB) TO service_role;

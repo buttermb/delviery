@@ -32,41 +32,49 @@ CREATE INDEX IF NOT EXISTS idx_tenants_alert_settings_digest
 ON public.tenants USING GIN (alert_settings);
 
 -- Add tenant_id to inventory_alerts table if missing (needed for tenant-scoped alerts)
+-- NOTE: inventory_alerts table may not exist yet; skip if absent
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'inventory_alerts'
-        AND column_name = 'tenant_id'
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'inventory_alerts'
     ) THEN
-        ALTER TABLE public.inventory_alerts
-        ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema = 'public'
+            AND table_name = 'inventory_alerts'
+            AND column_name = 'tenant_id'
+        ) THEN
+            ALTER TABLE public.inventory_alerts
+            ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
 
-        CREATE INDEX IF NOT EXISTS idx_inventory_alerts_tenant
-        ON public.inventory_alerts(tenant_id);
+            CREATE INDEX IF NOT EXISTS idx_inventory_alerts_tenant
+            ON public.inventory_alerts(tenant_id);
 
-        RAISE NOTICE 'Added tenant_id to inventory_alerts';
+            RAISE NOTICE 'Added tenant_id to inventory_alerts';
+        ELSE
+            RAISE NOTICE 'inventory_alerts.tenant_id already exists';
+        END IF;
+
+        -- Update RLS policies
+        DROP POLICY IF EXISTS "Enable read access for authenticated users" ON inventory_alerts;
+        DROP POLICY IF EXISTS "Tenant users can read inventory alerts" ON inventory_alerts;
+
+        EXECUTE 'CREATE POLICY "Tenant users can read inventory alerts" ON inventory_alerts
+            FOR SELECT USING (
+                auth.role() = ''authenticated''
+                AND (
+                    tenant_id IS NULL
+                    OR tenant_id IN (
+                        SELECT tenant_id FROM public.tenant_users
+                        WHERE user_id = auth.uid()
+                    )
+                )
+            )';
     ELSE
-        RAISE NOTICE 'inventory_alerts.tenant_id already exists';
+        RAISE NOTICE 'inventory_alerts table does not exist, skipping';
     END IF;
 END $$;
-
--- Update RLS policy for inventory_alerts to include tenant filtering
-DROP POLICY IF EXISTS "Enable read access for authenticated users" ON inventory_alerts;
-DROP POLICY IF EXISTS "Tenant users can read inventory alerts" ON inventory_alerts;
-
-CREATE POLICY "Tenant users can read inventory alerts" ON inventory_alerts
-    FOR SELECT USING (
-        auth.role() = 'authenticated'
-        AND (
-            tenant_id IS NULL
-            OR tenant_id IN (
-                SELECT tenant_id FROM public.tenant_users
-                WHERE user_id = auth.uid()
-            )
-        )
-    );
 
 -- Function to get low stock products for a tenant (used by edge function and dashboard)
 CREATE OR REPLACE FUNCTION get_low_stock_products(p_tenant_id UUID, p_limit INT DEFAULT 50)

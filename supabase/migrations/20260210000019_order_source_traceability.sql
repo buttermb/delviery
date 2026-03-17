@@ -11,12 +11,12 @@ ADD COLUMN IF NOT EXISTS source_session_id uuid;
 
 -- Index for efficient lookups by source menu
 CREATE INDEX IF NOT EXISTS idx_orders_source_menu_id
-ON public.orders(tenant_id, source_menu_id)
+ON public.orders(source_menu_id)
 WHERE source_menu_id IS NOT NULL;
 
 -- Index for session-based lookups
 CREATE INDEX IF NOT EXISTS idx_orders_source_session_id
-ON public.orders(tenant_id, source_session_id)
+ON public.orders(source_session_id)
 WHERE source_session_id IS NOT NULL;
 
 -- Add same columns to unified_orders if it exists
@@ -30,7 +30,7 @@ BEGIN
     ADD COLUMN IF NOT EXISTS source_session_id uuid;
 
     CREATE INDEX IF NOT EXISTS idx_unified_orders_source_menu_id
-    ON public.unified_orders(tenant_id, source_menu_id)
+    ON public.unified_orders(source_menu_id)
     WHERE source_menu_id IS NOT NULL;
   END IF;
 END $$;

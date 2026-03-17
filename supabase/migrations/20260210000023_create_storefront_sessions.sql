@@ -112,16 +112,12 @@ FOR ALL
 TO authenticated
 USING (
   tenant_id IN (
-    SELECT tenant_id FROM public.profiles WHERE id = auth.uid()
-    UNION
-    SELECT id FROM public.tenants WHERE owner_id = auth.uid()
+    SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()
   )
 )
 WITH CHECK (
   tenant_id IN (
-    SELECT tenant_id FROM public.profiles WHERE id = auth.uid()
-    UNION
-    SELECT id FROM public.tenants WHERE owner_id = auth.uid()
+    SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()
   )
 );
 

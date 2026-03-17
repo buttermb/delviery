@@ -313,7 +313,7 @@ BEGIN
       v_tenant_id,
       v_initial_credits,
       v_initial_credits,
-      'signup_bonus',
+      'bonus',
       'initial_grant',
       'Welcome credits for new ' || v_subscription_plan || ' account',
       'initial_grant:' || v_tenant_id::text,
@@ -379,7 +379,7 @@ WHERE tc.tenant_id = t.id
   AND NOT EXISTS (
     SELECT 1 FROM public.credit_transactions ct
     WHERE ct.tenant_id = tc.tenant_id
-    AND ct.transaction_type = 'signup_bonus'
+    AND ct.transaction_type = 'bonus'
   );
 
 -- Log the repair for affected tenants
@@ -396,7 +396,7 @@ SELECT
   tc.tenant_id,
   10000,
   10000,
-  'signup_bonus',
+  'bonus',
   'repair_grant',
   'Welcome credits (repaired - original grant failed)',
   'repair_grant:' || tc.tenant_id::text
@@ -408,7 +408,7 @@ WHERE t.is_free_tier = true
   AND NOT EXISTS (
     SELECT 1 FROM public.credit_transactions ct
     WHERE ct.tenant_id = tc.tenant_id
-    AND ct.transaction_type = 'signup_bonus'
+    AND ct.transaction_type = 'bonus'
   );
 
 -- ============================================================================

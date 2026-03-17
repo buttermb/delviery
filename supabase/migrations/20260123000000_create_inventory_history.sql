@@ -31,12 +31,12 @@ CREATE POLICY "inventory_history_tenant_isolation"
   FOR ALL
   USING (
     tenant_id IN (
-      SELECT p.tenant_id FROM public.profiles p WHERE p.id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   )
   WITH CHECK (
     tenant_id IN (
-      SELECT p.tenant_id FROM public.profiles p WHERE p.id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   );
 

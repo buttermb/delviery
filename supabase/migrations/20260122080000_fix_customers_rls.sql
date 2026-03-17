@@ -3,11 +3,9 @@
 --
 -- Problem: Current policies use complex joins through accounts.tenant_id
 -- or use get_user_tenant_id() function which can be overly permissive.
--- The "Account admins can manage customers" policy uses admin_users table
--- which is inconsistent with the tenant_users pattern.
+-- The customers table does NOT have a tenant_id column.
 --
--- Solution: Use tenant_users table directly for tenant membership checks,
--- consistent with vendors, products, and orders tables in the system.
+-- Solution: Use EXISTS checks against tenant_users for membership verification.
 -- ============================================================================
 
 -- Drop existing permissive policies
@@ -28,31 +26,31 @@ DROP POLICY IF EXISTS "customers_tenant_delete" ON customers;
 -- Ensure RLS is enabled
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 
--- Create tenant-isolated policies using tenant_users table
--- This is consistent with vendors, products, and orders tables
+-- Create policies using EXISTS check against tenant_users
+-- (customers table does not have a tenant_id column)
 
--- SELECT: Allow authenticated users who belong to the tenant
+-- SELECT: Allow authenticated users who are tenant members
 CREATE POLICY "customers_tenant_select" ON customers FOR SELECT
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
   ));
 
--- INSERT: Only tenant members can insert customers for their tenant
+-- INSERT: Only admin/owner tenant members can insert customers
 CREATE POLICY "customers_tenant_insert" ON customers FOR INSERT
-  WITH CHECK (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
--- UPDATE: Only tenant members can update customers for their tenant
+-- UPDATE: Only admin/owner tenant members can update customers
 CREATE POLICY "customers_tenant_update" ON customers FOR UPDATE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
--- DELETE: Only tenant members can delete customers for their tenant
+-- DELETE: Only admin/owner tenant members can delete customers
 CREATE POLICY "customers_tenant_delete" ON customers FOR DELETE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
 -- ============================================================================

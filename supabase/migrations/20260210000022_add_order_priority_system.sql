@@ -23,12 +23,12 @@ CREATE INDEX IF NOT EXISTS idx_unified_orders_priority
 -- Create composite index for priority queue ordering (urgent and high first)
 CREATE INDEX IF NOT EXISTS idx_unified_orders_priority_queue
   ON unified_orders(tenant_id,
-    CASE priority
+    (CASE priority
       WHEN 'urgent' THEN 1
       WHEN 'high' THEN 2
       WHEN 'normal' THEN 3
       WHEN 'low' THEN 4
-    END,
+    END),
     created_at ASC
   ) WHERE status NOT IN ('completed', 'cancelled', 'rejected', 'refunded');
 

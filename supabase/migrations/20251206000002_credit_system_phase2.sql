@@ -20,7 +20,7 @@ COMMENT ON COLUMN public.tenant_credits.alerts_sent IS 'Tracks which credit warn
 CREATE TABLE IF NOT EXISTS public.credit_auto_topup (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
-  enabled BOOLEAN DEFAULT false,
+  is_enabled BOOLEAN DEFAULT false,
   trigger_threshold INTEGER NOT NULL DEFAULT 500,
   topup_amount INTEGER NOT NULL DEFAULT 5000,
   max_per_month INTEGER NOT NULL DEFAULT 3,
@@ -35,28 +35,33 @@ CREATE TABLE IF NOT EXISTS public.credit_auto_topup (
 );
 
 CREATE INDEX IF NOT EXISTS idx_credit_auto_topup_tenant ON public.credit_auto_topup(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_credit_auto_topup_enabled ON public.credit_auto_topup(enabled) WHERE enabled = true;
+CREATE INDEX IF NOT EXISTS idx_credit_auto_topup_enabled ON public.credit_auto_topup(is_enabled) WHERE is_enabled = true;
 
 -- Enable RLS
 ALTER TABLE public.credit_auto_topup ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for credit_auto_topup
-CREATE POLICY "Tenants can view own auto-topup config" ON public.credit_auto_topup
-  FOR SELECT USING (
-    auth.uid() IN (
-      SELECT user_id FROM public.profiles WHERE tenant_id = credit_auto_topup.tenant_id
-    )
-  );
+-- RLS Policies for credit_auto_topup (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Tenants can view own auto-topup config" ON public.credit_auto_topup
+    FOR SELECT USING (
+      tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
+    );
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Tenants can update own auto-topup config" ON public.credit_auto_topup
-  FOR UPDATE USING (
-    auth.uid() IN (
-      SELECT user_id FROM public.profiles WHERE tenant_id = credit_auto_topup.tenant_id
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Tenants can update own auto-topup config" ON public.credit_auto_topup
+    FOR UPDATE USING (
+      tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
+    );
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Service role full access to auto-topup" ON public.credit_auto_topup
-  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access to auto-topup" ON public.credit_auto_topup
+    FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
 -- ============================================================================
 -- Referral System Tables
@@ -97,30 +102,37 @@ CREATE INDEX IF NOT EXISTS idx_referral_redemptions_referee ON public.referral_r
 ALTER TABLE public.referral_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.referral_redemptions ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for referral_codes
-CREATE POLICY "Tenants can view own referral codes" ON public.referral_codes
-  FOR SELECT USING (
-    auth.uid() IN (
-      SELECT user_id FROM public.profiles WHERE tenant_id = referral_codes.tenant_id
-    )
-  );
+-- RLS Policies for referral_codes (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Tenants can view own referral codes" ON public.referral_codes
+    FOR SELECT USING (
+      tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
+    );
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Service role full access to referral_codes" ON public.referral_codes
-  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access to referral_codes" ON public.referral_codes
+    FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
--- RLS Policies for referral_redemptions
-CREATE POLICY "Tenants can view own referral redemptions" ON public.referral_redemptions
-  FOR SELECT USING (
-    auth.uid() IN (
-      SELECT user_id FROM public.profiles WHERE tenant_id IN (
-        referral_redemptions.referrer_tenant_id, 
-        referral_redemptions.referee_tenant_id
-      )
-    )
-  );
+-- RLS Policies for referral_redemptions (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Tenants can view own referral redemptions" ON public.referral_redemptions
+    FOR SELECT USING (
+      (referrer_tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()))
+      OR
+      (referee_tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()))
+    );
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Service role full access to referral_redemptions" ON public.referral_redemptions
-  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access to referral_redemptions" ON public.referral_redemptions
+    FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
 -- ============================================================================
 -- Promo Codes Table
@@ -157,23 +169,33 @@ CREATE INDEX IF NOT EXISTS idx_promo_redemptions_tenant ON public.promo_redempti
 ALTER TABLE public.promo_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promo_redemptions ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for promo_codes (read-only for regular users)
-CREATE POLICY "Anyone can view active promo codes" ON public.promo_codes
-  FOR SELECT USING (is_active = true AND (valid_until IS NULL OR valid_until > now()));
+-- RLS Policies for promo_codes (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view active promo codes" ON public.promo_codes
+    FOR SELECT USING (is_active = true AND (valid_until IS NULL OR valid_until > now()));
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Service role full access to promo_codes" ON public.promo_codes
-  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access to promo_codes" ON public.promo_codes
+    FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
--- RLS Policies for promo_redemptions
-CREATE POLICY "Tenants can view own promo redemptions" ON public.promo_redemptions
-  FOR SELECT USING (
-    auth.uid() IN (
-      SELECT user_id FROM public.profiles WHERE tenant_id = promo_redemptions.tenant_id
-    )
-  );
+-- RLS Policies for promo_redemptions (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Tenants can view own promo redemptions" ON public.promo_redemptions
+    FOR SELECT USING (
+      tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
+    );
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
-CREATE POLICY "Service role full access to promo_redemptions" ON public.promo_redemptions
-  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access to promo_redemptions" ON public.promo_redemptions
+    FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
 -- ============================================================================
 -- Credit Expiration Tracking
@@ -397,7 +419,7 @@ BEGIN
   SELECT * INTO v_config
   FROM credit_auto_topup
   WHERE tenant_id = p_tenant_id
-    AND enabled = true;
+    AND is_enabled = true;
   
   IF NOT FOUND THEN
     RETURN jsonb_build_object('should_topup', false, 'reason', 'not_enabled');

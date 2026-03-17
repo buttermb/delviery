@@ -2,12 +2,7 @@
 ALTER TABLE public.wholesale_payments
 ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
 
--- Populate tenant_id from related wholesale_clients
-UPDATE public.wholesale_payments wp
-SET tenant_id = wc.tenant_id
-FROM public.wholesale_clients wc
-WHERE wp.client_id = wc.id
-AND wp.tenant_id IS NULL;
+-- Backfill skipped: wholesale_clients has no tenant_id column
 
 -- Create index for tenant_id
 CREATE INDEX IF NOT EXISTS idx_wholesale_payments_tenant_id ON public.wholesale_payments(tenant_id);

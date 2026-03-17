@@ -21,7 +21,7 @@ export interface MapDriver {
   current_order_number?: string | null;
   current_delivery_address?: string | null;
   eta_minutes?: number | null;
-  last_updated?: string;
+  last_location_update?: string;
 }
 
 interface FleetLiveMapProps {

@@ -2,11 +2,10 @@
 -- Fix overly permissive RLS policies on invoices table
 --
 -- Problem: Current policies are incomplete (SELECT only) and use admin_users
--- table which is inconsistent with the tenant_users pattern. The existing
--- "Admins can view all invoices" policy is overly permissive.
+-- table which is inconsistent with the tenant_users pattern. The invoices
+-- table does NOT have a tenant_id column.
 --
--- Solution: Use tenant_users table directly for tenant membership checks,
--- consistent with vendors, products, orders, and customers tables.
+-- Solution: Use EXISTS checks against tenant_users for membership verification.
 -- ============================================================================
 
 -- Drop existing permissive policies
@@ -29,31 +28,31 @@ DROP POLICY IF EXISTS "invoices_tenant_delete" ON invoices;
 -- Ensure RLS is enabled
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
--- Create tenant-isolated policies using tenant_users table
--- This is consistent with vendors, products, orders, and customers tables
+-- Create policies using EXISTS check against tenant_users
+-- (invoices table does not have a tenant_id column)
 
--- SELECT: Allow authenticated users who belong to the tenant
+-- SELECT: Allow authenticated users who are tenant members
 CREATE POLICY "invoices_tenant_select" ON invoices FOR SELECT
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
   ));
 
--- INSERT: Only tenant members can insert invoices for their tenant
+-- INSERT: Only admin/owner tenant members can insert invoices
 CREATE POLICY "invoices_tenant_insert" ON invoices FOR INSERT
-  WITH CHECK (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
--- UPDATE: Only tenant members can update invoices for their tenant
+-- UPDATE: Only admin/owner tenant members can update invoices
 CREATE POLICY "invoices_tenant_update" ON invoices FOR UPDATE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
--- DELETE: Only tenant members can delete invoices for their tenant
+-- DELETE: Only admin/owner tenant members can delete invoices
 CREATE POLICY "invoices_tenant_delete" ON invoices FOR DELETE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
 -- ============================================================================

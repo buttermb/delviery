@@ -27,13 +27,13 @@ CREATE INDEX IF NOT EXISTS idx_unified_orders_tenant_customer_created
 -- PRODUCTS: Composite indexes for catalog browsing and inventory
 -- =============================================================================
 
--- Category browsing within tenant
-CREATE INDEX IF NOT EXISTS idx_products_tenant_category
-  ON public.products (tenant_id, category);
+-- Category browsing
+CREATE INDEX IF NOT EXISTS idx_products_category
+  ON public.products (category);
 
--- Product name lookups and sorting within tenant
-CREATE INDEX IF NOT EXISTS idx_products_tenant_name
-  ON public.products (tenant_id, name);
+-- Product name lookups and sorting
+CREATE INDEX IF NOT EXISTS idx_products_name
+  ON public.products (name);
 
 -- =============================================================================
 -- MARKETPLACE_ORDERS: Storefront query patterns

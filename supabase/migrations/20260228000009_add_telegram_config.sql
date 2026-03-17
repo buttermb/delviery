@@ -46,13 +46,4 @@ SET notification_settings = COALESCE(notification_settings, '{}'::jsonb)
          COALESCE((notification_settings->>'show_telegram_on_confirmation')::boolean, false)
      );
 
--- 3. Migrate crm_settings.telegram_video_link into notification_settings.telegram_customer_link
---    Only where crm_settings has a non-empty value AND account_settings.telegram_customer_link is empty.
-UPDATE account_settings AS a
-SET notification_settings = a.notification_settings
-  || jsonb_build_object('telegram_customer_link', c.telegram_video_link)
-FROM crm_settings AS c
-WHERE c.account_id = a.account_id
-  AND c.telegram_video_link IS NOT NULL
-  AND c.telegram_video_link <> ''
-  AND COALESCE(a.notification_settings->>'telegram_customer_link', '') = '';
+-- 3. Migrate crm_settings.telegram_video_link — skipped, crm_settings table does not exist

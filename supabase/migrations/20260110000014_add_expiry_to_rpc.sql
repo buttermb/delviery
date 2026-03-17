@@ -1,6 +1,7 @@
 -- Update get_marketplace_products to include min_expiry_days
 -- This is needed for "Expiring Inventory Auto-Discounts" feature
 
+DROP FUNCTION IF EXISTS public.get_marketplace_products(uuid);
 CREATE OR REPLACE FUNCTION public.get_marketplace_products(p_store_id uuid)
  RETURNS TABLE(
     product_id uuid,

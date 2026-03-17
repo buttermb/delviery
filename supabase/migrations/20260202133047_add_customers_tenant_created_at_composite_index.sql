@@ -1,10 +1,12 @@
--- Add composite index on customers table for efficient tenant-scoped queries ordered by creation date
--- This index optimizes queries that filter by tenant_id and order by created_at in descending order
+-- Migration: Add index on customers table for created_at DESC
+-- Purpose: Optimize tenant-scoped queries ordered by creation date
+-- Note: customers table does NOT have tenant_id column; removed from original composite index
+-- Note: This is a duplicate of earlier migrations; using IF NOT EXISTS to be safe
 
--- Create composite index with tenant_id and created_at DESC
-CREATE INDEX IF NOT EXISTS idx_customers_tenant_id_created_at_desc
-  ON public.customers(tenant_id, created_at DESC);
+-- Create index with created_at DESC
+CREATE INDEX IF NOT EXISTS idx_customers_created_at_desc
+  ON public.customers(created_at DESC);
 
 -- Add comment explaining the index purpose
-COMMENT ON INDEX idx_customers_tenant_id_created_at_desc IS
-  'Composite index for efficient tenant-scoped customer queries ordered by creation date (newest first). Optimizes queries like: SELECT * FROM customers WHERE tenant_id = ? ORDER BY created_at DESC';
+COMMENT ON INDEX idx_customers_created_at_desc IS
+  'Index for efficient customer queries ordered by creation date (newest first). Optimizes queries like: SELECT * FROM customers ORDER BY created_at DESC';

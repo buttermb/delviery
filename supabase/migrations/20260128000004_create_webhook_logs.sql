@@ -28,10 +28,7 @@ CREATE POLICY "Tenants can view own webhook_logs"
   ON public.webhook_logs FOR SELECT
   USING (
     tenant_id IN (
-      SELECT a.tenant_id
-      FROM public.profiles p
-      JOIN public.accounts a ON p.account_id = a.id
-      WHERE p.user_id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   );
 

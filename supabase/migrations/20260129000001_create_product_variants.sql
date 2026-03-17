@@ -45,11 +45,11 @@ ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
 -- RLS Policies with tenant isolation
 CREATE POLICY "Tenant users can view product variants" ON public.product_variants
   FOR SELECT
-  USING (tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
+  USING (tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
 
 CREATE POLICY "Tenant users can manage product variants" ON public.product_variants
   FOR ALL
-  USING (tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
+  USING (tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
 
 -- Indexes for performance
 CREATE INDEX idx_product_variants_tenant ON public.product_variants(tenant_id);

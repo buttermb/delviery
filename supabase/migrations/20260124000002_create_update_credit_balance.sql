@@ -7,6 +7,9 @@
 -- For 'usage' type, raises exception if insufficient balance.
 -- ============================================================================
 
+-- Drop old overload with UUID last param (this migration uses TEXT)
+DROP FUNCTION IF EXISTS public.update_credit_balance(UUID, UUID, INTEGER, TEXT, TEXT, TEXT, UUID);
+
 CREATE OR REPLACE FUNCTION public.update_credit_balance(
   p_user_id UUID,
   p_tenant_id UUID,
@@ -149,5 +152,5 @@ END;
 $$;
 
 -- Grant permissions
-GRANT EXECUTE ON FUNCTION public.update_credit_balance TO authenticated;
-GRANT EXECUTE ON FUNCTION public.update_credit_balance TO service_role;
+GRANT EXECUTE ON FUNCTION public.update_credit_balance(UUID, UUID, INTEGER, TEXT, TEXT, TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.update_credit_balance(UUID, UUID, INTEGER, TEXT, TEXT, TEXT, TEXT) TO service_role;

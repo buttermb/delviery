@@ -7,11 +7,11 @@ ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
 
 -- 2. Add index for efficient queries on active products
 CREATE INDEX IF NOT EXISTS idx_products_active
-ON public.products(tenant_id) WHERE deleted_at IS NULL;
+ON public.products(id) WHERE deleted_at IS NULL;
 
 -- 3. Add index for archived products queries
 CREATE INDEX IF NOT EXISTS idx_products_archived
-ON public.products(tenant_id, deleted_at) WHERE deleted_at IS NOT NULL;
+ON public.products(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- 4. Create function to archive (soft delete) a product
 CREATE OR REPLACE FUNCTION public.archive_product(

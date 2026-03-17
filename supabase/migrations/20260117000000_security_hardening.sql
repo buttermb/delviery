@@ -39,17 +39,12 @@ CREATE POLICY "service_role_full_access" ON public.stock_movements
     WITH CHECK (true);
 
 -- Authenticated users can only SELECT their tenant's stock movements
--- (Assuming stock_movements has a tenant_id or can be joined to products -> tenant_id)
 CREATE POLICY "tenant_read_own_stock" ON public.stock_movements
     FOR SELECT
     TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM public.products p
-            WHERE p.id = stock_movements.product_id
-            AND p.tenant_id IN (
-                SELECT au.tenant_id FROM public.admin_users au WHERE au.user_id = auth.uid()
-            )
+        stock_movements.tenant_id IN (
+            SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
         )
     );
 
@@ -59,20 +54,18 @@ CREATE POLICY "tenant_admin_manage_stock" ON public.stock_movements
     TO authenticated
     USING (
         EXISTS (
-            SELECT 1 FROM public.admin_users au
-            JOIN public.products p ON p.tenant_id = au.tenant_id
-            WHERE au.user_id = auth.uid()
-            AND p.id = stock_movements.product_id
-            AND au.role IN ('admin', 'owner', 'super_admin')
+            SELECT 1 FROM public.tenant_users tu
+            WHERE tu.user_id = auth.uid()
+            AND tu.tenant_id = stock_movements.tenant_id
+            AND tu.role IN ('admin', 'owner')
         )
     )
     WITH CHECK (
         EXISTS (
-            SELECT 1 FROM public.admin_users au
-            JOIN public.products p ON p.tenant_id = au.tenant_id
-            WHERE au.user_id = auth.uid()
-            AND p.id = stock_movements.product_id
-            AND au.role IN ('admin', 'owner', 'super_admin')
+            SELECT 1 FROM public.tenant_users tu
+            WHERE tu.user_id = auth.uid()
+            AND tu.tenant_id = stock_movements.tenant_id
+            AND tu.role IN ('admin', 'owner')
         )
     );
 
@@ -98,7 +91,7 @@ CREATE POLICY "authenticated_read_own" ON public.burn_volatile_log
 CREATE POLICY "block_user_modification" ON public.burn_volatile_log
     FOR INSERT
     TO authenticated
-    USING (false);
+    WITH CHECK (false);
 
 CREATE POLICY "block_user_update" ON public.burn_volatile_log
     FOR UPDATE
@@ -120,9 +113,10 @@ CREATE POLICY "users_delete_own_orders" ON public.orders
     TO authenticated
     USING (
         auth.uid() = user_id
-        OR auth.uid() IN (
-            SELECT au.user_id FROM public.admin_users au
-            WHERE au.tenant_id = orders.tenant_id
+        OR EXISTS (
+            SELECT 1 FROM public.tenant_users tu
+            WHERE tu.user_id = auth.uid()
+            AND tu.role IN ('admin', 'owner')
         )
     );
 
@@ -135,16 +129,16 @@ CREATE POLICY "tenant_admins_manage_products" ON public.products
     TO authenticated
     USING (
         EXISTS (
-            SELECT 1 FROM public.admin_users au
-            WHERE au.user_id = auth.uid()
-            AND au.tenant_id = products.tenant_id
+            SELECT 1 FROM public.tenant_users tu
+            WHERE tu.user_id = auth.uid()
+            AND tu.role IN ('admin', 'owner')
         )
     )
     WITH CHECK (
         EXISTS (
-            SELECT 1 FROM public.admin_users au
-            WHERE au.user_id = auth.uid()
-            AND au.tenant_id = products.tenant_id
+            SELECT 1 FROM public.tenant_users tu
+            WHERE tu.user_id = auth.uid()
+            AND tu.role IN ('admin', 'owner')
         )
     );
 
@@ -169,7 +163,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
     SELECT EXISTS (
-        SELECT 1 FROM public.admin_users
+        SELECT 1 FROM public.tenant_users
         WHERE user_id = auth.uid()
         AND tenant_id = p_tenant_id
         AND role IN ('admin', 'owner', 'super_admin')
@@ -185,9 +179,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
     SELECT EXISTS (
-        SELECT 1 FROM public.admin_users
+        SELECT 1 FROM public.super_admin_users
         WHERE user_id = auth.uid()
-        AND role = 'super_admin'
     );
 $$;
 
@@ -199,7 +192,7 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-    SELECT tenant_id FROM public.admin_users
+    SELECT tenant_id FROM public.tenant_users
     WHERE user_id = auth.uid()
     LIMIT 1;
 $$;
@@ -503,7 +496,7 @@ $$;
 -- ============================================================================
 
 -- Revoke public execute on sensitive functions
-REVOKE ALL ON FUNCTION public.atomic_adjust_stock FROM public;
+REVOKE ALL ON FUNCTION public.atomic_adjust_stock(uuid, int, text, uuid, text) FROM public;
 REVOKE ALL ON FUNCTION public.check_password_reset_rate_limit FROM public;
 REVOKE ALL ON FUNCTION public.log_failed_login FROM public;
 
@@ -511,13 +504,13 @@ REVOKE ALL ON FUNCTION public.log_failed_login FROM public;
 GRANT EXECUTE ON FUNCTION public.is_tenant_admin TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_super_admin TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_my_tenant_id TO authenticated;
-GRANT EXECUTE ON FUNCTION public.add_to_cart TO authenticated;
+GRANT EXECUTE ON FUNCTION public.add_to_cart(uuid, uuid, int, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_jwt_claim TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_user_banned TO authenticated;
 GRANT EXECUTE ON FUNCTION public.log_security_event TO authenticated, service_role;
 
 -- Service role gets all access
-GRANT EXECUTE ON FUNCTION public.atomic_adjust_stock TO service_role;
+GRANT EXECUTE ON FUNCTION public.atomic_adjust_stock(uuid, int, text, uuid, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.check_password_reset_rate_limit TO service_role;
 GRANT EXECUTE ON FUNCTION public.check_otp_rate_limit TO service_role;
 GRANT EXECUTE ON FUNCTION public.log_failed_login TO service_role;

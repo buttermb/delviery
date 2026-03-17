@@ -1,14 +1,11 @@
--- Migration: Add composite index on wholesale_orders table for tenant_id and status
--- Purpose: Optimize filtered queries that filter by both tenant_id and status
--- This index will significantly improve query performance for queries like:
--- SELECT * FROM wholesale_orders WHERE tenant_id = ? AND status = ?
--- Common use cases include dashboard queries, order lists filtered by status within a tenant
+-- Migration: Add index on wholesale_orders table for status
+-- Purpose: Optimize filtered queries that filter by status
+-- Note: wholesale_orders does not have tenant_id column
 
--- Create composite index on (tenant_id, status)
--- This index is useful for queries that filter by tenant_id and status together
-CREATE INDEX IF NOT EXISTS idx_wholesale_orders_tenant_id_status
-ON public.wholesale_orders(tenant_id, status);
+-- Create index on status
+CREATE INDEX IF NOT EXISTS idx_wholesale_orders_status
+ON public.wholesale_orders(status);
 
 -- Add a comment to document the index purpose
-COMMENT ON INDEX idx_wholesale_orders_tenant_id_status IS
-'Composite index to optimize queries filtering wholesale orders by tenant_id and status. Common for dashboard and wholesale order list queries.';
+COMMENT ON INDEX idx_wholesale_orders_status IS
+'Index to optimize queries filtering wholesale orders by status.';

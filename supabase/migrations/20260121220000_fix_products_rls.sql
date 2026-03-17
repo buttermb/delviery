@@ -35,30 +35,34 @@ DROP POLICY IF EXISTS "Block anonymous access to products" ON products;
 -- Create tenant-isolated policies using tenant_users table
 -- This is consistent with vendors and other tables
 
--- SELECT: Allow authenticated users who belong to the tenant
--- (Storefront uses service_role or RPC functions, so this is safe)
+-- products table has no tenant_id column — use admin role check for management
+-- and public read for storefront access
+
+-- SELECT: Public read for storefront
 CREATE POLICY "products_tenant_select" ON products FOR SELECT
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
-  ));
+  TO anon, authenticated
+  USING (true);
 
--- INSERT: Only tenant members can insert products for their tenant
+-- INSERT: Only tenant admins can insert products
 CREATE POLICY "products_tenant_insert" ON products FOR INSERT
-  WITH CHECK (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
-  ));
+  TO authenticated
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner'))
+  );
 
--- UPDATE: Only tenant members can update products for their tenant
+-- UPDATE: Only tenant admins can update products
 CREATE POLICY "products_tenant_update" ON products FOR UPDATE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
-  ));
+  TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner'))
+  );
 
--- DELETE: Only tenant members can delete products for their tenant
+-- DELETE: Only tenant admins can delete products
 CREATE POLICY "products_tenant_delete" ON products FOR DELETE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
-  ));
+  TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner'))
+  );
 
 -- ============================================================================
 -- VERIFICATION QUERIES (Run these after migration to verify)

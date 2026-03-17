@@ -15,7 +15,7 @@ export interface RosterDriver {
   current_lng: number | null;
   phone?: string;
   zone_name?: string | null;
-  last_updated?: string;
+  last_location_update?: string;
 }
 
 interface DriverRosterPanelProps {
@@ -178,9 +178,9 @@ export function DriverRosterPanel({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="truncate text-sm text-foreground">{driver.full_name}</span>
-                      {driver.last_updated && (
+                      {driver.last_location_update && (
                         <span className="ml-2 flex-shrink-0 text-[10px] text-muted-foreground">
-                          {formatRelativeTime(driver.last_updated)}
+                          {formatRelativeTime(driver.last_location_update)}
                         </span>
                       )}
                     </div>

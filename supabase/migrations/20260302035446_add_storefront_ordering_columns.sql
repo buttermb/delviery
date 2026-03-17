@@ -1,0 +1,1 @@
+-- Migration applied via Supabase dashboard; placeholder for CLI sync

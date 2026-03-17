@@ -22,7 +22,10 @@ BEGIN
   END IF;
 END $$;
 
--- 2. Add new CHECK constraint with all valid statuses (marketplace + storefront)
+-- 2. Explicitly drop the named constraint if it already exists
+ALTER TABLE public.marketplace_orders DROP CONSTRAINT IF EXISTS marketplace_orders_status_check;
+
+-- Add new CHECK constraint with all valid statuses (marketplace + storefront)
 ALTER TABLE public.marketplace_orders
   ADD CONSTRAINT marketplace_orders_status_check
   CHECK (status IN (

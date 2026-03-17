@@ -16,5 +16,5 @@ COMMENT ON COLUMN public.products.height_cm IS 'Package height in centimeters';
 
 -- Create index for products with dimensions (useful for route optimization queries)
 CREATE INDEX IF NOT EXISTS idx_products_has_dimensions
-ON public.products (tenant_id)
+ON public.products (id)
 WHERE weight_kg IS NOT NULL OR (length_cm IS NOT NULL AND width_cm IS NOT NULL AND height_cm IS NOT NULL);

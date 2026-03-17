@@ -50,14 +50,12 @@ CREATE POLICY "System can insert menu events"
   FOR INSERT
   WITH CHECK (true);
 
--- Policy: Super admins can view all events
+-- Policy: Super admins can view all events (service_role only)
 CREATE POLICY "Super admins can view all menu events"
   ON menu_events
   FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM super_admins WHERE user_id = auth.uid()
-    )
+    auth.jwt() ->> 'role' = 'service_role'
   );
 
 -- Helper function to log menu events

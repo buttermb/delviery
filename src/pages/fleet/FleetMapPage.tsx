@@ -46,7 +46,7 @@ export default function FleetMapPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('couriers')
-        .select('id, full_name, is_online, current_lat, current_lng, phone, status, last_updated, vehicle_type, zone_id')
+        .select('id, full_name, is_online, current_lat, current_lng, phone, status, last_location_update, vehicle_type, zone_id')
         .eq('tenant_id', tenantId)
         .order('full_name');
       if (error) {
@@ -162,7 +162,7 @@ export default function FleetMapPage() {
         current_lng: c.current_lng,
         phone: c.phone ?? undefined,
         vehicle_type: c.vehicle_type ?? undefined,
-        last_updated: c.last_updated ?? undefined,
+        last_location_update: c.last_location_update ?? undefined,
       })),
     [couriersQuery.data],
   );
@@ -181,7 +181,7 @@ export default function FleetMapPage() {
         current_lng: c.current_lng,
         phone: c.phone ?? undefined,
         zone_name: c.zone_id ? zoneMap.get(c.zone_id) ?? null : null,
-        last_updated: c.last_updated ?? undefined,
+        last_location_update: c.last_location_update ?? undefined,
       })),
     [couriersQuery.data, zoneMap],
   );

@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_tenant_invitations_status ON public.tenant_invita
 ALTER TABLE public.tenant_invitations ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
--- Tenant members can view invitations for their tenant
+DROP POLICY IF EXISTS "Tenant members can view invitations" ON public.tenant_invitations;
 CREATE POLICY "Tenant members can view invitations" ON public.tenant_invitations
   FOR SELECT
   USING (
@@ -33,7 +33,7 @@ CREATE POLICY "Tenant members can view invitations" ON public.tenant_invitations
     )
   );
 
--- Tenant admins can create invitations
+DROP POLICY IF EXISTS "Tenant admins can create invitations" ON public.tenant_invitations;
 CREATE POLICY "Tenant admins can create invitations" ON public.tenant_invitations
   FOR INSERT
   WITH CHECK (
@@ -43,7 +43,7 @@ CREATE POLICY "Tenant admins can create invitations" ON public.tenant_invitation
     )
   );
 
--- Tenant admins can update invitations (cancel)
+DROP POLICY IF EXISTS "Tenant admins can update invitations" ON public.tenant_invitations;
 CREATE POLICY "Tenant admins can update invitations" ON public.tenant_invitations
   FOR UPDATE
   USING (
@@ -53,7 +53,7 @@ CREATE POLICY "Tenant admins can update invitations" ON public.tenant_invitation
     )
   );
 
--- Anyone can view invitation by token (for accepting)
+DROP POLICY IF EXISTS "Anyone can view invitation by token" ON public.tenant_invitations;
 CREATE POLICY "Anyone can view invitation by token" ON public.tenant_invitations
   FOR SELECT
   USING (true);

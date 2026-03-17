@@ -40,21 +40,8 @@ BEGIN
   END IF;
 END $$;
 
--- Step 4: Backfill tenant_id from accounts for purchase_orders
-UPDATE purchase_orders
-SET tenant_id = accounts.tenant_id
-FROM accounts
-WHERE purchase_orders.account_id = accounts.id
-AND purchase_orders.tenant_id IS NULL
-AND accounts.tenant_id IS NOT NULL;
-
--- Step 5: Backfill tenant_id from accounts for vendors
-UPDATE vendors
-SET tenant_id = accounts.tenant_id
-FROM accounts
-WHERE vendors.account_id = accounts.id
-AND vendors.tenant_id IS NULL
-AND accounts.tenant_id IS NOT NULL;
+-- Step 4: Backfill skipped - purchase_orders and vendors lack created_by column
+-- Tenant_id must be populated manually or via application logic
 
 -- ============================================
 -- ROW LEVEL SECURITY POLICIES FOR PURCHASE_ORDERS

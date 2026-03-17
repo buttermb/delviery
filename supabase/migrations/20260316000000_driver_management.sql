@@ -158,6 +158,29 @@ CREATE TABLE IF NOT EXISTS public.couriers (
     CHECK (vehicle_type IN ('car', 'van', 'motorcycle', 'bicycle', 'truck'))
 );
 
+-- Add missing columns if the table already existed
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS vehicle_year INTEGER;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS vehicle_color TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS vehicle_registration_url TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS vehicle_insurance_url TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS age_verified BOOLEAN DEFAULT false;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS background_check_status TEXT DEFAULT 'pending';
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS background_check_date TIMESTAMPTZ;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS license_front_url TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS license_back_url TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS insurance_expiry DATE;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS availability TEXT NOT NULL DEFAULT 'offline';
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS zone_id UUID REFERENCES public.delivery_zones(id) ON DELETE SET NULL;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5,2) DEFAULT 30.00;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS weekly_earnings_goal NUMERIC(10,2);
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS available_for_orders BOOLEAN DEFAULT true;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS last_location_update TIMESTAMPTZ;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
+ALTER TABLE public.couriers ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+
 CREATE INDEX IF NOT EXISTS idx_couriers_tenant_id ON public.couriers(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_couriers_tenant_status ON public.couriers(tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_couriers_tenant_availability ON public.couriers(tenant_id, availability);

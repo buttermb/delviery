@@ -1,3 +1,6 @@
+-- Drop old overload with varchar signature if it exists
+DROP FUNCTION IF EXISTS public.purchase_credits(UUID, INTEGER, CHARACTER VARYING);
+
 -- Update purchase_credits to be idempotent (return existing if duplicate)
 CREATE OR REPLACE FUNCTION public.purchase_credits(
   p_tenant_id UUID,
@@ -71,4 +74,4 @@ END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION public.purchase_credits TO service_role;
+GRANT EXECUTE ON FUNCTION public.purchase_credits(UUID, INTEGER, TEXT) TO service_role;

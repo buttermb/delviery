@@ -69,7 +69,8 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
--- 3. Update public getter function
+-- 3. Update public getter function (drop first to change return type)
+DROP FUNCTION IF EXISTS get_marketplace_products(UUID);
 CREATE OR REPLACE FUNCTION get_marketplace_products(p_store_id UUID)
 RETURNS TABLE (
   product_id UUID,

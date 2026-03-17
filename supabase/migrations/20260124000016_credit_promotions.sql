@@ -30,31 +30,35 @@ CREATE TABLE IF NOT EXISTS public.credit_promotion_usage (
 );
 
 -- Indexes
-CREATE INDEX idx_credit_promotions_tenant ON public.credit_promotions(tenant_id);
-CREATE INDEX idx_credit_promotions_code ON public.credit_promotions(code);
-CREATE INDEX idx_credit_promotions_active ON public.credit_promotions(is_active) WHERE is_active = true;
-CREATE INDEX idx_credit_promotion_usage_user ON public.credit_promotion_usage(user_id);
-CREATE INDEX idx_credit_promotion_usage_promo ON public.credit_promotion_usage(promotion_id);
+CREATE INDEX IF NOT EXISTS idx_credit_promotions_tenant ON public.credit_promotions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_credit_promotions_code ON public.credit_promotions(code);
+CREATE INDEX IF NOT EXISTS idx_credit_promotions_active ON public.credit_promotions(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_credit_promotion_usage_user ON public.credit_promotion_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_promotion_usage_promo ON public.credit_promotion_usage(promotion_id);
 
 -- Enable RLS
 ALTER TABLE public.credit_promotions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.credit_promotion_usage ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for credit_promotions
+DROP POLICY IF EXISTS "Authenticated users can view active promotions" ON public.credit_promotions;
 CREATE POLICY "Authenticated users can view active promotions"
   ON public.credit_promotions FOR SELECT
   USING (is_active = true AND auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Service role has full access to promotions" ON public.credit_promotions;
 CREATE POLICY "Service role has full access to promotions"
   ON public.credit_promotions FOR ALL
   USING (true)
   WITH CHECK (true);
 
 -- RLS Policies for credit_promotion_usage
+DROP POLICY IF EXISTS "Users can view own promotion usage" ON public.credit_promotion_usage;
 CREATE POLICY "Users can view own promotion usage"
   ON public.credit_promotion_usage FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Service role has full access to promotion usage" ON public.credit_promotion_usage;
 CREATE POLICY "Service role has full access to promotion usage"
   ON public.credit_promotion_usage FOR ALL
   USING (true)

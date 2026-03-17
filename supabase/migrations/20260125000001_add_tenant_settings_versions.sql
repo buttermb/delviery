@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS tenant_settings_versions (
   -- Which fields changed from previous version (for quick display)
   changed_fields JSONB DEFAULT '[]'::jsonb,
   -- User who made the change
-  changed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   changed_by_email TEXT,
   -- Version metadata
   version_number INTEGER NOT NULL DEFAULT 1,
@@ -35,25 +35,22 @@ ALTER TABLE tenant_settings_versions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Tenants can view their own settings versions"
   ON tenant_settings_versions FOR SELECT
   USING (tenant_id IN (
-    SELECT t.id FROM tenants t
-    JOIN profiles p ON p.tenant_id = t.id
-    WHERE p.id = auth.uid()
+    SELECT tu.tenant_id FROM tenant_users tu
+    WHERE tu.user_id = auth.uid()
   ));
 
 CREATE POLICY "Tenants can insert their own settings versions"
   ON tenant_settings_versions FOR INSERT
   WITH CHECK (tenant_id IN (
-    SELECT t.id FROM tenants t
-    JOIN profiles p ON p.tenant_id = t.id
-    WHERE p.id = auth.uid()
+    SELECT tu.tenant_id FROM tenant_users tu
+    WHERE tu.user_id = auth.uid()
   ));
 
 CREATE POLICY "Tenants can delete their own settings versions"
   ON tenant_settings_versions FOR DELETE
   USING (tenant_id IN (
-    SELECT t.id FROM tenants t
-    JOIN profiles p ON p.tenant_id = t.id
-    WHERE p.id = auth.uid()
+    SELECT tu.tenant_id FROM tenant_users tu
+    WHERE tu.user_id = auth.uid()
   ));
 
 -- Function to save settings version and maintain only last 10 versions

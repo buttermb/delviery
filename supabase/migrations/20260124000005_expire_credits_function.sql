@@ -3,7 +3,7 @@
 -- ============================================================================
 -- 1. Creates credit_expiration_rules table for configurable expiration policies
 -- 2. Adds lifetime_expired column to tenant_credits
--- 3. Adds 'expiration' to credit_transactions transaction_type CHECK
+-- 3. Adds 'expiry' to credit_transactions transaction_type CHECK
 -- 4. Creates expire_credits() function for nightly pg_cron execution
 -- 5. Schedules pg_cron job to run nightly at midnight UTC
 -- ============================================================================
@@ -57,10 +57,10 @@ ADD COLUMN IF NOT EXISTS lifetime_expired INTEGER NOT NULL DEFAULT 0;
 COMMENT ON COLUMN public.tenant_credits.lifetime_expired IS 'Total credits expired over the lifetime of the account';
 
 -- ============================================================================
--- 3. ADD 'expiration' TO credit_transactions transaction_type CHECK
+-- 3. ADD 'expiry' TO credit_transactions transaction_type CHECK
 -- ============================================================================
 
--- Drop old constraint and recreate with 'expiration' included
+-- Drop old constraint and recreate with 'expiry' included
 ALTER TABLE public.credit_transactions
 DROP CONSTRAINT IF EXISTS credit_transactions_transaction_type_check;
 
@@ -68,7 +68,7 @@ ALTER TABLE public.credit_transactions
 ADD CONSTRAINT credit_transactions_transaction_type_check
 CHECK (transaction_type IN (
   'free_grant', 'purchase', 'usage', 'refund', 'bonus',
-  'adjustment', 'signup_bonus', 'promo', 'expiration'
+  'adjustment', 'signup_bonus', 'promo', 'expiry'
 ));
 
 -- ============================================================================
@@ -147,7 +147,7 @@ BEGIN
       v_grant.tenant_id,
       -v_expired_amount,
       v_new_balance,
-      'expiration',
+      'expiry',
       'credit_expiration',
       v_grant.grant_id,
       'credit_grant',
@@ -256,7 +256,7 @@ BEGIN
         v_grant.tenant_id,
         -v_expired_amount,
         v_new_balance,
-        'expiration',
+        'expiry',
         'credit_expiration',
         v_grant.grant_id,
         'credit_grant',
@@ -344,7 +344,7 @@ BEGIN
       v_tenant_credit.tenant_id,
       -v_expired_amount,
       v_new_balance,
-      'expiration',
+      'expiry',
       'free_credits_expiration',
       format('Expired %s free credits (expired at %s)',
         v_expired_amount, v_tenant_credit.free_credits_expires_at),
@@ -383,7 +383,7 @@ COMMENT ON FUNCTION public.expire_credits() IS 'Nightly job to expire credits ba
 -- ============================================================================
 -- Note: pg_cron extension must be enabled. This will be a no-op if not available.
 
-DO $$
+DO $cron_block$
 BEGIN
   -- Check if pg_cron extension is available
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
@@ -397,8 +397,8 @@ BEGIN
     PERFORM cron.schedule(
       'expire_credits_nightly',
       '0 0 * * *',
-      $$SELECT public.expire_credits();$$
+      'SELECT public.expire_credits();'
     );
   END IF;
 END;
-$$;
+$cron_block$;

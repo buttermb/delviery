@@ -47,10 +47,10 @@ ON public.marketplace_gift_cards
 FOR ALL
 USING (
     EXISTS (
-        SELECT 1 FROM public.user_roles ur
-        WHERE ur.user_id = auth.uid()
-        AND ur.role = 'admin'
-        AND ur.tenant_id = (SELECT tenant_id FROM public.marketplace_stores WHERE id = marketplace_gift_cards.store_id)
+        SELECT 1 FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        AND tu.role IN ('admin', 'owner')
+        AND tu.tenant_id = (SELECT tenant_id FROM public.marketplace_stores WHERE id = marketplace_gift_cards.store_id)
     )
 );
 
@@ -61,10 +61,10 @@ ON public.marketplace_gift_card_ledger
 FOR SELECT
 USING (
     EXISTS (
-        SELECT 1 FROM public.user_roles ur
-        WHERE ur.user_id = auth.uid()
-        AND ur.role = 'admin'
-        AND ur.tenant_id = (SELECT tenant_id FROM public.marketplace_stores WHERE id = marketplace_gift_card_ledger.store_id)
+        SELECT 1 FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        AND tu.role IN ('admin', 'owner')
+        AND tu.tenant_id = (SELECT tenant_id FROM public.marketplace_stores WHERE id = marketplace_gift_card_ledger.store_id)
     )
 );
 

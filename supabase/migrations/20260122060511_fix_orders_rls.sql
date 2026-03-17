@@ -3,11 +3,10 @@
 --
 -- Problem: Current policies use is_tenant_member() function and have an overly
 -- permissive INSERT policy that allows any authenticated user to create orders.
+-- The orders table does NOT have a tenant_id column.
 --
--- Solution: Use tenant_users table directly for tenant membership checks,
--- consistent with products and vendors tables. Add separate policies for:
--- 1. Staff access to tenant orders (via tenant_users)
--- 2. Customer access to their own orders (via customer_id = auth.uid())
+-- Solution: Use EXISTS checks against tenant_users for staff access,
+-- and user_id = auth.uid() for customer self-access.
 -- ============================================================================
 
 -- Drop existing permissive policies
@@ -27,54 +26,56 @@ DROP POLICY IF EXISTS "orders_tenant_delete" ON orders;
 DROP POLICY IF EXISTS "orders_staff_select" ON orders;
 DROP POLICY IF EXISTS "orders_customer_select" ON orders;
 DROP POLICY IF EXISTS "orders_customer_insert" ON orders;
+DROP POLICY IF EXISTS "orders_staff_insert" ON orders;
+DROP POLICY IF EXISTS "orders_staff_update" ON orders;
+DROP POLICY IF EXISTS "orders_staff_delete" ON orders;
 
 -- ============================================================================
 -- SELECT POLICIES
 -- ============================================================================
 
--- Staff can see all orders within their tenant
+-- Staff (any tenant member) can see orders
 CREATE POLICY "orders_staff_select" ON orders FOR SELECT
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid()
   ));
 
 -- Customers can see their own orders (regardless of tenant membership)
 CREATE POLICY "orders_customer_select" ON orders FOR SELECT
-  USING (customer_id = auth.uid());
+  USING (user_id = auth.uid());
 
 -- ============================================================================
 -- INSERT POLICIES
 -- ============================================================================
 
--- Staff can create orders for their tenant
+-- Staff (admin/owner) can create orders
 CREATE POLICY "orders_staff_insert" ON orders FOR INSERT
-  WITH CHECK (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
 -- Customers can create orders for themselves
--- (tenant_id must be provided by the application/RPC, not customer)
 CREATE POLICY "orders_customer_insert" ON orders FOR INSERT
-  WITH CHECK (customer_id = auth.uid());
+  WITH CHECK (user_id = auth.uid());
 
 -- ============================================================================
 -- UPDATE POLICIES
 -- ============================================================================
 
--- Only staff can update orders (customers cannot modify orders)
+-- Only staff (admin/owner) can update orders
 CREATE POLICY "orders_staff_update" ON orders FOR UPDATE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
 -- ============================================================================
 -- DELETE POLICIES
 -- ============================================================================
 
--- Only staff can delete orders
+-- Only staff (admin/owner) can delete orders
 CREATE POLICY "orders_staff_delete" ON orders FOR DELETE
-  USING (tenant_id IN (
-    SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid()
+  USING (EXISTS (
+    SELECT 1 FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN ('admin', 'owner')
   ));
 
 -- ============================================================================

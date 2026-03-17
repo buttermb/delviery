@@ -13,9 +13,9 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS rushed_by uuid REFERENCES auth.users
 -- Create index for efficient querying of rush orders
 CREATE INDEX IF NOT EXISTS idx_orders_is_rush ON orders(is_rush) WHERE is_rush = true;
 
--- Create composite index for tenant + rush + created_at for queue ordering
-CREATE INDEX IF NOT EXISTS idx_orders_tenant_rush_created
-  ON orders(tenant_id, is_rush DESC, created_at ASC);
+-- Create composite index for rush + created_at for queue ordering
+CREATE INDEX IF NOT EXISTS idx_orders_rush_created
+  ON orders(is_rush DESC, created_at ASC);
 
 -- Add comment explaining the purpose
 COMMENT ON COLUMN orders.is_rush IS 'When true, order is prioritized to the front of the processing queue';

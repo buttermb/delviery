@@ -86,9 +86,9 @@ CREATE POLICY "Platform admins can manage global products"
 ON public.global_products FOR ALL
 USING (
     EXISTS (
-        SELECT 1 FROM public.user_roles ur
-        WHERE ur.user_id = auth.uid()
-        AND ur.role = 'admin'
+        SELECT 1 FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        AND tu.role IN ('admin', 'owner')
     )
 );
 
@@ -97,10 +97,10 @@ CREATE POLICY "Tenant admins can view own imports"
 ON public.global_product_imports FOR SELECT
 USING (
     EXISTS (
-        SELECT 1 FROM public.user_roles ur
-        WHERE ur.user_id = auth.uid()
-        AND ur.role = 'admin'
-        AND ur.tenant_id = global_product_imports.tenant_id
+        SELECT 1 FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        AND tu.role IN ('admin', 'owner')
+        AND tu.tenant_id = global_product_imports.tenant_id
     )
 );
 
@@ -108,10 +108,10 @@ CREATE POLICY "Tenant admins can insert imports"
 ON public.global_product_imports FOR INSERT
 WITH CHECK (
     EXISTS (
-        SELECT 1 FROM public.user_roles ur
-        WHERE ur.user_id = auth.uid()
-        AND ur.role = 'admin'
-        AND ur.tenant_id = global_product_imports.tenant_id
+        SELECT 1 FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        AND tu.role IN ('admin', 'owner')
+        AND tu.tenant_id = global_product_imports.tenant_id
     )
 );
 

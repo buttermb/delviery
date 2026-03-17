@@ -28,22 +28,22 @@ ALTER TABLE public.product_tag_assignments ENABLE ROW LEVEL SECURITY;
 -- 4. RLS Policies for product_tag_assignments
 CREATE POLICY "product_tag_assignments_select_tenant" ON public.product_tag_assignments
   FOR SELECT USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "product_tag_assignments_insert_tenant" ON public.product_tag_assignments
   FOR INSERT WITH CHECK (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "product_tag_assignments_update_tenant" ON public.product_tag_assignments
   FOR UPDATE USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "product_tag_assignments_delete_tenant" ON public.product_tag_assignments
   FOR DELETE USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 -- 5. Comments for documentation

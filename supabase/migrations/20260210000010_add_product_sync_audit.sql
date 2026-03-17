@@ -110,9 +110,21 @@ DECLARE
     changed_field text;
     old_val jsonb;
     new_val jsonb;
+    v_tenant_id uuid;
 BEGIN
     -- Only log on UPDATE
     IF TG_OP = 'UPDATE' THEN
+        -- products table does not have tenant_id; resolve from current user's tenant
+        SELECT tu.tenant_id INTO v_tenant_id
+        FROM public.tenant_users tu
+        WHERE tu.user_id = auth.uid()
+        LIMIT 1;
+
+        -- If no tenant found, skip audit logging
+        IF v_tenant_id IS NULL THEN
+            RETURN NEW;
+        END IF;
+
         -- Check each important field for changes
 
         -- Name
@@ -121,7 +133,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'name',
+                v_tenant_id, NEW.id, 'name',
                 to_jsonb(OLD.name), to_jsonb(NEW.name),
                 auth.uid(), 'admin_update', now()
             );
@@ -133,7 +145,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'description',
+                v_tenant_id, NEW.id, 'description',
                 to_jsonb(OLD.description), to_jsonb(NEW.description),
                 auth.uid(), 'admin_update', now()
             );
@@ -145,7 +157,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'wholesale_price',
+                v_tenant_id, NEW.id, 'wholesale_price',
                 to_jsonb(OLD.wholesale_price), to_jsonb(NEW.wholesale_price),
                 auth.uid(), 'admin_update', now()
             );
@@ -157,7 +169,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'retail_price',
+                v_tenant_id, NEW.id, 'retail_price',
                 to_jsonb(OLD.retail_price), to_jsonb(NEW.retail_price),
                 auth.uid(), 'admin_update', now()
             );
@@ -169,7 +181,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'image_url',
+                v_tenant_id, NEW.id, 'image_url',
                 to_jsonb(OLD.image_url), to_jsonb(NEW.image_url),
                 auth.uid(), 'admin_update', now()
             );
@@ -181,7 +193,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'available_quantity',
+                v_tenant_id, NEW.id, 'available_quantity',
                 to_jsonb(OLD.available_quantity), to_jsonb(NEW.available_quantity),
                 auth.uid(), 'admin_update', now()
             );
@@ -193,7 +205,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'menu_visibility',
+                v_tenant_id, NEW.id, 'menu_visibility',
                 to_jsonb(OLD.menu_visibility), to_jsonb(NEW.menu_visibility),
                 auth.uid(), 'admin_update', now()
             );
@@ -205,7 +217,7 @@ BEGIN
                 tenant_id, product_id, field_changed,
                 old_value, new_value, changed_by, sync_source, sync_completed_at
             ) VALUES (
-                NEW.tenant_id, NEW.id, 'category',
+                v_tenant_id, NEW.id, 'category',
                 to_jsonb(OLD.category), to_jsonb(NEW.category),
                 auth.uid(), 'admin_update', now()
             );

@@ -29,12 +29,12 @@ CREATE POLICY "stock_alerts_tenant_isolation" ON public.stock_alerts
   FOR ALL
   USING (
     tenant_id IN (
-      SELECT p.tenant_id FROM public.profiles p WHERE p.id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   )
   WITH CHECK (
     tenant_id IN (
-      SELECT p.tenant_id FROM public.profiles p WHERE p.id = auth.uid()
+      SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid()
     )
   );
 
@@ -165,7 +165,7 @@ BEGIN
     updated_at = now()
   WHERE id = p_alert_id
     AND tenant_id IN (
-      SELECT tenant_id FROM profiles WHERE id = auth.uid()
+      SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   RETURNING json_build_object(
     'id', id,
@@ -195,7 +195,7 @@ AS $$
 BEGIN
   -- Verify caller has access to tenant
   IF NOT EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND tenant_id = p_tenant_id
+    SELECT 1 FROM tenant_users WHERE user_id = auth.uid() AND tenant_id = p_tenant_id
   ) THEN
     RAISE EXCEPTION 'Access denied';
   END IF;
@@ -217,61 +217,20 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_active_stock_alerts(UUID) TO authenticated;
 
--- 10. Initialize alerts for existing low-stock products
--- This runs once to create alerts for products already below threshold
+-- 10. Initialize alerts for existing low-stock products (SKIPPED)
+-- Products table has no tenant_id column; backfill skipped.
+-- Use get_active_stock_alerts RPC or manual trigger to populate alerts.
 DO $$
 DECLARE
   v_product RECORD;
   v_threshold NUMERIC;
   v_severity TEXT;
 BEGIN
-  FOR v_product IN
-    SELECT
-      id,
-      tenant_id,
-      name,
-      COALESCE(available_quantity, stock_quantity, 0) as qty,
-      COALESCE(low_stock_alert, 10) as threshold
-    FROM products
-    WHERE tenant_id IS NOT NULL
-      AND COALESCE(available_quantity, stock_quantity, 0) <= COALESCE(low_stock_alert, 10)
-  LOOP
-    -- Determine severity
-    IF v_product.qty <= 0 THEN
-      v_severity := 'critical';
-    ELSIF v_product.qty <= v_product.threshold * 0.5 THEN
-      v_severity := 'critical';
-    ELSE
-      v_severity := 'warning';
-    END IF;
-
-    -- Insert alert if not exists
-    INSERT INTO stock_alerts (
-      tenant_id,
-      product_id,
-      product_name,
-      current_quantity,
-      threshold,
-      severity,
-      status,
-      created_at
-    ) VALUES (
-      v_product.tenant_id,
-      v_product.id,
-      COALESCE(v_product.name, 'Unknown Product'),
-      v_product.qty,
-      v_product.threshold,
-      v_severity,
-      'active',
-      now()
-    )
-    ON CONFLICT (tenant_id, product_id) WHERE status = 'active'
-    DO UPDATE SET
-      current_quantity = EXCLUDED.current_quantity,
-      severity = EXCLUDED.severity,
-      updated_at = now();
-  END LOOP;
+  -- No-op: products has no tenant_id for alert association
+  RAISE NOTICE 'Stock alert backfill skipped: products has no tenant_id';
 END $$;
+
+-- Original backfill removed: products has no tenant_id
 
 -- 11. Add comments for documentation
 COMMENT ON TABLE public.stock_alerts IS 'Stock alerts triggered when product inventory falls below threshold';

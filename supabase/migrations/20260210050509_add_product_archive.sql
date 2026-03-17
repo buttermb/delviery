@@ -9,7 +9,7 @@ ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ DEFAULT NULL;
 CREATE INDEX IF NOT EXISTS idx_products_archived_at ON public.products(archived_at);
 
 -- Create index for filtering active (non-archived) products
-CREATE INDEX IF NOT EXISTS idx_products_active ON public.products(tenant_id) WHERE archived_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_products_active_archive ON public.products(id) WHERE archived_at IS NULL;
 
 -- Add comment describing the column
 COMMENT ON COLUMN public.products.archived_at IS 'Timestamp when product was archived. NULL means product is active. Archived products retain history but are hidden from active lists and ordering.';

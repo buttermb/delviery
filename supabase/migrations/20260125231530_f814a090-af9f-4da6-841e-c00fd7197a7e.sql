@@ -35,6 +35,9 @@ FOR ALL
 USING (auth.jwt() ->> 'role' = 'service_role');
 
 -- Create the check_device_suspicious_login function
+-- Drop old overload with inet type for p_ip_address
+DROP FUNCTION IF EXISTS public.check_device_suspicious_login(UUID, TEXT, TEXT, TEXT, TEXT, INET, TEXT, TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION public.check_device_suspicious_login(
   p_user_id UUID,
   p_device_fingerprint TEXT,
@@ -179,4 +182,4 @@ END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION public.check_device_suspicious_login TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.check_device_suspicious_login(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;

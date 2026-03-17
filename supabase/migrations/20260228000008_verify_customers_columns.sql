@@ -33,9 +33,7 @@ ADD COLUMN IF NOT EXISTS last_order_at TIMESTAMPTZ;
 ALTER TABLE public.customers
 ADD COLUMN IF NOT EXISTS admin_notes TEXT;
 
--- Index for tenant-first lookups by phone
--- Note: idx_customers_phone_tenant (phone, tenant_id) exists from 20260228000006
--- This index optimizes queries that filter by tenant_id first
-CREATE INDEX IF NOT EXISTS idx_customers_tenant_phone
-  ON public.customers(tenant_id, phone)
+-- Index for account-first lookups by phone
+CREATE INDEX IF NOT EXISTS idx_customers_account_phone
+  ON public.customers(account_id, phone)
   WHERE phone IS NOT NULL;

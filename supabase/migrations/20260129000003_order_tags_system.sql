@@ -29,17 +29,17 @@ ALTER TABLE public.order_tags ENABLE ROW LEVEL SECURITY;
 -- 4. RLS Policies for order_tags
 CREATE POLICY "order_tags_select_tenant" ON public.order_tags
   FOR SELECT USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "order_tags_insert_tenant" ON public.order_tags
   FOR INSERT WITH CHECK (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "order_tags_delete_tenant" ON public.order_tags
   FOR DELETE USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
+    tenant_id = (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid())
   );
 
 -- 5. Comments for documentation

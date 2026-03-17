@@ -188,7 +188,8 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
--- 4. redeem_coupon: Increments coupon usage count
+-- 4. redeem_coupon: Increments coupon usage count (drop old boolean version first)
+DROP FUNCTION IF EXISTS public.redeem_coupon(UUID);
 CREATE OR REPLACE FUNCTION public.redeem_coupon(
   p_coupon_id UUID
 )

@@ -173,11 +173,11 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'error', 'Unauthorized: Store belongs to different tenant');
     END IF;
 
-    -- 3. Get product details and verify ownership
+    -- 3. Get product details (products table does not have tenant_id)
     SELECT id, name, price, description, in_stock, available_quantity
     INTO v_product
     FROM public.products
-    WHERE id = p_product_id AND tenant_id = v_tenant_id;
+    WHERE id = p_product_id;
 
     IF v_product IS NULL THEN
         RETURN jsonb_build_object('success', false, 'error', 'Product not found or unauthorized');
@@ -285,11 +285,11 @@ BEGIN
     END IF;
 
     -- 3. Loop through all active products with stock
+    --    (products table does not have tenant_id; filter by store ownership instead)
     FOR v_product IN
         SELECT p.id, p.name, p.price, p.description, p.in_stock, p.available_quantity
         FROM public.products p
-        WHERE p.tenant_id = v_tenant_id
-        AND (p.in_stock = true OR COALESCE(p.available_quantity, 0) > 0)
+        WHERE (p.in_stock = true OR COALESCE(p.available_quantity, 0) > 0)
         AND p.is_active = true
     LOOP
         BEGIN
@@ -332,10 +332,10 @@ BEGIN
     END LOOP;
 
     -- Count products that were skipped (no stock or inactive)
+    -- (products table does not have tenant_id)
     SELECT COUNT(*) INTO v_skipped_count
     FROM public.products p
-    WHERE p.tenant_id = v_tenant_id
-    AND (p.in_stock = false AND COALESCE(p.available_quantity, 0) <= 0)
+    WHERE (p.in_stock = false AND COALESCE(p.available_quantity, 0) <= 0)
     OR p.is_active = false;
 
     RETURN jsonb_build_object(
@@ -385,7 +385,7 @@ GRANT EXECUTE ON FUNCTION public.generate_marketplace_product_slug(UUID, TEXT) T
 COMMENT ON TABLE public.marketplace_products IS
 'Stores products synced to marketplace storefronts with optional display overrides for name, price, and SEO-friendly slugs.';
 
-COMMENT ON FUNCTION public.sync_product_to_marketplace IS
+COMMENT ON FUNCTION public.sync_product_to_marketplace(UUID, UUID, TEXT, NUMERIC, BOOLEAN) IS
 'Syncs a single product to the marketplace. Creates/updates marketplace_products record with optional display_name, display_price overrides, is_featured flag, and auto-generated slug.';
 
 COMMENT ON FUNCTION public.sync_all_products_to_marketplace IS

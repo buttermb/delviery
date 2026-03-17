@@ -1,17 +1,18 @@
 -- ============================================================================
--- Migration: Add Composite Index on products(tenant_id, is_active)
--- Description: Creates a composite index to optimize queries filtering by
---              tenant_id and is_active columns on the products table
+-- Migration: Add Index on products(is_active)
+-- Description: Creates an index to optimize queries filtering by
+--              is_active column on the products table
+-- Note: products table does NOT have tenant_id column; removed from original
+--        composite index
 -- ============================================================================
 
--- Create composite index on products table for tenant_id and is_active
+-- Create index on products table for is_active
 -- This index will improve performance for queries that filter active products
--- by tenant, which is a common query pattern in multi-tenant applications
-CREATE INDEX IF NOT EXISTS idx_products_tenant_id_is_active
-ON public.products(tenant_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_products_is_active
+ON public.products(is_active);
 
 -- ============================================================================
 -- COMMENTS
 -- ============================================================================
-COMMENT ON INDEX public.idx_products_tenant_id_is_active IS
-'Composite index to optimize queries filtering products by tenant_id and is_active status. Commonly used for fetching active products for a specific tenant.';
+COMMENT ON INDEX public.idx_products_is_active IS
+'Index to optimize queries filtering products by is_active status. Commonly used for fetching active products.';

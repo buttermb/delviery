@@ -16,7 +16,7 @@ export interface PopupDriver {
   current_order_number?: string | null;
   current_delivery_address?: string | null;
   eta_minutes?: number | null;
-  last_updated?: string;
+  last_location_update?: string;
 }
 
 interface DriverMapPopupProps {
@@ -94,10 +94,10 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
           </div>
         )}
 
-        {driver.last_updated && (
+        {driver.last_location_update && (
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Last ping</span>
-            <span className="text-muted-foreground">{formatRelativeTime(driver.last_updated)}</span>
+            <span className="text-muted-foreground">{formatRelativeTime(driver.last_location_update)}</span>
           </div>
         )}
 

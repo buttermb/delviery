@@ -2,9 +2,9 @@
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS total_orders INTEGER DEFAULT 0;
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS preferred_contact TEXT;
 
--- Create index for phone + tenant_id lookup (used by upsert function)
-CREATE INDEX IF NOT EXISTS idx_customers_phone_tenant
-  ON customers(phone, tenant_id)
+-- Create index for phone + account_id lookup (used by upsert function)
+CREATE INDEX IF NOT EXISTS idx_customers_phone_account
+  ON customers(phone, account_id)
   WHERE phone IS NOT NULL;
 
 -- Upsert customer on checkout.
@@ -55,21 +55,21 @@ BEGIN
     v_last_name := '';
   END IF;
 
-  -- Step 1: Try to find by phone + tenant_id
+  -- Step 1: Try to find by phone + account_id
   IF p_phone IS NOT NULL AND p_phone <> '' THEN
     SELECT id INTO v_customer_id
     FROM customers
     WHERE phone = p_phone
-      AND tenant_id = p_tenant_id
+      AND account_id = v_account_id
     LIMIT 1;
   END IF;
 
-  -- Step 2: Fallback to email + tenant_id
+  -- Step 2: Fallback to email + account_id
   IF v_customer_id IS NULL AND p_email IS NOT NULL AND p_email <> '' THEN
     SELECT id INTO v_customer_id
     FROM customers
     WHERE email = p_email
-      AND tenant_id = p_tenant_id
+      AND account_id = v_account_id
     LIMIT 1;
   END IF;
 
@@ -88,11 +88,11 @@ BEGIN
     WHERE id = v_customer_id;
   ELSE
     INSERT INTO customers (
-      account_id, tenant_id, first_name, last_name, email, phone,
+      account_id, first_name, last_name, email, phone,
       preferred_contact, address, total_orders, total_spent, last_purchase_at
     )
     VALUES (
-      v_account_id, p_tenant_id, v_first_name, v_last_name,
+      v_account_id, v_first_name, v_last_name,
       NULLIF(p_email, ''), NULLIF(p_phone, ''),
       p_preferred_contact, NULLIF(p_address, ''),
       1, COALESCE(p_order_total, 0), NOW()

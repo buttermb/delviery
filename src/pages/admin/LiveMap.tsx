@@ -33,7 +33,7 @@ interface CourierLocation {
   current_lng: number | null;
   phone?: string;
   status?: string;
-  last_updated?: string;
+  last_location_update?: string;
 }
 
 interface ActiveOrder {

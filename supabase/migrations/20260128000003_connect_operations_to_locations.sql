@@ -20,6 +20,21 @@ ALTER TABLE public.wholesale_runners
 CREATE INDEX IF NOT EXISTS idx_wholesale_runners_home_location_id
   ON public.wholesale_runners(home_location_id);
 
+-- 2.5. Add tenant_id to locations table if not exists (moved before view creation)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'locations'
+    AND column_name = 'tenant_id'
+  ) THEN
+    ALTER TABLE public.locations
+      ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
+    CREATE INDEX IF NOT EXISTS idx_locations_tenant_id ON public.locations(tenant_id);
+  END IF;
+END $$;
+
 -- 3. Create operations_location_summary view for dashboard metrics
 CREATE OR REPLACE VIEW public.operations_location_summary AS
 SELECT
@@ -101,8 +116,8 @@ AS $$
 BEGIN
   -- Verify caller has access to this tenant
   IF NOT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid()
+    SELECT 1 FROM public.tenant_users
+    WHERE user_id = auth.uid()
     AND tenant_id = p_tenant_id
   ) THEN
     RAISE EXCEPTION 'Access denied';
@@ -133,36 +148,13 @@ $$;
 -- Grant execute permission
 GRANT EXECUTE ON FUNCTION public.get_location_operations_summary(uuid, uuid) TO authenticated;
 
--- 5. Add tenant_id to locations table if not exists (for proper RLS)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public'
-    AND table_name = 'locations'
-    AND column_name = 'tenant_id'
-  ) THEN
-    ALTER TABLE public.locations
-      ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
-
-    -- Create index
-    CREATE INDEX IF NOT EXISTS idx_locations_tenant_id ON public.locations(tenant_id);
-  END IF;
-END $$;
-
 -- 6. Update RLS policy for locations to use tenant_id
 DROP POLICY IF EXISTS "tenant_isolation_locations" ON public.locations;
 CREATE POLICY "tenant_isolation_locations"
   ON public.locations
   FOR ALL
   USING (
-    tenant_id = (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
-    OR account_id IN (
-      SELECT a.id FROM public.accounts a
-      JOIN public.tenants t ON a.id = (t.settings->>'primary_account_id')::uuid
-      JOIN public.profiles p ON p.tenant_id = t.id
-      WHERE p.id = auth.uid()
-    )
+    tenant_id IN (SELECT tu.tenant_id FROM public.tenant_users tu WHERE tu.user_id = auth.uid())
   );
 
 -- Comment on new columns

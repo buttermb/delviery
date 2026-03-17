@@ -33,15 +33,15 @@ SELECT
   fulfillment_method,
   items,
   tracking_token,
-  stripe_session_id,
-  stripe_payment_intent_id,
-  paid_at,
   created_at,
   updated_at
 FROM public.marketplace_orders
 WHERE store_id IS NOT NULL;
 
 -- 3. Update create_marketplace_order RPC to accept fulfillment_method
+-- Drop old 14-param overload
+DROP FUNCTION IF EXISTS public.create_marketplace_order(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB, NUMERIC, NUMERIC, NUMERIC, NUMERIC, TEXT, TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION public.create_marketplace_order(
   p_store_id UUID,
   p_customer_name TEXT,
