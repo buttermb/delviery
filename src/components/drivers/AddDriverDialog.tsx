@@ -177,7 +177,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
         vehicle_year: values.vehicle_year,
         vehicle_color: values.vehicle_color,
         vehicle_plate: values.vehicle_plate,
-        insurance_expiry: values.insurance_expiry || undefined,
+        
         commission_rate: values.commission_rate,
         zone_id: values.zone_id || undefined,
         send_invite_email: values.send_invite_email,
