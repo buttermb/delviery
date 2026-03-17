@@ -2067,17 +2067,21 @@ export type Database = {
           admin_pin: string | null
           admin_pin_verified: boolean | null
           age_verified: boolean | null
+          availability: string
           commission_rate: number | null
           created_at: string | null
           current_lat: number | null
           current_lng: number | null
+          display_name: string | null
           email: string
           full_name: string
           id: string
           is_active: boolean | null
           is_online: boolean | null
           last_location_update: string | null
+          last_seen_at: string | null
           license_number: string
+          notes: string | null
           notification_sound: boolean | null
           notification_vibrate: boolean | null
           on_time_rate: number | null
@@ -2087,30 +2091,41 @@ export type Database = {
           pin_set_at: string | null
           profile_photo_url: string | null
           rating: number | null
+          status: string
+          suspend_reason: string | null
+          suspended_at: string | null
+          suspended_until: string | null
           tenant_id: string | null
           total_deliveries: number | null
           updated_at: string | null
           user_id: string
+          vehicle_color: string | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_plate: string | null
           vehicle_type: string
+          vehicle_year: number | null
+          zone_id: string | null
         }
         Insert: {
           admin_pin?: string | null
           admin_pin_verified?: boolean | null
           age_verified?: boolean | null
+          availability?: string
           commission_rate?: number | null
           created_at?: string | null
           current_lat?: number | null
           current_lng?: number | null
+          display_name?: string | null
           email: string
           full_name: string
           id?: string
           is_active?: boolean | null
           is_online?: boolean | null
           last_location_update?: string | null
+          last_seen_at?: string | null
           license_number: string
+          notes?: string | null
           notification_sound?: boolean | null
           notification_vibrate?: boolean | null
           on_time_rate?: number | null
@@ -2120,30 +2135,41 @@ export type Database = {
           pin_set_at?: string | null
           profile_photo_url?: string | null
           rating?: number | null
+          status?: string
+          suspend_reason?: string | null
+          suspended_at?: string | null
+          suspended_until?: string | null
           tenant_id?: string | null
           total_deliveries?: number | null
           updated_at?: string | null
           user_id: string
+          vehicle_color?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
           vehicle_type: string
+          vehicle_year?: number | null
+          zone_id?: string | null
         }
         Update: {
           admin_pin?: string | null
           admin_pin_verified?: boolean | null
           age_verified?: boolean | null
+          availability?: string
           commission_rate?: number | null
           created_at?: string | null
           current_lat?: number | null
           current_lng?: number | null
+          display_name?: string | null
           email?: string
           full_name?: string
           id?: string
           is_active?: boolean | null
           is_online?: boolean | null
           last_location_update?: string | null
+          last_seen_at?: string | null
           license_number?: string
+          notes?: string | null
           notification_sound?: boolean | null
           notification_vibrate?: boolean | null
           on_time_rate?: number | null
@@ -2153,14 +2179,21 @@ export type Database = {
           pin_set_at?: string | null
           profile_photo_url?: string | null
           rating?: number | null
+          status?: string
+          suspend_reason?: string | null
+          suspended_at?: string | null
+          suspended_until?: string | null
           tenant_id?: string | null
           total_deliveries?: number | null
           updated_at?: string | null
           user_id?: string
+          vehicle_color?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
           vehicle_type?: string
+          vehicle_year?: number | null
+          zone_id?: string | null
         }
         Relationships: [
           {
@@ -2168,6 +2201,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couriers_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_zones"
             referencedColumns: ["id"]
           },
         ]
@@ -3827,6 +3867,41 @@ export type Database = {
           },
           {
             foreignKeyName: "deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_zones: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_zones_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
