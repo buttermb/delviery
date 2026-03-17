@@ -9,7 +9,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { AdminLayout } from '@/components/admin/shared/AdminLayout';
+
 import { Button } from '@/components/ui/button';
 
 import { DriverStatsStrip } from '@/components/drivers/DriverStatsStrip';
