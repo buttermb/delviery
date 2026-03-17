@@ -5,7 +5,7 @@
     "noImplicitAny": false,
     "skipLibCheck": true
   },
-  "nodeModulesDir": "auto",
+  "nodeModulesDir": false,
   "lock": false,
   "tasks": {
     "check": "echo 'Type checking disabled'"
