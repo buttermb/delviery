@@ -139,7 +139,7 @@ export async function encryptCustomerFields(
     encrypted.email_search_index = await createSearchHash(customer.email as string);
   }
   if (customer.phone) {
-    encrypted.phone_search_index = await createSearchHash(customer.phone);
+    encrypted.phone_search_index = await createSearchHash(customer.phone as string);
   }
   if (customer.medical_card_number) {
     encrypted.medical_card_number_search_index = await createSearchHash(customer.medical_card_number);
