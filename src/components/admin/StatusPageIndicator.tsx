@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Activity, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import {
   Tooltip,
@@ -69,7 +70,7 @@ function getStatusLabel(status: ServiceStatus): string {
 
 export function StatusPageIndicator() {
   const { data: status } = useQuery({
-    queryKey: ['system-status'],
+    queryKey: queryKeys.statusPage.all,
     queryFn: async (): Promise<SystemStatus> => {
       logger.info('[StatusPage] Checking system status');
 

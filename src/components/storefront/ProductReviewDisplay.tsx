@@ -69,15 +69,12 @@ export default function ProductReviewDisplay({
 
       if (!tenant) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_reviews')
         .select('id, reviewer_name, rating, comment, created_at')
         .eq('product_id', productId)
         .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false }) as {
-        data: ProductReview[] | null;
-        error: { message: string } | null;
-      };
+        .order('created_at', { ascending: false });
 
       if (error) {
         logger.error('Failed to fetch product reviews', error);

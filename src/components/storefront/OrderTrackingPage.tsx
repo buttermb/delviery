@@ -16,6 +16,7 @@ import ProductImage from '@/components/ProductImage';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 export interface TrackedOrder {
   order_number: string;
@@ -94,7 +95,7 @@ export default function OrderTrackingPage({
       }
     } catch (err) {
       setError('Failed to track order. Please try again later.');
-      console.error(err);
+      logger.error('Failed to track order', err, 'OrderTrackingPage');
     } finally {
       setIsLoading(false);
     }

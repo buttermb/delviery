@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { AddDriverForm } from '@/components/drivers/AddDriverDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,7 +44,7 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
 
   // Check for duplicate email
   useQuery({
-    queryKey: ['driver-email-check', debouncedEmail, tenantId],
+    queryKey: queryKeys.driverEmailCheck.check(debouncedEmail, tenantId),
     queryFn: async () => {
       if (!debouncedEmail || !debouncedEmail.includes('@')) return null;
 

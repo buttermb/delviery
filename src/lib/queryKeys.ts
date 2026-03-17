@@ -3236,4 +3236,114 @@ export const queryKeys = {
     tasks: (tenantId: string) =>
       [...queryKeys.admin.all(), 'tasks', tenantId] as const,
   },
+
+  // Promotions (storefront banners)
+  promotions: {
+    all: ['promotions'] as const,
+    active: (tenantSlug?: string) =>
+      [...queryKeys.promotions.all, 'active', tenantSlug] as const,
+  },
+
+  // Status Page (system health indicator)
+  statusPage: {
+    all: ['system-status'] as const,
+  },
+
+  // Customer Dashboard Metrics (CRM widget)
+  customerDashboardMetrics: {
+    all: ['customers', 'metrics'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.customerDashboardMetrics.all, tenantId] as const,
+  },
+
+  // Menu Templates (disposable menu templates)
+  menuTemplates: {
+    all: ['menu-templates'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.menuTemplates.all, tenantId] as const,
+  },
+
+  // Driver Email Check (add driver wizard)
+  driverEmailCheck: {
+    all: ['driver-email-check'] as const,
+    check: (email?: string, tenantId?: string) =>
+      [...queryKeys.driverEmailCheck.all, email, tenantId] as const,
+  },
+
+  // Financial Summary (P&L dashboard)
+  financialSummary: {
+    all: ['analytics', 'financials'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.financialSummary.all, tenantId] as const,
+  },
+
+  // Wholesale Sales Reps
+  wholesaleSalesReps: {
+    all: ['sales-reps'] as const,
+    detail: (repId?: string) =>
+      ['sales-rep', repId] as const,
+  },
+
+  // Wholesale Dashboard (overview widget)
+  wholesaleDashboard: {
+    all: ['wholesale-dashboard'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.wholesaleDashboard.all, tenantId] as const,
+  },
+
+  // Client Addresses (wholesale address book)
+  clientAddresses: {
+    all: ['client-addresses'] as const,
+    byClient: (clientId?: string) =>
+      [...queryKeys.clientAddresses.all, clientId] as const,
+  },
+
+  // Client Communications (wholesale communication log)
+  clientCommunications: {
+    all: ['client-communications'] as const,
+    byClient: (clientId?: string) =>
+      [...queryKeys.clientCommunications.all, clientId] as const,
+  },
+
+  // Client Onboarding (wholesale checklist)
+  clientOnboarding: {
+    all: ['client-onboarding'] as const,
+    byClient: (clientId?: string) =>
+      [...queryKeys.clientOnboarding.all, clientId] as const,
+  },
+
+  // Wholesale Pricing History
+  wholesalePricingHistory: {
+    all: ['pricing-history'] as const,
+    byProduct: (productId?: string) =>
+      [...queryKeys.wholesalePricingHistory.all, productId] as const,
+  },
+
+  // Team Members Lookup (mentions, notes)
+  teamMembersLookup: {
+    all: ['tenants', 'members'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.teamMembersLookup.all, tenantId] as const,
+  },
+
+  // Marketplace Profiles (wholesale client profiles)
+  marketplaceProfilesData: {
+    all: ['marketplace-profiles'] as const,
+    byClient: (clientId?: string) =>
+      [...queryKeys.marketplaceProfilesData.all, clientId] as const,
+  },
+
+  // Marketplace Order Items (wholesale line items)
+  marketplaceOrderItems: {
+    all: ['marketplace-order-items'] as const,
+  },
+
+  // Compliance Reports (settings, audit logs)
+  complianceReports: {
+    all: ['compliance'] as const,
+    retentionPolicy: (tenantId?: string) =>
+      [...queryKeys.complianceReports.all, 'settings', 'retention-policy', tenantId] as const,
+    ipLogs: (tenantId?: string) =>
+      [...queryKeys.complianceReports.all, 'audit-log', 'ip-logs', tenantId] as const,
+  },
 } as const;

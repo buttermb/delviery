@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
+import type { Database } from '@/integrations/supabase/types';
+
+type TenantRow = Database['public']['Tables']['tenants']['Row'];
 
 const tenantGeneralSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
@@ -44,11 +47,12 @@ export function TenantGeneralSettings() {
 
   useEffect(() => {
     if (tenant) {
+      const tenantRow = tenant as unknown as TenantRow;
       form.reset({
         business_name: tenant.business_name || '',
-        owner_name: (tenant as any).owner_name || '',
-        owner_email: (tenant as any).owner_email || '',
-        phone: (tenant as unknown as Record<string, unknown>).phone as string || '',
+        owner_name: tenantRow.owner_name || '',
+        owner_email: tenantRow.owner_email || '',
+        phone: tenantRow.phone || '',
         address: '',
         description: '',
         website: '',

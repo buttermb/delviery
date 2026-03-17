@@ -198,7 +198,7 @@ export function FleetLiveMap({
       )}
 
       {/* Map style switcher */}
-      <div className="absolute right-3 top-3 z-10 flex rounded-lg border border-[#334155] bg-[#1E293B] p-0.5 shadow-lg">
+      <div className="absolute right-3 top-3 z-10 flex rounded-lg border border-border bg-card p-0.5 shadow-lg">
         {(Object.keys(MAP_STYLES) as MapStyleKey[]).map((key) => (
           <button
             key={key}
@@ -207,8 +207,8 @@ export function FleetLiveMap({
             className={cn(
               'rounded-md px-2.5 py-1 text-[10px] font-medium capitalize transition-colors',
               mapStyleKey === key
-                ? 'bg-[#10B981] text-white'
-                : 'text-[#94A3B8] hover:text-[#F8FAFC]',
+                ? 'bg-emerald-500 text-white'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {key}
@@ -217,21 +217,21 @@ export function FleetLiveMap({
       </div>
 
       {/* Legend */}
-      <div className="absolute left-3 bottom-4 z-10 flex items-center gap-3 rounded-lg border border-[#334155] bg-[#1E293B]/90 px-3 py-1.5 backdrop-blur-sm">
+      <div className="absolute left-3 bottom-4 z-10 flex items-center gap-3 rounded-lg border border-border bg-card/90 px-3 py-1.5 backdrop-blur-sm">
         {Object.entries(STATUS_COLORS).map(([status, color]) => (
           <div key={status} className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] capitalize text-[#94A3B8]">{status}</span>
+            <span className="text-[10px] capitalize text-muted-foreground">{status}</span>
           </div>
         ))}
       </div>
 
       {/* Driver count */}
-      <div className="absolute left-3 top-3 z-10 rounded-lg border border-[#334155] bg-[#1E293B]/90 px-3 py-1.5 backdrop-blur-sm">
-        <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#F8FAFC]">
+      <div className="absolute left-3 top-3 z-10 rounded-lg border border-border bg-card/90 px-3 py-1.5 backdrop-blur-sm">
+        <span className="font-['Space_Grotesk'] text-sm font-semibold text-foreground">
           {locatedDrivers.length}
         </span>
-        <span className="ml-1.5 text-xs text-[#64748B]">on map</span>
+        <span className="ml-1.5 text-xs text-muted-foreground">on map</span>
       </div>
     </div>
   );

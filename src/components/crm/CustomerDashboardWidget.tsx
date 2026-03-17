@@ -30,7 +30,7 @@ export function CustomerDashboardWidget() {
   const navigate = useNavigate();
 
   const { data: metrics, isLoading } = useQuery({
-    queryKey: ['customers', 'metrics', tenant?.id],
+    queryKey: queryKeys.customerDashboardMetrics.byTenant(tenant?.id),
     queryFn: async (): Promise<CustomerMetrics> => {
       if (!tenant?.id) {
         return {

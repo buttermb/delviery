@@ -143,6 +143,7 @@ export function InvoiceCreditNoteSystem({
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-emerald-600" />
             Credit Notes - Invoice #{invoiceNumber}
+            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 

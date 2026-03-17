@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Plus, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
@@ -28,7 +29,7 @@ export function MenuTemplateSystem() {
   const [templateDescription, setTemplateDescription] = useState('');
 
   const { data: templates, isLoading } = useQuery({
-    queryKey: ['menu-templates', tenant?.id],
+    queryKey: queryKeys.menuTemplates.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
@@ -58,7 +59,7 @@ export function MenuTemplateSystem() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-templates', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuTemplates.byTenant(tenant?.id) });
       toast.success('Template created');
       setShowCreateDialog(false);
       setTemplateName('');

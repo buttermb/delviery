@@ -12,6 +12,7 @@ import { Calendar, RefreshCw, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
@@ -55,7 +56,7 @@ export function WholesaleRecurringOrderSchedule({
       toast.success(
         enabled ? 'Recurring order scheduled' : 'Recurring order cancelled'
       );
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders', orderId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.orderDetail(orderId) });
     },
     onError: (error) => {
       logger.error('Failed to update recurring schedule', { error, orderId });

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, ShoppingCart } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -87,7 +88,7 @@ export function WholesaleQuickReorder({
       toast.success('Order duplicated successfully', {
         description: `New order #${newOrder.id} created`,
       });
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
     },
     onError: (error) => {
       logger.error('Failed to reorder', { error, orderId });

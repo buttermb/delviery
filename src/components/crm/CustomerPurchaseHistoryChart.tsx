@@ -7,6 +7,7 @@ import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
 import { queryKeys } from '@/lib/queryKeys';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface PurchaseHistoryDataPoint {
   month: string;
@@ -58,7 +59,7 @@ export function CustomerPurchaseHistoryChart({
             .lte('created_at', end.toISOString());
 
           if (error) {
-            console.error('Error fetching orders for month:', label, error);
+            logger.error('Error fetching orders for month', error, { month: label, customerId });
             return { month: label, orders: 0, revenue: 0 };
           }
 

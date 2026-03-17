@@ -57,9 +57,9 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
   const statusInfo = STATUS_LABELS[driver.status];
 
   return (
-    <div className="w-[260px] rounded-lg border border-[#334155] bg-[#1E293B] text-[#F8FAFC] shadow-xl">
+    <div className="w-[260px] rounded-lg border border-border bg-card text-foreground shadow-xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#334155]">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
           <div
             className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
@@ -70,7 +70,7 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
         <button
           type="button"
           onClick={onClose}
-          className="flex h-5 w-5 items-center justify-center rounded text-[#64748B] hover:text-[#F8FAFC]"
+          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-foreground"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -81,7 +81,7 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
       {/* Body */}
       <div className="px-3 py-2.5 space-y-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[#64748B]">Status</span>
+          <span className="text-muted-foreground">Status</span>
           <span style={{ color: statusInfo.color }} className="font-medium">
             {statusInfo.label}
           </span>
@@ -89,31 +89,31 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
 
         {driver.vehicle_type && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[#64748B]">Vehicle</span>
-            <span className="text-[#94A3B8]">{driver.vehicle_type}</span>
+            <span className="text-muted-foreground">Vehicle</span>
+            <span className="text-muted-foreground">{driver.vehicle_type}</span>
           </div>
         )}
 
         {driver.last_updated && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[#64748B]">Last ping</span>
-            <span className="text-[#94A3B8]">{formatRelativeTime(driver.last_updated)}</span>
+            <span className="text-muted-foreground">Last ping</span>
+            <span className="text-muted-foreground">{formatRelativeTime(driver.last_updated)}</span>
           </div>
         )}
 
         {/* Active delivery */}
         {driver.status === 'delivering' && driver.current_order_number && (
-          <div className="mt-1 rounded-md border border-[#F59E0B]/20 bg-[#F59E0B]/5 px-2.5 py-2">
+          <div className="mt-1 rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-[#F59E0B]">
+              <span className="font-medium text-amber-500">
                 #{driver.current_order_number}
               </span>
               {driver.eta_minutes != null && (
-                <span className="text-[#94A3B8]">ETA {driver.eta_minutes}m</span>
+                <span className="text-muted-foreground">ETA {driver.eta_minutes}m</span>
               )}
             </div>
             {driver.current_delivery_address && (
-              <p className="mt-1 text-[11px] leading-tight text-[#94A3B8] truncate">
+              <p className="mt-1 text-[11px] leading-tight text-muted-foreground truncate">
                 {driver.current_delivery_address}
               </p>
             )}
@@ -122,14 +122,14 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 border-t border-[#334155] px-3 py-2">
+      <div className="flex items-center gap-2 border-t border-border px-3 py-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => {
             if (slug) navigate(`/${slug}/admin/drivers/${driver.id}`);
           }}
-          className="h-7 flex-1 border-[#334155] bg-transparent text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+          className="h-7 flex-1 border-border bg-transparent text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           View Profile
         </Button>
@@ -137,7 +137,7 @@ export function DriverMapPopup({ driver, onClose, onTrackOrder }: DriverMapPopup
           <Button
             size="sm"
             onClick={() => onTrackOrder(driver.id)}
-            className="h-7 flex-1 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+            className="h-7 flex-1 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Track Order
           </Button>

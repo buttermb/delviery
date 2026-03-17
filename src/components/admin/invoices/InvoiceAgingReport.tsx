@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { differenceInDays } from "date-fns";
 import { FileText, Download } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface AgingBucket {
   label: string;
@@ -70,8 +71,50 @@ export function InvoiceAgingReport({ invoices }: InvoiceAgingReportProps) {
   const grandTotal = buckets.reduce((sum, bucket) => sum + bucket.total, 0);
 
   const handleExport = () => {
-    toast.success("Exporting aging report...");
-    // TODO: Export to CSV/Excel
+    try {
+      const headers = ["Invoice #", "Total Amount", "Paid Amount", "Outstanding", "Due Date", "Days Overdue", "Aging Bucket", "Status"];
+      const rows = invoices
+        .map((invoice) => {
+          const outstanding = invoice.total_amount - invoice.paid_amount;
+          if (outstanding <= 0) return null;
+          const daysOverdue = differenceInDays(new Date(), new Date(invoice.due_date));
+          let bucket = "Current";
+          if (daysOverdue > 90) bucket = "90+ Days";
+          else if (daysOverdue > 60) bucket = "61-90 Days";
+          else if (daysOverdue > 30) bucket = "31-60 Days";
+          else if (daysOverdue > 0) bucket = "1-30 Days";
+          return [
+            invoice.invoice_number,
+            invoice.total_amount.toFixed(2),
+            invoice.paid_amount.toFixed(2),
+            outstanding.toFixed(2),
+            invoice.due_date,
+            Math.max(0, daysOverdue).toString(),
+            bucket,
+            invoice.status,
+          ];
+        })
+        .filter((row): row is string[] => row !== null);
+
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-aging-report-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Aging report exported successfully");
+    } catch (error) {
+      logger.error("Failed to export aging report", { error });
+      toast.error("Failed to export aging report");
+    }
   };
 
   return (

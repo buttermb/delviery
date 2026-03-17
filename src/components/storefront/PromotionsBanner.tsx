@@ -25,7 +25,7 @@ export function PromotionsBanner({ tenantSlug }: PromotionsBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
   const { data: promotions = [] } = useQuery({
-    queryKey: ['promotions', 'active', tenantSlug],
+    queryKey: queryKeys.promotions.active(tenantSlug),
     queryFn: async () => {
       if (!tenantSlug) return [];
 

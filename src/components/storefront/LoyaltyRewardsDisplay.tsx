@@ -65,25 +65,24 @@ export default function LoyaltyRewardsDisplay({
 
       if (!tenant) return null;
 
-      const db = supabase as any;
-
       const [balanceResult, historyResult, rewardsResult] = await Promise.all([
-        db.from('loyalty_points')
+        supabase.from('loyalty_points')
           .select('balance, lifetime_points')
           .eq('customer_id', customerId)
           .eq('tenant_id', tenant.id)
-          .maybeSingle() as Promise<{ data: LoyaltyPoints | null; error: { message: string } | null }>,
-        db.from('loyalty_points_history')
+          .maybeSingle(),
+        // loyalty_points_history not in generated types yet — narrow cast to table name only
+        supabase.from('loyalty_points_history' as never)
           .select('id, points, type, description, created_at')
           .eq('customer_id', customerId)
           .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false })
-          .limit(20) as Promise<{ data: PointsHistoryEntry[] | null; error: { message: string } | null }>,
-        db.from('loyalty_rewards')
+          .limit(20) as unknown as { data: PointsHistoryEntry[] | null; error: { message: string } | null },
+        supabase.from('loyalty_rewards')
           .select('id, name, description, points_required, active')
           .eq('tenant_id', tenant.id)
           .eq('active', true)
-          .order('points_required', { ascending: true }) as Promise<{ data: LoyaltyReward[] | null; error: { message: string } | null }>,
+          .order('points_required', { ascending: true }),
       ]);
 
       if (balanceResult.error) {

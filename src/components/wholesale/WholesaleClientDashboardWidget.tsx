@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, ShoppingCart, DollarSign, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function WholesaleClientDashboardWidget() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['wholesale-dashboard', tenant?.id],
+    queryKey: queryKeys.wholesaleDashboard.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

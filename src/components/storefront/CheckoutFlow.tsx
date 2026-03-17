@@ -29,6 +29,7 @@ import ProductImage from '@/components/ProductImage';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const checkoutSchema = z.object({
@@ -136,7 +137,7 @@ export default function CheckoutFlow({
       toast.success('Order placed successfully!');
     } catch (error) {
       toast.error('Failed to place order. Please try again.');
-      console.error(error);
+      logger.error('Failed to place order', error, 'CheckoutFlow');
     } finally {
       setIsSubmitting(false);
     }

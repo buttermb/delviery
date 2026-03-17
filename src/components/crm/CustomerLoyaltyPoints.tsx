@@ -77,19 +77,18 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
     queryFn: async () => {
       if (!tenant?.id) return null;
 
-      const { data, error } = await (supabase as any)
-        .from('customer_loyalty')
+      // customer_loyalty not in generated types yet — narrow cast to table name only
+      const { data, error } = await (supabase.from('customer_loyalty' as never)
         .select('*')
         .eq('tenant_id', tenant.id)
         .eq('customer_id', customerId)
-        .maybeSingle();
+        .maybeSingle() as unknown as Promise<{ data: CustomerLoyaltyData | null; error: { message: string } | null }>);
 
       if (error) throw error;
 
       // Initialize if doesn't exist
       if (!data) {
-        const { data: newRecord, error: insertError } = await (supabase as any)
-          .from('customer_loyalty')
+        const { data: newRecord, error: insertError } = await (supabase.from('customer_loyalty' as never)
           .insert({
             tenant_id: tenant.id,
             customer_id: customerId,
@@ -99,13 +98,13 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
             tier: 'bronze',
           })
           .select()
-          .single();
+          .single() as unknown as Promise<{ data: CustomerLoyaltyData | null; error: { message: string } | null }>);
 
         if (insertError) throw insertError;
         return newRecord as CustomerLoyaltyData;
       }
 
-      return data as CustomerLoyaltyData;
+      return data;
     },
     enabled: !!tenant?.id && !!customerId,
   });
@@ -116,7 +115,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('loyalty_transactions')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -125,7 +124,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
         .limit(20);
 
       if (error) throw error;
-      return data as LoyaltyTransaction[];
+      return (data ?? []) as LoyaltyTransaction[];
     },
     enabled: !!tenant?.id && !!customerId,
   });
@@ -139,7 +138,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
       const transactionType = isPositive ? 'earn' : 'redeem';
 
       // Insert transaction
-      const { error: txError } = await (supabase as any)
+      const { error: txError } = await supabase
         .from('loyalty_transactions')
         .insert({
           tenant_id: tenant.id,
@@ -163,8 +162,8 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
 
       const newTier = calculateTier(newLifetimeEarned);
 
-      const { error: updateError } = await (supabase as any)
-        .from('customer_loyalty')
+      // customer_loyalty not in generated types yet — narrow cast to table name only
+      const { error: updateError } = await (supabase.from('customer_loyalty' as never)
         .update({
           points_balance: newBalance,
           lifetime_points_earned: newLifetimeEarned,
@@ -172,7 +171,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
           tier: newTier,
         })
         .eq('tenant_id', tenant.id)
-        .eq('customer_id', customerId);
+        .eq('customer_id', customerId) as unknown as Promise<{ error: { message: string } | null }>);
 
       if (updateError) throw updateError;
 

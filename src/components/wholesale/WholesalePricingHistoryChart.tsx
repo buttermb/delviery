@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { Badge } from '@/components/ui/badge';
 
 interface PriceHistoryEntry {
@@ -19,7 +20,7 @@ export function WholesalePricingHistoryChart({ productId }: WholesalePricingHist
   const { tenant } = useTenantAdminAuth();
 
   const { data: history } = useQuery({
-    queryKey: ['pricing-history', productId],
+    queryKey: queryKeys.wholesalePricingHistory.byProduct(productId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_price_history')

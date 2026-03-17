@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Navigation, Route, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatStatus } from '@/utils/stringHelpers';
 import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';
 import { escapeHtml } from '@/lib/utils/sanitize';
@@ -44,6 +45,7 @@ interface OrderMapProps {
 }
 
 export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrderSelect }: OrderMapProps) => {
+  const { tenantId } = useTenantAdminAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -114,23 +116,24 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
     };
   }, [getMapStyle]);
 
-  // Real-time courier position updates
+  // Real-time courier position updates (tenant-scoped)
   useEffect(() => {
-    if (!mapLoaded) return;
+    if (!mapLoaded || !tenantId) return;
 
     const channel = supabase
-      .channel('courier-positions')
+      .channel(`courier-positions-${tenantId}`)
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'couriers'
+          table: 'couriers',
+          filter: `tenant_id=eq.${tenantId}`
         },
         (payload) => {
           const courierId = payload.new.id;
           const marker = markersRef.current[`courier-${courierId}`];
-          
+
           if (marker && payload.new.current_lat && payload.new.current_lng) {
             marker.setLngLat([payload.new.current_lng, payload.new.current_lat]);
           }
@@ -141,7 +144,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [mapLoaded]);
+  }, [mapLoaded, tenantId]);
 
   useEffect(() => {
     if (!map.current || !mapLoaded) return;

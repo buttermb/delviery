@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 
 type AnalyticsEventType = 'page_view' | 'product_view' | 'add_to_cart' | 'remove_from_cart' | 'checkout_start';
@@ -51,9 +52,9 @@ async function flushEvents(): Promise<void> {
   eventQueue = [];
 
   try {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('storefront_analytics')
-      .insert(batch) as { error: { message: string } | null };
+      .insert(batch as unknown as Database['public']['Tables']['storefront_analytics']['Insert'][]);
 
     if (error) {
       logger.warn('Failed to flush analytics events', { error: error.message, count: batch.length });

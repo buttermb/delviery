@@ -26,7 +26,7 @@ export function IconButtonTooltip({
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent
         side={side}
-        className="rounded-md border-[#334155] bg-[#F8FAFC] px-2 py-1 text-xs font-medium text-[#0F172A] shadow-lg"
+        className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground shadow-lg"
         sideOffset={6}
       >
         {label}

@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
@@ -45,7 +46,7 @@ export function WholesaleClientAddressBook({ clientId }: WholesaleClientAddressB
   const queryClient = useQueryClient();
 
   const { data: addresses = [], isLoading } = useQuery({
-    queryKey: ['client-addresses', clientId],
+    queryKey: queryKeys.clientAddresses.byClient(clientId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_addresses')
@@ -69,7 +70,7 @@ export function WholesaleClientAddressBook({ clientId }: WholesaleClientAddressB
     },
     onSuccess: () => {
       toast.success('Address deleted');
-      queryClient.invalidateQueries({ queryKey: ['client-addresses', clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientAddresses.byClient(clientId) });
     },
     onError: (error) => {
       logger.error('Failed to delete address', { error });
@@ -225,7 +226,7 @@ function AddressForm({
     },
     onSuccess: () => {
       toast.success(address ? 'Address updated' : 'Address added');
-      queryClient.invalidateQueries({ queryKey: ['client-addresses', clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientAddresses.byClient(clientId) });
       onSuccess();
     },
     onError: (error) => {

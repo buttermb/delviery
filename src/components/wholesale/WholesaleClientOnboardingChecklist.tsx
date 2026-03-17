@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
@@ -69,7 +70,7 @@ export function WholesaleClientOnboardingChecklist({
   const queryClient = useQueryClient();
 
   const { data: checklist = [], isLoading } = useQuery({
-    queryKey: ['client-onboarding', clientId],
+    queryKey: queryKeys.clientOnboarding.byClient(clientId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_onboarding_checklist')
@@ -107,7 +108,7 @@ export function WholesaleClientOnboardingChecklist({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['client-onboarding', clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientOnboarding.byClient(clientId) });
     },
     onError: (error) => {
       logger.error('Failed to update checklist', { error });

@@ -91,7 +91,7 @@ export default function RealtimeDashboard() {
               return [newOrder, ...prev].slice(0, 10); // Add new to top
             });
             // Invalidate stats query so it refetches on realtime changes (replaces polling)
-            queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.realtimeDashboard.byTenant(tenantId) });
           }
         }
       )

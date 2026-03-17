@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { Badge } from "@/components/ui/badge";
 import { Bell, Loader2 } from "lucide-react";
 
 const reminderSchema = z.object({
@@ -100,6 +101,7 @@ export function InvoicePaymentReminder({
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-emerald-600" />
             Payment Reminder - Invoice #{invoiceNumber}
+            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 

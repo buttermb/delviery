@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
@@ -49,8 +50,8 @@ export function WholesaleOrderApproval({
       toast.success(
         action === 'approve' ? 'Order approved successfully' : 'Order rejected'
       );
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
       setNotes('');
     },
     onError: (error) => {

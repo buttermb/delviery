@@ -12,6 +12,7 @@ import { MessageSquare, Phone, Mail, FileText, Plus } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { formatSmartDate } from "@/lib/formatters";
@@ -39,7 +40,7 @@ export function WholesaleClientCommunicationLog({ clientId }: WholesaleClientCom
   const queryClient = useQueryClient();
 
   const { data: communications = [], isLoading } = useQuery({
-    queryKey: ['client-communications', clientId],
+    queryKey: queryKeys.clientCommunications.byClient(clientId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_communications')
@@ -66,7 +67,7 @@ export function WholesaleClientCommunicationLog({ clientId }: WholesaleClientCom
     },
     onSuccess: () => {
       toast.success('Communication logged');
-      queryClient.invalidateQueries({ queryKey: ['client-communications', clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientCommunications.byClient(clientId) });
       setNewEntry({ type: 'note', content: '' });
       setShowForm(false);
     },

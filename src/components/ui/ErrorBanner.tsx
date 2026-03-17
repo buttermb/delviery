@@ -26,26 +26,26 @@ const VARIANT_CONFIG: Record<
   { bg: string; border: string; icon: string; iconColor: string; btnBg: string; btnText: string }
 > = {
   critical: {
-    bg: 'bg-[#EF4444]/10',
-    border: 'border-[#EF4444]/20',
+    bg: 'bg-destructive/10',
+    border: 'border-destructive/20',
     icon: 'error',
-    iconColor: 'text-[#EF4444]',
-    btnBg: 'bg-[#EF4444] hover:bg-[#DC2626]',
+    iconColor: 'text-destructive',
+    btnBg: 'bg-destructive hover:bg-red-700',
     btnText: 'text-white',
   },
   stale: {
-    bg: 'bg-[#F59E0B]/10',
-    border: 'border-[#F59E0B]/20',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
     icon: 'warning',
-    iconColor: 'text-[#F59E0B]',
-    btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
+    iconColor: 'text-amber-500',
+    btnBg: 'bg-amber-500 hover:bg-amber-600',
     btnText: 'text-white',
   },
   offline: {
-    bg: 'bg-[#64748B]/10',
-    border: 'border-[#64748B]/20',
+    bg: 'bg-muted-foreground/10',
+    border: 'border-muted-foreground/20',
     icon: 'offline',
-    iconColor: 'text-[#64748B]',
+    iconColor: 'text-muted-foreground',
     btnBg: '',
     btnText: '',
   },
@@ -96,7 +96,7 @@ export function ErrorBanner({ variant, message, onRetry, onDismiss, className }:
       </div>
 
       {/* Message */}
-      <p className="flex-1 text-sm text-[#F8FAFC]">{message}</p>
+      <p className="flex-1 text-sm text-foreground">{message}</p>
 
       {/* Retry button */}
       {onRetry && cfg.btnBg && (
@@ -114,7 +114,7 @@ export function ErrorBanner({ variant, message, onRetry, onDismiss, className }:
         <button
           type="button"
           onClick={handleDismiss}
-          className="flex h-5 w-5 items-center justify-center rounded text-[#64748B] hover:text-[#F8FAFC]"
+          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-foreground"
           aria-label="Dismiss"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

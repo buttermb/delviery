@@ -282,7 +282,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       {/* Input - Mobile optimized with proper z-index */}
       <div
         className={cn(
-          "border-t space-y-2 bg-background chat-input-container z-[1]",
+          "border-t space-y-2 bg-background chat-input-container z-10",
           isMobile ? "p-3 pb-safe sticky bottom-0" : "p-4"
         )}
         data-chat-widget="input-container"
@@ -319,7 +319,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
             className={cn(
               "min-h-[44px] text-base flex-1 mobile-input-container",
               isMobile && "text-base",
-              isMobile && isInputFocused && "relative z-[1]"
+              isMobile && isInputFocused && "relative z-10"
             )}
           />
           <Button 

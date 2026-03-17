@@ -11,6 +11,7 @@ import { UserCircle, Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
@@ -36,7 +37,7 @@ export function WholesaleSalesRepAssignment({
 
   // Fetch available sales reps
   const { data: salesReps = [] } = useQuery({
-    queryKey: ['sales-reps'],
+    queryKey: queryKeys.wholesaleSalesReps.all,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('team_members')
@@ -51,7 +52,7 @@ export function WholesaleSalesRepAssignment({
 
   // Fetch current rep details
   const { data: currentRep } = useQuery({
-    queryKey: ['sales-rep', currentRepId],
+    queryKey: queryKeys.wholesaleSalesReps.detail(currentRepId),
     queryFn: async () => {
       if (!currentRepId) return null;
 
@@ -78,7 +79,7 @@ export function WholesaleSalesRepAssignment({
     },
     onSuccess: () => {
       toast.success('Sales rep assigned successfully');
-      queryClient.invalidateQueries({ queryKey: ['marketplace-profiles', clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProfilesData.byClient(clientId) });
     },
     onError: (error) => {
       logger.error('Failed to assign sales rep', { error });

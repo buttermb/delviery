@@ -18,7 +18,7 @@ export function FinancialSummaryDashboard() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: financials } = useQuery({
-    queryKey: ['analytics', 'financials', tenant?.id],
+    queryKey: queryKeys.financialSummary.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

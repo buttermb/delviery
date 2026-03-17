@@ -90,16 +90,16 @@ export function DriverRosterPanel({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-[#334155] px-4 py-3">
-        <h3 className="text-sm font-semibold text-[#F8FAFC]">
-          Drivers <span className="text-[#64748B] font-normal">({drivers.length})</span>
+      <div className="border-b border-border px-4 py-3">
+        <h3 className="text-sm font-semibold text-foreground">
+          Drivers <span className="text-muted-foreground font-normal">({drivers.length})</span>
         </h3>
 
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search drivers..."
-          className="mt-2 h-8 min-h-0 border-[#334155] bg-[#0F172A] text-xs text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="mt-2 h-8 min-h-0 border-border bg-card text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
 
         {/* Status filter chips */}
@@ -139,11 +139,11 @@ export function DriverRosterPanel({
         {loading ? (
           <div className="space-y-2 p-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-12 animate-pulse rounded-lg bg-[#334155]" />
+              <div key={i} className="h-12 animate-pulse rounded-lg bg-border" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="px-4 py-8 text-center text-xs text-[#64748B]">
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">
             {search ? 'No matching drivers' : 'No drivers found'}
           </p>
         ) : (
@@ -162,9 +162,9 @@ export function DriverRosterPanel({
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                     isSelected
-                      ? 'bg-[#10B981]/10 ring-1 ring-[#10B981]/30'
+                      ? 'bg-emerald-500/10 ring-1 ring-emerald-500/30'
                       : hasLocation
-                        ? 'hover:bg-[#263548]'
+                        ? 'hover:bg-muted'
                         : 'opacity-50 cursor-not-allowed',
                   )}
                 >
@@ -177,18 +177,18 @@ export function DriverRosterPanel({
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="truncate text-sm text-[#F8FAFC]">{driver.full_name}</span>
+                      <span className="truncate text-sm text-foreground">{driver.full_name}</span>
                       {driver.last_updated && (
-                        <span className="ml-2 flex-shrink-0 text-[10px] text-[#64748B]">
+                        <span className="ml-2 flex-shrink-0 text-[10px] text-muted-foreground">
                           {formatRelativeTime(driver.last_updated)}
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                       <span style={{ color: cfg.color }}>{cfg.label}</span>
                       {driver.zone_name && (
                         <>
-                          <span className="text-[#334155]">/</span>
+                          <span className="text-border">/</span>
                           <span className="truncate">{driver.zone_name}</span>
                         </>
                       )}
@@ -197,7 +197,7 @@ export function DriverRosterPanel({
 
                   {/* FlyTo indicator */}
                   {hasLocation && (
-                    <svg className="h-3.5 w-3.5 flex-shrink-0 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l-4 4m0-4l4 4m6-4a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   )}
@@ -235,15 +235,15 @@ function FilterChip({
       className={cn(
         'flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors',
         active
-          ? 'bg-[#10B981]/10 text-[#10B981]'
-          : 'bg-[#0F172A] text-[#64748B] hover:text-[#94A3B8]',
+          ? 'bg-emerald-500/10 text-emerald-500'
+          : 'bg-card text-muted-foreground hover:text-muted-foreground',
       )}
     >
       {color && (
         <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
       )}
       {label}
-      <span className={active ? 'text-[#10B981]/70' : 'text-[#475569]'}>{count}</span>
+      <span className={active ? 'text-emerald-500/70' : 'text-muted-foreground'}>{count}</span>
     </button>
   );
 }

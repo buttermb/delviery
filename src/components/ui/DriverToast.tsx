@@ -55,7 +55,7 @@ function renderToast(
   return toast.custom(
     (id) => (
       <div
-        className="flex w-[360px] items-center gap-3 rounded-lg border border-[#334155] bg-[#1E293B] px-4 py-3 shadow-xl"
+        className="flex w-[360px] items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-xl"
         style={{ borderLeftWidth: 3, borderLeftColor: config.border }}
       >
         {/* Icon */}
@@ -70,7 +70,7 @@ function renderToast(
         </svg>
 
         {/* Content */}
-        <span className="flex-1 text-sm text-[#F8FAFC]">{message}</span>
+        <span className="flex-1 text-sm text-foreground">{message}</span>
 
         {/* Action */}
         {action && (
@@ -91,7 +91,7 @@ function renderToast(
         <button
           type="button"
           onClick={() => toast.dismiss(id)}
-          className="flex h-4 w-4 flex-shrink-0 items-center justify-center text-[#64748B] hover:text-[#F8FAFC]"
+          className="flex h-4 w-4 flex-shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
           aria-label="Dismiss"
         >
           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
