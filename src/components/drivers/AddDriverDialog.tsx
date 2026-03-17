@@ -156,7 +156,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
       vehicle_year: new Date().getFullYear(),
       vehicle_color: '',
       vehicle_plate: '',
-      insurance_expiry: '',
+      
       commission_rate: 30,
       zone_id: '',
       send_invite_email: true,
