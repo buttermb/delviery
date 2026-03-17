@@ -165,7 +165,7 @@ serve(async (req) => {
  * Send warning notification to tenant
  */
 async function sendWarningNotification(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   email: string,
   slug: string,

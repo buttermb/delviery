@@ -217,7 +217,7 @@ export async function createSearchHash(value: string): Promise<string> {
  * Log PHI access for HIPAA compliance
  */
 export async function logPHIAccess(
-  supabaseClient: { rpc: (name: string, params: Record<string, unknown>) => Promise<unknown> },
+  supabaseClient: any,
   customerId: string,
   action: 'view' | 'create' | 'update' | 'decrypt' | 'search' | 'export' | 'delete',
   fieldsAccessed: string[],

@@ -168,7 +168,7 @@ serve(async (req) => {
     const validation = addDriverSchema.safeParse(rawBody);
 
     if (!validation.success) {
-      const fieldErrors = validation.error.flatten().fieldErrors as Record<string, string[]>;
+      const fieldErrors = (validation as z.SafeParseError<typeof addDriverSchema>).error.flatten().fieldErrors as Record<string, string[]>;
       logger.warn('Validation failed', { errors: fieldErrors });
       return errorResponse(400, 'Validation failed', 'VALIDATION_ERROR', fieldErrors);
     }
