@@ -24,18 +24,18 @@ interface InvoiceListProps {
 export function InvoiceList({ invoices, onViewInvoice, onDownloadInvoice }: InvoiceListProps) {
   const getStatusBadge = (status: string) => {
     const colorMap: Record<string, string> = {
-      paid: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700',
-      sent: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
-      open: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
-      draft: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700',
-      void: 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600',
-      uncollectible: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
-      overdue: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
-      partially_paid: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700',
+      paid: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      sent: 'bg-blue-100 text-blue-800 border-blue-200',
+      open: 'bg-blue-100 text-blue-800 border-blue-200',
+      draft: 'bg-muted text-muted-foreground border-border',
+      void: 'bg-muted text-muted-foreground border-border',
+      uncollectible: 'bg-red-100 text-red-800 border-red-200',
+      overdue: 'bg-red-100 text-red-800 border-red-200',
+      partially_paid: 'bg-amber-100 text-amber-800 border-amber-200',
     };
 
     return (
-      <Badge className={colorMap[status] || 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700'}>
+      <Badge className={colorMap[status] || 'bg-muted text-muted-foreground border-border'}>
         {status.toUpperCase()}
       </Badge>
     );

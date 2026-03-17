@@ -49,7 +49,7 @@ export function UsageMeter({
       </div>
 
       {!isUnlimited && (
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
               isOverLimit
@@ -64,7 +64,7 @@ export function UsageMeter({
       )}
 
       {isOverLimit && (
-        <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
           <p className="font-semibold">⚠️ Over limit by {overage.toLocaleString()}{unit}</p>
           {overageCharge && (
             <p className="mt-1">

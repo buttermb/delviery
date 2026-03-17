@@ -43,13 +43,13 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-500/10 text-green-700 dark:text-green-400';
+        return 'bg-green-500/10 text-green-700';
       case 'pending':
-        return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
+        return 'bg-yellow-500/10 text-yellow-700';
       case 'rejected':
-        return 'bg-red-500/10 text-red-700 dark:text-red-400';
+        return 'bg-red-500/10 text-red-700';
       default:
-        return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
+        return 'bg-muted text-muted-foreground';
     }
   };
 

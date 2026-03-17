@@ -74,9 +74,9 @@ export const STATUS_COLORS = {
 
   // Invoice statuses
   draft: {
-    bg: 'bg-gray-100 dark:bg-gray-900/30',
-    text: 'text-gray-700 dark:text-gray-300',
-    border: 'border-gray-300 dark:border-gray-700',
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    border: 'border-border',
     dot: 'bg-gray-500',
   },
   sent: {
@@ -86,10 +86,10 @@ export const STATUS_COLORS = {
     dot: 'bg-blue-500',
   },
   void: {
-    bg: 'bg-gray-900 dark:bg-gray-100/10',
-    text: 'text-white dark:text-gray-300',
-    border: 'border-gray-900 dark:border-gray-600',
-    dot: 'bg-gray-900 dark:bg-gray-300',
+    bg: 'bg-gray-900',
+    text: 'text-white',
+    border: 'border-gray-900',
+    dot: 'bg-gray-900',
   },
 
   // Payment statuses

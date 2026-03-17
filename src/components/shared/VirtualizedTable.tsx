@@ -71,7 +71,7 @@ const VirtualizedRow = memo(function VirtualizedRow({
     <div
       style={style}
       className={cn(
-        'flex border-b hover:bg-muted/50 transition-colors items-center dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700',
+        'flex border-b hover:bg-muted/50 transition-colors items-center bg-card text-card-foreground border-border',
         onRowClick && 'cursor-pointer'
       )}
       onClick={() => onRowClick?.(row, index)}
@@ -132,10 +132,10 @@ function VirtualizedTableInner<T>({
   const listHeight = Math.max(height - HEADER_HEIGHT, 200);
 
   return (
-    <div className={cn('border rounded-lg overflow-hidden dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700', className)}>
+    <div className={cn('border rounded-lg overflow-hidden bg-card text-card-foreground border-border', className)}>
       {/* Sticky Header */}
       <div
-        className="flex border-b bg-muted/50 dark:bg-gray-800 dark:border-gray-700"
+        className="flex border-b bg-muted/50 border-border"
         style={{ height: HEADER_HEIGHT }}
       >
         {columns.map((column, index) => (

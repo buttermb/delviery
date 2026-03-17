@@ -80,7 +80,7 @@ function getSyncStatusConfig(status: ProductSyncStatus): {
     default:
       return {
         icon: <CheckCircle className={cn(iconSize, 'text-gray-500')} />,
-        color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400',
+        color: 'bg-muted text-muted-foreground border-border',
         label: 'Unknown',
         description: 'Sync status unknown',
       };

@@ -101,32 +101,32 @@ const getPaymentStatusBadge = (paymentStatus: string | undefined) => {
     paid: {
       label: 'Paid',
       variant: 'outline',
-      className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
+      className: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     },
     unpaid: {
       label: 'Unpaid',
       variant: 'secondary',
-      className: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-800',
+      className: 'bg-gray-100 text-gray-700 border-gray-200',
     },
     partially_paid: {
       label: 'Partial',
       variant: 'outline',
-      className: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+      className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     },
     partial: {
       label: 'Partial',
       variant: 'outline',
-      className: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+      className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     },
     refunded: {
       label: 'Refunded',
       variant: 'outline',
-      className: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+      className: 'bg-red-100 text-red-700 border-red-200',
     },
     pending: {
       label: 'Pending',
       variant: 'secondary',
-      className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+      className: 'bg-blue-100 text-blue-700 border-blue-200',
     },
   };
 
@@ -142,11 +142,11 @@ const getPaymentStatusBadge = (paymentStatus: string | undefined) => {
 // Source badge helper
 const getSourceBadge = (source: string | undefined) => {
   const sourceConfig: Record<string, { label: string; icon: typeof Store; className: string }> = {
-    storefront: { label: 'Storefront', icon: Store, className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' },
-    admin: { label: 'Admin', icon: Monitor, className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' },
-    pos: { label: 'POS', icon: Monitor, className: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' },
-    menu: { label: 'Menu', icon: Utensils, className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800' },
-    api: { label: 'API', icon: Zap, className: 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800' },
+    storefront: { label: 'Storefront', icon: Store, className: 'bg-purple-100 text-purple-700 border-purple-200' },
+    admin: { label: 'Admin', icon: Monitor, className: 'bg-blue-100 text-blue-700 border-blue-200' },
+    pos: { label: 'POS', icon: Monitor, className: 'bg-green-100 text-green-700 border-green-200' },
+    menu: { label: 'Menu', icon: Utensils, className: 'bg-orange-100 text-orange-700 border-orange-200' },
+    api: { label: 'API', icon: Zap, className: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
   };
   const config = sourceConfig[source || 'admin'] || sourceConfig.admin;
   const Icon = config.icon;

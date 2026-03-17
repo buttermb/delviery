@@ -26,11 +26,11 @@ export function TierBadge({
   const tier = propTier || hookTier;
   
   const tierConfig = {
-    street: { 
-      name: 'Street', 
-      bg: 'bg-gray-100 dark:bg-gray-800', 
-      text: 'text-gray-700 dark:text-gray-300',
-      border: 'border-gray-300 dark:border-gray-600'
+    street: {
+      name: 'Street',
+      bg: 'bg-muted',
+      text: 'text-muted-foreground',
+      border: 'border-border'
     },
     trap: { 
       name: 'Trap', 
@@ -44,11 +44,11 @@ export function TierBadge({
       text: 'text-[hsl(var(--super-admin-secondary))]',
       border: 'border-[hsl(var(--super-admin-secondary))]/30'
     },
-    hood: { 
-      name: 'Hood', 
-      bg: 'bg-orange-100 dark:bg-orange-900/30', 
-      text: 'text-orange-700 dark:text-orange-300',
-      border: 'border-orange-300 dark:border-orange-600'
+    hood: {
+      name: 'Hood',
+      bg: 'bg-orange-100',
+      text: 'text-orange-700',
+      border: 'border-orange-300'
     },
     empire: { 
       name: 'Empire', 

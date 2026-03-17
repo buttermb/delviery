@@ -90,14 +90,14 @@ function getTypeIcon(type: string) {
 
 function getTypeBadgeClasses(type: string): string {
   const variants: Record<string, string> = {
-    usage: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    purchase: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    free_grant: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-    bonus: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    adjustment: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-    refund: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+    usage: 'bg-red-100 text-red-800',
+    purchase: 'bg-green-100 text-green-800',
+    free_grant: 'bg-blue-100 text-blue-800',
+    bonus: 'bg-purple-100 text-purple-800',
+    adjustment: 'bg-orange-100 text-orange-800',
+    refund: 'bg-cyan-100 text-cyan-800',
   };
-  return variants[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+  return variants[type] || 'bg-muted text-muted-foreground';
 }
 
 function formatTransactionType(type: string): string {
@@ -165,7 +165,7 @@ function TransactionRow({ transaction }: TransactionRowProps) {
         <TableCell
           className={cn(
             'text-right font-mono font-medium',
-            tx.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+            tx.amount > 0 ? 'text-green-600' : 'text-red-600'
           )}
         >
           {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()}

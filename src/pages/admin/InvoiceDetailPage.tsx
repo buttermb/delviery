@@ -179,14 +179,14 @@ export default function InvoiceDetailPage() {
             case "overdue":
                 return <Badge variant="destructive">Overdue</Badge>;
             case "sent":
-                return <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">Sent</Badge>;
+                return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Sent</Badge>;
             case "draft":
-                return <Badge className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">Draft</Badge>;
+                return <Badge className="bg-muted text-muted-foreground border-border">Draft</Badge>;
             case "partially_paid":
-                return <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">Partially Paid</Badge>;
+                return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Partially Paid</Badge>;
             case "cancelled":
             case "void":
-                return <Badge className="bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600">{status === "void" ? "Void" : "Cancelled"}</Badge>;
+                return <Badge className="bg-gray-900 text-white border-gray-900">{status === "void" ? "Void" : "Cancelled"}</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }

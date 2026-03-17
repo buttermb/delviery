@@ -87,8 +87,8 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
 
   if (processedImages.length === 0) {
     return (
-      <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-        <span className="text-gray-400">No images available</span>
+      <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+        <span className="text-muted-foreground">No images available</span>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
   return (
     <>
       {/* Main Image Display */}
-      <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden group">
+      <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden group">
         {/* Scroll-snap carousel */}
         <div
           ref={scrollContainerRef}

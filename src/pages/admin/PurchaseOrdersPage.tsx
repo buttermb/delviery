@@ -54,7 +54,7 @@ import type { Database } from "@/integrations/supabase/types";
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500 dark:bg-gray-600",
+  draft: "bg-gray-500",
   submitted: "bg-blue-500",
   approved: "bg-green-500",
   received: "bg-emerald-500",

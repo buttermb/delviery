@@ -58,7 +58,7 @@ type Coupon = Database['public']['Tables']['coupon_codes']['Row'];
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-500",
-  inactive: "bg-gray-500 dark:bg-gray-600",
+  inactive: "bg-gray-500",
   expired: "bg-red-500",
 };
 

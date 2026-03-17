@@ -291,7 +291,7 @@ export function CustomerPreferredProducts({
                     ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                     : index === 2
                     ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {index + 1}

@@ -47,7 +47,6 @@ export function SidebarLoadingSkeleton({ collapsible = "offcanvas" }: SidebarLoa
     <Sidebar
       data-tutorial="navigation-sidebar"
       collapsible={collapsible}
-      className="dark:bg-gray-900 dark:text-white"
     >
       {/* Header skeleton - matches tenant dropdown structure */}
       <SidebarHeader className="p-0 border-b">

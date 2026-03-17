@@ -80,7 +80,7 @@ const STATUS_COLORS: Record<ComplianceStatus, string> = {
   passed: 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-800',
   failed: 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/30 dark:border-red-800',
   pending: 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/30 dark:border-amber-800',
-  not_required: 'text-gray-500 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-gray-950/30 dark:border-gray-700',
+  not_required: 'text-muted-foreground bg-muted border-border',
 };
 
 const STATUS_ICONS: Record<ComplianceStatus, typeof CheckCircle> = {

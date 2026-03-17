@@ -182,15 +182,15 @@ export function CourierStatusWidget() {
       <CardContent className="space-y-4">
         {/* Status summary pills */}
         <div className="flex flex-wrap gap-2">
-          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-200">
+          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
             <UserCheck className="h-3 w-3 mr-1" />
             {counts.available} Available
           </Badge>
-          <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-200">
+          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200">
             <Truck className="h-3 w-3 mr-1" />
             {counts.busy} Busy
           </Badge>
-          <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400 hover:bg-gray-200">
+          <Badge className="bg-muted text-muted-foreground hover:bg-muted/80">
             <Clock className="h-3 w-3 mr-1" />
             {counts.offline} Offline
           </Badge>
@@ -209,12 +209,12 @@ export function CourierStatusWidget() {
                 busy: {
                   dotColor: 'bg-purple-500',
                   label: 'On Delivery',
-                  textColor: 'text-purple-600 dark:text-purple-400',
+                  textColor: 'text-purple-600',
                 },
                 offline: {
                   dotColor: 'bg-gray-400',
                   label: 'Offline',
-                  textColor: 'text-gray-500 dark:text-gray-400',
+                  textColor: 'text-muted-foreground',
                 },
               }[courier.status];
 
@@ -230,7 +230,7 @@ export function CourierStatusWidget() {
                       </div>
                       <span
                         className={cn(
-                          'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900',
+                          'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background',
                           statusConfig.dotColor,
                           courier.status === 'available' && 'animate-pulse'
                         )}

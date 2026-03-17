@@ -38,16 +38,16 @@ function getStatusBadgeStyles(status: string | null): string {
       return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700';
     case 'partially_paid':
     case 'partial':
-      return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700';
+      return 'bg-amber-100 text-amber-800 border-amber-200';
     case 'overdue':
-      return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700';
+      return 'bg-red-100 text-red-800 border-red-200';
     case 'draft':
-      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700';
+      return 'bg-muted text-muted-foreground border-border';
     case 'cancelled':
     case 'void':
-      return 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600';
+      return 'bg-foreground text-background border-foreground';
     default:
-      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700';
+      return 'bg-muted text-muted-foreground border-border';
   }
 }
 

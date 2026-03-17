@@ -110,10 +110,10 @@ export function CheckoutLoyalty({
             <Star className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-sm text-purple-900 dark:text-purple-100">
+            <h3 className="font-semibold text-sm text-purple-900">
               Loyalty Points
             </h3>
-            <p className="text-sm text-purple-600 dark:text-purple-400">
+            <p className="text-sm text-purple-600">
               Earn & redeem points on every order
             </p>
           </div>
@@ -123,9 +123,9 @@ export function CheckoutLoyalty({
 
         {/* Points Balance */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-purple-700 dark:text-purple-300">Your Balance</span>
+          <span className="text-sm text-purple-700">Your Balance</span>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
               <Sparkles className="w-3 h-3 mr-1" />
               {currentPoints.toLocaleString()} pts
             </Badge>
@@ -138,24 +138,24 @@ export function CheckoutLoyalty({
         </div>
 
         {/* Points to Earn */}
-        <div className="flex items-center justify-between bg-green-50 dark:bg-green-950/30 p-2 rounded-lg">
-          <span className="text-sm text-green-700 dark:text-green-300 flex items-center gap-1">
+        <div className="flex items-center justify-between bg-green-50 p-2 rounded-lg">
+          <span className="text-sm text-green-700 flex items-center gap-1">
             <Gift className="w-4 h-4" />
             You'll earn on this order
           </span>
-          <Badge className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-0">
+          <Badge className="bg-green-100 text-green-700 border-0">
             +{pointsToEarn} pts
           </Badge>
         </div>
 
         {/* Active Redemption Display */}
         {redeemedPoints > 0 && (
-          <div className="flex items-center justify-between bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg">
+          <div className="flex items-center justify-between bg-purple-100 p-3 rounded-lg">
             <div>
-              <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+              <p className="text-sm font-medium text-purple-900">
                 {redeemedPoints} points applied
               </p>
-              <p className="text-sm text-purple-600 dark:text-purple-400">
+              <p className="text-sm text-purple-600">
                 Saving {formatCurrency(redeemedDiscount)}
               </p>
             </div>
@@ -179,13 +179,13 @@ export function CheckoutLoyalty({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowRedemption(true)}
-                className="w-full border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50"
+                className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
               >
                 <Gift className="w-4 h-4 mr-2" />
                 Redeem Points (up to {formatCurrency(maxDiscount)} off)
               </Button>
             ) : (
-              <div className="space-y-3 p-3 bg-white dark:bg-gray-900 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="space-y-3 p-3 bg-card rounded-lg border border-purple-200">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">Points to redeem</Label>
                   <Button
@@ -259,7 +259,7 @@ export function CheckoutLoyalty({
         )}
 
         {/* Earning Info */}
-        <div className="flex items-start gap-2 text-sm text-purple-600 dark:text-purple-400">
+        <div className="flex items-start gap-2 text-sm text-purple-600">
           <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
           <span>
             Earn {pointsPerDollar} point{pointsPerDollar !== 1 ? 's' : ''} per dollar spent.

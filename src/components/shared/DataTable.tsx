@@ -288,7 +288,7 @@ export function DataTable<TData, TValue>({
           getRowId={getRowId}
         />
       ) : (
-        <div className="dark:bg-gray-800 dark:text-gray-100">
+        <div className="bg-background text-foreground">
           <Table containerClassName="max-h-[600px]">
           <TableHeader>
             <TableRow>

@@ -113,7 +113,7 @@ interface VendorRow {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-500 dark:bg-gray-600',
+  draft: 'bg-gray-500',
   submitted: 'bg-blue-500',
   approved: 'bg-green-500',
   received: 'bg-emerald-500',
@@ -762,7 +762,7 @@ export default function VendorDashboard() {
                         <Badge
                           className={cn(
                             'text-white text-xs',
-                            STATUS_COLORS[activity.status] || 'bg-gray-500 dark:bg-gray-600'
+                            STATUS_COLORS[activity.status] || 'bg-gray-500'
                           )}
                         >
                           {activity.status}

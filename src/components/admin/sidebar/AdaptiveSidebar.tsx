@@ -184,7 +184,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 
   return (
     <>
-      <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible} className="dark:bg-gray-900 dark:text-white">
+      <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible}>
         {/* Streamlined Header with Integrated Credits */}
         <SidebarHeader className="p-0 border-b group-data-[collapsible=icon]:p-0">
           <DropdownMenu>

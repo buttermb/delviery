@@ -21,7 +21,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Super Admin',
     icon: ShieldCheck,
     description: 'Full system access across all tenants. Can manage platform-level settings, impersonate users, and access all data.',
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    color: 'bg-red-100 text-red-800',
     permissions: [
       { label: 'Manage tenants', allowed: true },
       { label: 'Impersonate users', allowed: true },
@@ -35,7 +35,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Tenant Admin',
     icon: Shield,
     description: 'Full access within a single tenant. Can manage settings, team members, billing, and all operational data.',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+    color: 'bg-orange-100 text-orange-800',
     permissions: [
       { label: 'Manage tenants', allowed: false },
       { label: 'Impersonate users', allowed: false },
@@ -49,7 +49,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Manager',
     icon: UserCog,
     description: 'Operational management including orders, products, inventory, and customers. Cannot modify billing or team settings.',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    color: 'bg-blue-100 text-blue-800',
     permissions: [
       { label: 'Manage orders', allowed: true },
       { label: 'Manage products', allowed: true },
@@ -63,7 +63,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Staff',
     icon: User,
     description: 'Day-to-day operations access. Can process orders, view products and customers, and manage deliveries.',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    color: 'bg-green-100 text-green-800',
     permissions: [
       { label: 'Process orders', allowed: true },
       { label: 'View products', allowed: true },
@@ -77,7 +77,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Driver',
     icon: Truck,
     description: 'Delivery-focused access. Can view assigned orders and update delivery statuses. Limited to delivery operations.',
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    color: 'bg-purple-100 text-purple-800',
     permissions: [
       { label: 'View assigned orders', allowed: true },
       { label: 'Update delivery status', allowed: true },
@@ -91,7 +91,7 @@ const ROLES: RoleDefinition[] = [
     name: 'Viewer',
     icon: Eye,
     description: 'Read-only access to dashboards, orders, products, and reports. Cannot modify any data.',
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+    color: 'bg-muted text-foreground',
     permissions: [
       { label: 'View dashboard', allowed: true },
       { label: 'View orders', allowed: true },
@@ -126,7 +126,7 @@ const PERMISSION_MATRIX: Record<string, Record<string, 'full' | 'view' | 'none'>
 
 function AccessBadge({ level }: { level: 'full' | 'view' | 'none' }) {
   if (level === 'full') {
-    return <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 text-[10px]">Full</Badge>;
+    return <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Full</Badge>;
   }
   if (level === 'view') {
     return <Badge variant="secondary" className="text-[10px]">View</Badge>;

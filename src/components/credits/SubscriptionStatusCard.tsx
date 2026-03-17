@@ -52,7 +52,7 @@ function getStatusConfig(status: SubscriptionDisplayStatus, cancelAtPeriodEnd: b
     return {
       label: 'Cancelling',
       icon: XCircle,
-      badgeClass: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+      badgeClass: 'bg-orange-100 text-orange-800 border-orange-200',
       progressClass: '[&>div]:bg-orange-500',
     };
   }
@@ -63,35 +63,35 @@ function getStatusConfig(status: SubscriptionDisplayStatus, cancelAtPeriodEnd: b
       return {
         label: status === 'trialing' ? 'Trial' : 'Active',
         icon: Crown,
-        badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
         progressClass: '[&>div]:bg-emerald-500',
       };
     case 'paused':
       return {
         label: 'Paused',
         icon: PauseCircle,
-        badgeClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+        badgeClass: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         progressClass: '[&>div]:bg-yellow-500',
       };
     case 'cancelled':
       return {
         label: 'Cancelled',
         icon: XCircle,
-        badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+        badgeClass: 'bg-red-100 text-red-800 border-red-200',
         progressClass: '[&>div]:bg-red-500',
       };
     case 'past_due':
       return {
         label: 'Past Due',
         icon: AlertTriangle,
-        badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+        badgeClass: 'bg-red-100 text-red-800 border-red-200',
         progressClass: '[&>div]:bg-red-500',
       };
     default:
       return {
         label: 'Unknown',
         icon: AlertTriangle,
-        badgeClass: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border-gray-200 dark:border-gray-800',
+        badgeClass: 'bg-muted text-muted-foreground border-border',
         progressClass: '[&>div]:bg-gray-500',
       };
   }
@@ -249,7 +249,7 @@ export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProp
 
         {/* Cancelling at period end */}
         {subscription.cancel_at_period_end && subscription.status === 'active' && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-500/10 text-sm text-orange-700 dark:text-orange-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-500/10 text-sm text-orange-700">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>
               Subscription ends on {formatRenewalDate(subscription.current_period_end)}
@@ -259,7 +259,7 @@ export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProp
 
         {/* Paused state */}
         {subscription.status === 'paused' && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 text-sm text-yellow-700 dark:text-yellow-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 text-sm text-yellow-700">
             <PauseCircle className="h-4 w-4 shrink-0" />
             <span>
               Your subscription is paused. Credits will not renew until resumed.
@@ -269,7 +269,7 @@ export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProp
 
         {/* Cancelled state */}
         {subscription.status === 'cancelled' && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-sm text-red-700 dark:text-red-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-sm text-red-700">
             <XCircle className="h-4 w-4 shrink-0" />
             <span>
               Subscription cancelled
@@ -283,7 +283,7 @@ export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProp
 
         {/* Past due state */}
         {subscription.status === 'past_due' && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-sm text-red-700 dark:text-red-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-sm text-red-700">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>
               Payment failed. Please update your payment method to continue receiving credits.

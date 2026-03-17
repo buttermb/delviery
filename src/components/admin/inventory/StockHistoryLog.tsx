@@ -87,7 +87,7 @@ const CHANGE_TYPE_CONFIG: Record<string, { label: string; icon: typeof Package; 
   sale: { label: 'Sale', icon: ShoppingCart, colorClass: 'text-purple-600', bgClass: 'bg-purple-100 border-purple-200 dark:bg-purple-950 dark:border-purple-800' },
   return: { label: 'Return', icon: RotateCcw, colorClass: 'text-orange-600', bgClass: 'bg-orange-100 border-orange-200 dark:bg-orange-950 dark:border-orange-800' },
   receiving: { label: 'Receiving', icon: Truck, colorClass: 'text-teal-600', bgClass: 'bg-teal-100 border-teal-200 dark:bg-teal-950 dark:border-teal-800' },
-  disposal: { label: 'Disposal', icon: Trash2, colorClass: 'text-gray-600', bgClass: 'bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700' },
+  disposal: { label: 'Disposal', icon: Trash2, colorClass: 'text-muted-foreground', bgClass: 'bg-muted border-border' },
 };
 
 const REASON_LABELS: Record<string, string> = {

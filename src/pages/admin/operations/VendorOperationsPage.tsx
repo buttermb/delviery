@@ -46,7 +46,7 @@ import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 const STATUS_COLORS: Record<string, string> = {
-    draft: 'bg-gray-500 dark:bg-gray-600',
+    draft: 'bg-gray-500',
     submitted: 'bg-blue-500',
     approved: 'bg-green-500',
     received: 'bg-emerald-500',

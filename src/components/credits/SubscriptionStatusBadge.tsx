@@ -47,7 +47,7 @@ export function SubscriptionStatusBadge({
         return {
           label: 'Out of Credits',
           icon: AlertTriangle,
-          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+          color: 'bg-red-100 text-red-800',
           tooltip: 'You need to purchase credits or upgrade to continue',
           priority: 'critical',
         };
@@ -56,7 +56,7 @@ export function SubscriptionStatusBadge({
         return {
           label: 'Free Tier',
           icon: Coins,
-          color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+          color: 'bg-orange-100 text-orange-800',
           tooltip: `${balance.toLocaleString()} credits remaining - running low!`,
           priority: 'warning',
         };
@@ -65,7 +65,7 @@ export function SubscriptionStatusBadge({
         return {
           label: 'Free Tier',
           icon: Coins,
-          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+          color: 'bg-yellow-100 text-yellow-800',
           tooltip: `${balance.toLocaleString()} credits remaining`,
           priority: 'low',
         };
@@ -73,7 +73,7 @@ export function SubscriptionStatusBadge({
       return {
         label: 'Free Tier',
         icon: Coins,
-        color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+        color: 'bg-emerald-100 text-emerald-800',
         tooltip: `${balance.toLocaleString()} credits available - Upgrade for unlimited`,
         priority: 'healthy',
       };
@@ -84,7 +84,7 @@ export function SubscriptionStatusBadge({
       return {
         label: `${currentTier} Trial`,
         icon: Clock,
-        color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        color: 'bg-blue-100 text-blue-800',
         tooltip: 'Trial period - unlimited access',
         priority: 'trial',
       };
@@ -94,7 +94,7 @@ export function SubscriptionStatusBadge({
       return {
         label: currentTier || 'Pro',
         icon: Crown,
-        color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+        color: 'bg-purple-100 text-purple-800',
         tooltip: 'Unlimited access - no credit limits',
         priority: 'premium',
       };
@@ -104,7 +104,7 @@ export function SubscriptionStatusBadge({
     return {
       label: 'Free Tier',
       icon: Coins,
-      color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+      color: 'bg-muted text-muted-foreground',
       tooltip: 'Check your subscription status',
       priority: 'unknown',
     };

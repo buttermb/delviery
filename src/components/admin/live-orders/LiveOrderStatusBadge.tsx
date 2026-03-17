@@ -59,7 +59,7 @@ const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
 
 const DEFAULT_CONFIG = {
   label: '',
-  classes: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700',
+  classes: 'bg-muted text-muted-foreground border-border',
 };
 
 export function LiveOrderStatusBadge({ status, className }: LiveOrderStatusBadgeProps) {

@@ -41,7 +41,7 @@ export const TopProductsRanking = ({
       case 1:
         return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
       case 2:
-        return 'bg-gray-400/10 text-gray-700 border-gray-400/20 dark:bg-gray-500/20 dark:text-gray-300 dark:border-gray-500/30';
+        return 'bg-muted text-muted-foreground border-border';
       case 3:
         return 'bg-warning/10 text-warning border-warning/20';
       default:

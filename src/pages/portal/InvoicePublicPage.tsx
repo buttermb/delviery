@@ -45,20 +45,20 @@ export default function InvoicePublicPage() {
     const getStatusConfig = (status: string) => {
         switch (status) {
             case "paid":
-                return { icon: CheckCircle2, color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300", label: "Paid" };
+                return { icon: CheckCircle2, color: "bg-emerald-100 text-emerald-800", label: "Paid" };
             case "overdue":
-                return { icon: AlertCircle, color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300", label: "Overdue" };
+                return { icon: AlertCircle, color: "bg-red-100 text-red-800", label: "Overdue" };
             case "sent":
-                return { icon: Clock, color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", label: "Awaiting Payment" };
+                return { icon: Clock, color: "bg-blue-100 text-blue-800", label: "Awaiting Payment" };
             case "partially_paid":
-                return { icon: Clock, color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", label: "Partially Paid" };
+                return { icon: Clock, color: "bg-amber-100 text-amber-800", label: "Partially Paid" };
             case "draft":
-                return { icon: FileText, color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300", label: "Draft" };
+                return { icon: FileText, color: "bg-muted text-muted-foreground", label: "Draft" };
             case "cancelled":
             case "void":
-                return { icon: FileText, color: "bg-gray-900 text-white dark:bg-gray-100/10 dark:text-gray-300", label: status === "void" ? "Void" : "Cancelled" };
+                return { icon: FileText, color: "bg-gray-900 text-white", label: status === "void" ? "Void" : "Cancelled" };
             default:
-                return { icon: FileText, color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300", label: status };
+                return { icon: FileText, color: "bg-muted text-muted-foreground", label: status };
         }
     };
 

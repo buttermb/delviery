@@ -321,7 +321,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

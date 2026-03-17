@@ -987,7 +987,7 @@ export default function LiveMap() {
             <AddCourierDialog onSuccess={loadCourierLocations} />
           </div>
 
-          <Card data-dark-panel className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+          <Card data-dark-panel className="p-8 bg-gradient-to-br from-card to-muted border-border">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
                 <MapPin className="h-8 w-8 text-red-400" />
@@ -1054,8 +1054,8 @@ export default function LiveMap() {
 
         {/* Error State */}
         {error && (
-          <Card className="p-4 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
-            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+          <Card className="p-4 bg-red-50 border-red-200 bg-destructive/10 border-destructive/20">
+            <div className="flex items-center gap-3 text-red-600 text-destructive">
               <AlertCircle className="h-5 w-5" />
               <div>
                 <p className="font-medium">Failed to load courier locations</p>
@@ -1075,7 +1075,7 @@ export default function LiveMap() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+          <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
                 <Users className="h-5 w-5 text-blue-600" />
@@ -1086,7 +1086,7 @@ export default function LiveMap() {
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+          <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
                 <CheckCircle className="h-5 w-5 text-emerald-600" />
@@ -1097,7 +1097,7 @@ export default function LiveMap() {
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800">
+          <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
                 <Truck className="h-5 w-5 text-amber-600" />
@@ -1108,13 +1108,13 @@ export default function LiveMap() {
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/30 dark:to-gray-900/20 border-gray-200 dark:border-gray-800">
+          <Card className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center">
                 <XCircle className="h-5 w-5 text-gray-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">{stats.offline}</div>
+                <div className="text-2xl font-bold text-muted-foreground">{stats.offline}</div>
                 <div className="text-xs text-gray-600/70">Offline</div>
               </div>
             </div>

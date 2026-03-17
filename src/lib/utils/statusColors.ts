@@ -50,7 +50,7 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   ready_for_pickup: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   
   // Shipping/Transit states (purple)
-  shipped: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-700', className: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-700' },
+  shipped: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200', className: 'bg-purple-100 text-purple-800 border-purple-200' },
 
   // Error/Destructive states (red semantic)
   failed: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -72,7 +72,7 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   // Invoice states
   draft: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border', className: 'bg-muted text-muted-foreground border-border' },
   sent: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
-  void: { bg: 'bg-gray-900 dark:bg-gray-100/10', text: 'text-white dark:text-gray-300', border: 'border-gray-900 dark:border-gray-600', className: 'bg-gray-900 dark:bg-gray-100/10 text-white dark:text-gray-300 border-gray-900 dark:border-gray-600' },
+  void: { bg: 'bg-gray-900', text: 'text-white', border: 'border-gray-900', className: 'bg-gray-900 text-white border-gray-900' },
 
   // Info states (blue semantic)
   new: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },

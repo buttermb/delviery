@@ -124,13 +124,13 @@ const CATEGORY_ICONS: Record<DocumentCategory, React.ElementType> = {
 };
 
 const CATEGORY_COLORS: Record<DocumentCategory, string> = {
-  contract: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  license: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  lab_result: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  certificate: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  pricing_sheet: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
-  insurance: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  other: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+  contract: 'bg-blue-100 text-blue-700',
+  license: 'bg-green-100 text-green-700',
+  lab_result: 'bg-purple-100 text-purple-700',
+  certificate: 'bg-amber-100 text-amber-700',
+  pricing_sheet: 'bg-cyan-100 text-cyan-700',
+  insurance: 'bg-red-100 text-red-700',
+  other: 'bg-muted text-muted-foreground',
 };
 
 // ============================================================================

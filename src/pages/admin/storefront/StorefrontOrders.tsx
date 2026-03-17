@@ -87,7 +87,7 @@ const STATUS_OPTIONS = [
   { value: 'out_for_delivery', label: 'Out for Delivery', color: 'bg-orange-500' },
   { value: 'delivered', label: 'Delivered', color: 'bg-green-500' },
   { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
-  { value: 'refunded', label: 'Refunded', color: 'bg-gray-500 dark:bg-gray-600' },
+  { value: 'refunded', label: 'Refunded', color: 'bg-gray-500' },
 ];
 
 export default function StorefrontOrders() {
@@ -203,7 +203,7 @@ export default function StorefrontOrders() {
     const statusConfig = STATUS_OPTIONS.find((s) => s.value === status);
     return (
       <Badge variant="outline" className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full ${statusConfig?.color ?? 'bg-gray-500 dark:bg-gray-600'}`} />
+        <div className={`w-2 h-2 rounded-full ${statusConfig?.color ?? 'bg-gray-500'}`} />
         <span className="capitalize">{status.replace('_', ' ')}</span>
       </Badge>
     );
@@ -214,7 +214,7 @@ export default function StorefrontOrders() {
       pending: 'bg-yellow-500/10 text-yellow-700',
       paid: 'bg-green-500/10 text-green-700',
       failed: 'bg-red-500/10 text-red-700',
-      refunded: 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300',
+      refunded: 'bg-gray-500/10 text-gray-700',
     };
     return (
       <Badge variant="outline" className={colors[status] ?? ''}>

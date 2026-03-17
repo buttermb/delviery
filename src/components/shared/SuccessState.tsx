@@ -68,20 +68,20 @@ export function SuccessState({
   return (
     <Card className={cn("p-12 text-center max-w-md mx-auto", className)}>
       <CardContent className="flex flex-col items-center justify-center space-y-6">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-50 dark:bg-green-900/20 mb-4">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-50 mb-4">
           <div className="success-checkmark">
             {config.icon}
           </div>
         </div>
-        
+
         <div className="space-y-2">
-          <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{finalTitle}</h3>
+          <h3 className="text-2xl font-semibold text-foreground">{finalTitle}</h3>
           {finalDetails && (
-            <p className="text-lg font-bold text-green-600 dark:text-green-400">
+            <p className="text-lg font-bold text-green-600">
               {finalDetails}
             </p>
           )}
-          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+          <p className="text-sm text-muted-foreground max-w-sm">
             {finalMessage}
           </p>
         </div>

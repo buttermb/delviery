@@ -55,7 +55,7 @@ type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 
 // PO statuses as per task requirements: draft, sent, confirmed, received, cancelled
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500 dark:bg-gray-600",
+  draft: "bg-gray-500",
   sent: "bg-blue-500",
   confirmed: "bg-green-500",
   received: "bg-emerald-500",
@@ -297,8 +297,8 @@ export default function PurchaseOrders() {
         <Card>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-gray-900/30 rounded-lg">
-                <Edit className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Edit className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Drafts</p>
@@ -449,7 +449,7 @@ export default function PurchaseOrders() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500 dark:bg-gray-600'} text-white border-0`}
+                            className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0`}
                           >
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {STATUS_LABELS[displayStatus] || displayStatus}

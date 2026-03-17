@@ -120,11 +120,11 @@ const COMMUNICATION_ICONS: Record<CommunicationType, React.ElementType> = {
 };
 
 const COMMUNICATION_COLORS: Record<CommunicationType, string> = {
-  call: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  email: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  meeting: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  note: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  other: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+  call: 'bg-green-100 text-green-700',
+  email: 'bg-blue-100 text-blue-700',
+  meeting: 'bg-purple-100 text-purple-700',
+  note: 'bg-yellow-100 text-yellow-700',
+  other: 'bg-muted text-muted-foreground',
 };
 
 // ============================================================================
