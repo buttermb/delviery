@@ -190,9 +190,11 @@ serve(async (req) => {
     }
 
     // -----------------------------------------------------------------------
-    // 6. Create auth user
+    // 6. Create auth user (or reuse existing)
     // -----------------------------------------------------------------------
     const tempPassword = generateTempPassword();
+    let authUserId: string;
+    let isExistingUser = false;
 
     const { data: authData, error: createUserError } = await supabase.auth.admin.createUser({
       email: input.email,
@@ -206,13 +208,23 @@ serve(async (req) => {
     });
 
     if (createUserError) {
-      // Handle Supabase auth duplicate
+      // If user already exists in auth, look them up and reuse
       if (createUserError.message?.includes('already been registered')) {
-        logger.warn('Email already registered in auth', { email: input.email });
-        return errorResponse(409, 'A user with this email already exists', 'EMAIL_EXISTS');
+        logger.info('Email exists in auth, linking existing user as driver', { email: input.email });
+        const { data: listData } = await supabase.auth.admin.listUsers();
+        const existingUser = listData?.users?.find((u: any) => u.email === input.email);
+        if (!existingUser) {
+          logger.error('Could not find existing user by email', { email: input.email });
+          return errorResponse(500, 'Failed to locate existing account', 'AUTH_LOOKUP_FAILED');
+        }
+        authUserId = existingUser.id;
+        isExistingUser = true;
+      } else {
+        logger.error('Failed to create auth user', { error: createUserError.message });
+        return errorResponse(500, 'Failed to create driver account', 'AUTH_CREATE_FAILED');
       }
-      logger.error('Failed to create auth user', { error: createUserError.message });
-      return errorResponse(500, 'Failed to create driver account', 'AUTH_CREATE_FAILED');
+    } else {
+      authUserId = authData.user.id;
     }
 
     // -----------------------------------------------------------------------
@@ -227,7 +239,7 @@ serve(async (req) => {
     const { data: driver, error: insertError } = await supabase
       .from('couriers')
       .insert({
-        user_id: authData.user.id,
+        user_id: authUserId,
         tenant_id: tenantId,
         full_name: input.full_name,
         display_name: input.display_name || null,
@@ -254,8 +266,10 @@ serve(async (req) => {
 
     if (insertError) {
       logger.error('Failed to insert courier record', { error: insertError.message });
-      // Rollback: delete the auth user we just created
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      // Rollback: only delete auth user if we just created it
+      if (!isExistingUser) {
+        await supabase.auth.admin.deleteUser(authUserId);
+      }
       return errorResponse(500, 'Failed to create driver record', 'INSERT_FAILED');
     }
 
@@ -263,7 +277,7 @@ serve(async (req) => {
     // 9. Store PIN hash (in a metadata column or separate table)
     //    Using the notes approach for now — store in user_metadata
     // -----------------------------------------------------------------------
-    await supabase.auth.admin.updateUserById(authData.user.id, {
+    await supabase.auth.admin.updateUserById(authUserId, {
       user_metadata: {
         full_name: input.full_name,
         phone: input.phone,
