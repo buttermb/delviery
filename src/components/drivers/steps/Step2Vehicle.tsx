@@ -55,13 +55,8 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
   const { register, watch, setValue, formState: { errors } } = form;
   const vehicleType = watch('vehicle_type');
   const vehicleColor = watch('vehicle_color');
-  const insuranceExpiry = watch('insurance_expiry');
 
   const colorSwatch = useMemo(() => getColorSwatch(vehicleColor ?? ''), [vehicleColor]);
-  const insuranceWarning = useMemo(
-    () => getInsuranceWarning(insuranceExpiry ?? ''),
-    [insuranceExpiry],
-  );
 
   return (
     <div className="space-y-5">
