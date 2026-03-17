@@ -136,7 +136,7 @@ export async function encryptCustomerFields(
   
   // Create search indexes
   if (customer.email) {
-    encrypted.email_search_index = await createSearchHash(customer.email);
+    encrypted.email_search_index = await createSearchHash(customer.email as string);
   }
   if (customer.phone) {
     encrypted.phone_search_index = await createSearchHash(customer.phone);
