@@ -80,7 +80,7 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
     <div className="space-y-5">
       {/* Vehicle Type Cards */}
       <div>
-        <Label className="mb-2 text-sm text-[#94A3B8]">Vehicle Type</Label>
+        <Label className="mb-2 text-sm text-muted-foreground">Vehicle Type</Label>
         <div className="grid grid-cols-5 gap-2">
           {VEHICLE_TYPES.map(({ value, label, icon: Icon }) => {
             const isSelected = vehicleType === value;
@@ -91,8 +91,8 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
                 onClick={() => setValue('vehicle_type', value, { shouldValidate: true })}
                 className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-colors ${
                   isSelected
-                    ? 'border-[#10B981] bg-[#10B981]/10 text-[#10B981]'
-                    : 'border-[#334155] bg-[#1E293B] text-[#64748B] hover:border-[#475569] hover:text-[#94A3B8]'
+                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                    : 'border-border bg-card text-muted-foreground hover:border-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 <Icon className="h-5 w-5" />
@@ -106,31 +106,31 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
       {/* Make + Model */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+          <Label className="mb-1.5 text-sm text-muted-foreground" required>
             Make
           </Label>
           <Input
             {...register('vehicle_make')}
             placeholder="Toyota"
             error={!!errors.vehicle_make}
-            className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+            className="h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
           />
           {errors.vehicle_make && (
-            <p className="mt-1 text-xs text-[#EF4444]">{errors.vehicle_make.message}</p>
+            <p className="mt-1 text-xs text-destructive">{errors.vehicle_make.message}</p>
           )}
         </div>
         <div>
-          <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+          <Label className="mb-1.5 text-sm text-muted-foreground" required>
             Model
           </Label>
           <Input
             {...register('vehicle_model')}
             placeholder="Camry"
             error={!!errors.vehicle_model}
-            className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+            className="h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
           />
           {errors.vehicle_model && (
-            <p className="mt-1 text-xs text-[#EF4444]">{errors.vehicle_model.message}</p>
+            <p className="mt-1 text-xs text-destructive">{errors.vehicle_model.message}</p>
           )}
         </div>
       </div>
@@ -138,7 +138,7 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
       {/* Year + Color */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+          <Label className="mb-1.5 text-sm text-muted-foreground" required>
             Year
           </Label>
           <Input
@@ -148,20 +148,20 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
             min={1990}
             max={2030}
             error={!!errors.vehicle_year}
-            className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+            className="h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
           />
           {errors.vehicle_year && (
-            <p className="mt-1 text-xs text-[#EF4444]">{errors.vehicle_year.message}</p>
+            <p className="mt-1 text-xs text-destructive">{errors.vehicle_year.message}</p>
           )}
         </div>
         <div>
-          <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+          <Label className="mb-1.5 text-sm text-muted-foreground" required>
             Color
           </Label>
           <div className="relative">
             {colorSwatch && (
               <div
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-sm border border-[#475569]"
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-sm border border-muted-foreground"
                 style={{ backgroundColor: colorSwatch }}
               />
             )}
@@ -169,43 +169,43 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
               {...register('vehicle_color')}
               placeholder="Black"
               error={!!errors.vehicle_color}
-              className={`h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981] ${
+              className={`h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500 ${
                 colorSwatch ? 'pl-9' : ''
               }`}
             />
           </div>
           {errors.vehicle_color && (
-            <p className="mt-1 text-xs text-[#EF4444]">{errors.vehicle_color.message}</p>
+            <p className="mt-1 text-xs text-destructive">{errors.vehicle_color.message}</p>
           )}
         </div>
       </div>
 
       {/* License Plate */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+        <Label className="mb-1.5 text-sm text-muted-foreground" required>
           License Plate
         </Label>
         <Input
           {...register('vehicle_plate')}
           placeholder="ABC-1234"
           error={!!errors.vehicle_plate}
-          className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm uppercase text-[#F8FAFC] placeholder:normal-case placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="h-10 min-h-0 border-border bg-card text-sm uppercase text-foreground placeholder:normal-case placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
-        <p className="mt-1 text-[11px] text-[#64748B]">Format: AAA-0000 or AAA 0000</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">Format: AAA-0000 or AAA 0000</p>
         {errors.vehicle_plate && (
-          <p className="mt-0.5 text-xs text-[#EF4444]">{errors.vehicle_plate.message}</p>
+          <p className="mt-0.5 text-xs text-destructive">{errors.vehicle_plate.message}</p>
         )}
       </div>
 
       {/* Insurance Expiry */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]">
+        <Label className="mb-1.5 text-sm text-muted-foreground">
           Insurance Expiry
         </Label>
         <Input
           {...register('insurance_expiry')}
           type="date"
-          className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981] [&::-webkit-calendar-picker-indicator]:invert"
+          className="h-10 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 [&::-webkit-calendar-picker-indicator]:invert"
         />
         {insuranceWarning && (
           <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: insuranceWarning.color }}>

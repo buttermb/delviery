@@ -94,17 +94,17 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   isCompleted
-                    ? 'bg-[#10B981] text-white'
+                    ? 'bg-emerald-500 text-white'
                     : isActive
-                      ? 'bg-[#10B981] text-white'
-                      : 'bg-[#1E293B] text-[#64748B] ring-1 ring-[#334155]'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-card text-muted-foreground ring-1 ring-border'
                 }`}
               >
                 {isCompleted ? <Check className="h-4 w-4" /> : step}
               </div>
               <span
                 className={`text-[11px] font-medium ${
-                  isPending ? 'text-[#64748B]' : 'text-[#F8FAFC]'
+                  isPending ? 'text-muted-foreground' : 'text-foreground'
                 }`}
               >
                 {label}
@@ -114,7 +114,7 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
             {i < STEPS.length - 1 && (
               <div
                 className={`mx-3 h-[2px] w-12 sm:w-20 ${
-                  currentStep > step ? 'bg-[#10B981]' : 'bg-[#334155]'
+                  currentStep > step ? 'bg-emerald-500' : 'bg-muted'
                 }`}
               />
             )}
@@ -258,29 +258,29 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[640px] border-[#334155] bg-[#0F172A] p-0 text-[#F8FAFC]">
+      <DialogContent className="max-w-[640px] border-border bg-background p-0 text-foreground">
         <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle className="text-lg font-semibold text-[#F8FAFC]">Add Driver</DialogTitle>
-          <DialogDescription className="text-sm text-[#64748B]">
+          <DialogTitle className="text-lg font-semibold text-foreground">Add Driver</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             Create a new driver account and configure their profile.
           </DialogDescription>
         </DialogHeader>
 
         <StepProgressBar currentStep={step} />
 
-        <div className="min-h-[380px] px-6 pb-2">
+        <div className="max-h-[calc(85vh-220px)] min-h-[380px] overflow-y-auto px-6 pb-2">
           {stepComponent}
         </div>
 
         {/* Footer */}
         {!createDriver.isSuccess && (
-          <div className="flex items-center justify-between border-t border-[#334155] px-6 py-4">
+          <div className="flex items-center justify-between border-t border-border px-6 py-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={step === 1 ? handleClose : handleBack}
               disabled={createDriver.isPending}
-              className="text-sm text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+              className="text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {step === 1 ? 'Cancel' : 'Back'}
             </Button>
@@ -289,7 +289,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
               <Button
                 size="sm"
                 onClick={handleNext}
-                className="bg-[#10B981] text-sm text-white hover:bg-[#059669]"
+                className="bg-emerald-500 text-sm text-white hover:bg-emerald-600"
               >
                 Next
               </Button>
@@ -298,7 +298,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
                 size="sm"
                 onClick={handleSubmit}
                 disabled={createDriver.isPending}
-                className="bg-[#10B981] text-sm text-white hover:bg-[#059669]"
+                className="bg-emerald-500 text-sm text-white hover:bg-emerald-600"
               >
                 {createDriver.isPending ? (
                   <span className="flex items-center gap-2">

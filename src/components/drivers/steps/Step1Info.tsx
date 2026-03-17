@@ -87,13 +87,13 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
     <div className="space-y-5">
       {/* Avatar */}
       <div className="flex flex-col items-center gap-2">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1E293B] ring-2 ring-[#334155]">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-card ring-2 ring-border">
           {initials ? (
-            <span className="font-['Space_Grotesk'] text-xl font-bold text-[#94A3B8]">
+            <span className="font-['Space_Grotesk'] text-xl font-bold text-muted-foreground">
               {initials}
             </span>
           ) : (
-            <svg className="h-6 w-6 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
           )}
@@ -102,7 +102,7 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
           <button
             type="button"
             onClick={handleRemoveAvatar}
-            className="text-[11px] text-[#EF4444] hover:underline"
+            className="text-[11px] text-destructive hover:underline"
           >
             Remove
           </button>
@@ -111,46 +111,46 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
 
       {/* Full Name */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+        <Label className="mb-1.5 text-sm text-muted-foreground" required>
           Full Name
         </Label>
         <Input
           {...register('full_name')}
           placeholder="Marcus Thompson"
           error={!!errors.full_name}
-          className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
         {errors.full_name && (
-          <p className="mt-1 text-xs text-[#EF4444]">{errors.full_name.message}</p>
+          <p className="mt-1 text-xs text-destructive">{errors.full_name.message}</p>
         )}
       </div>
 
       {/* Phone */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+        <Label className="mb-1.5 text-sm text-muted-foreground" required>
           Phone
         </Label>
         <div className="flex gap-2">
-          <div className="flex h-10 items-center gap-1.5 rounded-md border border-[#334155] bg-[#1E293B] px-3">
+          <div className="flex h-10 items-center gap-1.5 rounded-md border border-border bg-card px-3">
             <span className="text-sm">🇺🇸</span>
-            <span className="text-xs text-[#94A3B8]">+1</span>
+            <span className="text-xs text-muted-foreground">+1</span>
           </div>
           <Input
             {...register('phone')}
             placeholder="(555) 123-4567"
             type="tel"
             error={!!errors.phone}
-            className="h-10 min-h-0 flex-1 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+            className="h-10 min-h-0 flex-1 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
           />
         </div>
         {errors.phone && (
-          <p className="mt-1 text-xs text-[#EF4444]">{errors.phone.message}</p>
+          <p className="mt-1 text-xs text-destructive">{errors.phone.message}</p>
         )}
       </div>
 
       {/* Email */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]" required>
+        <Label className="mb-1.5 text-sm text-muted-foreground" required>
           Email
         </Label>
         <Input
@@ -158,19 +158,19 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
           placeholder="marcus@example.com"
           type="email"
           error={!!errors.email}
-          className={`h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981] ${
-            errors.email ? 'border-[#EF4444] focus-visible:ring-[#EF4444]' : ''
+          className={`h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500 ${
+            errors.email ? 'border-destructive focus-visible:ring-destructive' : ''
           }`}
         />
         {errors.email && (
-          <p className="mt-1 text-xs text-[#EF4444]">
+          <p className="mt-1 text-xs text-destructive">
             {errors.email.message}
             {duplicateDriverId && (
               <>
                 {' '}
                 <button
                   type="button"
-                  className="font-medium underline hover:text-[#EF4444]/80"
+                  className="font-medium underline hover:text-destructive/80"
                 >
                   View existing driver →
                 </button>
@@ -182,26 +182,26 @@ export function Step1Info({ form, tenantId }: Step1InfoProps) {
 
       {/* Display Name */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]">
+        <Label className="mb-1.5 text-sm text-muted-foreground">
           Display Name
         </Label>
         <Input
           {...register('display_name')}
           placeholder="Optional — shown to customers"
-          className="h-10 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="h-10 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
       </div>
 
       {/* Notes */}
       <div>
-        <Label className="mb-1.5 text-sm text-[#94A3B8]">
+        <Label className="mb-1.5 text-sm text-muted-foreground">
           Notes
         </Label>
         <Textarea
           {...register('notes')}
           placeholder="Internal notes about this driver..."
           rows={2}
-          className="min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
       </div>
     </div>

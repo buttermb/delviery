@@ -42,8 +42,8 @@ function ChipToggle({
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? 'bg-[#10B981] text-white'
-          : 'bg-[#1E293B] text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]'
+          ? 'bg-emerald-500 text-white'
+          : 'bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
       }`}
     >
       {label}
@@ -92,11 +92,11 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
   }
 
   return (
-    <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {/* Status */}
         <div>
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
             Status
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -113,7 +113,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
 
         {/* Availability */}
         <div>
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
             Availability
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -134,7 +134,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
 
         {/* Vehicle type */}
         <div>
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
             Vehicle Type
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -151,7 +151,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
 
         {/* Rating range */}
         <div>
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
             Rating: {draft.ratingMin.toFixed(1)} – {draft.ratingMax.toFixed(1)}
           </label>
           <Slider
@@ -162,7 +162,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
             onValueChange={([min, max]) =>
               setDraft((prev) => ({ ...prev, ratingMin: min, ratingMax: max }))
             }
-            className="[&_[data-radix-slider-range]]:bg-[#10B981] [&_[data-radix-slider-thumb]]:border-[#10B981] [&_[data-radix-slider-thumb]]:bg-[#0F172A] [&_[data-radix-slider-track]]:bg-[#334155]"
+            className="[&_[data-radix-slider-range]]:bg-emerald-500 [&_[data-radix-slider-thumb]]:border-emerald-500 [&_[data-radix-slider-thumb]]:bg-background [&_[data-radix-slider-track]]:bg-muted"
           />
         </div>
       </div>
@@ -170,7 +170,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
       {/* Zones row */}
       {zones.length > 0 && (
         <div className="mt-4">
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+          <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
             Zones
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -204,7 +204,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
               setDraft(cleared);
               onClear();
             }}
-            className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Clear All
           </Button>
@@ -212,7 +212,7 @@ export function DriverFilters({ values, tenantId, onApply, onClear, activeCount 
         <Button
           size="sm"
           onClick={() => onApply(draft)}
-          className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+          className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
         >
           Apply Filters
         </Button>

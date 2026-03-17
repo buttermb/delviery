@@ -1,6 +1,58 @@
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { createLogger } from '../_shared/logger.ts';
-import { hashPassword } from '../_shared/password.ts';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// ---------------------------------------------------------------------------
+// Inlined shared deps
+// ---------------------------------------------------------------------------
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function createLogger(functionName: string) {
+  function formatLog(level: string, message: string, context?: Record<string, unknown>): string {
+    return JSON.stringify({ timestamp: new Date().toISOString(), level, message, functionName, ...context });
+  }
+  return {
+    debug: (message: string, context?: Record<string, unknown>) => console.debug(formatLog('debug', message, context)),
+    info: (message: string, context?: Record<string, unknown>) => console.error(formatLog('info', message, context)),
+    warn: (message: string, context?: Record<string, unknown>) => console.warn(formatLog('warn', message, context)),
+    error: (message: string, context?: Record<string, unknown>) => console.error(formatLog('error', message, context)),
+  };
+}
+
+const ITERATIONS = 310000;
+const HASH_LENGTH = 32;
+const SALT_LENGTH = 16;
+
+function generateSalt(): Uint8Array {
+  return crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+}
+
+async function deriveKey(password: string, salt: Uint8Array): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: salt.buffer as ArrayBuffer, iterations: ITERATIONS, hash: 'SHA-256' },
+    keyMaterial,
+    HASH_LENGTH * 8,
+  );
+  return new Uint8Array(derivedBits);
+}
+
+function arrayBufferToBase64(buffer: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < buffer.byteLength; i++) binary += String.fromCharCode(buffer[i]);
+  return btoa(binary);
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = generateSalt();
+  const hash = await deriveKey(password, salt);
+  return `${arrayBufferToBase64(salt)}:${arrayBufferToBase64(hash)}`;
+}
 
 const logger = createLogger('reset-driver-pin');
 

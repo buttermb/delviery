@@ -119,25 +119,25 @@ export function ResetPinDialog({ open, onOpenChange, driver, tenantId }: ResetPi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[420px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[420px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-[#F8FAFC]">Reset Driver PIN</DialogTitle>
-          <DialogDescription className="text-[#64748B]">{driver.full_name}</DialogDescription>
+          <DialogTitle className="text-foreground">Reset Driver PIN</DialogTitle>
+          <DialogDescription className="text-muted-foreground">{driver.full_name}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
           {/* Current PIN */}
           <div>
-            <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+            <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
               Current PIN
             </span>
             <div className="mt-1.5 flex items-center gap-1.5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-[#0F172A]"
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-background"
                 >
-                  <span className="text-lg text-[#64748B]">•</span>
+                  <span className="text-lg text-muted-foreground">•</span>
                 </div>
               ))}
             </div>
@@ -145,29 +145,29 @@ export function ResetPinDialog({ open, onOpenChange, driver, tenantId }: ResetPi
 
           {/* Auto-generate toggle */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#F8FAFC]">Auto-generate</span>
+            <span className="text-sm text-foreground">Auto-generate</span>
             <Switch
               checked={autoGenerate}
               onCheckedChange={setAutoGenerate}
-              className="data-[state=checked]:bg-[#10B981]"
+              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
 
           {/* Auto-generated PIN display */}
           {autoGenerate && (
             <div>
-              <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+              <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
                 New PIN
               </span>
-              <div className="mt-1.5 flex items-center justify-between rounded-lg border border-[#10B981]/30 bg-[#10B981]/5 px-4 py-3">
-                <span className="font-['Space_Grotesk'] text-2xl font-bold tracking-[0.25em] text-[#F8FAFC]">
+              <div className="mt-1.5 flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-4 py-3">
+                <span className="font-['Space_Grotesk'] text-2xl font-bold tracking-[0.25em] text-foreground">
                   {generatedPin}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={regenerate}
-                  className="h-7 text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                  className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   Regenerate
                 </Button>
@@ -175,15 +175,15 @@ export function ResetPinDialog({ open, onOpenChange, driver, tenantId }: ResetPi
             </div>
           )}
 
-          <div className="h-px bg-[#334155]" />
+          <div className="h-px bg-muted" />
 
           {/* Manual entry toggle */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#F8FAFC]">Manual entry</span>
+            <span className="text-sm text-foreground">Manual entry</span>
             <Switch
               checked={!autoGenerate}
               onCheckedChange={(checked) => setAutoGenerate(!checked)}
-              className="data-[state=checked]:bg-[#10B981]"
+              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
 
@@ -200,11 +200,11 @@ export function ResetPinDialog({ open, onOpenChange, driver, tenantId }: ResetPi
                   value={digit}
                   onChange={(e) => handleManualInput(i, e.target.value)}
                   onKeyDown={(e) => handleManualKeyDown(i, e)}
-                  className={`h-12 w-12 rounded-lg border text-center font-['Space_Grotesk'] text-xl font-bold text-[#F8FAFC] transition-colors ${
+                  className={`h-12 w-12 rounded-lg border text-center font-['Space_Grotesk'] text-xl font-bold text-foreground transition-colors ${
                     digit
-                      ? 'border-[#10B981] bg-[#0F172A]'
-                      : 'border-[#334155] bg-[#0F172A]'
-                  } placeholder:text-[#475569] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]`}
+                      ? 'border-emerald-500 bg-background'
+                      : 'border-border bg-background'
+                  } placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500`}
                   placeholder="_"
                 />
               ))}
@@ -216,24 +216,24 @@ export function ResetPinDialog({ open, onOpenChange, driver, tenantId }: ResetPi
             <Checkbox
               checked={notifyEmail}
               onCheckedChange={(checked) => setNotifyEmail(checked === true)}
-              className="border-[#334155] data-[state=checked]:border-[#10B981] data-[state=checked]:bg-[#10B981]"
+              className="border-border data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
             />
-            <span className="text-sm text-[#94A3B8]">Notify driver via email</span>
+            <span className="text-sm text-muted-foreground">Notify driver via email</span>
           </label>
         </div>
 
-        <DialogFooter className="border-[#334155]">
+        <DialogFooter className="border-border">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={() => resetPin.mutate()}
             disabled={!canSubmit || resetPin.isPending}
-            className="bg-[#10B981] text-white hover:bg-[#059669]"
+            className="bg-emerald-500 text-white hover:bg-emerald-600"
           >
             {resetPin.isPending ? 'Resetting...' : 'Reset PIN'}
           </Button>

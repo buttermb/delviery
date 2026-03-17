@@ -39,8 +39,8 @@ export function BulkActionBar({ selectedCount, selectedIds, tenantId, onClear }:
   });
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 px-4 py-2.5">
-      <span className="text-sm font-medium text-[#10B981]">
+    <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5">
+      <span className="text-sm font-medium text-emerald-500">
         {selectedCount} driver{selectedCount > 1 ? 's' : ''} selected
       </span>
       <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function BulkActionBar({ selectedCount, selectedIds, tenantId, onClear }:
           size="sm"
           onClick={() => bulkUpdateStatus.mutate({ status: 'active', isActive: true })}
           disabled={bulkUpdateStatus.isPending}
-          className="h-7 border-[#334155] bg-transparent text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+          className="h-7 border-border bg-transparent text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           Activate
         </Button>
@@ -58,7 +58,7 @@ export function BulkActionBar({ selectedCount, selectedIds, tenantId, onClear }:
           size="sm"
           onClick={() => bulkUpdateStatus.mutate({ status: 'inactive', isActive: false })}
           disabled={bulkUpdateStatus.isPending}
-          className="h-7 border-[#334155] bg-transparent text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+          className="h-7 border-border bg-transparent text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           Deactivate
         </Button>
@@ -66,7 +66,7 @@ export function BulkActionBar({ selectedCount, selectedIds, tenantId, onClear }:
           variant="outline"
           size="sm"
           onClick={onClear}
-          className="h-7 border-[#334155] bg-transparent text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+          className="h-7 border-border bg-transparent text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           Clear
         </Button>

@@ -35,11 +35,11 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
   if (isSuccess) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#10B981]/20">
-          <Check className="h-7 w-7 text-[#10B981]" />
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20">
+          <Check className="h-7 w-7 text-emerald-500" />
         </div>
-        <h3 className="text-lg font-semibold text-[#F8FAFC]">Driver created!</h3>
-        <p className="mt-1 text-sm text-[#64748B]">
+        <h3 className="text-lg font-semibold text-foreground">Driver created!</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           {values.display_name || values.full_name} has been added to your fleet.
         </p>
       </div>
@@ -60,7 +60,7 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
       {/* Personal Info Card */}
       <ReviewCard
         icon={
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1E293B] text-xs font-semibold text-[#94A3B8]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-xs font-semibold text-muted-foreground">
             {initials}
           </div>
         }
@@ -68,18 +68,18 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
         onEdit={() => onGoToStep(1)}
       >
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-[#F8FAFC]">
+          <p className="truncate text-sm font-medium text-foreground">
             {values.display_name || values.full_name}
           </p>
-          <p className="truncate text-xs text-[#64748B]">{values.phone}</p>
-          <p className="truncate text-xs text-[#64748B]">{values.email}</p>
+          <p className="truncate text-xs text-muted-foreground">{values.phone}</p>
+          <p className="truncate text-xs text-muted-foreground">{values.email}</p>
         </div>
       </ReviewCard>
 
       {/* Vehicle Card */}
       <ReviewCard
         icon={
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1E293B] text-[#94A3B8]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-muted-foreground">
             <Car className="h-4 w-4" />
           </div>
         }
@@ -87,14 +87,14 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
         onEdit={() => onGoToStep(2)}
       >
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-[#F8FAFC]">
+          <p className="truncate text-sm font-medium text-foreground">
             {vehicleDesc}
           </p>
-          <div className="mt-0.5 flex items-center gap-2 text-xs text-[#64748B]">
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
             <span>{values.vehicle_plate}</span>
             {values.vehicle_color && (
               <>
-                <span className="text-[#475569]">/</span>
+                <span className="text-muted-foreground">/</span>
                 <span>{values.vehicle_color}</span>
               </>
             )}
@@ -105,7 +105,7 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
       {/* Account Card */}
       <ReviewCard
         icon={
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1E293B] text-[#94A3B8]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-muted-foreground">
             <Settings className="h-4 w-4" />
           </div>
         }
@@ -114,17 +114,17 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-[#10B981]/20 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
+            <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-500">
               {values.commission_rate}% commission
             </span>
-            <span className="font-['JetBrains_Mono'] text-xs text-[#64748B]">
+            <span className="font-['JetBrains_Mono'] text-xs text-muted-foreground">
               PIN: {'\u2022'.repeat(6)}
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-2 text-xs text-[#64748B]">
+          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
             {values.send_invite_email && (
               <span className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3 text-[#F59E0B]" />
+                <AlertTriangle className="h-3 w-3 text-amber-500" />
                 Invite email on
               </span>
             )}
@@ -134,7 +134,7 @@ export function Step4Review({ form, previewPin, isSubmitting, isSuccess, onGoToS
 
       {/* Submit button */}
       {isSubmitting && (
-        <div className="flex items-center justify-center gap-2 py-4 text-sm text-[#94A3B8]">
+        <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
           <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -162,13 +162,13 @@ function ReviewCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-[#334155] bg-[#1E293B] p-4">
+    <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
       {icon}
       <div className="flex-1">{children}</div>
       <button
         type="button"
         onClick={onEdit}
-        className="flex-shrink-0 text-xs text-[#10B981] hover:underline"
+        className="flex-shrink-0 text-xs text-emerald-500 hover:underline"
       >
         Edit
       </button>

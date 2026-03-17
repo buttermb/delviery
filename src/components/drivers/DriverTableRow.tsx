@@ -109,10 +109,10 @@ export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewP
 
   return (
     <TableRow
-      className={`border-[#334155] transition-colors ${
+      className={`border-border transition-colors ${
         isSelected
-          ? 'bg-[#10B981]/5'
-          : 'hover:bg-[#263548]'
+          ? 'bg-emerald-500/5'
+          : 'hover:bg-accent'
       }`}
       style={isOnline ? { borderLeft: '2px solid #22C55E' } : undefined}
     >
@@ -121,37 +121,37 @@ export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewP
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelect(driver.id, !!checked)}
-          className="border-[#475569] data-[state=checked]:border-[#10B981] data-[state=checked]:bg-[#10B981]"
+          className="border-muted-foreground data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
         />
       </TableCell>
 
       {/* Name + email */}
       <TableCell className="bg-transparent">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#1E293B] text-[11px] font-semibold text-[#94A3B8]">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-card text-[11px] font-semibold text-muted-foreground">
             {getInitials(driver.full_name)}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-[#F8FAFC]">
+            <div className="truncate text-sm font-medium text-foreground">
               {driver.display_name || driver.full_name}
             </div>
-            <div className="truncate text-xs text-[#64748B]">{driver.email}</div>
+            <div className="truncate text-xs text-muted-foreground">{driver.email}</div>
           </div>
         </div>
       </TableCell>
 
       {/* Phone */}
-      <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-[#94A3B8]">
+      <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-muted-foreground">
         {formatPhone(driver.phone)}
       </TableCell>
 
       {/* Vehicle */}
-      <TableCell className="bg-transparent text-sm text-[#94A3B8]">
+      <TableCell className="bg-transparent text-sm text-muted-foreground">
         {vehicleLabel(driver)}
       </TableCell>
 
       {/* Zone */}
-      <TableCell className="bg-transparent text-sm text-[#94A3B8]">
+      <TableCell className="bg-transparent text-sm text-muted-foreground">
         {driver.zone_name ?? '—'}
       </TableCell>
 
@@ -168,32 +168,32 @@ export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewP
       {/* Rating */}
       <TableCell className="bg-transparent">
         <div className="flex items-center gap-1">
-          <svg className="h-3.5 w-3.5 text-[#F59E0B]" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="h-3.5 w-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          <span className="text-xs text-[#94A3B8]">4.7</span>
+          <span className="text-xs text-muted-foreground">4.7</span>
         </div>
       </TableCell>
 
       {/* Deliveries */}
-      <TableCell className="bg-transparent font-['Space_Grotesk'] text-sm text-[#F8FAFC]">
+      <TableCell className="bg-transparent font-['Space_Grotesk'] text-sm text-foreground">
         —
       </TableCell>
 
       {/* Commission */}
-      <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-[#94A3B8]">
-        {driver.commission_rate != null ? `$${driver.commission_rate.toFixed(2)}` : '—'}
+      <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-muted-foreground">
+        {driver.commission_rate != null ? `${driver.commission_rate}%` : '—'}
       </TableCell>
 
       {/* Last Active */}
-      <TableCell className="bg-transparent text-xs text-[#64748B]">
+      <TableCell className="bg-transparent text-xs text-muted-foreground">
         {formatRelativeTime(driver.last_seen_at)}
       </TableCell>
 
       {/* Actions menu */}
       <TableCell className="w-[40px] bg-transparent">
         <DriverRowActionsMenu driver={driver} tenantId={tenantId} onViewProfile={onViewProfile} onEditDetails={onEditDetails}>
-          <button className="flex h-7 w-7 items-center justify-center rounded-md text-[#64748B] transition-colors hover:bg-[#263548] hover:text-[#F8FAFC]">
+          <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
             <MoreVertical className="h-4 w-4" />
           </button>
         </DriverRowActionsMenu>

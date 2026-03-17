@@ -64,9 +64,9 @@ export function StatusTogglePopover({ open, onOpenChange, driver, tenantId }: St
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[280px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[280px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-sm font-medium text-[#F8FAFC]">
+          <DialogTitle className="text-sm font-medium text-foreground">
             Change Status
           </DialogTitle>
         </DialogHeader>
@@ -79,15 +79,15 @@ export function StatusTogglePopover({ open, onOpenChange, driver, tenantId }: St
               onClick={() => setSelected(opt.value)}
               className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors ${
                 selected === opt.value
-                  ? 'bg-[#10B981]/10 text-[#10B981]'
-                  : 'text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]'
+                  ? 'bg-emerald-500/10 text-emerald-500'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               }`}
             >
               <div
                 className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border ${
                   selected === opt.value
-                    ? 'border-[#10B981] bg-[#10B981]'
-                    : 'border-[#475569]'
+                    ? 'border-emerald-500 bg-emerald-500'
+                    : 'border-muted-foreground'
                 }`}
               >
                 {selected === opt.value && (
@@ -96,7 +96,7 @@ export function StatusTogglePopover({ open, onOpenChange, driver, tenantId }: St
               </div>
               <div>
                 <div className="text-sm font-medium">{opt.label}</div>
-                <div className="text-xs text-[#64748B]">{opt.description}</div>
+                <div className="text-xs text-muted-foreground">{opt.description}</div>
               </div>
             </button>
           ))}
@@ -107,7 +107,7 @@ export function StatusTogglePopover({ open, onOpenChange, driver, tenantId }: St
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Cancel
           </Button>
@@ -115,7 +115,7 @@ export function StatusTogglePopover({ open, onOpenChange, driver, tenantId }: St
             size="sm"
             disabled={selected === driver.status || updateStatus.isPending}
             onClick={() => updateStatus.mutate(selected)}
-            className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+            className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Apply
           </Button>

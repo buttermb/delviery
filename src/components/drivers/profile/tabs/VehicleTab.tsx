@@ -89,17 +89,17 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
   return (
     <div className="space-y-4">
       {/* Vehicle Information Card */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Car className="h-5 w-5 text-[#94A3B8]" />
-            <span className="text-sm font-medium text-[#F8FAFC]">Vehicle Information</span>
+            <Car className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Vehicle Information</span>
           </div>
           {!editing && (
             <Button
               size="sm"
               onClick={() => setEditing(true)}
-              className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+              className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
             >
               Edit Vehicle
             </Button>
@@ -113,51 +113,51 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
           >
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Make</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Make</Label>
                 <Input
                   {...form.register('vehicle_make')}
                   error={!!form.formState.errors.vehicle_make}
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Model</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Model</Label>
                 <Input
                   {...form.register('vehicle_model')}
                   error={!!form.formState.errors.vehicle_model}
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Year</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Year</Label>
                 <Input
                   {...form.register('vehicle_year')}
                   type="number"
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Color</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Color</Label>
                 <Input
                   {...form.register('vehicle_color')}
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">License Plate</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">License Plate</Label>
                 <Input
                   {...form.register('vehicle_plate')}
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm uppercase text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm uppercase text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Vehicle Type</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Vehicle Type</Label>
                 <select
                   {...form.register('vehicle_type')}
-                  className="h-9 w-full rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
                   {['car', 'van', 'motorcycle', 'bicycle', 'truck'].map((t) => (
                     <option key={t} value={t}>
@@ -174,7 +174,7 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => { setEditing(false); form.reset(); }}
-                className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 Cancel
               </Button>
@@ -182,7 +182,7 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
                 type="submit"
                 size="sm"
                 disabled={updateVehicle.isPending}
-                className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+                className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
               >
                 Save Changes
               </Button>
@@ -200,16 +200,16 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
       </div>
 
       {/* Insurance & Documents Card */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#F8FAFC]">Insurance & Documents</span>
+          <span className="text-sm font-medium text-foreground">Insurance & Documents</span>
           {daysLeft !== null && daysLeft > 0 && daysLeft <= 30 && (
-            <span className="rounded-full bg-[#F59E0B]/20 px-2 py-0.5 text-[11px] font-medium text-[#F59E0B]">
+            <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-500">
               Expiring Soon
             </span>
           )}
           {daysLeft !== null && daysLeft <= 0 && (
-            <span className="rounded-full bg-[#EF4444]/20 px-2 py-0.5 text-[11px] font-medium text-[#EF4444]">
+            <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-[11px] font-medium text-destructive">
               Expired
             </span>
           )}
@@ -244,10 +244,10 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
 function InfoField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
         {label}
       </span>
-      <p className={`mt-0.5 text-sm text-[#F8FAFC] ${mono ? "font-['JetBrains_Mono']" : ''}`}>
+      <p className={`mt-0.5 text-sm text-foreground ${mono ? "font-['JetBrains_Mono']" : ''}`}>
         {value}
       </p>
     </div>

@@ -117,16 +117,16 @@ export function SendMessageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[480px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[480px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-[#F8FAFC]">
+          <DialogTitle className="text-foreground">
             Message {driver.full_name}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Channel tabs */}
-          <div className="flex border-b border-[#334155]">
+          <div className="flex border-b border-border">
             {CHANNELS.map((ch) => (
               <button
                 key={ch}
@@ -134,8 +134,8 @@ export function SendMessageDialog({
                 onClick={() => setChannel(ch)}
                 className={`px-4 pb-2.5 text-sm font-medium transition-colors ${
                   channel === ch
-                    ? 'border-b-2 border-[#10B981] text-[#F8FAFC]'
-                    : 'text-[#64748B] hover:text-[#94A3B8]'
+                    ? 'border-b-2 border-emerald-500 text-foreground'
+                    : 'text-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 {ch}
@@ -147,17 +147,17 @@ export function SendMessageDialog({
           {channel === 'Email' && (
             <div className="space-y-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Subject</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Subject</Label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Email subject..."
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <Label className="text-xs text-[#64748B]">Body</Label>
+                  <Label className="text-xs text-muted-foreground">Body</Label>
                   <div className="flex items-center gap-1">
                     <FormatButton label="B" />
                     <FormatButton label="•" />
@@ -169,7 +169,7 @@ export function SendMessageDialog({
                   onChange={(e) => setBody(e.target.value)}
                   rows={5}
                   placeholder="Write your message..."
-                  className="min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                  className="min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
@@ -179,22 +179,22 @@ export function SendMessageDialog({
           {channel === 'SMS' && (
             <div className="space-y-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Message</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Message</Label>
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   rows={4}
                   maxLength={SMS_MAX_LENGTH}
                   placeholder="Write your SMS..."
-                  className="min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                  className="min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 />
                 <div className="mt-1 flex items-center justify-between">
-                  <span className="text-xs text-[#64748B]">
+                  <span className="text-xs text-muted-foreground">
                     Sends to {formatPhone(driver.phone)}
                   </span>
                   <span
                     className={`text-xs font-medium ${
-                      smsLength > SMS_MAX_LENGTH ? 'text-[#EF4444]' : 'text-[#64748B]'
+                      smsLength > SMS_MAX_LENGTH ? 'text-destructive' : 'text-muted-foreground'
                     }`}
                   >
                     {smsLength} / {SMS_MAX_LENGTH}
@@ -208,40 +208,40 @@ export function SendMessageDialog({
           {channel === 'Push' && (
             <div className="space-y-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Title</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Title</Label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Notification title..."
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Body</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Body</Label>
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   rows={3}
                   placeholder="Notification body..."
-                  className="min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                  className="min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className="border-[#334155]">
+        <DialogFooter className="border-border">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={() => sendMessage.mutate()}
             disabled={!canSubmit || sendMessage.isPending}
-            className="bg-[#10B981] text-white hover:bg-[#059669]"
+            className="bg-emerald-500 text-white hover:bg-emerald-600"
           >
             {sendMessage.isPending ? 'Sending...' : 'Send Message'}
           </Button>
@@ -259,7 +259,7 @@ function FormatButton({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="flex h-6 w-6 items-center justify-center rounded text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#94A3B8]"
+      className="flex h-6 w-6 items-center justify-center rounded text-xs text-muted-foreground hover:bg-accent hover:text-muted-foreground"
     >
       {label}
     </button>

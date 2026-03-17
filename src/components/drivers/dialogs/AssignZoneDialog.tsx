@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { MapPin } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,6 +44,7 @@ interface AssignZoneDialogProps {
 
 export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: AssignZoneDialogProps) {
   const queryClient = useQueryClient();
+  const { tenantSlug } = useTenantAdminAuth();
   const [search, setSearch] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newZoneName, setNewZoneName] = useState('');
@@ -169,9 +173,9 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[420px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[420px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-[#F8FAFC]">Assign Zone</DialogTitle>
+          <DialogTitle className="text-foreground">Assign Zone</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -180,17 +184,29 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search zones..."
-            className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+            className="h-9 min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
           />
 
           {/* Zone list */}
           <div className="max-h-[240px] space-y-1 overflow-y-auto">
             {zonesQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full bg-[#334155]" />
+                <Skeleton key={i} className="h-10 w-full bg-muted" />
               ))
+            ) : zones.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 px-3 py-6 text-center">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">No delivery zones yet</p>
+                <Link
+                  to={`/${tenantSlug}/admin/delivery-zones`}
+                  className="text-xs font-medium text-emerald-500 hover:underline"
+                  target="_blank"
+                >
+                  Set up delivery zones
+                </Link>
+              </div>
             ) : filteredZones.length === 0 ? (
-              <p className="py-4 text-center text-xs text-[#64748B]">No zones found</p>
+              <p className="py-4 text-center text-xs text-muted-foreground">No matching zones</p>
             ) : (
               filteredZones.map((zone, idx) => {
                 const isCurrent = zone.id === driver.zone_id;
@@ -201,7 +217,7 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
                   <div
                     key={zone.id}
                     className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${
-                      isCurrent ? 'bg-[#10B981]/10' : 'hover:bg-[#263548]'
+                      isCurrent ? 'bg-emerald-500/10' : 'hover:bg-accent'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -209,18 +225,18 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
                         className="h-2.5 w-2.5 rounded-full"
                         style={{ backgroundColor: dotColor }}
                       />
-                      <span className="text-sm text-[#F8FAFC]">{zone.name}</span>
-                      <span className="text-xs text-[#64748B]">{count} drivers</span>
+                      <span className="text-sm text-foreground">{zone.name}</span>
+                      <span className="text-xs text-muted-foreground">{count} drivers</span>
                     </div>
                     {isCurrent ? (
-                      <span className="text-xs font-medium text-[#10B981]">Current</span>
+                      <span className="text-xs font-medium text-emerald-500">Current</span>
                     ) : (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => assignZone.mutate(zone.id)}
                         disabled={assignZone.isPending}
-                        className="h-7 border-[#334155] bg-transparent text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                        className="h-7 border-border bg-transparent text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                       >
                         Assign
                       </Button>
@@ -232,14 +248,14 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-[#334155]" />
+          <div className="h-px bg-muted" />
 
           {/* Create new zone */}
           {!showCreateForm ? (
             <button
               type="button"
               onClick={() => setShowCreateForm(true)}
-              className="flex items-center gap-2 text-sm font-medium text-[#10B981] hover:underline"
+              className="flex items-center gap-2 text-sm font-medium text-emerald-500 hover:underline"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -247,12 +263,12 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
               Create New Zone
             </button>
           ) : (
-            <div className="space-y-3 rounded-lg border border-[#334155] bg-[#0F172A] p-3">
+            <div className="space-y-3 rounded-lg border border-border bg-background p-3">
               <Input
                 value={newZoneName}
                 onChange={(e) => setNewZoneName(e.target.value)}
                 placeholder="Zone name"
-                className="h-9 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                className="h-9 min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
                 data-autofocus
               />
 
@@ -265,7 +281,7 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
                     onClick={() => setNewZoneColor(color)}
                     className={`h-6 w-6 rounded-full transition-all ${
                       newZoneColor === color
-                        ? 'ring-2 ring-white ring-offset-2 ring-offset-[#0F172A]'
+                        ? 'ring-2 ring-white ring-offset-2 ring-offset-background'
                         : 'hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}
@@ -277,7 +293,7 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
                 size="sm"
                 onClick={() => createZone.mutate()}
                 disabled={!newZoneName.trim() || createZone.isPending}
-                className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+                className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
               >
                 {createZone.isPending ? 'Creating...' : 'Save Zone'}
               </Button>
@@ -285,11 +301,11 @@ export function AssignZoneDialog({ open, onOpenChange, driver, tenantId }: Assig
           )}
         </div>
 
-        <DialogFooter className="border-[#334155]">
+        <DialogFooter className="border-border">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Close
           </Button>

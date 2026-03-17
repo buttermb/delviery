@@ -335,13 +335,14 @@ export default function DriverDirectoryPage() {
           <Button
             variant="outline"
             size="sm"
+            className="border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Download className="mr-1.5 h-4 w-4" />
             Export
           </Button>
           <Button
             size="sm"
-            className="bg-[#10B981] text-white hover:bg-[#059669]"
+            className="bg-emerald-500 text-white hover:bg-emerald-600"
             onClick={() => setAddDriverOpen(true)}
           >
             <Plus className="mr-1.5 h-4 w-4" />
@@ -361,7 +362,7 @@ export default function DriverDirectoryPage() {
           <div className="flex items-center gap-2">
             <div className="relative">
               <svg
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]"
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -375,21 +376,21 @@ export default function DriverDirectoryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name or phone..."
-                className="h-9 w-[280px] rounded-md border border-[#334155] bg-[#0F172A] pl-9 pr-3 text-sm text-[#F8FAFC] placeholder:text-[#64748B] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                className="h-9 w-[280px] rounded-md border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setFiltersOpen((p) => !p)}
-              className="border-[#334155] bg-transparent text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+              className="border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path d="M3 4h18M7 8h10M10 12h4" />
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="ml-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#10B981] text-[11px] font-medium text-white">
+                <span className="ml-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-emerald-500 text-[11px] font-medium text-white">
                   {activeFilterCount}
                 </span>
               )}

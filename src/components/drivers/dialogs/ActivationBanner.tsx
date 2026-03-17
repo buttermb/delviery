@@ -141,28 +141,28 @@ export function ActivationBanner({
   return (
     <div className="space-y-4">
       {/* Amber banner */}
-      <div className="rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-5 py-3">
-        <p className="text-sm font-medium text-[#F59E0B]">
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-5 py-3">
+        <p className="text-sm font-medium text-amber-500">
           Driver Not Yet Activated —{' '}
-          <span className="font-normal text-[#F59E0B]/80">
+          <span className="font-normal text-amber-500/80">
             Complete the steps below to enable this driver.
           </span>
         </p>
       </div>
 
       {/* Checklist card */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#F8FAFC]">Activation Checklist</span>
-          <span className="text-xs font-medium text-[#F59E0B]">
+          <span className="text-sm font-medium text-foreground">Activation Checklist</span>
+          <span className="text-xs font-medium text-amber-500">
             {completed} of {total} complete ({pct}%)
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-[#334155]">
+        <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-[#F59E0B] transition-all duration-300"
+            className="h-full rounded-full bg-amber-500 transition-all duration-300"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -172,11 +172,11 @@ export function ActivationBanner({
           {checklist.map((item) => (
             <div
               key={item.key}
-              className="flex items-center justify-between border-b border-[#334155] py-3 last:border-0"
+              className="flex items-center justify-between border-b border-border py-3 last:border-0"
             >
               <div className="flex items-center gap-3">
                 <ChecklistIcon status={item.status} />
-                <span className="text-sm text-[#F8FAFC]">{item.label}</span>
+                <span className="text-sm text-foreground">{item.label}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span
@@ -196,7 +196,7 @@ export function ActivationBanner({
                   <button
                     type="button"
                     onClick={item.onAction}
-                    className="text-xs font-medium text-[#10B981] hover:underline"
+                    className="text-xs font-medium text-emerald-500 hover:underline"
                   >
                     {item.actionLabel} →
                   </button>
@@ -213,7 +213,7 @@ export function ActivationBanner({
             size="sm"
             onClick={() => sendReminder.mutate()}
             disabled={sendReminder.isPending}
-            className="h-8 text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="h-8 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             {sendReminder.isPending ? 'Sending...' : 'Send Reminder Email'}
           </Button>
@@ -223,22 +223,22 @@ export function ActivationBanner({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 border-[#EF4444]/40 bg-transparent text-xs text-[#EF4444] hover:bg-[#EF4444]/10 hover:text-[#EF4444]"
+                className="h-8 border-destructive/40 bg-transparent text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 Force Activate
               </Button>
             </PopoverTrigger>
             <PopoverContent
               align="start"
-              className="w-72 border-[#334155] bg-[#1E293B] p-4"
+              className="w-72 border-border bg-card p-4"
             >
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#F59E0B]/20">
-                  <span className="text-sm text-[#F59E0B]">!</span>
+                <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                  <span className="text-sm text-amber-500">!</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#F8FAFC]">Force Activate?</p>
-                  <p className="mt-1 text-xs text-[#64748B]">
+                  <p className="text-sm font-medium text-foreground">Force Activate?</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Activate without completing all steps? Driver may not be able to log in
                     correctly.
                   </p>
@@ -247,7 +247,7 @@ export function ActivationBanner({
                       variant="ghost"
                       size="sm"
                       onClick={() => setForceActivateOpen(false)}
-                      className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                      className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       Cancel
                     </Button>
@@ -255,7 +255,7 @@ export function ActivationBanner({
                       size="sm"
                       onClick={() => forceActivate.mutate()}
                       disabled={forceActivate.isPending}
-                      className="h-7 bg-[#EF4444] text-xs text-white hover:bg-[#DC2626]"
+                      className="h-7 bg-destructive text-xs text-white hover:bg-red-700"
                     >
                       {forceActivate.isPending ? 'Activating...' : 'Activate Anyway'}
                     </Button>
@@ -277,8 +277,8 @@ export function ActivationBanner({
 function ChecklistIcon({ status }: { status: ChecklistItem['status'] }) {
   if (status === 'complete') {
     return (
-      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#10B981]/20">
-        <svg className="h-3 w-3 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20">
+        <svg className="h-3 w-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
@@ -286,14 +286,14 @@ function ChecklistIcon({ status }: { status: ChecklistItem['status'] }) {
   }
   if (status === 'action_required') {
     return (
-      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F59E0B]/20">
-        <span className="text-[10px] font-bold text-[#F59E0B]">!</span>
+      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20">
+        <span className="text-[10px] font-bold text-amber-500">!</span>
       </div>
     );
   }
   return (
-    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#64748B]/20">
-      <svg className="h-3 w-3 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/20">
+      <svg className="h-3 w-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <circle cx="12" cy="12" r="10" />
         <path strokeLinecap="round" d="M12 6v6l3 3" />
       </svg>

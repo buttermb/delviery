@@ -89,13 +89,13 @@ export function BulkOperationsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[640px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[640px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-[#F8FAFC]">Bulk Operations</DialogTitle>
+          <DialogTitle className="text-foreground">Bulk Operations</DialogTitle>
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#334155] -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <div className="flex border-b border-border -mx-4 sm:-mx-6 px-4 sm:px-6">
           {(['import', 'update', 'export', 'notify'] as const).map((t) => (
             <button
               key={t}
@@ -103,8 +103,8 @@ export function BulkOperationsDialog({
               onClick={() => setTab(t)}
               className={`px-4 pb-2.5 text-sm font-medium capitalize transition-colors ${
                 tab === t
-                  ? 'border-b-2 border-[#10B981] text-[#F8FAFC]'
-                  : 'text-[#64748B] hover:text-[#94A3B8]'
+                  ? 'border-b-2 border-emerald-500 text-foreground'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               {t === 'notify' ? 'Notifications' : t}
@@ -249,25 +249,25 @@ function ImportTab({
         <div
           className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-12 transition-colors ${
             dragOver
-              ? 'border-[#10B981] bg-[#10B981]/5'
-              : 'border-[#334155] hover:border-[#475569]'
+              ? 'border-emerald-500 bg-emerald-500/5'
+              : 'border-border hover:border-muted-foreground'
           }`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
-          <svg className="mb-3 h-8 w-8 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="mb-3 h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
-          <p className="text-sm text-[#94A3B8]">
+          <p className="text-sm text-muted-foreground">
             Drag & drop a CSV or Excel file
           </p>
-          <p className="mt-1 text-xs text-[#64748B]">or</p>
+          <p className="mt-1 text-xs text-muted-foreground">or</p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => fileRef.current?.click()}
-            className="mt-2 h-7 border-[#334155] bg-transparent text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="mt-2 h-7 border-border bg-transparent text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Browse Files
           </Button>
@@ -282,7 +282,7 @@ function ImportTab({
             }}
           />
         </div>
-        <p className="text-[11px] text-[#64748B]">
+        <p className="text-[11px] text-muted-foreground">
           Accepted: .csv, .xlsx, .xls. Include columns for name, email, phone at minimum.
         </p>
       </div>
@@ -292,15 +292,15 @@ function ImportTab({
   if (step === 'map') {
     return (
       <div className="space-y-4 pt-2">
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-muted-foreground">
           Map your file columns to driver fields. {rows.length} rows detected.
         </p>
 
         <div className="max-h-[240px] space-y-2 overflow-y-auto">
           {mappings.map((m, i) => (
             <div key={m.csvColumn} className="flex items-center gap-3">
-              <span className="w-[140px] truncate text-xs text-[#F8FAFC]">{m.csvColumn}</span>
-              <svg className="h-3 w-3 flex-shrink-0 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <span className="w-[140px] truncate text-xs text-foreground">{m.csvColumn}</span>
+              <svg className="h-3 w-3 flex-shrink-0 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
               <select
@@ -312,7 +312,7 @@ function ImportTab({
                     return next;
                   });
                 }}
-                className="h-8 flex-1 rounded-md border border-[#334155] bg-[#0F172A] px-2 text-xs text-[#F8FAFC] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                className="h-8 flex-1 rounded-md border border-border bg-background px-2 text-xs text-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
                 {DB_FIELDS.map((f) => (
                   <option key={f.value} value={f.value}>
@@ -329,7 +329,7 @@ function ImportTab({
             variant="ghost"
             size="sm"
             onClick={() => setStep('upload')}
-            className="h-7 text-xs text-[#64748B] hover:text-[#94A3B8]"
+            className="h-7 text-xs text-muted-foreground hover:text-muted-foreground"
           >
             Back
           </Button>
@@ -337,7 +337,7 @@ function ImportTab({
             size="sm"
             onClick={() => setStep('preview')}
             disabled={validMappings.length === 0}
-            className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+            className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Next: Preview
           </Button>
@@ -349,16 +349,16 @@ function ImportTab({
   // Preview step
   return (
     <div className="space-y-4 pt-2">
-      <p className="text-sm text-[#94A3B8]">
+      <p className="text-sm text-muted-foreground">
         Previewing first {previewRows.length} of {rows.length} rows.
       </p>
 
-      <div className="overflow-x-auto rounded-lg border border-[#334155]">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-[#334155] bg-[#0F172A]">
+            <tr className="border-b border-border bg-background">
               {validMappings.map((m) => (
-                <th key={m.dbField} className="px-3 py-2 text-left font-medium text-[#64748B]">
+                <th key={m.dbField} className="px-3 py-2 text-left font-medium text-muted-foreground">
                   {DB_FIELDS.find((f) => f.value === m.dbField)?.label ?? m.dbField}
                 </th>
               ))}
@@ -366,9 +366,9 @@ function ImportTab({
           </thead>
           <tbody>
             {previewRows.map((row, i) => (
-              <tr key={i} className="border-b border-[#334155] last:border-0">
+              <tr key={i} className="border-b border-border last:border-0">
                 {validMappings.map((m) => (
-                  <td key={m.dbField} className="px-3 py-2 text-[#94A3B8]">
+                  <td key={m.dbField} className="px-3 py-2 text-muted-foreground">
                     {row[m.csvColumn] || '—'}
                   </td>
                 ))}
@@ -383,7 +383,7 @@ function ImportTab({
           variant="ghost"
           size="sm"
           onClick={() => setStep('map')}
-          className="h-7 text-xs text-[#64748B] hover:text-[#94A3B8]"
+          className="h-7 text-xs text-muted-foreground hover:text-muted-foreground"
         >
           Back
         </Button>
@@ -391,7 +391,7 @@ function ImportTab({
           size="sm"
           onClick={() => importMutation.mutate()}
           disabled={importMutation.isPending}
-          className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+          className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
         >
           {importMutation.isPending ? 'Importing...' : `Import ${rows.length} Drivers`}
         </Button>
@@ -460,29 +460,29 @@ function BulkUpdateTab({
     <div className="space-y-4 pt-2">
       {/* Target */}
       <div>
-        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Target
         </span>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {count > 0 ? (
-            <span className="rounded-full bg-[#10B981]/10 px-2.5 py-1 text-xs font-medium text-[#10B981]">
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
               {count} selected driver{count > 1 ? 's' : ''}
             </span>
           ) : (
-            <span className="text-xs text-[#64748B]">No drivers selected. Select drivers from the directory first.</span>
+            <span className="text-xs text-muted-foreground">No drivers selected. Select drivers from the directory first.</span>
           )}
         </div>
       </div>
 
       {/* Field */}
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Field to Update
         </span>
         <select
           value={field}
           onChange={(e) => { setField(e.target.value as UpdateFieldValue); setValue(''); }}
-          className="h-9 w-full rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+          className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         >
           {UPDATE_FIELDS.map((f) => (
             <option key={f.value} value={f.value}>{f.label}</option>
@@ -492,14 +492,14 @@ function BulkUpdateTab({
 
       {/* Value */}
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           New Value
         </span>
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={`Enter new ${UPDATE_FIELDS.find((f) => f.value === field)?.label ?? field}...`}
-          className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+          className="h-9 min-h-0 border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
         />
       </div>
 
@@ -508,15 +508,15 @@ function BulkUpdateTab({
         <Button
           onClick={() => setConfirmOpen(true)}
           disabled={count === 0 || !value.trim()}
-          className="h-8 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+          className="h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
         >
           Review Changes
         </Button>
       ) : (
-        <div className="rounded-lg border border-[#F59E0B]/20 bg-[#F59E0B]/5 px-4 py-3">
-          <p className="text-sm text-[#F8FAFC]">
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+          <p className="text-sm text-foreground">
             Set <span className="font-medium">{UPDATE_FIELDS.find((f) => f.value === field)?.label}</span> to{' '}
-            <span className="font-medium text-[#10B981]">{value}</span> for{' '}
+            <span className="font-medium text-emerald-500">{value}</span> for{' '}
             <span className="font-medium">{count} driver{count > 1 ? 's' : ''}</span>?
           </p>
           <div className="mt-3 flex items-center gap-2">
@@ -524,7 +524,7 @@ function BulkUpdateTab({
               size="sm"
               onClick={() => updateMutation.mutate()}
               disabled={updateMutation.isPending}
-              className="h-7 bg-[#F59E0B] text-xs text-white hover:bg-[#D97706]"
+              className="h-7 bg-amber-500 text-xs text-white hover:bg-amber-600"
             >
               {updateMutation.isPending ? 'Updating...' : 'Confirm Update'}
             </Button>
@@ -532,7 +532,7 @@ function BulkUpdateTab({
               variant="ghost"
               size="sm"
               onClick={() => setConfirmOpen(false)}
-              className="h-7 text-xs text-[#64748B] hover:text-[#94A3B8]"
+              className="h-7 text-xs text-muted-foreground hover:text-muted-foreground"
             >
               Cancel
             </Button>
@@ -596,11 +596,11 @@ function ExportTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-4 pt-2">
-      <p className="text-sm text-[#94A3B8]">Export your driver directory as a file.</p>
+      <p className="text-sm text-muted-foreground">Export your driver directory as a file.</p>
 
       {/* Format */}
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Format
         </span>
         <div className="flex gap-2">
@@ -611,8 +611,8 @@ function ExportTab({ tenantId }: { tenantId: string }) {
               onClick={() => setFormat(f)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 format === f
-                  ? 'bg-[#10B981] text-white'
-                  : 'bg-[#0F172A] text-[#64748B] hover:bg-[#263548] hover:text-[#94A3B8]'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-background text-muted-foreground hover:bg-accent hover:text-muted-foreground'
               }`}
             >
               {f}
@@ -626,15 +626,15 @@ function ExportTab({ tenantId }: { tenantId: string }) {
         <Checkbox
           checked={includeOffline}
           onCheckedChange={(v) => setIncludeOffline(v === true)}
-          className="border-[#334155] data-[state=checked]:border-[#10B981] data-[state=checked]:bg-[#10B981]"
+          className="border-border data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
         />
-        <span className="text-sm text-[#94A3B8]">Include offline drivers</span>
+        <span className="text-sm text-muted-foreground">Include offline drivers</span>
       </label>
 
       <Button
         onClick={handleExport}
         disabled={exporting}
-        className="h-8 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+        className="h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
       >
         {exporting ? 'Exporting...' : `Export as ${format}`}
       </Button>
@@ -694,23 +694,23 @@ function NotifyTab({
     <div className="space-y-4 pt-2">
       {/* Target */}
       <div>
-        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Recipients
         </span>
         <div className="mt-1.5">
           {count > 0 ? (
-            <span className="rounded-full bg-[#10B981]/10 px-2.5 py-1 text-xs font-medium text-[#10B981]">
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
               {count} driver{count > 1 ? 's' : ''}
             </span>
           ) : (
-            <span className="text-xs text-[#64748B]">No drivers selected.</span>
+            <span className="text-xs text-muted-foreground">No drivers selected.</span>
           )}
         </div>
       </div>
 
       {/* Channels */}
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Channels
         </span>
         <div className="flex items-center gap-4">
@@ -721,9 +721,9 @@ function NotifyTab({
                 onCheckedChange={(v) =>
                   setChannels((prev) => ({ ...prev, [ch]: v === true }))
                 }
-                className="border-[#334155] data-[state=checked]:border-[#10B981] data-[state=checked]:bg-[#10B981]"
+                className="border-border data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
               />
-              <span className="text-sm capitalize text-[#94A3B8]">{ch}</span>
+              <span className="text-sm capitalize text-muted-foreground">{ch}</span>
             </label>
           ))}
         </div>
@@ -731,7 +731,7 @@ function NotifyTab({
 
       {/* Message */}
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+        <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
           Message
         </span>
         <textarea
@@ -739,14 +739,14 @@ function NotifyTab({
           onChange={(e) => setMessage(e.target.value)}
           rows={4}
           placeholder="Write your notification message..."
-          className="w-full rounded-md border border-[#334155] bg-[#0F172A] px-3 py-2 text-sm text-[#F8FAFC] placeholder:text-[#475569] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         />
       </div>
 
       <Button
         onClick={() => sendMutation.mutate()}
         disabled={!canSend || sendMutation.isPending}
-        className="h-8 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+        className="h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
       >
         {sendMutation.isPending ? 'Sending...' : `Send to ${count} Driver${count !== 1 ? 's' : ''}`}
       </Button>

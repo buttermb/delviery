@@ -49,8 +49,8 @@ function EarningStat({
   color?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-[#334155] bg-[#1E293B] p-4">
-      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
+      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
         {label}
       </span>
       <span
@@ -115,8 +115,8 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
             onClick={() => setRange(r)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               range === r
-                ? 'bg-[#10B981] text-white'
-                : 'text-[#64748B] hover:bg-[#1E293B] hover:text-[#94A3B8]'
+                ? 'bg-emerald-500 text-white'
+                : 'text-muted-foreground hover:bg-card hover:text-muted-foreground'
             }`}
           >
             {r}
@@ -133,8 +133,8 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       </div>
 
       {/* Bar chart */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
-        <p className="mb-3 text-xs font-medium text-[#94A3B8]">Daily Earnings — {range}</p>
+      <div className="rounded-lg border border-border bg-card p-4">
+        <p className="mb-3 text-xs font-medium text-muted-foreground">Daily Earnings — {range}</p>
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={WEEK_DATA}>
@@ -173,11 +173,11 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       {/* Bottom row: Commission + Export */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Commission Rate card */}
-        <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
+        <div className="rounded-lg border border-border bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm font-medium text-[#F8FAFC]">Commission Rate</span>
+            <span className="text-sm font-medium text-foreground">Commission Rate</span>
             {!editingRate && (
-              <span className="rounded-full bg-[#10B981]/20 px-2 py-0.5 font-['Space_Grotesk'] text-sm font-bold text-[#10B981]">
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 font-['Space_Grotesk'] text-sm font-bold text-emerald-500">
                 {driver.commission_rate ?? 30}%
               </span>
             )}
@@ -185,8 +185,8 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
           {editingRate ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#64748B]">Adjust rate</span>
-                <span className="font-['Space_Grotesk'] text-sm font-bold text-[#10B981]">
+                <span className="text-xs text-muted-foreground">Adjust rate</span>
+                <span className="font-['Space_Grotesk'] text-sm font-bold text-emerald-500">
                   {draftRate}%
                 </span>
               </div>
@@ -196,14 +196,14 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
                 step={5}
                 value={[draftRate]}
                 onValueChange={([val]) => setDraftRate(val)}
-                className="[&_[data-radix-slider-range]]:bg-[#10B981] [&_[data-radix-slider-thumb]]:border-[#10B981] [&_[data-radix-slider-thumb]]:bg-[#0F172A] [&_[data-radix-slider-track]]:bg-[#334155]"
+                className="[&_[data-radix-slider-range]]:bg-emerald-500 [&_[data-radix-slider-thumb]]:border-emerald-500 [&_[data-radix-slider-thumb]]:bg-background [&_[data-radix-slider-track]]:bg-muted"
               />
               <div className="flex items-center justify-end gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => { setEditingRate(false); setDraftRate(driver.commission_rate ?? 30); }}
-                  className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                  className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   Cancel
                 </Button>
@@ -211,7 +211,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
                   size="sm"
                   onClick={() => updateCommission.mutate(draftRate)}
                   disabled={updateCommission.isPending}
-                  className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+                  className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
                 >
                   Save
                 </Button>
@@ -221,7 +221,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
             <button
               type="button"
               onClick={() => setEditingRate(true)}
-              className="text-xs text-[#10B981] hover:underline"
+              className="text-xs text-emerald-500 hover:underline"
             >
               Adjust rate
             </button>
@@ -229,14 +229,14 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
         </div>
 
         {/* Export card */}
-        <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
-          <span className="text-sm font-medium text-[#F8FAFC]">Export Earnings Report</span>
-          <p className="mt-1 text-xs text-[#64748B]">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <span className="text-sm font-medium text-foreground">Export Earnings Report</span>
+          <p className="mt-1 text-xs text-muted-foreground">
             Generate a downloadable earnings report for this driver.
           </p>
           <Button
             size="sm"
-            className="mt-4 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+            className="mt-4 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Generate Report
           </Button>

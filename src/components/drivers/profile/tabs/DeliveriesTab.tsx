@@ -126,7 +126,7 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
         <div className="flex items-center gap-2">
           <div className="relative">
             <svg
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -140,13 +140,13 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search by order #..."
-              className="h-9 w-[200px] rounded-md border border-[#334155] bg-[#0F172A] pl-9 pr-3 text-sm text-[#F8FAFC] placeholder:text-[#64748B] focus:border-[#10B981] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+              className="h-9 w-[200px] rounded-md border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 border-[#334155] bg-transparent text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="h-9 border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Download className="mr-1.5 h-4 w-4" />
             Export CSV
@@ -155,15 +155,15 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-lg border border-[#334155]">
-        <Table className="w-full bg-[#0F172A]">
+      <div className="overflow-hidden rounded-lg border border-border">
+        <Table className="w-full bg-background">
           <TableHeader>
-            <TableRow className="border-[#334155] bg-[#0F172A] hover:bg-[#0F172A]">
+            <TableRow className="border-border bg-background hover:bg-background">
               {['Date', 'Order #', 'Pickup', 'Dropoff', 'Status', 'Duration', 'Tip', 'Rating'].map(
                 (h) => (
                   <TableHead
                     key={h}
-                    className="bg-[#0F172A] text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]"
+                    className="bg-background text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground"
                   >
                     {h}
                   </TableHead>
@@ -174,17 +174,17 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
           <TableBody>
             {deliveriesQuery.isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="border-[#334155]">
+                <TableRow key={i} className="border-border">
                   {Array.from({ length: 8 }).map((_, j) => (
                     <TableCell key={j} className="bg-transparent">
-                      <Skeleton className="h-4 w-16 bg-[#334155]" />
+                      <Skeleton className="h-4 w-16 bg-muted" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : deliveries.length === 0 ? (
-              <TableRow className="border-[#334155]">
-                <TableCell colSpan={8} className="bg-transparent py-12 text-center text-sm text-[#64748B]">
+              <TableRow className="border-border">
+                <TableCell colSpan={8} className="bg-transparent py-12 text-center text-sm text-muted-foreground">
                   No deliveries found.
                 </TableCell>
               </TableRow>
@@ -196,29 +196,29 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
                   day: 'numeric',
                 });
                 return (
-                  <TableRow key={row.id} className="border-[#334155] hover:bg-[#263548]">
-                    <TableCell className="bg-transparent text-xs text-[#94A3B8]">{date}</TableCell>
-                    <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-[#F8FAFC]">
+                  <TableRow key={row.id} className="border-border hover:bg-accent">
+                    <TableCell className="bg-transparent text-xs text-muted-foreground">{date}</TableCell>
+                    <TableCell className="bg-transparent font-['JetBrains_Mono'] text-xs text-foreground">
                       {(eventData.order_number as string) ?? '—'}
                     </TableCell>
-                    <TableCell className="bg-transparent text-xs text-[#94A3B8]">
+                    <TableCell className="bg-transparent text-xs text-muted-foreground">
                       {(eventData.pickup as string) ?? '—'}
                     </TableCell>
-                    <TableCell className="bg-transparent text-xs text-[#94A3B8]">
+                    <TableCell className="bg-transparent text-xs text-muted-foreground">
                       {(eventData.dropoff as string) ?? '—'}
                     </TableCell>
                     <TableCell className="bg-transparent">
-                      <span className="inline-flex items-center rounded-full bg-[#10B981]/20 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-500">
                         Completed
                       </span>
                     </TableCell>
-                    <TableCell className="bg-transparent text-xs text-[#94A3B8]">
+                    <TableCell className="bg-transparent text-xs text-muted-foreground">
                       {(eventData.duration as string) ?? '—'}
                     </TableCell>
-                    <TableCell className="bg-transparent text-xs text-[#10B981]">
+                    <TableCell className="bg-transparent text-xs text-emerald-500">
                       {eventData.tip ? `$${eventData.tip}` : '—'}
                     </TableCell>
-                    <TableCell className="bg-transparent text-xs text-[#94A3B8]">
+                    <TableCell className="bg-transparent text-xs text-muted-foreground">
                       {eventData.rating ? `${eventData.rating}★` : '—'}
                     </TableCell>
                   </TableRow>
@@ -229,8 +229,8 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
         </Table>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-[#334155] bg-[#0F172A] px-4 py-3">
-          <span className="text-xs text-[#64748B]">
+        <div className="flex items-center justify-between border-t border-border bg-background px-4 py-3">
+          <span className="text-xs text-muted-foreground">
             {totalCount === 0
               ? 'No results'
               : `Showing ${fromRow}–${toRow} of ${totalCount} deliveries`}
@@ -241,17 +241,17 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="h-7 w-7 border-[#334155] bg-transparent p-0 text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC] disabled:opacity-40"
+              className="h-7 w-7 border-border bg-transparent p-0 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="px-2 text-xs text-[#94A3B8]">{page} / {totalPages}</span>
+            <span className="px-2 text-xs text-muted-foreground">{page} / {totalPages}</span>
             <Button
               variant="outline"
               size="sm"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="h-7 w-7 border-[#334155] bg-transparent p-0 text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC] disabled:opacity-40"
+              className="h-7 w-7 border-border bg-transparent p-0 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

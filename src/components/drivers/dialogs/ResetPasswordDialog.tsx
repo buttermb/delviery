@@ -110,10 +110,10 @@ export function ResetPasswordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[420px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]">
+      <DialogContent className="max-w-[420px] border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-[#F8FAFC]">Reset Password</DialogTitle>
-          <DialogDescription className="text-[#64748B]">{driver.full_name}</DialogDescription>
+          <DialogTitle className="text-foreground">Reset Password</DialogTitle>
+          <DialogDescription className="text-muted-foreground">{driver.full_name}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -135,11 +135,11 @@ export function ResetPasswordDialog({
           {/* Email method: readonly email display */}
           {method === 'email' && (
             <div>
-              <Label className="mb-1 text-xs text-[#64748B]">Will be sent to</Label>
+              <Label className="mb-1 text-xs text-muted-foreground">Will be sent to</Label>
               <Input
                 value={driver.email}
                 readOnly
-                className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#94A3B8] focus-visible:ring-[#334155]"
+                className="h-9 min-h-0 border-border bg-background text-sm text-muted-foreground focus-visible:ring-border"
               />
             </div>
           )}
@@ -148,18 +148,18 @@ export function ResetPasswordDialog({
           {method === 'manual' && (
             <div className="space-y-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">New Password</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">New Password</Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-9 min-h-0 border-[#334155] bg-[#0F172A] pr-10 text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                    className="h-9 min-h-0 border-border bg-background pr-10 text-sm text-foreground focus-visible:ring-emerald-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#94A3B8]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -171,16 +171,16 @@ export function ResetPasswordDialog({
               </div>
 
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Confirm Password</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Confirm Password</Label>
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   error={confirmPassword.length > 0 && !passwordsMatch}
-                  className="h-9 min-h-0 border-[#334155] bg-[#0F172A] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+                  className="h-9 min-h-0 border-border bg-background text-sm text-foreground focus-visible:ring-emerald-500"
                 />
                 {confirmPassword.length > 0 && !passwordsMatch && (
-                  <p className="mt-1 text-xs text-[#EF4444]">Passwords don't match</p>
+                  <p className="mt-1 text-xs text-destructive">Passwords don't match</p>
                 )}
               </div>
 
@@ -209,26 +209,26 @@ export function ResetPasswordDialog({
                 <Checkbox
                   checked={requireChange}
                   onCheckedChange={(checked) => setRequireChange(checked === true)}
-                  className="border-[#334155] data-[state=checked]:border-[#10B981] data-[state=checked]:bg-[#10B981]"
+                  className="border-border data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
                 />
-                <span className="text-sm text-[#94A3B8]">Require change on next login</span>
+                <span className="text-sm text-muted-foreground">Require change on next login</span>
               </label>
             </div>
           )}
         </div>
 
-        <DialogFooter className="border-[#334155]">
+        <DialogFooter className="border-border">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={() => resetPassword.mutate()}
             disabled={!canSubmit || resetPassword.isPending}
-            className="bg-[#10B981] text-white hover:bg-[#059669]"
+            className="bg-emerald-500 text-white hover:bg-emerald-600"
           >
             {resetPassword.isPending
               ? 'Sending...'
@@ -263,20 +263,20 @@ function MethodCard({
       onClick={onClick}
       className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
         selected
-          ? 'border-[#10B981] bg-[#10B981]/5'
-          : 'border-[#334155] bg-[#0F172A] hover:border-[#475569]'
+          ? 'border-emerald-500 bg-emerald-500/5'
+          : 'border-border bg-background hover:border-muted-foreground'
       }`}
     >
       <div
         className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-          selected ? 'border-[#10B981]' : 'border-[#475569]'
+          selected ? 'border-emerald-500' : 'border-muted-foreground'
         }`}
       >
-        {selected && <div className="h-2 w-2 rounded-full bg-[#10B981]" />}
+        {selected && <div className="h-2 w-2 rounded-full bg-emerald-500" />}
       </div>
-      <span className="text-sm text-[#F8FAFC]">{title}</span>
+      <span className="text-sm text-foreground">{title}</span>
       {badge && (
-        <span className="rounded-full bg-[#10B981]/20 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
+        <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
           {badge}
         </span>
       )}

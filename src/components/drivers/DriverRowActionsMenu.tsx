@@ -118,55 +118,55 @@ export function DriverRowActionsMenu({ driver, tenantId, children, onViewProfile
         <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-[200px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]"
+          className="w-[200px] border-border bg-card text-foreground"
         >
           <DropdownMenuItem
-            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            className="text-sm text-foreground focus:bg-accent focus:text-accent-foreground"
             onClick={() => onViewProfile?.(driver.id)}
           >
             View Profile
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            className="text-sm text-foreground focus:bg-accent focus:text-accent-foreground"
             onClick={() => onEditDetails?.(driver.id)}
           >
             Edit Details
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            className="text-sm text-foreground focus:bg-accent focus:text-accent-foreground"
             onClick={() => setStatusOpen(true)}
           >
             Change Status
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator className="bg-[#334155]" />
+          <DropdownMenuSeparator className="bg-muted" />
 
           <DropdownMenuItem
-            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            className="text-sm text-foreground focus:bg-accent focus:text-accent-foreground"
             onClick={() => resetPin.mutate()}
             disabled={resetPin.isPending}
           >
             Reset PIN
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            className="text-sm text-foreground focus:bg-accent focus:text-accent-foreground"
             onClick={() => resendInvite.mutate()}
             disabled={resendInvite.isPending || driver.status === 'active'}
           >
-            {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
+            {resendInvite.isPending ? 'Sending\u2026' : 'Resend Invite'}
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator className="bg-[#334155]" />
+          <DropdownMenuSeparator className="bg-muted" />
 
           <DropdownMenuItem
-            className="text-sm text-[#F59E0B] focus:bg-[#263548] focus:text-[#F59E0B]"
+            className="text-sm text-amber-500 focus:bg-accent focus:text-amber-500"
             onClick={() => suspendDriver.mutate()}
             disabled={suspendDriver.isPending || driver.status === 'suspended'}
           >
             Suspend Driver
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-sm text-[#EF4444] focus:bg-[#263548] focus:text-[#EF4444]"
+            className="text-sm text-destructive focus:bg-accent focus:text-destructive"
             onClick={() => terminateDriver.mutate()}
             disabled={terminateDriver.isPending || driver.status === 'terminated'}
           >

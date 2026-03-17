@@ -49,19 +49,19 @@ function StatCard({
   isLoading: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-[#334155] bg-[#1E293B] p-4">
-      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
+      <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
         {label}
       </span>
       {isLoading ? (
-        <Skeleton className="h-7 w-16 bg-[#334155]" />
+        <Skeleton className="h-7 w-16 bg-muted" />
       ) : (
         <span
           className="font-['Space_Grotesk'] text-xl font-bold leading-7"
           style={{ color: accent ?? '#F8FAFC' }}
         >
           {value}
-          {suffix && <span className="ml-0.5 text-sm font-normal text-[#64748B]">{suffix}</span>}
+          {suffix && <span className="ml-0.5 text-sm font-normal text-muted-foreground">{suffix}</span>}
         </span>
       )}
     </div>
@@ -193,10 +193,10 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
       {/* Row 3: Charts + cards */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Rating trend chart */}
-        <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
+        <div className="rounded-lg border border-border bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#94A3B8]">30-day rating trend</span>
-            <span className="rounded-full bg-[#10B981]/20 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
+            <span className="text-xs font-medium text-muted-foreground">30-day rating trend</span>
+            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-500">
               +0.3
             </span>
           </div>
@@ -241,31 +241,31 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         </div>
 
         {/* Last location card */}
-        <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
-          <div className="mb-3 flex h-[100px] items-center justify-center rounded-md bg-[#0F172A]">
-            <div className="flex flex-col items-center gap-1.5 text-[#64748B]">
-              <MapPin className="h-6 w-6 text-[#10B981]" />
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-3 flex h-[100px] items-center justify-center rounded-md bg-background">
+            <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+              <MapPin className="h-6 w-6 text-emerald-500" />
               <span className="text-[11px]">Map preview</span>
             </div>
           </div>
-          <p className="text-sm font-medium text-[#F8FAFC]">Last seen {lastSeen}</p>
-          <p className="mt-0.5 text-xs text-[#64748B]">Brooklyn, NY</p>
+          <p className="text-sm font-medium text-foreground">Last seen {lastSeen}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Brooklyn, NY</p>
           <button
             type="button"
-            className="mt-2 text-xs font-medium text-[#10B981] hover:underline"
+            className="mt-2 text-xs font-medium text-emerald-500 hover:underline"
           >
             Open full map →
           </button>
         </div>
 
         {/* Active delivery card */}
-        <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-4">
+        <div className="rounded-lg border border-border bg-card p-4">
           {driver.availability === 'on_delivery' ? (
             <ActiveDeliveryCard />
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-6 text-center">
-              <span className="text-sm text-[#64748B]">No active delivery</span>
-              <span className="mt-0.5 text-xs text-[#475569]">
+              <span className="text-sm text-muted-foreground">No active delivery</span>
+              <span className="mt-0.5 text-xs text-muted-foreground">
                 Driver is currently {driver.availability}
               </span>
             </div>
@@ -284,31 +284,31 @@ function ActiveDeliveryCard() {
   return (
     <>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-[#64748B]">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Active Delivery
         </span>
-        <span className="inline-flex items-center rounded-full bg-[#F59E0B]/20 px-2 py-0.5 text-[11px] font-medium text-[#F59E0B]">
+        <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-500">
           In Transit
         </span>
       </div>
-      <p className="text-sm font-medium text-[#F8FAFC]">FIQ-0044</p>
-      <p className="text-xs text-[#64748B]">Sarah Johnson</p>
+      <p className="text-sm font-medium text-foreground">FIQ-0044</p>
+      <p className="text-xs text-muted-foreground">Sarah Johnson</p>
       <div className="mt-3 flex items-start gap-2">
         <div className="mt-1 flex flex-col items-center gap-0.5">
-          <div className="h-2 w-2 rounded-full bg-[#10B981]" />
-          <div className="h-6 w-[2px] bg-[#334155]" />
-          <div className="h-2 w-2 rounded-full bg-[#F59E0B]" />
+          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+          <div className="h-6 w-[2px] bg-muted" />
+          <div className="h-2 w-2 rounded-full bg-amber-500" />
         </div>
         <div className="flex flex-col gap-2 text-xs">
-          <span className="text-[#94A3B8]">420 Broadway, Brooklyn</span>
-          <span className="text-[#94A3B8]">88 Court St, Brooklyn</span>
+          <span className="text-muted-foreground">420 Broadway, Brooklyn</span>
+          <span className="text-muted-foreground">88 Court St, Brooklyn</span>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-[#64748B]">ETA ~11 min</span>
+        <span className="text-xs text-muted-foreground">ETA ~11 min</span>
         <button
           type="button"
-          className="text-xs text-[#94A3B8] hover:text-[#F8FAFC]"
+          className="text-xs text-muted-foreground hover:text-foreground"
         >
           View Order Details
         </button>

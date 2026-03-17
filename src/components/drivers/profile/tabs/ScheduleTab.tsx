@@ -66,16 +66,16 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
   return (
     <div className="space-y-4">
       {/* Weekly Availability Grid */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#F8FAFC]">Weekly Availability</span>
-          <div className="flex items-center gap-3 text-[11px] text-[#64748B]">
+          <span className="text-sm font-medium text-foreground">Weekly Availability</span>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 rounded-sm bg-[#10B981]" />
+              <span className="inline-block h-3 w-3 rounded-sm bg-emerald-500" />
               Available
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 rounded-sm bg-[#1E293B] ring-1 ring-[#334155]" />
+              <span className="inline-block h-3 w-3 rounded-sm bg-card ring-1 ring-border" />
               Unavailable
             </span>
           </div>
@@ -85,9 +85,9 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
           <table className="w-full">
             <thead>
               <tr>
-                <th className="w-12 pb-2 text-left text-[11px] font-medium text-[#64748B]" />
+                <th className="w-12 pb-2 text-left text-[11px] font-medium text-muted-foreground" />
                 {TIME_SLOTS.map((slot) => (
-                  <th key={slot} className="pb-2 text-center text-[11px] font-medium text-[#64748B]">
+                  <th key={slot} className="pb-2 text-center text-[11px] font-medium text-muted-foreground">
                     {slot}
                   </th>
                 ))}
@@ -96,7 +96,7 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
             <tbody>
               {DAYS.map((day, dayIdx) => (
                 <tr key={day}>
-                  <td className="py-1 pr-2 text-xs font-medium text-[#94A3B8]">{day}</td>
+                  <td className="py-1 pr-2 text-xs font-medium text-muted-foreground">{day}</td>
                   {TIME_SLOTS.map((_, slotIdx) => {
                     const active = schedule[dayIdx][slotIdx];
                     return (
@@ -106,8 +106,8 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
                           onClick={() => toggleCell(dayIdx, slotIdx)}
                           className={`h-8 w-full rounded transition-colors ${
                             active
-                              ? 'bg-[#10B981] hover:bg-[#059669]'
-                              : 'bg-[#0F172A] ring-1 ring-[#334155] hover:bg-[#263548]'
+                              ? 'bg-emerald-500 hover:bg-emerald-600'
+                              : 'bg-background ring-1 ring-border hover:bg-accent'
                           }`}
                         />
                       </td>
@@ -121,13 +121,13 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
       </div>
 
       {/* Preferences */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#F8FAFC]">Preferences</span>
+          <span className="text-sm font-medium text-foreground">Preferences</span>
           <Button
             size="sm"
             onClick={handleSaveSchedule}
-            className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+            className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Save Schedule
           </Button>
@@ -135,7 +135,7 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
 
         <div className="space-y-3">
           <div>
-            <Label className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+            <Label className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
               Preferred Hours
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -146,8 +146,8 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
                   onClick={() => togglePreference(p)}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                     preferences.has(p)
-                      ? 'bg-[#10B981] text-white'
-                      : 'bg-[#0F172A] text-[#64748B] hover:bg-[#263548] hover:text-[#94A3B8]'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-muted-foreground'
                   }`}
                 >
                   {p}
@@ -157,7 +157,7 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
           </div>
 
           <div>
-            <Label className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[#64748B]">
+            <Label className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
               Max Deliveries / Day
             </Label>
             <Input
@@ -166,21 +166,21 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
               onChange={(e) => setMaxDeliveries(Number(e.target.value))}
               min={1}
               max={50}
-              className="h-9 w-20 min-h-0 border-[#334155] bg-[#0F172A] text-center text-sm text-[#F8FAFC] focus-visible:ring-[#10B981]"
+              className="h-9 w-20 min-h-0 border-border bg-background text-center text-sm text-foreground focus-visible:ring-emerald-500"
             />
           </div>
         </div>
       </div>
 
       {/* Time Off */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#F8FAFC]">Time Off</span>
+          <span className="text-sm font-medium text-foreground">Time Off</span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowTimeOffForm((v) => !v)}
-            className="h-7 text-xs text-[#94A3B8] hover:bg-[#263548] hover:text-[#F8FAFC]"
+            className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             + Request Time Off
           </Button>
@@ -202,30 +202,30 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
 
         {/* Request form */}
         {showTimeOffForm && (
-          <div className="mt-4 rounded-lg border border-[#334155] bg-[#0F172A] p-4">
-            <p className="mb-3 text-xs font-medium text-[#F8FAFC]">Request Time Off</p>
+          <div className="mt-4 rounded-lg border border-border bg-background p-4">
+            <p className="mb-3 text-xs font-medium text-foreground">Request Time Off</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">Start Date</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">Start Date</Label>
                 <Input
                   type="date"
-                  className="h-9 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981] [&::-webkit-calendar-picker-indicator]:invert"
+                  className="h-9 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 [&::-webkit-calendar-picker-indicator]:invert"
                 />
               </div>
               <div>
-                <Label className="mb-1 text-xs text-[#64748B]">End Date</Label>
+                <Label className="mb-1 text-xs text-muted-foreground">End Date</Label>
                 <Input
                   type="date"
-                  className="h-9 min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] focus-visible:ring-[#10B981] [&::-webkit-calendar-picker-indicator]:invert"
+                  className="h-9 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 [&::-webkit-calendar-picker-indicator]:invert"
                 />
               </div>
             </div>
             <div className="mt-3">
-              <Label className="mb-1 text-xs text-[#64748B]">Reason</Label>
+              <Label className="mb-1 text-xs text-muted-foreground">Reason</Label>
               <Textarea
                 rows={2}
                 placeholder="Reason for time off..."
-                className="min-h-0 border-[#334155] bg-[#1E293B] text-sm text-[#F8FAFC] placeholder:text-[#475569] focus-visible:ring-[#10B981]"
+                className="min-h-0 border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-emerald-500"
               />
             </div>
             <div className="mt-3 flex items-center justify-end gap-2">
@@ -233,14 +233,14 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowTimeOffForm(false)}
-                className="h-7 text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+                className="h-7 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 Cancel
               </Button>
               <Button
                 size="sm"
                 onClick={() => { toast.success('Time off requested'); setShowTimeOffForm(false); }}
-                className="h-7 bg-[#10B981] text-xs text-white hover:bg-[#059669]"
+                className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
               >
                 Send Request
               </Button>
@@ -273,10 +273,10 @@ function TimeOffRow({
   const s = styles[status];
 
   return (
-    <div className="flex items-center justify-between rounded-md bg-[#0F172A] px-3 py-2.5">
+    <div className="flex items-center justify-between rounded-md bg-background px-3 py-2.5">
       <div className="flex items-center gap-4 text-xs">
-        <span className="font-medium text-[#F8FAFC]">{dates}</span>
-        <span className="text-[#64748B]">{reason}</span>
+        <span className="font-medium text-foreground">{dates}</span>
+        <span className="text-muted-foreground">{reason}</span>
       </div>
       <div className="flex items-center gap-2">
         <span
@@ -286,7 +286,7 @@ function TimeOffRow({
           {s.label}
         </span>
         {status === 'pending' && (
-          <button type="button" className="text-[11px] text-[#64748B] hover:text-[#EF4444]">
+          <button type="button" className="text-[11px] text-muted-foreground hover:text-destructive">
             Cancel
           </button>
         )}

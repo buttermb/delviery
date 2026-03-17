@@ -78,10 +78,10 @@ function TabSkeleton() {
     <div className="space-y-4 pt-4">
       <div className="grid grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 rounded-lg bg-[#1E293B]" />
+          <Skeleton key={i} className="h-20 rounded-lg bg-card" />
         ))}
       </div>
-      <Skeleton className="h-48 rounded-lg bg-[#1E293B]" />
+      <Skeleton className="h-48 rounded-lg bg-card" />
     </div>
   );
 }
@@ -178,12 +178,12 @@ export default function DriverProfilePage() {
         <ProfileHeader driver={driver} tenantId={tenantId} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-b border-[#334155] bg-transparent p-0">
+          <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-b border-border bg-transparent p-0">
             {TABS.map(({ value, label }) => (
               <TabsTrigger
                 key={value}
                 value={value}
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 py-2.5 text-sm text-[#64748B] shadow-none hover:text-[#94A3B8] data-[state=active]:border-[#10B981] data-[state=active]:bg-transparent data-[state=active]:text-[#10B981] data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 py-2.5 text-sm text-muted-foreground shadow-none hover:text-muted-foreground data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 data-[state=active]:shadow-none"
               >
                 {label}
               </TabsTrigger>

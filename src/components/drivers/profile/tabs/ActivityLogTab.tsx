@@ -203,8 +203,8 @@ export function ActivityLogTab({ driver, tenantId }: ActivityLogTabProps) {
             onClick={() => resetAndSetFilter(value)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               filter === value
-                ? 'bg-[#10B981] text-white'
-                : 'text-[#64748B] hover:bg-[#1E293B] hover:text-[#94A3B8]'
+                ? 'bg-emerald-500 text-white'
+                : 'text-muted-foreground hover:bg-card hover:text-muted-foreground'
             }`}
           >
             {label}
@@ -213,27 +213,27 @@ export function ActivityLogTab({ driver, tenantId }: ActivityLogTabProps) {
       </div>
 
       {/* Timeline */}
-      <div className="rounded-lg border border-[#334155] bg-[#1E293B] p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         {activityQuery.isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex items-start gap-4">
-                <Skeleton className="h-8 w-8 flex-shrink-0 rounded-full bg-[#334155]" />
+                <Skeleton className="h-8 w-8 flex-shrink-0 rounded-full bg-muted" />
                 <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-48 bg-[#334155]" />
-                  <Skeleton className="h-3 w-32 bg-[#334155]" />
+                  <Skeleton className="h-4 w-48 bg-muted" />
+                  <Skeleton className="h-3 w-32 bg-muted" />
                 </div>
               </div>
             ))}
           </div>
         ) : events.length === 0 ? (
-          <div className="py-12 text-center text-sm text-[#64748B]">
+          <div className="py-12 text-center text-sm text-muted-foreground">
             No activity events found.
           </div>
         ) : (
           <div className="relative">
             {/* Vertical timeline line */}
-            <div className="absolute left-[15px] top-4 bottom-4 w-[2px] bg-[#334155]" />
+            <div className="absolute left-[15px] top-4 bottom-4 w-[2px] bg-muted" />
 
             <div className="space-y-0">
               {events.map((event, idx) => {
@@ -252,7 +252,7 @@ export function ActivityLogTab({ driver, tenantId }: ActivityLogTabProps) {
                   <div key={event.id}>
                     {showDateHeader && (
                       <div className="mb-3 mt-1 pl-11 first:mt-0">
-                        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#475569]">
+                        <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
                           {formatDateHeader(event.created_at)}
                         </span>
                       </div>
@@ -269,12 +269,12 @@ export function ActivityLogTab({ driver, tenantId }: ActivityLogTabProps) {
                       {/* Content */}
                       <div className="flex flex-1 items-start justify-between gap-4">
                         <div>
-                          <p className="text-sm text-[#F8FAFC]">{description}</p>
+                          <p className="text-sm text-foreground">{description}</p>
                           {location && (
-                            <p className="mt-0.5 text-xs text-[#64748B]">{location}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{location}</p>
                           )}
                         </div>
-                        <span className="flex-shrink-0 text-xs text-[#475569]">
+                        <span className="flex-shrink-0 text-xs text-muted-foreground">
                           {timestamp}
                         </span>
                       </div>
@@ -294,7 +294,7 @@ export function ActivityLogTab({ driver, tenantId }: ActivityLogTabProps) {
               size="sm"
               onClick={() => setPage((p) => p + 1)}
               disabled={activityQuery.isFetching}
-              className="text-xs text-[#64748B] hover:bg-[#263548] hover:text-[#F8FAFC]"
+              className="text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {activityQuery.isFetching ? 'Loading...' : 'Load More'}
             </Button>
