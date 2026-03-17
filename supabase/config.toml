@@ -432,7 +432,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.add-courier]
-verify_jwt = true
+verify_jwt = false
 
 [functions.optimize-route]
 verify_jwt = true
