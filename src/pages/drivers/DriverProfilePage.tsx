@@ -164,14 +164,12 @@ export default function DriverProfilePage() {
 
   if (!driver) {
     return (
-      <AdminLayout title="Driver Profile" subtitle="Not found">
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-lg font-medium text-[#F8FAFC]">Driver not found</p>
-          <p className="mt-1 text-sm text-[#64748B]">
-            This driver may have been removed or you don't have access.
-          </p>
-        </div>
-      </AdminLayout>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-lg font-medium text-foreground">Driver not found</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This driver may have been removed or you don't have access.
+        </p>
+      </div>
     );
   }
 
