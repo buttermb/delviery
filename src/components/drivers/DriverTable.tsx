@@ -141,6 +141,8 @@ export function DriverTable({
                 isSelected={selectedIds.has(driver.id)}
                 onSelect={onSelectOne}
                 tenantId={tenantId}
+                onViewProfile={onViewProfile}
+                onEditDetails={onEditDetails}
               />
             ))
           )}

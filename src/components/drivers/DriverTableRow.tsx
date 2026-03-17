@@ -192,7 +192,7 @@ export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewP
 
       {/* Actions menu */}
       <TableCell className="w-[40px] bg-transparent">
-        <DriverRowActionsMenu driver={driver} tenantId={tenantId}>
+        <DriverRowActionsMenu driver={driver} tenantId={tenantId} onViewProfile={onViewProfile} onEditDetails={onEditDetails}>
           <button className="flex h-7 w-7 items-center justify-center rounded-md text-[#64748B] transition-colors hover:bg-[#263548] hover:text-[#F8FAFC]">
             <MoreVertical className="h-4 w-4" />
           </button>

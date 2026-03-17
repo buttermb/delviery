@@ -20,9 +20,11 @@ interface DriverRowActionsMenuProps {
   driver: Driver;
   tenantId: string;
   children: React.ReactNode;
+  onViewProfile?: (id: string) => void;
+  onEditDetails?: (id: string) => void;
 }
 
-export function DriverRowActionsMenu({ driver, tenantId, children }: DriverRowActionsMenuProps) {
+export function DriverRowActionsMenu({ driver, tenantId, children, onViewProfile, onEditDetails }: DriverRowActionsMenuProps) {
   const [statusOpen, setStatusOpen] = useState(false);
   const { token } = useTenantAdminAuth();
   const queryClient = useQueryClient();
@@ -92,6 +94,24 @@ export function DriverRowActionsMenu({ driver, tenantId, children }: DriverRowAc
     },
   });
 
+  const resendInvite = useMutation({
+    mutationFn: async () => {
+      const res = await supabase.functions.invoke('add-driver', {
+        body: { resend_invite: true, driver_id: driver.id },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (res.error) throw res.error;
+      return res.data as { success: boolean; error?: string };
+    },
+    onSuccess: () => {
+      toast.success('Invite email resent');
+    },
+    onError: (error) => {
+      logger.error('Resend invite failed', error);
+      toast.error('Failed to resend invite');
+    },
+  });
+
   return (
     <>
       <DropdownMenu>
@@ -100,10 +120,16 @@ export function DriverRowActionsMenu({ driver, tenantId, children }: DriverRowAc
           align="end"
           className="w-[200px] border-[#334155] bg-[#1E293B] text-[#F8FAFC]"
         >
-          <DropdownMenuItem className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]">
+          <DropdownMenuItem
+            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            onClick={() => onViewProfile?.(driver.id)}
+          >
             View Profile
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]">
+          <DropdownMenuItem
+            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            onClick={() => onEditDetails?.(driver.id)}
+          >
             Edit Details
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -122,8 +148,12 @@ export function DriverRowActionsMenu({ driver, tenantId, children }: DriverRowAc
           >
             Reset PIN
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]">
-            Resend Invite
+          <DropdownMenuItem
+            className="text-sm text-[#F8FAFC] focus:bg-[#263548] focus:text-[#F8FAFC]"
+            onClick={() => resendInvite.mutate()}
+            disabled={resendInvite.isPending || driver.status === 'active'}
+          >
+            {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className="bg-[#334155]" />
