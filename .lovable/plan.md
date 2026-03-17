@@ -1,83 +1,56 @@
 
 
-# Current Issues on the Drivers Page
+# Fix: Static Menu Page "Menu Not Found"
 
-## Issue: Missing Database Columns and Table
+## Root Cause
 
-The drivers page query requests columns and a related table that **do not exist** in the `couriers` database table. This causes an HTTP 400 error, meaning **no drivers load at all** — the page shows "No drivers found" even if data exists.
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-**Columns the query expects but the `couriers` table does NOT have:**
-- `display_name`
-- `vehicle_year`
-- `vehicle_color`
-- `zone_id`
-- `status`
-- `availability`
-- `notes`
-- `last_seen_at`
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-**Table the query tries to join that does NOT exist:**
-- `delivery_zones` — no such table in the database
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
-**Actual columns in `couriers`:** id, user_id, email, phone, full_name, vehicle_type, vehicle_make, vehicle_model, vehicle_plate, license_number, age_verified, is_active, is_online, current_lat, current_lng, created_at, updated_at, commission_rate, profile_photo_url, rating, total_deliveries, on_time_rate, last_location_update, notification_sound, notification_vibrate, pin_hash, admin_pin, admin_pin_verified, pin_set_at, pin_last_verified_at, tenant_id
+## Fix
 
-## Fix Plan
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
 
-### Step 1: Database migration — add missing columns + create `delivery_zones` table
+Update the `loadMenuDirect` function's product query:
 
-Add the missing columns to `couriers`:
-
-```sql
-ALTER TABLE public.couriers
-  ADD COLUMN IF NOT EXISTS display_name text,
-  ADD COLUMN IF NOT EXISTS vehicle_year integer,
-  ADD COLUMN IF NOT EXISTS vehicle_color text,
-  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'pending',
-  ADD COLUMN IF NOT EXISTS availability text NOT NULL DEFAULT 'offline',
-  ADD COLUMN IF NOT EXISTS notes text,
-  ADD COLUMN IF NOT EXISTS last_seen_at timestamptz,
-  ADD COLUMN IF NOT EXISTS suspended_at timestamptz,
-  ADD COLUMN IF NOT EXISTS suspended_until timestamptz,
-  ADD COLUMN IF NOT EXISTS suspend_reason text;
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
 ```
 
-Create `delivery_zones` table + add FK on `couriers`:
-
-```sql
-CREATE TABLE IF NOT EXISTS public.delivery_zones (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  color text,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.delivery_zones ENABLE ROW LEVEL SECURITY;
-
--- RLS: tenant members can read their zones
-CREATE POLICY "Tenant members can view zones"
-  ON public.delivery_zones FOR SELECT TO authenticated
-  USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
-
-ALTER TABLE public.couriers
-  ADD COLUMN IF NOT EXISTS zone_id uuid REFERENCES public.delivery_zones(id);
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
 ```
 
-### Step 2: Update `DriverDirectoryPage.tsx` query
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
 
-Update the select statement to only request columns that exist, and handle the case where `delivery_zones` join returns null gracefully (it already should once the FK exists). Also backfill `is_active` → `status` mapping: drivers with `is_active = true` get `status = 'active'`, others get `'inactive'`.
+## Also Fix: Pre-existing build errors in unrelated edge functions
 
-### Step 3: Backfill existing data
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
 
-```sql
-UPDATE public.couriers SET status = CASE WHEN is_active THEN 'active' ELSE 'inactive' END WHERE status = 'pending';
-```
+## Result
 
-### Files Changed
-
-| File | Change |
-|------|--------|
-| New migration SQL | Add missing columns to `couriers`, create `delivery_zones`, add FK |
-| `src/pages/drivers/DriverDirectoryPage.tsx` | No change needed once DB matches (query is already correct for the intended schema) |
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
 
