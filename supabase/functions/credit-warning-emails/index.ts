@@ -84,7 +84,7 @@ serve(async (req) => {
 
       for (const record of tenants || []) {
         results.checked++;
-        const tenant = record.tenants as Record<string, unknown> | null;
+        const tenant = record.tenants as unknown as Record<string, unknown> | null;
 
         if (!tenant?.owner_email) {
           console.error(`[CREDIT_WARNINGS] No email for tenant ${record.tenant_id}`);
