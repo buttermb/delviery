@@ -104,7 +104,7 @@ function vehicleLabel(driver: Driver): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function DriverTableRow({ driver, isSelected, onSelect, tenantId }: DriverTableRowProps) {
+export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewProfile, onEditDetails }: DriverTableRowProps) {
   const isOnline = driver.availability === 'online';
 
   return (
