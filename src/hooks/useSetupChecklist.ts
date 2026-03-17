@@ -233,7 +233,7 @@ function buildChecklist(prefix: string, flags: CompletionFlags): SetupChecklistD
       label: 'Approve your first driver',
       description: 'Add and activate a courier',
       completed: flags.hasDriver ?? false,
-      href: `${prefix}/fulfillment-hub?tab=couriers`,
+      href: `${prefix}/drivers`,
     },
     {
       id: 'order',
