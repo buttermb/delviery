@@ -5,6 +5,7 @@ import { Plus, Download } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -98,6 +99,7 @@ function countActiveFilters(filters: DriverFilterValues): number {
 
 export default function DriverDirectoryPage() {
   const { tenant } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -429,6 +431,8 @@ export default function DriverDirectoryPage() {
           pageSize={PAGE_SIZE}
           onPageChange={setPage}
           tenantId={tenant?.id ?? ''}
+          onViewProfile={(id) => navigateToAdmin(`drivers/${id}`)}
+          onEditDetails={(id) => navigateToAdmin(`drivers/${id}?tab=details`)}
         />
       </div>
 

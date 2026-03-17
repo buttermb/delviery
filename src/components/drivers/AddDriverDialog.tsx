@@ -8,6 +8,7 @@ import { Check } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
@@ -135,6 +136,7 @@ interface AddDriverDialogProps {
 
 export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
   const { tenant, token } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
@@ -199,7 +201,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
       toast.success(`${name} added.${data.email_sent ? ' Invite sent.' : ''}`, {
         action: {
           label: 'View Profile',
-          onClick: () => { /* navigate to driver profile */ },
+          onClick: () => navigateToAdmin(`drivers/${data.driver_id}`),
         },
       });
       handleClose();

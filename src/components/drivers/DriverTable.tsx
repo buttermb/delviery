@@ -26,6 +26,8 @@ interface DriverTableProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   tenantId: string;
+  onViewProfile?: (id: string) => void;
+  onEditDetails?: (id: string) => void;
 }
 
 function SkeletonRow() {
@@ -69,6 +71,8 @@ export function DriverTable({
   pageSize,
   onPageChange,
   tenantId,
+  onViewProfile,
+  onEditDetails,
 }: DriverTableProps) {
   const allSelected = drivers.length > 0 && drivers.every((d) => selectedIds.has(d.id));
   const someSelected = drivers.some((d) => selectedIds.has(d.id)) && !allSelected;
@@ -137,6 +141,8 @@ export function DriverTable({
                 isSelected={selectedIds.has(driver.id)}
                 onSelect={onSelectOne}
                 tenantId={tenantId}
+                onViewProfile={onViewProfile}
+                onEditDetails={onEditDetails}
               />
             ))
           )}

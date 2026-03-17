@@ -10,6 +10,8 @@ interface DriverTableRowProps {
   isSelected: boolean;
   onSelect: (id: string, checked: boolean) => void;
   tenantId: string;
+  onViewProfile?: (id: string) => void;
+  onEditDetails?: (id: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,7 +104,7 @@ function vehicleLabel(driver: Driver): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function DriverTableRow({ driver, isSelected, onSelect, tenantId }: DriverTableRowProps) {
+export function DriverTableRow({ driver, isSelected, onSelect, tenantId, onViewProfile, onEditDetails }: DriverTableRowProps) {
   const isOnline = driver.availability === 'online';
 
   return (
@@ -190,7 +192,7 @@ export function DriverTableRow({ driver, isSelected, onSelect, tenantId }: Drive
 
       {/* Actions menu */}
       <TableCell className="w-[40px] bg-transparent">
-        <DriverRowActionsMenu driver={driver} tenantId={tenantId}>
+        <DriverRowActionsMenu driver={driver} tenantId={tenantId} onViewProfile={onViewProfile} onEditDetails={onEditDetails}>
           <button className="flex h-7 w-7 items-center justify-center rounded-md text-[#64748B] transition-colors hover:bg-[#263548] hover:text-[#F8FAFC]">
             <MoreVertical className="h-4 w-4" />
           </button>
