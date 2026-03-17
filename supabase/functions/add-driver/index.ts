@@ -277,7 +277,7 @@ serve(async (req) => {
     // 9. Store PIN hash (in a metadata column or separate table)
     //    Using the notes approach for now — store in user_metadata
     // -----------------------------------------------------------------------
-    await supabase.auth.admin.updateUserById(authData.user.id, {
+    await supabase.auth.admin.updateUserById(authUserId, {
       user_metadata: {
         full_name: input.full_name,
         phone: input.phone,
