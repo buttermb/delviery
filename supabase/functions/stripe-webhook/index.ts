@@ -12,7 +12,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import Stripe from 'https://esm.sh/stripe@14.21.0';
+import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { validateStripeWebhook, type StripeWebhookInput } from './validation.ts';
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
