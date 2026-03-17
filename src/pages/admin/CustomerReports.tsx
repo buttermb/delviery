@@ -151,7 +151,7 @@ export default function CustomerReports() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Customer Reports & Analytics</h1>
+            <h1 className="text-xl font-bold text-foreground">Customer Reports & Analytics</h1>
             <p className="text-muted-foreground mt-1">Insights into your customer base</p>
           </div>
           <Button

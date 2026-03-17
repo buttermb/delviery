@@ -92,7 +92,7 @@ export default function CustomerOrganizationsPage() {
               <Building2 className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Customer Organizations</h1>
+              <h1 className="text-2xl font-bold text-foreground">Customer Organizations</h1>
               <p className="text-muted-foreground">
                 Manage organizations for B2B wholesale relationships and group pricing
               </p>

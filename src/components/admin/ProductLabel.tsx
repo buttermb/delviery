@@ -499,7 +499,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                   />
                 ) : (
                   <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white dark:bg-zinc-950 max-w-[300px]">
-                    <p className="font-mono text-xs text-black dark:text-white truncate">{product.sku}</p>
+                    <p className="font-mono text-xs text-foreground truncate">{product.sku}</p>
                   </div>
                 )}
               </div>

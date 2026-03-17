@@ -365,7 +365,7 @@ export default function CustomerDetails() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                    <h1 className="text-xl font-bold text-foreground truncate">
                       {displayName(customer.first_name, customer.last_name)}
                     </h1>
                     <Badge
