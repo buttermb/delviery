@@ -266,8 +266,10 @@ serve(async (req) => {
 
     if (insertError) {
       logger.error('Failed to insert courier record', { error: insertError.message });
-      // Rollback: delete the auth user we just created
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      // Rollback: only delete auth user if we just created it
+      if (!isExistingUser) {
+        await supabase.auth.admin.deleteUser(authUserId);
+      }
       return errorResponse(500, 'Failed to create driver record', 'INSERT_FAILED');
     }
 
