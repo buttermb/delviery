@@ -136,13 +136,13 @@ export async function encryptCustomerFields(
   
   // Create search indexes
   if (customer.email) {
-    encrypted.email_search_index = await createSearchHash(customer.email);
+    encrypted.email_search_index = await createSearchHash(customer.email as string);
   }
   if (customer.phone) {
-    encrypted.phone_search_index = await createSearchHash(customer.phone);
+    encrypted.phone_search_index = await createSearchHash(customer.phone as string);
   }
   if (customer.medical_card_number) {
-    encrypted.medical_card_number_search_index = await createSearchHash(customer.medical_card_number);
+    encrypted.medical_card_number_search_index = await createSearchHash(customer.medical_card_number as string);
   }
   
   // Mark as encrypted
@@ -179,7 +179,7 @@ export async function decryptCustomerFields(
     const encryptedField = `${field}_encrypted`;
     if (encryptedCustomer[encryptedField]) {
       const decryptedValue = await decryptData(
-        encryptedCustomer[encryptedField],
+        encryptedCustomer[encryptedField] as string,
         password
       );
       
@@ -217,7 +217,7 @@ export async function createSearchHash(value: string): Promise<string> {
  * Log PHI access for HIPAA compliance
  */
 export async function logPHIAccess(
-  supabaseClient: { rpc: (name: string, params: Record<string, unknown>) => Promise<unknown> },
+  supabaseClient: any,
   customerId: string,
   action: 'view' | 'create' | 'update' | 'decrypt' | 'search' | 'export' | 'delete',
   fieldsAccessed: string[],

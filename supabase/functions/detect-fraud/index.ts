@@ -185,7 +185,7 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
 async function checkBinRisk(
   orderId: string | undefined,
   userId: string,
-  supabase: ReturnType<typeof createClient>
+  supabase: any
 ): Promise<Record<string, unknown>> {
   if (!orderId) return { flagged: false };
 
@@ -196,7 +196,7 @@ async function checkBinRisk(
     .eq('id', orderId)
     .maybeSingle();
 
-  if (!order?.payment_method_last4) return { flagged: false };
+  if (!order || !order.payment_method_last4) return { flagged: false };
 
   // BIN data would be passed from the frontend during checkout as bin_prefix
   // For now, check if BIN data was cached during checkout
@@ -232,7 +232,7 @@ async function checkBinRisk(
   return { flagged: false };
 }
 
-async function checkBehavior(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkBehavior(userId: string, supabase: any) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

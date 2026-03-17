@@ -135,7 +135,7 @@ serve(async (req) => {
           supabase,
           record.tenant_id,
           record.balance,
-          record.tenants as Record<string, unknown>,
+          record.tenants as unknown as Record<string, unknown>,
           record.alerts_sent
         );
         if (result) {
