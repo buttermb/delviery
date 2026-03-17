@@ -43,7 +43,7 @@ export const addDriverSchema = z.object({
   vehicle_year: z.coerce.number().int().min(1990).max(2030),
   vehicle_color: z.string().min(1, 'Vehicle color is required').max(30),
   vehicle_plate: z.string().min(1, 'License plate is required').max(20),
-  insurance_expiry: z.string().optional().or(z.literal('')),
+  
   // Step 3
   commission_rate: z.number().min(0).max(100).default(30),
   zone_id: z.string().optional().or(z.literal('')),
