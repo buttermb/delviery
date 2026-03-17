@@ -186,18 +186,11 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
           </Button>
         </div>
 
-        {/* Existing requests */}
+        {/* Existing requests — empty until persistence is added */}
         <div className="space-y-2">
-          <TimeOffRow
-            dates="Mar 20–21"
-            reason="Spring break"
-            status="approved"
-          />
-          <TimeOffRow
-            dates="Apr 5"
-            reason="Personal"
-            status="pending"
-          />
+          <div className="flex items-center justify-center rounded-md bg-background px-3 py-6">
+            <span className="text-xs text-muted-foreground">No time off requests</span>
+          </div>
         </div>
 
         {/* Request form */}
@@ -252,45 +245,3 @@ export function ScheduleTab({ driver: _driver, tenantId: _tenantId }: ScheduleTa
   );
 }
 
-// ---------------------------------------------------------------------------
-// Time off row
-// ---------------------------------------------------------------------------
-
-function TimeOffRow({
-  dates,
-  reason,
-  status,
-}: {
-  dates: string;
-  reason: string;
-  status: 'approved' | 'pending' | 'rejected';
-}) {
-  const styles = {
-    approved: { bg: 'rgba(16,185,129,0.2)', text: '#10B981', label: 'Approved' },
-    pending: { bg: 'rgba(245,158,11,0.2)', text: '#F59E0B', label: 'Pending' },
-    rejected: { bg: 'rgba(239,68,68,0.2)', text: '#EF4444', label: 'Rejected' },
-  };
-  const s = styles[status];
-
-  return (
-    <div className="flex items-center justify-between rounded-md bg-background px-3 py-2.5">
-      <div className="flex items-center gap-4 text-xs">
-        <span className="font-medium text-foreground">{dates}</span>
-        <span className="text-muted-foreground">{reason}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span
-          className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-          style={{ backgroundColor: s.bg, color: s.text }}
-        >
-          {s.label}
-        </span>
-        {status === 'pending' && (
-          <button type="button" className="text-[11px] text-muted-foreground hover:text-destructive">
-            Cancel
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}

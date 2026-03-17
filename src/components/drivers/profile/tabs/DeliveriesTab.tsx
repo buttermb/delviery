@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 import type { DriverProfile } from '@/pages/drivers/DriverProfilePage';
@@ -146,6 +147,7 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => toast.info('CSV export coming soon')}
             className="h-9 border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Download className="mr-1.5 h-4 w-4" />

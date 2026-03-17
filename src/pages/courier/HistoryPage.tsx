@@ -111,7 +111,7 @@ export default function CourierHistoryPage() {
             order_number: delivery.order?.order_number || 'N/A',
             client_name: delivery.order?.client?.business_name,
             delivery_address: delivery.order?.delivery_address,
-            total_amount: 5.00, // Flat delivery fee
+            total_amount: delivery.delivery_fee ?? delivery.order?.total_amount ?? 0,
             status: delivery.status,
             created_at: delivery.created_at,
             delivered_at: delivery.delivered_at,

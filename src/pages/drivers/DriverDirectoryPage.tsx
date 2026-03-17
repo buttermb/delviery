@@ -151,9 +151,9 @@ export default function DriverDirectoryPage() {
         .eq('tenant_id', tenant.id)
         .eq('availability', 'online');
 
-      // Avg rating placeholder — couriers table has no rating column yet,
-      // so default to 4.7 until ratings are integrated
-      const avgRating = 4.7;
+      // Avg rating — delivery_ratings table does not exist yet.
+      // Will show 0 until ratings feature is implemented.
+      const avgRating = 0;
 
       // Deliveries today — count from driver_activity_log or orders
       const todayStart = new Date();

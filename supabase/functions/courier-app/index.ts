@@ -420,7 +420,6 @@ serve(async (req) => {
     }
 
     if (endpoint === "update-order-status") {
-      const body = await req.json();
       const { order_id, status, notes } = body;
 
       const { data: updatedOrder } = await supabase
@@ -446,7 +445,6 @@ serve(async (req) => {
     }
 
     if (endpoint === "mark-picked-up") {
-      const body = await req.json();
       const { order_id, pickup_photo_url } = body;
 
       await supabase
@@ -478,28 +476,33 @@ serve(async (req) => {
     }
 
     if (endpoint === "mark-delivered") {
-      const body = await req.json();
-      const { 
-        order_id, 
-        delivery_photo_url, 
+      const {
+        order_id,
+        delivery_photo_url,
         signature_url,
         id_verification_photo_url,
-        customer_present 
+        customer_present
       } = body;
 
-      await supabase
+      const now = new Date().toISOString();
+
+      // 1. Mark order delivered and fetch order details for earnings calc
+      const { data: deliveredOrder } = await supabase
         .from("orders")
-        .update({ 
+        .update({
           status: "delivered",
-          delivered_at: new Date().toISOString()
+          delivered_at: now
         })
         .eq("id", order_id)
-        .eq("courier_id", courier.id);
+        .eq("courier_id", courier.id)
+        .select("id, order_number, subtotal, total_amount, delivery_fee, tip_amount, tenant_id, customer_name")
+        .single();
 
+      // 2. Update delivery record
       await supabase
         .from("deliveries")
         .update({
-          actual_dropoff_time: new Date().toISOString(),
+          actual_dropoff_time: now,
           delivery_photo_url,
           signature_url,
           id_verification_url: id_verification_photo_url,
@@ -507,6 +510,7 @@ serve(async (req) => {
         })
         .eq("order_id", order_id);
 
+      // 3. Insert tracking event
       await supabase
         .from("order_tracking")
         .insert({
@@ -514,6 +518,68 @@ serve(async (req) => {
           status: "delivered",
           message: "Order delivered successfully"
         });
+
+      // 4. Create earnings record
+      if (deliveredOrder) {
+        const orderTotal = parseFloat(String(deliveredOrder.subtotal || deliveredOrder.total_amount)) || 0;
+        const commissionRate = courier.commission_rate || 30;
+        const commissionAmount = (orderTotal * commissionRate) / 100;
+        const tipAmount = parseFloat(String(deliveredOrder.tip_amount)) || 0;
+        const totalEarned = commissionAmount + tipAmount;
+
+        // Compute week_start_date (Monday of current week)
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + mondayOffset);
+        const weekStartDate = monday.toISOString().split("T")[0];
+
+        await supabase
+          .from("courier_earnings")
+          .insert({
+            courier_id: courier.id,
+            order_id: deliveredOrder.id,
+            order_total: orderTotal,
+            commission_rate: commissionRate,
+            commission_amount: commissionAmount,
+            tip_amount: tipAmount,
+            total_earned: totalEarned,
+            week_start_date: weekStartDate,
+            status: "pending",
+          });
+
+        // 5. Log delivery_completed to driver_activity_log
+        if (courier.tenant_id) {
+          // Fetch order addresses for pickup/dropoff display
+          const { data: orderAddresses } = await supabase
+            .from("orders")
+            .select("delivery_address, pickup_lat, pickup_lng, merchants(business_name, address)")
+            .eq("id", deliveredOrder.id)
+            .single();
+
+          const pickupAddress = orderAddresses?.merchants?.address
+            || orderAddresses?.merchants?.business_name
+            || null;
+
+          await supabase
+            .from("driver_activity_log")
+            .insert({
+              tenant_id: courier.tenant_id,
+              driver_id: courier.id,
+              event_type: "delivery_completed",
+              event_data: {
+                order_id: deliveredOrder.id,
+                order_number: deliveredOrder.order_number,
+                total_earned: totalEarned,
+                customer_name: deliveredOrder.customer_name,
+                tip: tipAmount > 0 ? tipAmount.toFixed(2) : null,
+                pickup: pickupAddress,
+                dropoff: orderAddresses?.delivery_address || null,
+              },
+            });
+        }
+      }
 
       return new Response(
         JSON.stringify({ success: true }),

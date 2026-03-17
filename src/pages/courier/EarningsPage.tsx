@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useCourier } from '@/contexts/CourierContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -141,7 +142,7 @@ export default function CourierEarningsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Earnings History</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info('Export coming soon')}>
                 <Download className="h-4 w-4" />
                 Export
               </Button>

@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 import type { DriverProfile } from '@/pages/drivers/DriverProfilePage';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,17 +24,21 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-const RANGES = ['This Week', 'This Month', 'Last Month', 'Custom'] as const;
+const RANGES = ['This Week', 'This Month', 'Last Month'] as const;
+type Range = typeof RANGES[number];
 
-const WEEK_DATA = [
-  { day: 'Mon', amount: 198 },
-  { day: 'Tue', amount: 145 },
-  { day: 'Wed', amount: 176 },
-  { day: 'Thu', amount: 210 },
-  { day: 'Fri', amount: 165 },
-  { day: 'Sat', amount: 220 },
-  { day: 'Sun', amount: 126 },
-];
+interface DailyEarning {
+  day: string;
+  amount: number;
+}
+
+interface EarningsSummary {
+  gross: number;
+  fees: number;
+  net: number;
+  tips: number;
+  daily: DailyEarning[];
+}
 
 // ---------------------------------------------------------------------------
 // Stat card
@@ -43,24 +48,48 @@ function EarningStat({
   label,
   value,
   color,
+  isLoading,
 }: {
   label: string;
   value: string;
   color?: string;
+  isLoading?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
       <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
         {label}
       </span>
-      <span
-        className="font-['Space_Grotesk'] text-xl font-bold"
-        style={{ color: color ?? '#F8FAFC' }}
-      >
-        {value}
-      </span>
+      {isLoading ? (
+        <Skeleton className="h-7 w-16 bg-muted" />
+      ) : (
+        <span
+          className="font-['Space_Grotesk'] text-xl font-bold"
+          style={{ color: color ?? '#F8FAFC' }}
+        >
+          {value}
+        </span>
+      )}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Date range helper
+// ---------------------------------------------------------------------------
+
+function getDateRange(range: Range): { start: Date; end: Date } {
+  const now = new Date();
+  switch (range) {
+    case 'This Week':
+      return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+    case 'This Month':
+      return { start: startOfMonth(now), end: endOfMonth(now) };
+    case 'Last Month': {
+      const lastMonth = subMonths(now, 1);
+      return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -73,10 +102,50 @@ interface EarningsTabProps {
 }
 
 export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
-  const [range, setRange] = useState<string>('This Week');
+  const [range, setRange] = useState<Range>('This Week');
   const [editingRate, setEditingRate] = useState(false);
   const [draftRate, setDraftRate] = useState(driver.commission_rate ?? 30);
   const queryClient = useQueryClient();
+
+  const dateRange = useMemo(() => getDateRange(range), [range]);
+
+  const earningsQuery = useQuery({
+    queryKey: [...queryKeys.couriersAdmin.byTenant(tenantId), 'earnings', driver.id, range],
+    queryFn: async (): Promise<EarningsSummary> => {
+      const { data, error } = await supabase
+        .from('courier_earnings')
+        .select('total_earned, commission_amount, tip_amount, created_at')
+        .eq('courier_id', driver.id)
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        logger.error('Failed to fetch earnings', error);
+        throw error;
+      }
+
+      const rows = data ?? [];
+
+      const gross = rows.reduce((s, r) => s + (r.total_earned ?? 0), 0);
+      const fees = rows.reduce((s, r) => s + (r.commission_amount ?? 0), 0);
+      const tips = rows.reduce((s, r) => s + (r.tip_amount ?? 0), 0);
+      const net = gross - fees;
+
+      // Group by day label
+      const dailyMap = new Map<string, number>();
+      for (const row of rows) {
+        if (!row.created_at) continue;
+        const dayLabel = new Date(row.created_at).toLocaleDateString('en-US', { weekday: 'short' });
+        dailyMap.set(dayLabel, (dailyMap.get(dayLabel) ?? 0) + (row.total_earned ?? 0));
+      }
+
+      const daily = Array.from(dailyMap.entries()).map(([day, amount]) => ({ day, amount }));
+
+      return { gross, fees, net, tips, daily };
+    },
+    enabled: !!driver.id,
+  });
 
   const updateCommission = useMutation({
     mutationFn: async (rate: number) => {
@@ -98,11 +167,8 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
     },
   });
 
-  // Placeholder stats
-  const gross = 1240;
-  const fees = 372;
-  const net = gross - fees;
-  const tips = 94;
+  const earnings = earningsQuery.data;
+  const isLoading = earningsQuery.isLoading;
 
   return (
     <div className="space-y-4">
@@ -126,47 +192,57 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <EarningStat label="Gross" value={`$${gross.toLocaleString()}`} />
-        <EarningStat label="Fees" value={`-$${fees}`} color="#EF4444" />
-        <EarningStat label="Net" value={`$${net}`} color="#10B981" />
-        <EarningStat label="Tips" value={`$${tips}`} />
+        <EarningStat label="Gross" value={`$${(earnings?.gross ?? 0).toLocaleString()}`} isLoading={isLoading} />
+        <EarningStat label="Fees" value={`-$${(earnings?.fees ?? 0).toLocaleString()}`} color="#EF4444" isLoading={isLoading} />
+        <EarningStat label="Net" value={`$${(earnings?.net ?? 0).toLocaleString()}`} color="#10B981" isLoading={isLoading} />
+        <EarningStat label="Tips" value={`$${(earnings?.tips ?? 0).toLocaleString()}`} isLoading={isLoading} />
       </div>
 
       {/* Bar chart */}
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="mb-3 text-xs font-medium text-muted-foreground">Daily Earnings — {range}</p>
         <div className="h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={WEEK_DATA}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-              <XAxis
-                dataKey="day"
-                tick={{ fontSize: 11, fill: '#64748B' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#64748B' }}
-                axisLine={false}
-                tickLine={false}
-                width={40}
-                tickFormatter={(v) => `$${v}`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#F8FAFC',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: 12,
-                  color: '#0F172A',
-                  fontWeight: 600,
-                }}
-                formatter={(val: number) => [`$${val}`, 'Earnings']}
-                cursor={{ fill: '#334155', radius: 4 }}
-              />
-              <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <Skeleton className="h-full w-full bg-muted" />
+            </div>
+          ) : earnings && earnings.daily.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={earnings.daily}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 11, fill: '#64748B' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#64748B' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={40}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#F8FAFC',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: '#0F172A',
+                    fontWeight: 600,
+                  }}
+                  formatter={(val: number) => [`$${val.toFixed(2)}`, 'Earnings']}
+                  cursor={{ fill: '#334155', radius: 4 }}
+                />
+                <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <span className="text-sm text-muted-foreground">No earnings data</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -236,6 +312,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
           </p>
           <Button
             size="sm"
+            onClick={() => toast.info('Report generation coming soon')}
             className="mt-4 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Generate Report

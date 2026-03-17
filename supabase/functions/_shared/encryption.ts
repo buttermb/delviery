@@ -126,8 +126,8 @@ export async function encryptCustomerFields(
   
   for (const field of fieldsToEncrypt) {
     if (customer[field] !== undefined && customer[field] !== null) {
-      const value = typeof customer[field] === 'string' 
-        ? customer[field] 
+      const value = typeof customer[field] === 'string'
+        ? (customer[field] as string)
         : JSON.stringify(customer[field]);
       encrypted[`${field}_encrypted`] = await encryptData(value, password);
       delete encrypted[field]; // Remove plaintext

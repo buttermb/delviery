@@ -137,8 +137,8 @@ export default function CourierDashboardPage() {
         setCourierStats({
           todayDeliveries,
           todayEarnings,
-          avgDeliveryTime: 28,
-          completionRate: 98,
+          avgDeliveryTime: 0,
+          completionRate: todayDeliveries > 0 ? 100 : 0,
         });
       } catch (error) {
         logger.error('Failed to load stats:', error);

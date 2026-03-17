@@ -50,6 +50,8 @@ export interface DriverProfile {
   suspended_at: string | null;
   suspended_until: string | null;
   suspend_reason: string | null;
+  current_lat: number | null;
+  current_lng: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -124,6 +126,7 @@ export default function DriverProfilePage() {
           commission_rate, is_active, is_online, notes,
           last_seen_at, created_at, updated_at,
           suspended_at, suspended_until, suspend_reason,
+          current_lat, current_lng,
           delivery_zones ( name )
         `)
         .eq('id', driverId)

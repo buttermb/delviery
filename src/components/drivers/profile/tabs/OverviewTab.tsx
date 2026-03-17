@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type { DriverProfile } from '@/pages/drivers/DriverProfilePage';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ResponsiveContainer,
@@ -27,8 +29,22 @@ interface DriverOverviewStats {
   deliveriesAllTime: number;
   totalEarned: number;
   avgRating: number;
-  onTimeRate: number;
-  avgDeliveryTime: number;
+  onTimeRate: number | null;
+  avgDeliveryTime: number | null;
+}
+
+interface RatingTrendPoint {
+  date: string;
+  rating: number;
+}
+
+interface ActiveOrder {
+  id: string;
+  order_number: string;
+  status: string;
+  customer_name: string | null;
+  delivery_address: string | null;
+  pickup_address: string | null; // derived from merchants.address
 }
 
 // ---------------------------------------------------------------------------
@@ -78,6 +94,7 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
+  const { navigateToAdmin } = useTenantNavigation();
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart);
@@ -122,15 +139,110 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         .eq('driver_id', driver.id)
         .eq('event_type', 'delivery_completed');
 
+      // Total earned from courier_earnings
+      const { data: earningsData } = await supabase
+        .from('courier_earnings')
+        .select('total_earned')
+        .eq('courier_id', driver.id);
+
+      const totalEarned = (earningsData ?? []).reduce(
+        (sum, row) => sum + (row.total_earned ?? 0),
+        0,
+      );
+
+      // Average rating from delivery_ratings
+      const { data: ratingsData } = await supabase
+        .from('delivery_ratings')
+        .select('rating')
+        .eq('runner_id', driver.id);
+
+      const avgRating =
+        ratingsData && ratingsData.length > 0
+          ? ratingsData.reduce((sum, r) => sum + r.rating, 0) / ratingsData.length
+          : 0;
+
       return {
         deliveriesToday: deliveriesToday ?? 0,
         deliveriesWeek: deliveriesWeek ?? 0,
         deliveriesMonth: deliveriesMonth ?? 0,
         deliveriesAllTime: deliveriesAllTime ?? 0,
-        totalEarned: 3240,  // Placeholder until earnings table is integrated
-        avgRating: 4.8,     // Placeholder until ratings table is integrated
-        onTimeRate: 96,     // Placeholder
-        avgDeliveryTime: 22, // Placeholder
+        totalEarned,
+        avgRating,
+        onTimeRate: null,
+        avgDeliveryTime: null,
+      };
+    },
+    enabled: !!tenantId && !!driver.id,
+  });
+
+  // 30-day rating trend
+  const ratingTrendQuery = useQuery({
+    queryKey: [...queryKeys.couriersAdmin.byTenant(tenantId), 'rating-trend', driver.id],
+    queryFn: async (): Promise<RatingTrendPoint[]> => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('delivery_ratings')
+        .select('rating, created_at')
+        .eq('runner_id', driver.id)
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        logger.error('Failed to fetch rating trend', error);
+        return [];
+      }
+
+      if (!data || data.length === 0) return [];
+
+      // Group by date
+      const byDate = new Map<string, number[]>();
+      for (const row of data) {
+        const dateKey = new Date(row.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+        const existing = byDate.get(dateKey) ?? [];
+        existing.push(row.rating);
+        byDate.set(dateKey, existing);
+      }
+
+      return Array.from(byDate.entries()).map(([date, ratings]) => ({
+        date,
+        rating: ratings.reduce((a, b) => a + b, 0) / ratings.length,
+      }));
+    },
+    enabled: !!tenantId && !!driver.id,
+  });
+
+  // Active delivery query
+  const activeOrderQuery = useQuery({
+    queryKey: [...queryKeys.couriersAdmin.byTenant(tenantId), 'active-order', driver.id],
+    queryFn: async (): Promise<ActiveOrder | null> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, order_number, status, customer_name, delivery_address, merchants(address)')
+        .eq('courier_id', driver.id)
+        .eq('tenant_id', tenantId)
+        .in('status', ['assigned', 'in_transit'])
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('Failed to fetch active order', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        order_number: data.order_number,
+        status: data.status,
+        customer_name: data.customer_name,
+        delivery_address: data.delivery_address,
+        pickup_address: (data.merchants as { address?: string } | null)?.address ?? null,
       };
     },
     enabled: !!tenantId && !!driver.id,
@@ -138,20 +250,31 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 
   const stats = statsQuery.data;
   const isLoading = statsQuery.isLoading;
-
-  // 30-day rating trend data (placeholder)
-  const ratingTrendData = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - 29 + i);
-    return {
-      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      rating: 4.5 + Math.random() * 0.6,
-    };
-  });
+  const ratingTrendData = ratingTrendQuery.data ?? [];
+  const activeOrder = activeOrderQuery.data;
 
   const lastSeen = driver.last_seen_at
     ? formatRelativeTime(driver.last_seen_at)
     : 'Never';
+
+  const hasLocation = driver.current_lat != null && driver.current_lng != null;
+
+  function handleOpenMap() {
+    if (hasLocation) {
+      window.open(
+        `https://www.google.com/maps?q=${driver.current_lat},${driver.current_lng}`,
+        '_blank',
+      );
+    } else {
+      toast.info('No location data available');
+    }
+  }
+
+  function handleViewOrderDetails() {
+    if (activeOrder) {
+      navigateToAdmin(`orders/${activeOrder.id}`);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -173,19 +296,19 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         />
         <StatCard
           label="Avg Rating"
-          value={stats?.avgRating.toFixed(1) ?? '—'}
+          value={stats?.avgRating ? stats.avgRating.toFixed(1) : '0.0'}
           suffix="★"
           isLoading={isLoading}
         />
         <StatCard
           label="On-Time Rate"
-          value={`${stats?.onTimeRate ?? 0}%`}
+          value={stats?.onTimeRate != null ? `${stats.onTimeRate}%` : 'N/A'}
           isLoading={isLoading}
         />
         <StatCard
           label="Avg Delivery Time"
-          value={stats?.avgDeliveryTime ?? 0}
-          suffix="min"
+          value={stats?.avgDeliveryTime != null ? stats.avgDeliveryTime : 'N/A'}
+          suffix={stats?.avgDeliveryTime != null ? 'min' : undefined}
           isLoading={isLoading}
         />
       </div>
@@ -196,47 +319,50 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">30-day rating trend</span>
-            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-500">
-              +0.3
-            </span>
           </div>
           <div className="h-[140px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={ratingTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: '#64748B' }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={6}
-                />
-                <YAxis
-                  domain={[4, 5]}
-                  tick={{ fontSize: 10, fill: '#64748B' }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={30}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1E293B',
-                    border: '1px solid #334155',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: '#F8FAFC',
-                  }}
-                  formatter={(val: number) => [val.toFixed(1), 'Rating']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rating"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {ratingTrendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={ratingTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: '#64748B' }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={Math.max(0, Math.floor(ratingTrendData.length / 5) - 1)}
+                  />
+                  <YAxis
+                    domain={[0, 5]}
+                    tick={{ fontSize: 10, fill: '#64748B' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={30}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1E293B',
+                      border: '1px solid #334155',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      color: '#F8FAFC',
+                    }}
+                    formatter={(val: number) => [val.toFixed(1), 'Rating']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="rating"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">No rating data yet</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -245,13 +371,20 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
           <div className="mb-3 flex h-[100px] items-center justify-center rounded-md bg-background">
             <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
               <MapPin className="h-6 w-6 text-emerald-500" />
-              <span className="text-[11px]">Map preview</span>
+              <span className="text-[11px]">
+                {hasLocation
+                  ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}`
+                  : 'Location unavailable'}
+              </span>
             </div>
           </div>
           <p className="text-sm font-medium text-foreground">Last seen {lastSeen}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Brooklyn, NY</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {hasLocation ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}` : 'No location data'}
+          </p>
           <button
             type="button"
+            onClick={handleOpenMap}
             className="mt-2 text-xs font-medium text-emerald-500 hover:underline"
           >
             Open full map →
@@ -260,8 +393,8 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 
         {/* Active delivery card */}
         <div className="rounded-lg border border-border bg-card p-4">
-          {driver.availability === 'on_delivery' ? (
-            <ActiveDeliveryCard />
+          {activeOrder ? (
+            <ActiveDeliveryCard order={activeOrder} onViewDetails={handleViewOrderDetails} />
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-6 text-center">
               <span className="text-sm text-muted-foreground">No active delivery</span>
@@ -277,38 +410,51 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Active delivery card (placeholder)
+// Active delivery card
 // ---------------------------------------------------------------------------
 
-function ActiveDeliveryCard() {
+function ActiveDeliveryCard({
+  order,
+  onViewDetails,
+}: {
+  order: ActiveOrder;
+  onViewDetails: () => void;
+}) {
+  const statusLabel = order.status === 'in_transit' ? 'In Transit' : 'Assigned';
+  const statusColor = order.status === 'in_transit' ? 'amber' : 'blue';
+
   return (
     <>
       <div className="mb-3 flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Active Delivery
         </span>
-        <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-500">
-          In Transit
+        <span className={`inline-flex items-center rounded-full bg-${statusColor}-500/20 px-2 py-0.5 text-[11px] font-medium text-${statusColor}-500`}>
+          {statusLabel}
         </span>
       </div>
-      <p className="text-sm font-medium text-foreground">FIQ-0044</p>
-      <p className="text-xs text-muted-foreground">Sarah Johnson</p>
-      <div className="mt-3 flex items-start gap-2">
-        <div className="mt-1 flex flex-col items-center gap-0.5">
-          <div className="h-2 w-2 rounded-full bg-emerald-500" />
-          <div className="h-6 w-[2px] bg-muted" />
-          <div className="h-2 w-2 rounded-full bg-amber-500" />
+      <p className="text-sm font-medium text-foreground">{order.order_number}</p>
+      {order.customer_name && (
+        <p className="text-xs text-muted-foreground">{order.customer_name}</p>
+      )}
+      {(order.pickup_address || order.delivery_address) && (
+        <div className="mt-3 flex items-start gap-2">
+          <div className="mt-1 flex flex-col items-center gap-0.5">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <div className="h-6 w-[2px] bg-muted" />
+            <div className="h-2 w-2 rounded-full bg-amber-500" />
+          </div>
+          <div className="flex flex-col gap-2 text-xs">
+            <span className="text-muted-foreground">{order.pickup_address ?? '—'}</span>
+            <span className="text-muted-foreground">{order.delivery_address ?? '—'}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 text-xs">
-          <span className="text-muted-foreground">420 Broadway, Brooklyn</span>
-          <span className="text-muted-foreground">88 Court St, Brooklyn</span>
-        </div>
-      </div>
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">ETA ~11 min</span>
+      )}
+      <div className="mt-3 flex items-center justify-end">
         <button
           type="button"
-          className="text-xs text-muted-foreground hover:text-foreground"
+          onClick={onViewDetails}
+          className="text-xs text-emerald-500 hover:underline"
         >
           View Order Details
         </button>
@@ -331,4 +477,3 @@ function formatRelativeTime(dateStr: string): string {
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
-
