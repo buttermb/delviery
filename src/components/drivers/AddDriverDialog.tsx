@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -246,19 +246,17 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
 
   const tenantId = tenant?.id ?? '';
 
-  const stepComponent = useMemo(() => {
-    switch (step) {
-      case 1: return <Step1Info form={form} tenantId={tenantId} />;
-      case 2: return <Step2Vehicle form={form} />;
-      case 3: return <Step3Account form={form} tenantId={tenantId} previewPin={previewPin} onRegeneratePin={regeneratePin} />;
-      case 4: return <Step4Review form={form} previewPin={previewPin} isSubmitting={createDriver.isPending} isSuccess={createDriver.isSuccess} onGoToStep={setStep} />;
-      default: return null;
-    }
-  }, [step, form, tenantId, previewPin, regeneratePin, createDriver.isPending, createDriver.isSuccess]);
+  let stepComponent: React.ReactNode = null;
+  switch (step) {
+    case 1: stepComponent = <Step1Info form={form} tenantId={tenantId} />; break;
+    case 2: stepComponent = <Step2Vehicle form={form} />; break;
+    case 3: stepComponent = <Step3Account form={form} tenantId={tenantId} previewPin={previewPin} onRegeneratePin={regeneratePin} />; break;
+    case 4: stepComponent = <Step4Review form={form} previewPin={previewPin} isSubmitting={createDriver.isPending} isSuccess={createDriver.isSuccess} onGoToStep={setStep} />; break;
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[640px] border-border bg-background p-0 text-foreground">
+      <DialogContent className="max-w-[640px] overflow-hidden border-border bg-background p-0 text-foreground">
         <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle className="text-lg font-semibold text-foreground">Add Driver</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">

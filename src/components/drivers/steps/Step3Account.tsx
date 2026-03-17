@@ -44,7 +44,7 @@ export function Step3Account({ form, tenantId, previewPin, onRegeneratePin }: St
   const driverEmail = watch('email');
 
   const { tenantSlug } = useTenantAdminAuth();
-  const [pinVisible, setPinVisible] = useState(false);
+  const [pinVisible, setPinVisible] = useState(true);
   const [copied, setCopied] = useState(false);
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
 

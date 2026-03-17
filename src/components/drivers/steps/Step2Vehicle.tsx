@@ -205,7 +205,7 @@ export function Step2Vehicle({ form }: Step2VehicleProps) {
         <Input
           {...register('insurance_expiry')}
           type="date"
-          className="h-10 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 [&::-webkit-calendar-picker-indicator]:invert"
+          className="h-10 min-h-0 border-border bg-card text-sm text-foreground focus-visible:ring-emerald-500 dark:[&::-webkit-calendar-picker-indicator]:invert"
         />
         {insuranceWarning && (
           <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: insuranceWarning.color }}>
