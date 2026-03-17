@@ -26,6 +26,8 @@ interface DriverTableProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   tenantId: string;
+  onViewProfile?: (id: string) => void;
+  onEditDetails?: (id: string) => void;
 }
 
 function SkeletonRow() {
