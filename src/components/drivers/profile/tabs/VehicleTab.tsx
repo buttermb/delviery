@@ -198,35 +198,8 @@ export function VehicleTab({ driver, tenantId }: VehicleTabProps) {
       <div className="rounded-lg border border-border bg-card p-5">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">Insurance & Documents</span>
-          {daysLeft !== null && daysLeft > 0 && daysLeft <= 30 && (
-            <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-500">
-              Expiring Soon
-            </span>
-          )}
-          {daysLeft !== null && daysLeft <= 0 && (
-            <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-[11px] font-medium text-destructive">
-              Expired
-            </span>
-          )}
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <InfoField label="Expiry Date" value={
-            driver.insurance_expiry
-              ? new Date(driver.insurance_expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-              : 'Not set'
-          } />
-          {daysLeft !== null && daysLeft > 0 && (
-            <div className="flex items-center">
-              <span
-                className="text-xs font-medium"
-                style={{ color: daysLeft <= 30 ? '#F59E0B' : '#64748B' }}
-              >
-                {daysLeft} days remaining
-              </span>
-            </div>
-          )}
-        </div>
+        <p className="text-xs text-muted-foreground">No insurance documents on file.</p>
       </div>
     </div>
   );
