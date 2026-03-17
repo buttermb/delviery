@@ -10,6 +10,8 @@ interface DriverTableRowProps {
   isSelected: boolean;
   onSelect: (id: string, checked: boolean) => void;
   tenantId: string;
+  onViewProfile?: (id: string) => void;
+  onEditDetails?: (id: string) => void;
 }
 
 // ---------------------------------------------------------------------------
