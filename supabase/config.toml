@@ -509,3 +509,25 @@ verify_jwt = true
 
 [functions.panic-reset]
 verify_jwt = true
+
+# ===========================================
+# DRIVER MANAGEMENT (no JWT - validated in code)
+# ===========================================
+
+[functions.add-driver]
+verify_jwt = false
+
+[functions.suspend-driver]
+verify_jwt = false
+
+[functions.terminate-driver]
+verify_jwt = false
+
+[functions.reset-driver-pin]
+verify_jwt = false
+
+[functions.reset-driver-password]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
