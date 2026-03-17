@@ -73,7 +73,6 @@ const addDriverSchema = z.object({
   vehicle_year: z.number().int().min(1990).max(2030),
   vehicle_color: z.string().min(1, 'Vehicle color is required').max(30),
   vehicle_plate: z.string().min(1, 'Vehicle plate is required').max(20),
-  insurance_expiry: z.string().optional(),
   commission_rate: z.number().min(0).max(100).default(30),
   zone_id: z.string().uuid().optional(),
   send_invite_email: z.boolean().default(false),
