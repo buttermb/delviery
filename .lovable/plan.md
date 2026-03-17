@@ -1,56 +1,64 @@
 
 
-# Fix: Static Menu Page "Menu Not Found"
+# Fix Edge Function Build Errors
 
-## Root Cause
+Your migration drift fix is solid — 514 migrations synced, TypeScript and Vite builds clean. The remaining build errors are all in edge functions (Deno), not the main app. Here's the fix plan:
 
-The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
+## Errors and Fixes
 
-1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
-2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
-3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
-
-These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
-
-## Fix
-
-### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
-
-Update the `loadMenuDirect` function's product query:
-
-**Before (broken):**
-```
-.select(`
-  product_id, custom_price, prices, display_order,
-  is_visible, vendor_name, badge,
-  products (name, price, description, image_url, category, strain_type, created_at)
-`)
-.eq('is_visible', true)
+### 1. `add-driver/index.ts` — Zod SafeParse narrowing (line 171)
+TypeScript can't see `.error` on `SafeParseReturnType` after checking `!validation.success`.
+**Fix:** Cast to `z.SafeParseError` before accessing `.error`:
+```typescript
+const fieldErrors = (validation as z.SafeParseError<typeof addDriverSchema>).error.flatten().fieldErrors;
 ```
 
-**After (fixed):**
+### 2. `credit-threshold-alerts/index.ts` — Array cast (line 138)
+`record.tenants` is an array but cast as `Record<string, unknown>`.
+**Fix:** Cast as `unknown` first, then to target type:
+```typescript
+(record.tenants as unknown as Record<string, unknown>)
 ```
-.select(`
-  product_id, custom_price, prices, display_order, display_availability,
-  wholesale_inventory!product_id (
-    product_name, base_price, description, image_url,
-    category, strain_type, created_at
-  )
-`)
-.eq('display_availability', true)
+Or if it's actually an array, use `record.tenants?.[0] as Record<string, unknown>`.
+
+### 3. `credit-warning-emails/index.ts` — 3 errors
+- **Line 87:** Same array-to-Record cast issue as above
+- **Line 97:** `supabase` client type mismatch in function parameter — change `sendWarningNotification` param type to `any`
+- **Line 178:** `.insert()` on `notifications` typed as `never` — same root cause; fix param type to `any`
+
+**Fix:** Change function signature `supabase: ReturnType<typeof createClient>` → `supabase: any` for `sendWarningNotification`.
+
+### 4. `_shared/encryption.ts` — 4 errors (lines 139, 142, 145, 182)
+`customer[field]` is `unknown`, passed to functions expecting `string`.
+**Fix:** Add `as string` casts:
+```typescript
+await createSearchHash(customer.email as string);
+await createSearchHash(customer.phone as string);
+await createSearchHash(customer.medical_card_number as string);
+await decryptData(encryptedCustomer[encryptedField] as string, password);
 ```
 
-Then update the mapping code (lines 350-397) to use the correct field names:
-- `mp.products` becomes `mp.wholesale_inventory`
-- `inv.name` becomes `inv.product_name`
-- `inv.price` becomes `inv.base_price`
-- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+### 5. `delete-customer-account/index.ts` — SupabaseClient type mismatch (line 108)
+`logPHIAccess` expects a narrow type but receives full SupabaseClient.
+**Fix:** Change `logPHIAccess` param type to `any` (it's already a utility function).
 
-## Also Fix: Pre-existing build errors in unrelated edge functions
+### 6. `detect-fraud/index.ts` — 9 errors
+- **Lines 38, 41:** `supabaseClient` type mismatch in `checkBehavior` and `checkBinRisk` params — change param types to `any`
+- **Line 199:** `order` possibly null after `maybeSingle()` — already guarded by `order?.payment_method_last4` but TS doesn't narrow. Add explicit `if (!order) return { flagged: false };` before line 199.
+- **Lines 212, 247-265:** `cachedBin[0].response` and `profile.*` typed as `never` because client generic is wrong — fix by typing function params as `any` and adding explicit casts on `.data`.
 
-The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+**Fix:** Change all helper function `supabase` params from `ReturnType<typeof createClient>` to `any`, and cast `.data` results.
 
-## Result
+## Files Changed (6 files)
 
-The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+| File | Changes |
+|------|---------|
+| `supabase/functions/add-driver/index.ts` | Cast Zod SafeParse result |
+| `supabase/functions/credit-threshold-alerts/index.ts` | Fix array-to-Record cast |
+| `supabase/functions/credit-warning-emails/index.ts` | Fix cast + param type to `any` |
+| `supabase/functions/_shared/encryption.ts` | Add `as string` casts (4 spots) |
+| `supabase/functions/delete-customer-account/index.ts` | Change `logPHIAccess` param to `any` |
+| `supabase/functions/detect-fraud/index.ts` | Change helper param types to `any`, add null guards, cast data |
+
+All fixes follow the established pattern from your memory note: "Supabase client parameters are typed as `any` in helper signatures to bypass strict generic mismatches."
 
