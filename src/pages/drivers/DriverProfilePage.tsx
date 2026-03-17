@@ -151,16 +151,14 @@ export default function DriverProfilePage() {
 
   if (driverQuery.isLoading) {
     return (
-      <AdminLayout title="Driver Profile" subtitle="Loading...">
-        <div className="space-y-4">
-          <Skeleton className="h-32 rounded-lg bg-[#1E293B]" />
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-lg bg-[#1E293B]" />
-            ))}
-          </div>
+      <div className="space-y-4">
+        <Skeleton className="h-32 rounded-lg bg-muted" />
+        <div className="grid grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg bg-muted" />
+          ))}
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
