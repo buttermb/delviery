@@ -41,20 +41,7 @@ function getColorSwatch(color: string): string | null {
   return COLOR_SWATCHES[lower] ?? null;
 }
 
-function getInsuranceWarning(dateStr: string): { text: string; color: string } | null {
-  if (!dateStr) return null;
-  const expiry = new Date(dateStr);
-  const now = new Date();
-  const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return { text: 'Expired', color: '#EF4444' };
-  }
-  if (diffDays <= 30) {
-    return { text: `Expiring in ${diffDays} day${diffDays !== 1 ? 's' : ''}`, color: '#F59E0B' };
-  }
-  return null;
-}
+// Insurance tracking not yet in database — helper kept for future use
 
 // ---------------------------------------------------------------------------
 // Component
