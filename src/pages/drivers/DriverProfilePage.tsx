@@ -174,8 +174,7 @@ export default function DriverProfilePage() {
   }
 
   return (
-    <AdminLayout title={driver.display_name || driver.full_name} subtitle="Driver Profile">
-      <div className="space-y-0">
+    <div className="space-y-0">
         <ProfileHeader driver={driver} tenantId={tenantId} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
