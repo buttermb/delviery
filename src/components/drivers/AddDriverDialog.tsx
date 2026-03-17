@@ -201,7 +201,7 @@ export function AddDriverDialog({ open, onOpenChange }: AddDriverDialogProps) {
       toast.success(`${name} added.${data.email_sent ? ' Invite sent.' : ''}`, {
         action: {
           label: 'View Profile',
-          onClick: () => { /* navigate to driver profile */ },
+          onClick: () => navigateToAdmin(`drivers/${data.driver_id}`),
         },
       });
       handleClose();

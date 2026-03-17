@@ -431,6 +431,8 @@ export default function DriverDirectoryPage() {
           pageSize={PAGE_SIZE}
           onPageChange={setPage}
           tenantId={tenant?.id ?? ''}
+          onViewProfile={(id) => navigateToAdmin(`drivers/${id}`)}
+          onEditDetails={(id) => navigateToAdmin(`drivers/${id}?tab=details`)}
         />
       </div>
 
