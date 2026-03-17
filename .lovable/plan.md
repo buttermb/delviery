@@ -1,56 +1,47 @@
 
 
-# Fix: Static Menu Page "Menu Not Found"
+# Wire 3 Stub Row Actions in DriverRowActionsMenu
 
-## Root Cause
+## Overview
 
-The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
+Three dropdown items in `DriverRowActionsMenu.tsx` have no `onClick` handlers: **View Profile**, **Edit Details**, and **Resend Invite**. Additionally, the "View Profile" toast action in `AddDriverDialog.tsx` has an empty callback.
 
-1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
-2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
-3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
+## Changes
 
-These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
+### 1. `src/components/drivers/DriverRowActionsMenu.tsx`
 
-## Fix
+**Add navigation prop + resend invite mutation:**
 
-### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
+- Accept `onViewProfile?: (id: string) => void` and `onEditDetails?: (id: string) => void` callback props (keeps the component decoupled from routing).
+- **View Profile**: `onClick={() => onViewProfile?.(driver.id)}` — navigates to `/admin/drivers/:driverId`.
+- **Edit Details**: `onClick={() => onEditDetails?.(driver.id)}` — navigates to `/admin/drivers/:driverId?tab=details` (or same profile page, "Details" tab).
+- **Resend Invite**: Add a mutation mirroring the existing pattern in `ActivationBanner.tsx` — calls `supabase.functions.invoke('add-driver', { body: { resend_invite: true, driver_id: driver.id } })`. Disable when pending or driver is already active.
 
-Update the `loadMenuDirect` function's product query:
+### 2. `src/components/drivers/DriverTableRow.tsx`
 
-**Before (broken):**
-```
-.select(`
-  product_id, custom_price, prices, display_order,
-  is_visible, vendor_name, badge,
-  products (name, price, description, image_url, category, strain_type, created_at)
-`)
-.eq('is_visible', true)
-```
+- Accept `onViewProfile` and `onEditDetails` props, pass them through to `DriverRowActionsMenu`.
 
-**After (fixed):**
-```
-.select(`
-  product_id, custom_price, prices, display_order, display_availability,
-  wholesale_inventory!product_id (
-    product_name, base_price, description, image_url,
-    category, strain_type, created_at
-  )
-`)
-.eq('display_availability', true)
-```
+### 3. `src/components/drivers/DriverTable.tsx`
 
-Then update the mapping code (lines 350-397) to use the correct field names:
-- `mp.products` becomes `mp.wholesale_inventory`
-- `inv.name` becomes `inv.product_name`
-- `inv.price` becomes `inv.base_price`
-- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+- Accept `onViewProfile` and `onEditDetails` props, pass them through to each `DriverTableRow`.
 
-## Also Fix: Pre-existing build errors in unrelated edge functions
+### 4. `src/pages/drivers/DriverDirectoryPage.tsx`
 
-The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+- Wire the callbacks using `useTenantNavigate`:
+  - `onViewProfile: (id) => navigate(\`/admin/drivers/${id}\`)`
+  - `onEditDetails: (id) => navigate(\`/admin/drivers/${id}?tab=details\`)`
 
-## Result
+### 5. `src/components/drivers/AddDriverDialog.tsx`
 
-The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+- Wire the "View Profile" toast action to navigate to `/admin/drivers/${data.driver_id}` using `useTenantNavigate`.
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `DriverRowActionsMenu.tsx` | Add `onViewProfile`/`onEditDetails` props + resend invite mutation |
+| `DriverTableRow.tsx` | Pass through new props |
+| `DriverTable.tsx` | Pass through new props |
+| `DriverDirectoryPage.tsx` | Wire navigation callbacks |
+| `AddDriverDialog.tsx` | Wire toast "View Profile" navigation |
 
