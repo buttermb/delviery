@@ -8,7 +8,7 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 function createLogger(functionName: string) {
@@ -73,7 +73,6 @@ const addDriverSchema = z.object({
   vehicle_year: z.number().int().min(1990).max(2030),
   vehicle_color: z.string().min(1, 'Vehicle color is required').max(30),
   vehicle_plate: z.string().min(1, 'Vehicle plate is required').max(20),
-  insurance_expiry: z.string().optional(),
   commission_rate: z.number().min(0).max(100).default(30),
   zone_id: z.string().uuid().optional(),
   send_invite_email: z.boolean().default(false),
@@ -241,7 +240,6 @@ serve(async (req) => {
         vehicle_year: input.vehicle_year,
         vehicle_color: input.vehicle_color,
         vehicle_plate: input.vehicle_plate,
-        insurance_expiry: input.insurance_expiry || null,
         commission_rate: input.commission_rate,
         zone_id: input.zone_id || null,
         notes: input.notes || null,

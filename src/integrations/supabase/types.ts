@@ -4209,6 +4209,51 @@ export type Database = {
           },
         ]
       }
+      driver_activity_log: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          driver_id: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          driver_id: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          driver_id?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_activity_log_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_activity_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           created_at: string

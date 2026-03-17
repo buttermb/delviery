@@ -143,7 +143,7 @@ serve(async (req) => {
         is_online: false,
         suspended_at: now,
         suspended_until: suspendedUntil,
-        suspension_reason: input.reason,
+        suspend_reason: input.reason,
         notes: input.notes || driver.notes,
       })
       .eq('id', driver.id);

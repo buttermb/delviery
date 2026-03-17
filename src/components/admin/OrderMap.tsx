@@ -45,7 +45,8 @@ interface OrderMapProps {
 }
 
 export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrderSelect }: OrderMapProps) => {
-  const { tenantId } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
