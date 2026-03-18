@@ -1,6 +1,6 @@
 /**
- * FloraIQ - Multi-Tenant SaaS Platform - Root Application Component
- *
+ * Multi-Tenant SaaS Platform - Root Application Component
+ * 
  * Tech Stack:
  * - React 18.3 with SWC compiler
  * - TanStack Query v5 for state management

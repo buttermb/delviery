@@ -245,9 +245,8 @@ export function useCredits(): UseCreditsReturn {
   
   // CRITICAL: If credits are disabled for tenant OR they have a paid plan,
   // force isFreeTier to false to prevent credit warnings
-  const isPaidPlan = tenant?.subscription_plan === 'professional' ||
-                     tenant?.subscription_plan === 'enterprise' ||
-                     tenant?.subscription_plan === 'unlimited';
+  const isPaidPlan = tenant?.subscription_plan === 'professional' || 
+                     tenant?.subscription_plan === 'enterprise';
   const hasActiveStatus = tenant?.subscription_status === 'active';
   const creditsDisabled = (tenant as { credits_enabled?: boolean })?.credits_enabled === false;
   

@@ -16,15 +16,13 @@ import { type ThemePreset } from '@/lib/storefrontThemes';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import {
-    type StorefrontSection,
+    type SectionConfig,
     type ThemeConfig,
     type TemplateKey,
     TEMPLATES,
-    createSectionDefaults,
+    sectionDefaults,
     DEFAULT_THEME,
 } from './storefront-builder.config';
-import { useBuilderKeyboardShortcuts } from './useBuilderKeyboardShortcuts';
-import { useBuilderAutosave } from './useBuilderAutosave';
 
 export function useStorefrontBuilder() {
     const { tenant } = useTenantAdminAuth();
@@ -41,8 +39,18 @@ export function useStorefrontBuilder() {
     } = useCreditGatedAction();
 
     // URL params for menu → storefront conversion
-    const _fromMenuId = searchParams.get('from_menu');
-    const _menuName = searchParams.get('menu_name');
+    const fromMenuId = searchParams.get('from_menu');
+    const menuName = searchParams.get('menu_name');
+
+    // Log if this is a menu → storefront conversion
+    useEffect(() => {
+        if (fromMenuId) {
+            logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
+            toast.info('Creating Storefront from Menu', {
+                description: `Starting with products from "${menuName ?? 'your menu'}"`,
+            });
+        }
+    }, [fromMenuId, menuName]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('sections');
@@ -61,13 +69,13 @@ export function useStorefrontBuilder() {
     const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
 
     // Builder State
-    const [layoutConfig, setLayoutConfig] = useState<StorefrontSection[]>([]);
+    const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
     const [themeConfig, setThemeConfig] = useState<ThemeConfig>(DEFAULT_THEME);
     const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
     // History for undo/redo
-    const [history, setHistory] = useState<StorefrontSection[][]>([]);
+    const [history, setHistory] = useState<SectionConfig[][]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
 
     // Handle theme selection
@@ -94,8 +102,9 @@ export function useStorefrontBuilder() {
 
     // Sync layout_config and theme_config to marketplace_profiles so the
     // public shop RPC (get_marketplace_store_by_slug) returns fresh data.
+    // The RPC reads from marketplace_profiles, not marketplace_stores.
     const syncToMarketplaceProfiles = async (
-        layoutCfg: StorefrontSection[],
+        layoutCfg: SectionConfig[],
         themeCfg: ThemeConfig,
     ) => {
         try {
@@ -147,7 +156,7 @@ export function useStorefrontBuilder() {
     useEffect(() => {
         if (store) {
             const rawConfig = store.layout_config;
-            const config: StorefrontSection[] = Array.isArray(rawConfig) ? rawConfig : [];
+            const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
             setLayoutConfig(config);
             if (store.theme_config) setThemeConfig(store.theme_config as ThemeConfig);
             setHistory([config]);
@@ -156,7 +165,7 @@ export function useStorefrontBuilder() {
     }, [store]);
 
     // Save to history
-    const saveToHistory = useCallback((newConfig: StorefrontSection[]) => {
+    const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
         const newHistory = history.slice(0, historyIndex + 1);
         newHistory.push(newConfig);
         setHistory(newHistory);
@@ -370,8 +379,14 @@ export function useStorefrontBuilder() {
     });
 
     // Section actions
-    const addSection = (type: any) => {
-        const newSection = createSectionDefaults(type);
+    const addSection = (type: string) => {
+        const newSection: SectionConfig = {
+            id: crypto.randomUUID(),
+            type,
+            content: { ...sectionDefaults(type).content },
+            styles: { ...sectionDefaults(type).styles },
+            visible: true
+        };
         const newConfig = [...layoutConfig, newSection];
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
@@ -402,7 +417,7 @@ export function useStorefrontBuilder() {
         const sectionToDuplicate = layoutConfig.find(s => s.id === id);
         if (!sectionToDuplicate) return;
 
-        const duplicated: StorefrontSection = {
+        const duplicated: SectionConfig = {
             ...sectionToDuplicate,
             id: crypto.randomUUID(),
             content: { ...sectionToDuplicate.content },
@@ -439,7 +454,13 @@ export function useStorefrontBuilder() {
 
     const applyTemplate = (templateKey: TemplateKey) => {
         const template = TEMPLATES[templateKey];
-        const newSections: StorefrontSection[] = template.sections.map(type => createSectionDefaults(type));
+        const newSections: SectionConfig[] = template.sections.map(type => ({
+            id: crypto.randomUUID(),
+            type,
+            content: { ...sectionDefaults(type).content },
+            styles: { ...sectionDefaults(type).styles },
+            visible: true
+        }));
         setLayoutConfig(newSections);
         saveToHistory(newSections);
         toast.success(`Applied "${template.name}" template`);
@@ -451,27 +472,6 @@ export function useStorefrontBuilder() {
     };
 
     const selectedSection = layoutConfig.find(s => s.id === selectedSectionId);
-
-    // Keyboard Shortcuts
-    useBuilderKeyboardShortcuts({
-        undo,
-        redo,
-        saveDraft: () => saveDraftMutation.mutate(),
-        duplicateSection,
-        requestRemoveSection,
-        selectedSectionId,
-        isSaving: saveDraftMutation.isPending || publishMutation.isPending
-    });
-
-    // Autosave
-    useBuilderAutosave({
-        layoutConfig,
-        themeConfig,
-        saveDraft: () => saveDraftMutation.mutate(),
-        isSaving: saveDraftMutation.isPending || publishMutation.isPending,
-        enabled: !!store && !isLoading, // Only autosave if store exists
-        delayMs: 30000 // Autosave after 30 seconds of inactivity
-    });
 
     return {
         // Store data

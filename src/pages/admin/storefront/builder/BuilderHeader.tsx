@@ -1,85 +1,91 @@
 /**
  * BuilderHeader
- * Top navigation bar for Storefront Builder
+ * Top toolbar with device preview, undo/redo, zoom, and action buttons
  */
 
-import { X, ArrowLeft, Monitor, Tablet, Smartphone, Undo2, Redo2, ZoomOut, ZoomIn, Globe, GlobeLock, Wand2, Settings2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { SaveButton } from '@/components/ui/SaveButton';
+import {
+    ArrowLeft, Monitor, Tablet, Smartphone,
+    Undo2, Redo2, ZoomIn, ZoomOut,
+    Save, Globe, GlobeLock, Eye, Store, Loader2
+} from 'lucide-react';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 
 interface BuilderHeaderProps {
     store: MarketplaceStore | undefined;
-    isFullScreen: boolean;
-    handleClose: () => void;
+    isLoading: boolean;
     devicePreview: 'desktop' | 'tablet' | 'mobile';
-    setDevicePreview: (mode: 'desktop' | 'tablet' | 'mobile') => void;
+    setDevicePreview: (device: 'desktop' | 'tablet' | 'mobile') => void;
     previewZoom: number;
     setPreviewZoom: (zoom: number) => void;
-    undo: () => void;
-    redo: () => void;
     historyIndex: number;
     historyLength: number;
-    builderMode: 'simple' | 'advanced';
-    handleModeSwitch: (mode: 'simple' | 'advanced') => void;
+    undo: () => void;
+    redo: () => void;
+    rightPanelOpen: boolean;
+    setRightPanelOpen: (open: boolean) => void;
+    hasSelectedSection: boolean;
+    onCreateStore: () => void;
     onSaveDraft: () => void;
+    isSaving: boolean;
     onPublish: () => void;
-    isSavingDraft: boolean;
-    isSavingSuccess: boolean;
     isPublishing: boolean;
+    onUnpublish: () => void;
+    isUnpublishing: boolean;
+    onBack?: () => void;
 }
 
 export function BuilderHeader({
     store,
-    isFullScreen,
-    handleClose,
+    isLoading,
     devicePreview,
     setDevicePreview,
     previewZoom,
     setPreviewZoom,
-    undo,
-    redo,
     historyIndex,
     historyLength,
-    builderMode,
-    handleModeSwitch,
+    undo,
+    redo,
+    rightPanelOpen,
+    setRightPanelOpen,
+    hasSelectedSection,
+    onCreateStore,
     onSaveDraft,
+    isSaving,
     onPublish,
-    isSavingDraft,
-    isSavingSuccess,
     isPublishing,
+    onUnpublish,
+    isUnpublishing,
+    onBack,
 }: BuilderHeaderProps) {
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-background border-b shrink-0 z-20">
-            <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={handleClose} aria-label={isFullScreen ? 'Close editor' : 'Back'}>
-                    {isFullScreen ? <X className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+        <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0 z-20">
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to storefront">
+                    <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <span className="font-semibold">{isFullScreen ? 'Storefront Editor' : 'Store Builder'}</span>
-                
-                <div className="flex rounded-md bg-muted p-1 hidden md:flex">
+                <span className="font-semibold">Store Builder</span>
+                <div className="flex rounded-md bg-muted p-1">
                     <Button
                         variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-9 w-9"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('desktop')} aria-label="Desktop preview"><Monitor className="w-4 h-4" /></Button>
                     <Button
                         variant={devicePreview === 'tablet' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-9 w-9"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('tablet')} aria-label="Tablet preview"><Tablet className="w-4 h-4" /></Button>
                     <Button
                         variant={devicePreview === 'mobile' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-9 w-9"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('mobile')} aria-label="Mobile preview"><Smartphone className="w-4 h-4" /></Button>
                 </div>
-                
-                <Separator orientation="vertical" className="h-6 hidden md:block" />
-                
-                <div className="flex gap-1 hidden md:flex">
+                <Separator orientation="vertical" className="h-6" />
+                <div className="flex gap-1">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9"
+                        className="h-11 w-11"
                         onClick={undo}
                         disabled={historyIndex <= 0}
                         aria-label="Undo"
@@ -89,7 +95,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9"
+                        className="h-11 w-11"
                         onClick={redo}
                         disabled={historyIndex >= historyLength - 1}
                         aria-label="Redo"
@@ -97,15 +103,13 @@ export function BuilderHeader({
                         <Redo2 className="w-4 h-4" />
                     </Button>
                 </div>
-                
-                <Separator orientation="vertical" className="h-6 hidden lg:block" />
-                
+                <Separator orientation="vertical" className="h-6" />
                 {/* Zoom controls */}
-                <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 hidden lg:flex">
+                <div className="flex items-center gap-1 bg-muted rounded-md p-1">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                         disabled={previewZoom <= 0.5}
                         aria-label="Zoom out"
@@ -116,7 +120,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                         disabled={previewZoom >= 1.2}
                         aria-label="Zoom in"
@@ -125,11 +129,10 @@ export function BuilderHeader({
                     </Button>
                 </div>
             </div>
-            
             <div className="flex items-center gap-2">
                 {/* Store status indicator */}
                 {store && (
-                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted text-xs">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-xs">
                         {store.is_public ? (
                             <>
                                 <Globe className="w-3 h-3 text-green-500" />
@@ -143,46 +146,52 @@ export function BuilderHeader({
                         )}
                     </div>
                 )}
-
-                {/* Mode Toggle */}
-                <div className="flex bg-muted p-1 rounded-md ml-2 mr-2">
-                    <Button
-                        variant={builderMode === 'simple' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="h-7 text-xs gap-1 px-2"
-                        onClick={() => handleModeSwitch('simple')}
-                    >
-                        <Wand2 className="w-3 h-3" /> <span className="hidden sm:inline">Simple</span>
+                {/* Toggle right panel button when closed */}
+                {hasSelectedSection && !rightPanelOpen && (
+                    <Button variant="outline" size="sm" onClick={() => setRightPanelOpen(true)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Edit Section
                     </Button>
-                    <Button
-                        variant={builderMode === 'advanced' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="h-7 text-xs gap-1 px-2"
-                        onClick={() => handleModeSwitch('advanced')}
-                    >
-                        <Settings2 className="w-3 h-3" /> <span className="hidden sm:inline">Advanced</span>
+                )}
+                {/* Create Store button when no store exists */}
+                {!store && !isLoading && (
+                    <Button onClick={onCreateStore}>
+                        <Store className="w-4 h-4 mr-2" />
+                        Create Store (500 credits)
                     </Button>
-                </div>
-
-                <SaveButton
-                    isPending={isSavingDraft}
-                    isSuccess={isSavingSuccess}
-                    disabled={isPublishing}
-                    onClick={onSaveDraft}
-                    variant="outline"
-                    size="sm"
-                >
-                    Save Draft
-                </SaveButton>
-                <Button
-                    disabled={isPublishing}
-                    onClick={onPublish}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                >
-                    {isPublishing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Publish
-                </Button>
+                )}
+                {/* Save Draft button */}
+                {store && (
+                    <Button
+                        variant="outline"
+                        onClick={onSaveDraft}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                        {isSaving ? 'Saving...' : 'Save Draft'}
+                    </Button>
+                )}
+                {/* Publish / Unpublish button */}
+                {store && (
+                    store.is_public ? (
+                        <Button
+                            variant="outline"
+                            onClick={onUnpublish}
+                            disabled={isUnpublishing}
+                        >
+                            {isUnpublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <GlobeLock className="w-4 h-4 mr-2" />}
+                            {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={onPublish}
+                            disabled={isPublishing}
+                        >
+                            {isPublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Globe className="w-4 h-4 mr-2" />}
+                            {isPublishing ? 'Publishing...' : 'Publish'}
+                        </Button>
+                    )
+                )}
             </div>
         </div>
     );

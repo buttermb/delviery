@@ -1,1 +1,0 @@
-ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS feature_toggles JSONB DEFAULT '{}'::jsonb;

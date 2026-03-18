@@ -7,23 +7,17 @@ export { BuilderHeader } from './BuilderHeader';
 export { BuilderLeftPanel } from './BuilderLeftPanel';
 export { BuilderPreview } from './BuilderPreview';
 export { BuilderPropertyEditor } from './BuilderPropertyEditor';
-export { BuilderCreateStore } from './BuilderCreateStore';
-export { BuilderMobileDrawer } from './BuilderMobileDrawer';
 
 export { SortableSectionItem } from './SortableSectionItem';
 export { useStorefrontBuilder } from './useStorefrontBuilder';
-export { useBuilderKeyboardShortcuts } from './useBuilderKeyboardShortcuts';
-export { useBuilderAutosave } from './useBuilderAutosave';
-export { useBuilderLayout } from './useBuilderLayout';
 export {
-    SECTION_REGISTRY,
-    SECTION_CATEGORIES,
+    SECTION_TYPES,
     TEMPLATES,
-    createSectionDefaults,
+    sectionDefaults,
     DEFAULT_THEME,
-    type StorefrontSection,
+    type SectionConfig,
     type ThemeConfig,
+    type SectionTypeDefinition,
     type SectionTypeKey,
     type TemplateKey,
-    type SectionCategory,
 } from './storefront-builder.config';

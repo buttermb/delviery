@@ -319,38 +319,3 @@ export function useCreateInvoice() {
         onError: (error: Error) => { logger.error('Create failed', error); toast.error('Failed to create invoice', { description: humanizeError(error) }); },
     });
 }
-
-export function useUpdateInvoice() {
-    const queryClient = useQueryClient();
-    const accountId = useAccountIdSafe();
-    return useMutation({
-        mutationFn: async (values: InvoiceFormValues & { id: string; account_id?: string }) => {
-            const finalAccountId = values.account_id || accountId;
-            if (!finalAccountId) throw new Error('Account ID required');
-            const { id, ...updateValues } = values;
-            
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data, error } = await (supabase.from('crm_invoices') as any)
-                .update({ ...updateValues, line_items: updateValues.line_items as unknown as Json[] })
-                .eq('id', id)
-                .eq('account_id', finalAccountId)
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
-                .maybeSingle();
-                
-            if (error) throw error;
-            return normalizeInvoice(data as unknown as Record<string, unknown>);
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
-            toast.success('Invoice updated');
-            // Cross-panel invalidation - invoice update affects finance, collections, dashboard
-            if (accountId) {
-                invalidateOnEvent(queryClient, 'INVOICE_UPDATED', accountId, {
-                    invoiceId: data?.id,
-                    customerId: data?.client_id,
-                });
-            }
-        },
-        onError: (error: Error) => { logger.error('Update failed', error); toast.error('Failed to update invoice', { description: humanizeError(error) }); },
-    });
-}

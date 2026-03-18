@@ -14,7 +14,7 @@ import { FEATURES_ICON_MAP } from '@/components/shop/sections/featuresIconMap';
 
 const LazyCustomHTMLEditor = lazy(() => import('@/components/admin/storefront/CustomHTMLEditor'));
 
-export interface StorefrontSection {
+export interface SectionConfig {
     id: string;
     type: string;
     content: Record<string, unknown>;
@@ -28,7 +28,7 @@ export interface StorefrontSection {
 }
 
 export interface SectionEditorProps {
-    section: StorefrontSection;
+    section: SectionConfig;
     onUpdateContent: (key: string, value: unknown) => void;
     onUpdateStyles: (key: string, value: unknown) => void;
     onUpdateResponsive: (device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => void;

@@ -45,7 +45,7 @@ import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
 import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
@@ -1600,14 +1600,14 @@ export default function Orders() {
       />
 
       <ConfirmDialog
-        open={!!cancelConfirmOrder}
-        onOpenChange={(open) => { if (!open) setCancelConfirmOrder(null); }}
+        isOpen={!!cancelConfirmOrder}
         onConfirm={() => {
           if (cancelConfirmOrder) {
             handleCancelOrder(cancelConfirmOrder);
           }
           setCancelConfirmOrder(null);
         }}
+        onCancel={() => setCancelConfirmOrder(null)}
         title="Cancel Order"
         description={`Are you sure you want to cancel order #${cancelConfirmOrder?.order_number ?? cancelConfirmOrder?.id.slice(0, 8) ?? ''}? This action cannot be undone.`}
         confirmLabel="Cancel Order"

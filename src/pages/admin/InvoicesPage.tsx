@@ -15,11 +15,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Plus,
     MoreHorizontal,
     FileText,
+    Filter,
     CheckCircle,
     Clock,
     DollarSign,
@@ -37,7 +38,7 @@ import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { TruncatedText } from "@/components/shared/TruncatedText";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
@@ -853,13 +854,6 @@ export function InvoicesPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/${tenantSlug}/admin/advanced-invoice?edit=${invoice.id}`);
-                        }}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Edit in Builder
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation();
                             handleDuplicateInvoice.execute(invoice.id);
                         }}>
                             <Copy className="mr-2 h-4 w-4" />
@@ -986,13 +980,6 @@ export function InvoicesPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem className="py-3" onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/${tenantSlug}/admin/advanced-invoice?edit=${invoice.id}`);
-                            }}>
-                                <FileText className="mr-2 h-4 w-4" />
-                                Edit in Builder
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3" onClick={(e) => {
-                                e.stopPropagation();
                                 handleDuplicateInvoice.execute(invoice.id);
                             }}>
                                 <Copy className="mr-2 h-4 w-4" />
@@ -1033,63 +1020,56 @@ export function InvoicesPage() {
             </div>
 
             {/* Stats Cards */}
-            <Card className="mb-6 border-border/50 shadow-sm overflow-hidden bg-card">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border w-full">
-                    {/* Total Revenue */}
-                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                            <DollarSign className="h-4 w-4 text-muted-foreground/50" />
-                        </div>
-                        <div className="text-3xl font-bold">{formatCurrency(totalRevenue)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+                        <p className="text-xs text-muted-foreground">
                             From {invoices?.filter(i => i.status === 'paid').length ?? 0} paid invoices
                         </p>
-                    </div>
-
-                    {/* Paid This Month */}
-                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-emerald-500/[0.02] dark:bg-emerald-500/5 pointer-events-none" />
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-muted-foreground">Paid This Month</p>
-                            <TrendingUp className="h-4 w-4 text-emerald-500/50" />
-                        </div>
-                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                            {formatCurrency(paidThisMonth)}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Paid This Month</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">{formatCurrency(paidThisMonth)}</div>
+                        <p className="text-xs text-muted-foreground">
                             {paidThisMonthCount} invoices paid
                         </p>
-                    </div>
-
-                    {/* Outstanding */}
-                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
-                         <div className="absolute inset-0 bg-amber-500/[0.02] dark:bg-amber-500/5 pointer-events-none" />
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
-                            <Clock className="h-4 w-4 text-amber-500/50" />
-                        </div>
-                        <div className="text-3xl font-bold text-amber-600 dark:text-amber-500">
-                            {formatCurrency(outstandingAmount)}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(outstandingAmount)}</div>
+                        <p className="text-xs text-muted-foreground">
                             {invoices?.filter(i => i.status === 'sent').length ?? 0} sent, {invoices?.filter(i => i.status === 'overdue').length ?? 0} overdue
                         </p>
-                    </div>
-
-                    {/* Avg. Payment Time */}
-                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-muted-foreground">Avg. Payment Time</p>
-                            <Clock className="h-4 w-4 text-muted-foreground/50" />
-                        </div>
-                        <div className="text-3xl font-bold">{avgPaymentTime} days</div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Avg. Payment Time</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{avgPaymentTime} days</div>
+                        <p className="text-xs text-muted-foreground">
                             Based on {paidInvoicesWithDates.length} paid invoices
                         </p>
-                    </div>
-                </div>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
             <AdminToolbar
                 searchQuery={searchQuery}
@@ -1127,57 +1107,46 @@ export function InvoicesPage() {
                             ]}
                         />
                         <ShortcutHint keys={[mod, "N"]} label="New">
-                            <Button onClick={() => navigate(`/${tenantSlug}/admin/advanced-invoice`)}>
+                            <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
                                 <Plus className="mr-2 h-4 w-4" /> Create Invoice
                             </Button>
                         </ShortcutHint>
                     </>
                 }
                 filters={
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none max-w-full">
-                        <Badge 
-                            variant={statusFilter === null ? "default" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap" 
-                            onClick={() => setStatusFilter(null)}
-                        >
-                            All
-                        </Badge>
-                        <Badge 
-                            variant={statusFilter === "draft" ? "default" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap bg-gray-100/50 hover:bg-gray-100 dark:bg-gray-900/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800" 
-                            onClick={() => setStatusFilter("draft")}
-                        >
-                            Draft
-                        </Badge>
-                        <Badge 
-                            variant={statusFilter === "sent" ? "default" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap bg-blue-100/50 hover:bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" 
-                            onClick={() => setStatusFilter("sent")}
-                        >
-                            Sent
-                        </Badge>
-                        <Badge 
-                            variant={statusFilter === "partially_paid" ? "default" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap bg-amber-100/50 hover:bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800" 
-                            onClick={() => setStatusFilter("partially_paid")}
-                        >
-                            Partial
-                        </Badge>
-                        <Badge 
-                            variant={statusFilter === "paid" ? "default" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap bg-emerald-100/50 hover:bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
-                            onClick={() => setStatusFilter("paid")}
-                        >
-                            Paid
-                        </Badge>
-                        <Badge 
-                            variant={statusFilter === "overdue" ? "destructive" : "outline"} 
-                            className="cursor-pointer whitespace-nowrap" 
-                            onClick={() => setStatusFilter("overdue")}
-                        >
-                            Overdue
-                        </Badge>
-                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="gap-2 w-full md:w-auto justify-center">
+                                <Filter className="h-4 w-4" />
+                                Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-[200px]">
+                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter(null)}>
+                                All Statuses
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("draft")}>
+                                Draft
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("sent")}>
+                                Sent
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
+                                Paid
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
+                                Partially Paid
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
+                                Overdue
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("cancelled")}>
+                                Cancelled
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 }
             />
 
@@ -1194,13 +1163,9 @@ export function InvoicesPage() {
                     label: "Clear Filters",
                     onClick: () => { setSearchQuery(""); setStatusFilter(null); },
                 } : {
-                    label: "Advanced Builder",
-                    onClick: () => navigate(`/${tenantSlug}/admin/advanced-invoice`),
+                    label: "Create Invoice",
+                    onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
                     icon: Plus
-                }}
-                emptyStateSecondaryAction={searchQuery || statusFilter ? undefined : {
-                    label: "Quick Invoice",
-                    onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`)
                 }}
             />
 
@@ -1219,17 +1184,15 @@ export function InvoicesPage() {
             )}
 
             <ConfirmDialog
-                open={voidDialogOpen}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setVoidDialogOpen(false);
-                        setInvoiceToVoid(null);
-                    }
-                }}
+                isOpen={voidDialogOpen}
                 onConfirm={() => {
                     if (invoiceToVoid) {
                         handleVoidInvoice.execute(invoiceToVoid.id);
                     }
+                    setVoidDialogOpen(false);
+                    setInvoiceToVoid(null);
+                }}
+                onCancel={() => {
                     setVoidDialogOpen(false);
                     setInvoiceToVoid(null);
                 }}

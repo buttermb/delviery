@@ -1,42 +1,56 @@
 
-Root cause
 
-- Your pushes are reaching GitHub, but this Lovable project is not actually importing from that external repo.
-- Lovable only auto-syncs GitHub pushes for a repo that is already linked through Lovable’s GitHub integration.
-- Current platform limitation: Lovable does not directly import an already-existing GitHub repo into an already-created project.
+# Fix: Static Menu Page "Menu Not Found"
 
-What I checked
+## Root Cause
 
-- The workspace currently shows no linked connections available.
-- The project repo in your docs/readme is `buttermb/delviery`, but this Lovable project is still behaving like a separate codebase.
-- Lovable docs confirm: bidirectional sync works after the project is linked to GitHub, but importing an existing repo into a pre-existing Lovable project is not supported.
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-Why nothing is showing up from pushes
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-1. You push to `buttermb/delviery` successfully.
-2. Lovable is not attached to that repo in a supported import flow.
-3. So GitHub changes stay in GitHub, while Lovable keeps showing the code already inside this project.
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
-Best path forward
+## Fix
 
-Option A — fastest
-- Manually migrate the latest GitHub code into this Lovable project in batches.
-- Best for keeping this current Lovable project alive.
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
 
-Option B — cleanest long-term
-- Create a fresh Lovable project.
-- Connect GitHub from inside Lovable so the sync relationship is created correctly.
-- Then move your latest code into that synced project.
+Update the `loadMenuDirect` function's product query:
 
-Important
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
+```
 
-- Pushing again will not fix this by itself.
-- A “pull/sync” expectation only works when the repo was linked through Lovable’s supported GitHub flow.
-- The blocker is not your Git push; it’s the repo import limitation.
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
+```
 
-Plan to fix it from here
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
 
-1. Identify the exact folders/routes that changed in GitHub.
-2. Compare them against this Lovable project.
-3. Bring the missing code over in small batches.
-4. Verify each batch in preview so auth, routes, and backend integrations do not break.
+## Also Fix: Pre-existing build errors in unrelated edge functions
+
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+
+## Result
+
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+

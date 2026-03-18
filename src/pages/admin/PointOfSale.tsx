@@ -327,9 +327,7 @@ export default function PointOfSale() {
             .insert({
               tenant_id: tenantId,
               transaction_number: transactionNumber,
-              customer_name: selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}` : null,
-              customer_email: selectedCustomer?.email || null,
-              customer_phone: selectedCustomer?.phone || null,
+              customer_id: selectedCustomer?.id || null,
               items: transactionItems,
               subtotal: subtotal,
               tax_amount: tax,
@@ -337,6 +335,7 @@ export default function PointOfSale() {
               total_amount: total,
               payment_method: paymentMethod,
               payment_status: 'completed',
+              status: 'completed',
               notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
             })
             .select()
