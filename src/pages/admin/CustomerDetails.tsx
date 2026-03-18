@@ -194,6 +194,7 @@ export default function CustomerDetails() {
         .from('customer_notes')
         .select('id, created_at, note, note_type')
         .eq('customer_id', id as string)
+        .eq('tenant_id', tenantId as string)
         .order('created_at', { ascending: false })) as {
           data: Array<{ id: string; created_at: string; note: string; note_type: string }> | null;
           error: unknown;
@@ -223,7 +224,7 @@ export default function CustomerDetails() {
 
     try {
       const { error } = await supabase.from('customer_notes').insert({
-        account_id: customer?.account_id ?? '',
+        tenant_id: tenant?.id ?? '',
         customer_id: id ?? '',
         note: newNote,
         note_type: 'general'

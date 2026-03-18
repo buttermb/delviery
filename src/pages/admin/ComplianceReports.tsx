@@ -176,6 +176,7 @@ export function ComplianceReports() {
         supabase
           .from('customer_notes')
           .select('*')
+          .eq('tenant_id', tenantId)
           .eq('customer_id', customerId),
       ]);
 
