@@ -85,6 +85,7 @@ export default function GenerateBarcodes() {
       const { data } = await supabase
         .from('products')
         .select('id, name, sku, wholesale_price')
+        .eq('tenant_id', tenant.id)
         .order('name');
       return data ?? [];
     },
