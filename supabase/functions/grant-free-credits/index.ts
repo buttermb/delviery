@@ -53,45 +53,40 @@ serve(async (req) => {
   const authHeader = req.headers.get('Authorization');
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-
-  // Allow service role key directly (for cron jobs) - use exact match, not includes
   const token = authHeader?.replace('Bearer ', '') ?? '';
+
+  // Allow service role key directly (for cron jobs)
   if (token !== supabaseServiceKey) {
+    // Not a cron call — verify the caller is a super-admin
     const tempClient = createClient(supabaseUrl, supabaseServiceKey);
-    const token = authHeader?.replace('Bearer ', '');
 
-    if (token !== supabaseServiceKey) {
-      // Verify it's a valid user first
-      const { data: { user }, error } = await tempClient.auth.getUser(token || '');
-      if (error || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // SECURITY: Verify user is a super-admin (not just any authenticated user)
-      const { data: superAdmin, error: superAdminError } = await tempClient
-        .from('super_admins')
-        .select('id')
-        .eq('email', user.email)
-        .maybeSingle();
-
-      if (superAdminError || !superAdmin) {
-        console.warn(`[GRANT_FREE_CREDITS] Unauthorized attempt by ${user.email}`);
-        return new Response(
-          JSON.stringify({ error: 'Super admin access required for manual trigger' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.error(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
+    const { data: { user }, error } = await tempClient.auth.getUser(token);
+    if (error || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    // SECURITY: Verify user is a super-admin (not just any authenticated user)
+    const { data: superAdmin, error: superAdminError } = await tempClient
+      .from('super_admins')
+      .select('id')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (superAdminError || !superAdmin) {
+      console.error(`[GRANT_FREE_CREDITS] Unauthorized attempt by ${user.email}`);
+      return new Response(
+        JSON.stringify({ error: 'Super admin access required for manual trigger' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.error(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.error('[GRANT_FREE_CREDITS] Starting daily credit grant job');
@@ -138,7 +133,7 @@ serve(async (req) => {
 
       try {
         // Get the plan-based credit amount
-        const planCredits = getPlanCredits(tenant?.subscription_plan);
+        const planCredits = getPlanCredits(tenant?.subscription_plan as string | null);
 
         // Calculate new balance with rollover
         const previousBalance = record.balance || 0;
@@ -201,7 +196,7 @@ serve(async (req) => {
           continue;
         }
 
-        console.error(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
+        console.error(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant?.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
         results.granted++;
 
         // Track analytics event
@@ -219,7 +214,7 @@ serve(async (req) => {
           });
 
         // Send notification email (optional - integrate with email service)
-        if (tenant.owner_email) {
+        if (tenant?.owner_email) {
           // TODO: Integrate with email service (Resend, SendGrid, etc.)
           console.error(`[GRANT_FREE_CREDITS] Would send email to ${tenant.owner_email}`);
         }
@@ -319,10 +314,6 @@ serve(async (req) => {
     );
   }
 });
-
-
-
-
 
 
 
