@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { sendEmail } from '../_shared/email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -69,9 +70,17 @@ serve(async (req) => {
 
     for (const email of failedEmails) {
       try {
-        // TODO: Integrate with actual email provider (Resend/SendGrid)
-        // For now, simulate email send
+        // Send email via Resend
         console.error(`[RETRY_EMAILS] Retrying email to ${email.recipient}, template: ${email.template}`);
+        const result = await sendEmail({
+          to: email.recipient,
+          subject: email.email_data?.subject || email.template || 'Notification',
+          html: email.email_data?.html || email.email_data?.body || '<p>Notification from FloraIQ</p>',
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Email send failed');
+        }
 
         // Log success
         await supabase.from('email_logs').insert({

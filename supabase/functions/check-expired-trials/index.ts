@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -58,7 +59,17 @@ serve(async (req) => {
           success: true
         });
         
-        // TODO: Send trial expiration notification email
+        // Send trial expiration notification email
+        if (tenant.owner_email) {
+          await sendEmail({
+            to: tenant.owner_email,
+            subject: 'Your trial has expired - Account suspended',
+            html: `<p>Hi,</p>
+              <p>Your trial for <strong>${tenant.business_name}</strong> has expired and your account has been suspended.</p>
+              <p>To reactivate your account, please add a payment method in your billing settings.</p>
+              <p>Your data is safe and will be retained for 30 days.</p>`,
+          }).catch((err) => console.error(`Failed to send email to ${tenant.owner_email}:`, err));
+        }
         console.error(`Successfully suspended tenant ${tenant.business_name}`);
       }
     }

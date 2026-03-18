@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateSendScheduledReport, type SendScheduledReportInput } from './validation.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -104,8 +105,40 @@ serve(async (req) => {
       })
       .eq('id', schedule_id);
 
-    // TODO: Generate PDF/CSV and upload to storage
-    // TODO: Send email to recipients
+    // Generate CSV content from report data
+    const csvRows: string[] = [];
+    csvRows.push(`Report: ${reportConfig.name}`);
+    csvRows.push(`Period: ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`);
+    csvRows.push('');
+    for (const [metric, value] of Object.entries(calculatedMetrics)) {
+      csvRows.push(`${metric},${value}`);
+    }
+    const csvContent = csvRows.join('\n');
+
+    // Upload CSV to storage
+    const fileName = `reports/${schedule.tenant_id}/${reportConfig.name.replace(/\s+/g, '_')}_${endDate.toISOString().slice(0, 10)}.csv`;
+    await supabaseClient.storage
+      .from('exports')
+      .upload(fileName, new Blob([csvContent], { type: 'text/csv' }), { upsert: true });
+
+    // Send email to recipients
+    const recipients = (schedule.recipients || []) as string[];
+    if (recipients.length > 0) {
+      const metricsHtml = Object.entries(calculatedMetrics)
+        .map(([key, val]) => `<li><strong>${key}:</strong> ${val}</li>`)
+        .join('');
+
+      for (const recipient of recipients) {
+        await sendEmail({
+          to: recipient,
+          subject: `Scheduled Report: ${reportConfig.name}`,
+          html: `<h2>${reportConfig.name}</h2>
+            <p>Period: ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}</p>
+            <h3>Key Metrics</h3><ul>${metricsHtml}</ul>
+            <p><em>Full CSV report has been saved to storage.</em></p>`,
+        }).catch((err) => console.error(`Failed to email report to ${recipient}:`, err));
+      }
+    }
 
     console.error(`Scheduled report ${reportConfig.name} generated and sent`);
 

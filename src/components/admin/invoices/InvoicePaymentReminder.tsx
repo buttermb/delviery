@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,8 +31,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { Badge } from "@/components/ui/badge";
 import { Bell, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const reminderSchema = z.object({
   invoice_id: z.string(),
@@ -65,8 +65,6 @@ export function InvoicePaymentReminder({
   dueDate,
   onSuccess,
 }: InvoicePaymentReminderProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const form = useForm<ReminderFormData>({
     resolver: zodResolver(reminderSchema),
     defaultValues: {
@@ -78,20 +76,31 @@ export function InvoicePaymentReminder({
     },
   });
 
-  const onSubmit = async (data: ReminderFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_payment_reminders table
+  const scheduleReminderMutation = useMutation({
+    mutationFn: async (data: ReminderFormData) => {
+      const { error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown }).from('invoice_payment_reminders').insert({
+        invoice_id: invoiceId,
+        days_before_due: data.days_before_due,
+        reminder_type: data.reminder_type,
+        message_template: data.message_template || null,
+        auto_send: data.auto_send,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_result, data) => {
       logger.info("Payment reminder configured", { data });
       toast.success("Payment reminder scheduled");
       onSuccess?.();
       onOpenChange(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       logger.error("Failed to schedule reminder", { error });
       toast.error("Failed to schedule payment reminder");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: ReminderFormData) => {
+    scheduleReminderMutation.mutate(data);
   };
 
   return (
@@ -101,7 +110,6 @@ export function InvoicePaymentReminder({
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-emerald-600" />
             Payment Reminder - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -204,8 +212,8 @@ export function InvoicePaymentReminder({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={scheduleReminderMutation.isPending}>
+                {scheduleReminderMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Schedule Reminder
               </Button>
             </DialogFooter>

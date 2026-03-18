@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { sendEmail } from '../_shared/email.ts';
 
 /**
  * SECURITY FIX: Added internal API key authentication.
@@ -125,8 +126,14 @@ serve(async (req) => {
 
     console.error(`[TRIAL REMINDER] Sent successfully to ${tenant.owner_email}`);
 
-    // TODO: Integrate with SendGrid/Resend when configured
-    // For now, just log the email
+    // Send email via Resend (gracefully degrades if not configured)
+    if (tenant.owner_email && subject) {
+      await sendEmail({
+        to: tenant.owner_email,
+        subject,
+        html: `<pre style="font-family: sans-serif; white-space: pre-wrap;">${message}</pre>`,
+      }).catch((err) => console.error('[TRIAL REMINDER] Email send failed:', err));
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: "Reminder sent" }),

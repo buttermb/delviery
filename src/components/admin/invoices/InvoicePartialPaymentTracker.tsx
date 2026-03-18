@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +37,8 @@ import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { DollarSign, Loader2, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 
 const paymentSchema = z.object({
   amount: z.number().min(0.01, "Amount must be greater than 0"),
@@ -80,8 +83,8 @@ export function InvoicePartialPaymentTracker({
   payments = [],
   onSuccess,
 }: InvoicePartialPaymentTrackerProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddPayment, setShowAddPayment] = useState(false);
+  const queryClient = useQueryClient();
 
   const remainingAmount = totalAmount - paidAmount;
   const percentPaid = (paidAmount / totalAmount) * 100;
@@ -96,21 +99,42 @@ export function InvoicePartialPaymentTracker({
     },
   });
 
-  const onSubmit = async (data: PaymentFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_payments table
+  const recordPaymentMutation = useMutation({
+    mutationFn: async (data: PaymentFormData) => {
+      const { error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown }).from('invoice_payments').insert({
+        invoice_id: invoiceId,
+        amount: data.amount,
+        payment_method: data.payment_method,
+        payment_date: data.payment_date,
+        notes: data.notes || null,
+      });
+      if (error) throw error;
+
+      // Update invoice paid_amount
+      const newPaidAmount = paidAmount + data.amount;
+      const newStatus = newPaidAmount >= totalAmount ? 'paid' : 'partially_paid';
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({ paid_amount: newPaidAmount, status: newStatus })
+        .eq('id', invoiceId);
+      if (updateError) throw updateError;
+    },
+    onSuccess: (_result, data) => {
       logger.info("Recording partial payment", { invoiceId, data });
       toast.success(`Payment of ${formatCurrency(data.amount)} recorded`);
       form.reset();
       setShowAddPayment(false);
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
       onSuccess?.();
-    } catch (error) {
+    },
+    onError: (error) => {
       logger.error("Failed to record payment", { error });
       toast.error("Failed to record payment");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: PaymentFormData) => {
+    recordPaymentMutation.mutate(data);
   };
 
   return (
@@ -120,7 +144,6 @@ export function InvoicePartialPaymentTracker({
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-emerald-600" />
             Payment Tracking - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -290,8 +313,8 @@ export function InvoicePartialPaymentTracker({
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button type="submit" disabled={recordPaymentMutation.isPending}>
+                        {recordPaymentMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Record Payment
                       </Button>
                     </div>

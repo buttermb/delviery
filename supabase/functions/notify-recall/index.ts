@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateNotifyRecall } from './validation.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -67,20 +68,30 @@ serve(async (req) => {
 
     if (notifError) throw notifError;
 
-    // Simulate sending notifications (in production, integrate with email/SMS service)
+    // Send notifications to affected customers
     let sentCount = 0;
     for (const customer of affectedCustomers) {
-      // TODO: Send actual email/SMS
-      // For now, just update status to sent
+      const customerEmail = customer.email as string | undefined;
+      if (customerEmail && notification_method !== 'sms') {
+        await sendEmail({
+          to: customerEmail,
+          subject: `Product Recall Notice - ${recall.product_name || 'Product'}`,
+          html: `<p>Dear ${customer.name || 'Customer'},</p>
+            <p>We are issuing a recall for <strong>${recall.product_name || 'a product'}</strong>${recall.batch_number ? ` (Batch: ${recall.batch_number})` : ''}.</p>
+            <p><strong>Reason:</strong> ${recall.reason || 'Safety concern'}</p>
+            <p>Please stop using this product and contact us for a replacement or refund.</p>`,
+        });
+      }
+
       await supabaseClient
         .from('recall_notifications')
-        .update({ 
+        .update({
           status: 'sent',
           sent_at: new Date().toISOString()
         })
         .eq('recall_id', recall_id)
         .eq('customer_id', customer.id);
-      
+
       sentCount++;
     }
 

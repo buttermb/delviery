@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +36,8 @@ import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { FileText, Loader2, Minus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 
 const creditNoteSchema = z.object({
   credit_amount: z.number().min(0.01, "Amount must be greater than 0"),
@@ -79,8 +82,8 @@ export function InvoiceCreditNoteSystem({
   creditNotes = [],
   onSuccess,
 }: InvoiceCreditNoteSystemProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const queryClient = useQueryClient();
 
   const totalCreditIssued = creditNotes.reduce((sum, note) => sum + note.credit_amount, 0);
 
@@ -94,26 +97,39 @@ export function InvoiceCreditNoteSystem({
     },
   });
 
-  const onSubmit = async (data: CreditNoteFormData) => {
-    if (data.credit_amount > invoiceAmount) {
-      toast.error("Credit amount cannot exceed invoice amount");
-      return;
-    }
+  const createCreditNoteMutation = useMutation({
+    mutationFn: async (data: CreditNoteFormData) => {
+      if (data.credit_amount > invoiceAmount) {
+        throw new Error("Credit amount cannot exceed invoice amount");
+      }
 
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_credit_notes table
+      const { error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown }).from('invoice_credit_notes').insert({
+        invoice_id: invoiceId,
+        credit_amount: data.credit_amount,
+        reason: data.reason,
+        notes: data.notes || null,
+        issue_date: data.issue_date,
+        status: 'issued',
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_result, data) => {
       logger.info("Creating credit note", { invoiceId, data });
       toast.success(`Credit note created for ${formatCurrency(data.credit_amount)}`);
       form.reset();
       setShowCreateForm(false);
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
       onSuccess?.();
-    } catch (error) {
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "Failed to create credit note";
       logger.error("Failed to create credit note", { error });
-      toast.error("Failed to create credit note");
-    } finally {
-      setIsSubmitting(false);
-    }
+      toast.error(message);
+    },
+  });
+
+  const onSubmit = (data: CreditNoteFormData) => {
+    createCreditNoteMutation.mutate(data);
   };
 
   const getReasonLabel = (reason: string) => {
@@ -143,7 +159,6 @@ export function InvoiceCreditNoteSystem({
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-emerald-600" />
             Credit Notes - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -303,8 +318,8 @@ export function InvoiceCreditNoteSystem({
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button type="submit" disabled={createCreditNoteMutation.isPending}>
+                        {createCreditNoteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Issue Credit Note
                       </Button>
                     </div>

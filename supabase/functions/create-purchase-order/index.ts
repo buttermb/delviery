@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateCreatePurchaseOrder, type CreatePurchaseOrderInput } from './validation.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -144,8 +145,45 @@ serve(async (req) => {
       throw itemsError;
     }
 
-    // TODO: Generate PDF and upload to storage
-    // TODO: Send email to supplier
+    // Generate PO summary and upload to storage
+    const poSummaryRows = processedItems.map(item =>
+      `${item.product_name},${item.quantity_lbs},${item.price_per_lb},${item.subtotal}`
+    );
+    const csvContent = [
+      `Purchase Order: ${po.po_number}`,
+      `Supplier: ${supplier.name || supplier_id}`,
+      `Date: ${new Date().toISOString().slice(0, 10)}`,
+      '',
+      'Product,Quantity (lbs),Price/lb,Subtotal',
+      ...poSummaryRows,
+      '',
+      `Total,,,${totalAmount}`,
+    ].join('\n');
+
+    const fileName = `purchase-orders/${tenant_id}/${po.po_number}.csv`;
+    await supabaseClient.storage
+      .from('exports')
+      .upload(fileName, new Blob([csvContent], { type: 'text/csv' }), { upsert: true });
+
+    // Send email to supplier
+    if (supplier.email) {
+      const itemsHtml = processedItems.map(item =>
+        `<tr><td>${item.product_name}</td><td>${item.quantity_lbs} lbs</td><td>$${item.price_per_lb.toFixed(2)}</td><td>$${item.subtotal.toFixed(2)}</td></tr>`
+      ).join('');
+
+      await sendEmail({
+        to: supplier.email,
+        subject: `New Purchase Order - ${po.po_number}`,
+        html: `<h2>Purchase Order ${po.po_number}</h2>
+          ${delivery_date ? `<p><strong>Expected Delivery:</strong> ${delivery_date}</p>` : ''}
+          ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
+            <thead><tr><th>Product</th><th>Quantity</th><th>Price/lb</th><th>Subtotal</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+            <tfoot><tr><td colspan="3"><strong>Total</strong></td><td><strong>$${totalAmount.toFixed(2)}</strong></td></tr></tfoot>
+          </table>`,
+      }).catch((err) => console.error(`Failed to email PO to supplier:`, err));
+    }
 
     return new Response(
       JSON.stringify({ 

@@ -9,6 +9,7 @@
 // supabase functions deploy credit-warning-emails --no-verify-jwt
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 const FREE_CREDITS_AMOUNT = 10000;
 const WARNING_THRESHOLDS = [
@@ -188,12 +189,12 @@ async function sendWarningNotification(
       },
     });
 
-  // TODO: Send email notification
-  // Integrate with your email service (Resend, SendGrid, etc.)
-  console.error(`[CREDIT_WARNINGS] Would send email to ${email}:`, {
+  // Send email notification via Resend (gracefully degrades if not configured)
+  await sendEmail({
+    to: email as string,
     subject: getEmailSubject(threshold.severity),
-    balance,
-    slug,
+    html: `<p>${getNotificationMessage(balance, threshold)}</p>
+      <p>Visit your dashboard at <a href="https://app.floraiq.com/${slug}/admin/billing">${slug}/admin/billing</a> to manage your credits.</p>`,
   });
 }
 

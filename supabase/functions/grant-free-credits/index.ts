@@ -21,6 +21,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 // Plan-based credit amounts per specification
 // These are the MONTHLY refresh amounts for existing tenants
@@ -218,10 +219,15 @@ serve(async (req) => {
             },
           });
 
-        // Send notification email (optional - integrate with email service)
+        // Send notification email (gracefully degrades if Resend not configured)
         if (tenant.owner_email) {
-          // TODO: Integrate with email service (Resend, SendGrid, etc.)
-          console.error(`[GRANT_FREE_CREDITS] Would send email to ${tenant.owner_email}`);
+          await sendEmail({
+            to: tenant.owner_email as string,
+            subject: 'Your monthly credits have been refreshed',
+            html: `<p>Your monthly credits have been refreshed.</p>
+              <p><strong>New balance:</strong> ${newBalance.toLocaleString()} credits (${tenant?.subscription_plan || 'free'} plan)</p>
+              <p>Visit your dashboard to start using your credits.</p>`,
+          }).catch((err) => console.error(`[GRANT_FREE_CREDITS] Email failed for ${tenant.owner_email}:`, err));
         }
 
       } catch (err) {
