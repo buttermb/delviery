@@ -38,7 +38,7 @@ export function useVendorsWithStats() {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendorOrdersHook.list(tenant?.id, { withStats: true }),
+        queryKey: queryKeys.vendors.list(tenant?.id, { withStats: true }),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
