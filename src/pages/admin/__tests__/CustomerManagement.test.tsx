@@ -449,3 +449,41 @@ describe('CSV Export Logic', () => {
     expect(phoneValue).toBe('');
   });
 });
+
+describe('CSV Field Escaping', () => {
+  const escapeCsvField = (value: string | number | null | undefined): string => {
+    const str = String(value ?? '');
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  it('should escape fields containing commas', () => {
+    expect(escapeCsvField('Doe, John')).toBe('"Doe, John"');
+  });
+
+  it('should escape fields containing double quotes', () => {
+    expect(escapeCsvField('John "JD" Doe')).toBe('"John ""JD"" Doe"');
+  });
+
+  it('should escape fields containing newlines', () => {
+    expect(escapeCsvField('Line1\nLine2')).toBe('"Line1\nLine2"');
+  });
+
+  it('should not escape simple strings', () => {
+    expect(escapeCsvField('John Doe')).toBe('John Doe');
+  });
+
+  it('should handle null values', () => {
+    expect(escapeCsvField(null)).toBe('');
+  });
+
+  it('should handle undefined values', () => {
+    expect(escapeCsvField(undefined)).toBe('');
+  });
+
+  it('should handle numeric values', () => {
+    expect(escapeCsvField(1500)).toBe('1500');
+  });
+});
