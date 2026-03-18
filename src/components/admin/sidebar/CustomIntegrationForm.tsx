@@ -1,7 +1,8 @@
 /**
  * Custom Integration Form
  *
- * Allows users to add custom webhooks and API integrations
+ * Allows users to add custom webhooks and API integrations.
+ * Persists to the custom_integrations table via Supabase.
  */
 
 import { useRef, useState } from 'react';
@@ -82,6 +83,50 @@ export function CustomIntegrationForm({
     formValues
   );
 
+  const createMutation = useMutation({
+    mutationFn: async (values: IntegrationFormValues & { headers: Record<string, string> }) => {
+      if (!tenantId) throw new Error('Tenant context required');
+
+      const config: Record<string, unknown> = {
+        endpoint_url: values.endpoint_url,
+        auth_type: values.auth_type,
+        description: values.description || '',
+        headers: values.headers,
+      };
+
+      if (values.auth_type !== 'none' && values.auth_value) {
+        config.auth_value = values.auth_value;
+      }
+
+      const { data, error } = await supabase
+        .from('custom_integrations')
+        .insert({
+          tenant_id: tenantId,
+          name: values.name,
+          type: values.type,
+          config,
+          status: 'active',
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.customIntegrations.byTenant(tenantId) });
+      toast.success('Custom integration added');
+      onIntegrationAdded();
+      onOpenChange(false);
+      form.reset();
+      setCustomHeaders([{ key: '', value: '' }]);
+    },
+    onError: (error: unknown) => {
+      logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
+      toast.error('Failed to add custom integration', { description: humanizeError(error) });
+    },
+  });
+
   const handleAddHeader = () => {
     headerIdCounter.current += 1;
     setCustomHeaders((prev) => [...prev, { id: headerIdCounter.current, key: '', value: '' }]);
@@ -108,7 +153,6 @@ export function CustomIntegrationForm({
     const sanitizedUrl = sanitizeUrlInput(values.endpoint_url);
     if (!sanitizedUrl) {
       toast.error('Invalid endpoint URL');
-      setIsSubmitting(false);
       return;
     }
 
@@ -162,6 +206,12 @@ export function CustomIntegrationForm({
     } finally {
       setIsSubmitting(false);
     }
+
+    createMutation.mutate({
+      ...values,
+      endpoint_url: sanitizedUrl,
+      headers,
+    });
   };
 
   return (
@@ -327,9 +377,9 @@ export function CustomIntegrationForm({
           </div>
 
           <DialogFooterActions
-            primaryLabel={isSubmitting ? "Adding..." : "Add Integration"}
+            primaryLabel={createMutation.isPending ? "Adding..." : "Add Integration"}
             onPrimary={() => {}}
-            primaryLoading={isSubmitting}
+            primaryLoading={createMutation.isPending}
             secondaryLabel="Cancel"
             onSecondary={() => onOpenChange(false)}
           />
