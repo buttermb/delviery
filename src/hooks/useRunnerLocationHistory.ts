@@ -71,7 +71,7 @@ export function useRunnerLocationHistory({
       const { data, error } = await query;
 
       if (error) {
-        logger.error('Error fetching location history:', error);
+        logger.error('Error fetching location history', error as Error);
         throw error;
       }
 
@@ -97,7 +97,7 @@ export function useRunnerLocationHistory({
         });
 
       if (error) {
-        logger.error('Error fetching route statistics:', error);
+        logger.error('Error fetching route statistics', error as Error);
         return null;
       }
 
@@ -111,7 +111,7 @@ export function useRunnerLocationHistory({
   useEffect(() => {
     if (!enableRealtime || !runnerId) return;
 
-    logger.debug('Setting up realtime subscription for runner:', runnerId);
+    logger.debug('Setting up realtime subscription for runner', { runnerId });
 
     const channel = supabase
       .channel(`runner-location-${runnerId}`)
@@ -124,14 +124,14 @@ export function useRunnerLocationHistory({
           filter: `runner_id=eq.${runnerId}`,
         },
         (payload) => {
-          logger.debug('New location received:', payload);
+          logger.debug('New location received', { payload });
           const newLocation = payload.new as LocationPoint;
           setRealtimeLocations((prev) => [...prev, newLocation]);
           refetch(); // Also refetch to ensure consistency
         }
       )
       .subscribe((status) => {
-        logger.debug('Realtime subscription status:', status);
+        logger.debug('Realtime subscription status', { status });
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           logger.error('Location tracking subscription error', { status, runnerId });
         }
