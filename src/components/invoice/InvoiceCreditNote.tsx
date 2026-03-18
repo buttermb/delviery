@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { queryKeys } from "@/lib/queryKeys";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
-import { format } from "date-fns";
+import { useCreateCreditNote } from "@/hooks/crm/useCreditNotes";
 
 interface InvoiceCreditNoteProps {
   invoiceId: string;
@@ -30,8 +26,8 @@ interface InvoiceCreditNoteProps {
 }
 
 /**
- * Task 299: Invoice Credit Note System
- * Creates credit notes for refunds/adjustments
+ * Invoice Credit Note — creates credit notes for refunds/adjustments.
+ * Uses shared useCreditNotes hook for Supabase integration.
  */
 export function InvoiceCreditNote({
   invoiceId,
@@ -41,59 +37,37 @@ export function InvoiceCreditNote({
   open,
   onOpenChange,
 }: InvoiceCreditNoteProps) {
-  const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
-
-  const createCreditNoteMutation = useMutation({
-    mutationFn: async () => {
-      if (!tenant?.id) throw new Error("No tenant");
-
-      const creditAmount = parseFloat(amount);
-      if (isNaN(creditAmount) || creditAmount <= 0) {
-        throw new Error("Invalid credit amount");
-      }
-      if (creditAmount > totalAmount) {
-        throw new Error("Credit amount cannot exceed invoice total");
-      }
-
-      // Generate credit note number
-      const creditNoteNumber = `CN-${invoiceNumber}-${format(new Date(), "yyyyMMdd")}`;
-
-      // Insert credit note
-      const { error } = await supabase
-        .from("invoice_credit_notes")
-        .insert({
-          tenant_id: tenant.id,
-          invoice_id: invoiceId,
-          client_id: clientId,
-          credit_note_number: creditNoteNumber,
-          amount: creditAmount,
-          reason,
-          issued_date: new Date().toISOString(),
-        });
-
-      if (error) throw error;
-
-      return { creditNoteNumber, creditAmount };
-    },
-    onSuccess: ({ creditNoteNumber, creditAmount }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.detail(invoiceId) });
-      toast.success("Credit note created", {
-        description: `${creditNoteNumber} for ${formatCurrency(creditAmount)}`,
-      });
-      onOpenChange(false);
-      setAmount("");
-      setReason("");
-    },
-    onError: (error: Error) => {
-      toast.error("Failed to create credit note", { description: error.message });
-    },
-  });
+  const createCreditNote = useCreateCreditNote();
 
   const parsedAmount = parseFloat(amount) || 0;
+
+  const handleCreate = () => {
+    if (parsedAmount <= 0 || parsedAmount > totalAmount) {
+      toast.error("Invalid credit amount");
+      return;
+    }
+
+    createCreditNote.mutate(
+      {
+        invoice_id: invoiceId,
+        client_id: clientId,
+        amount: parsedAmount,
+        reason,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success("Credit note created", {
+            description: `${data?.credit_note_number ?? "Credit note"} for ${formatCurrency(parsedAmount)}`,
+          });
+          onOpenChange(false);
+          setAmount("");
+          setReason("");
+        },
+      }
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -168,10 +142,10 @@ export function InvoiceCreditNote({
             Cancel
           </Button>
           <Button
-            onClick={() => createCreditNoteMutation.mutate()}
-            disabled={createCreditNoteMutation.isPending || !amount || !reason || parsedAmount <= 0}
+            onClick={handleCreate}
+            disabled={createCreditNote.isPending || !amount || !reason || parsedAmount <= 0}
           >
-            {createCreditNoteMutation.isPending ? "Creating..." : "Create Credit Note"}
+            {createCreditNote.isPending ? "Creating..." : "Create Credit Note"}
           </Button>
         </DialogFooter>
       </DialogContent>
