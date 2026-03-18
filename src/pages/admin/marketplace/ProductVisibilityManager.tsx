@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { humanizeError } from "@/lib/humanizeError";
-import { Loader2, Plus, Search, Filter, MoreHorizontal } from "lucide-react";
+import { Loader2, Plus, Search, Filter, MoreHorizontal, X } from "lucide-react";
 import { MarketplaceListing } from "@/types/marketplace-extended";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import {
@@ -30,13 +30,28 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
+
+interface Filters {
+    status: string;
+    visibility: string;
+    productType: string;
+}
+
+const DEFAULT_FILTERS: Filters = {
+    status: 'all',
+    visibility: 'all',
+    productType: 'all',
+};
 
 export default function ProductVisibilityManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
     const navigateTenant = useTenantNavigate();
     const [searchTerm, setSearchTerm] = useState("");
+    const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
     // Fetch listings
     const { data: listings, isLoading } = useQuery<MarketplaceListing[]>({
@@ -103,9 +118,25 @@ export default function ProductVisibilityManager() {
         }
     });
 
-    const filteredListings = listings?.filter(listing =>
-        listing.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) ?? [];
+    const hasActiveFilters = filters.status !== 'all' || filters.visibility !== 'all' || filters.productType !== 'all';
+
+    const clearFilters = () => setFilters(DEFAULT_FILTERS);
+
+    const filteredListings = useMemo(() => {
+        const sanitized = sanitizeSearchInput(searchTerm);
+        return listings?.filter(listing => {
+            const matchesSearch = listing.product_name.toLowerCase().includes(sanitized.toLowerCase());
+            const matchesStatus = filters.status === 'all' || listing.status === filters.status;
+            const matchesVisibility = filters.visibility === 'all' || listing.visibility === filters.visibility;
+            const matchesType = filters.productType === 'all' || listing.product_type === filters.productType;
+            return matchesSearch && matchesStatus && matchesVisibility && matchesType;
+        }) ?? [];
+    }, [listings, searchTerm, filters]);
+
+    const productTypes = useMemo(() => {
+        const types = new Set(listings?.map(l => l.product_type).filter(Boolean) ?? []);
+        return Array.from(types).sort();
+    }, [listings]);
 
     if (isLoading) {
         return <EnhancedLoadingState variant="table" message="Loading products..." />;
@@ -120,7 +151,7 @@ export default function ProductVisibilityManager() {
                         Manage which products are visible in your marketplace store.
                     </p>
                 </div>
-                <Button>
+                <Button onClick={() => navigateTenant('/admin/marketplace/listings/new')} aria-label="Add new product to marketplace">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
                 </Button>
@@ -140,10 +171,46 @@ export default function ProductVisibilityManager() {
                             />
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filter
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" aria-label="Filter products">
+                                        <Filter className="mr-2 h-4 w-4" />
+                                        Filter
+                                        {hasActiveFilters && (
+                                            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                                                {[filters.status, filters.visibility, filters.productType].filter(f => f !== 'all').length}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel>Status</DropdownMenuLabel>
+                                    <DropdownMenuCheckboxItem checked={filters.status === 'all'} onCheckedChange={() => setFilters(prev => ({ ...prev, status: 'all' }))}>All</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem checked={filters.status === 'active'} onCheckedChange={() => setFilters(prev => ({ ...prev, status: 'active' }))}>Active</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem checked={filters.status === 'draft'} onCheckedChange={() => setFilters(prev => ({ ...prev, status: 'draft' }))}>Draft</DropdownMenuCheckboxItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>Visibility</DropdownMenuLabel>
+                                    <DropdownMenuCheckboxItem checked={filters.visibility === 'all'} onCheckedChange={() => setFilters(prev => ({ ...prev, visibility: 'all' }))}>All</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem checked={filters.visibility === 'public'} onCheckedChange={() => setFilters(prev => ({ ...prev, visibility: 'public' }))}>Public</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem checked={filters.visibility === 'hidden'} onCheckedChange={() => setFilters(prev => ({ ...prev, visibility: 'hidden' }))}>Hidden</DropdownMenuCheckboxItem>
+                                    {productTypes.length > 0 && (
+                                        <>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel>Product Type</DropdownMenuLabel>
+                                            <DropdownMenuCheckboxItem checked={filters.productType === 'all'} onCheckedChange={() => setFilters(prev => ({ ...prev, productType: 'all' }))}>All</DropdownMenuCheckboxItem>
+                                            {productTypes.map(type => (
+                                                <DropdownMenuCheckboxItem key={type} checked={filters.productType === type} onCheckedChange={() => setFilters(prev => ({ ...prev, productType: type }))} className="capitalize">{type}</DropdownMenuCheckboxItem>
+                                            ))}
+                                        </>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            {hasActiveFilters && (
+                                <Button variant="ghost" size="sm" onClick={clearFilters} aria-label="Clear filters">
+                                    <X className="mr-1 h-4 w-4" />
+                                    Clear
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -165,7 +232,9 @@ export default function ProductVisibilityManager() {
                             {filteredListings.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                                        No listings found. Click "Add Product" to get started.
+                                        {hasActiveFilters || searchTerm
+                                            ? "No listings match your filters."
+                                            : 'No listings found. Click "Add Product" to get started.'}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -206,6 +275,7 @@ export default function ProductVisibilityManager() {
                                             <Switch
                                                 checked={listing.visibility === 'public'}
                                                 disabled={toggleVisibility.isPending}
+                                                aria-label={`Toggle visibility for ${listing.product_name}`}
                                                 onCheckedChange={() => toggleVisibility.mutate({
                                                     id: listing.id,
                                                     currentVisibility: listing.visibility || 'hidden'
@@ -215,7 +285,7 @@ export default function ProductVisibilityManager() {
                                         <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-11 w-11 p-0" aria-label="Listing actions">
+                                                    <Button variant="ghost" className="h-11 w-11 p-0" aria-label={`Actions for ${listing.product_name}`}>
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
