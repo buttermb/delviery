@@ -18,11 +18,11 @@ import {
     DEFAULT_FEATURE_TOGGLES,
     DEFAULT_SIMPLE_CONTENT,
 } from '@/lib/storefrontPresets';
-import { type SectionConfig, type ExtendedThemeConfig } from '@/types/marketplace-extended';
+import { type StorefrontSection, type ExtendedThemeConfig } from '@/types/marketplace-extended';
 
 interface UseEasyModeBuilderProps {
     initialThemeConfig?: ExtendedThemeConfig | null;
-    initialLayoutConfig?: SectionConfig[];
+    initialLayoutConfig?: StorefrontSection[];
 }
 
 interface UseEasyModeBuilderReturn {
@@ -42,7 +42,7 @@ interface UseEasyModeBuilderReturn {
     resetSimpleContent: () => void;
 
     // Derived configs for preview and save
-    derivedLayoutConfig: SectionConfig[];
+    derivedLayoutConfig: StorefrontSection[];
     derivedThemeConfig: ExtendedThemeConfig;
 
     // Easy mode config (for persistence)
@@ -55,7 +55,7 @@ interface UseEasyModeBuilderReturn {
 
     // Actions
     resetToPreset: () => void;
-    applyPreset: (presetId: string) => { layoutConfig: SectionConfig[]; themeConfig: ExtendedThemeConfig };
+    applyPreset: (presetId: string) => { layoutConfig: StorefrontSection[]; themeConfig: ExtendedThemeConfig };
     markClean: () => void;
 }
 
@@ -178,7 +178,7 @@ export function useEasyModeBuilder({
 
     // Apply a preset and return the full configs (for mode switching)
     const applyPreset = useCallback((presetId: string): {
-        layoutConfig: SectionConfig[];
+        layoutConfig: StorefrontSection[];
         themeConfig: ExtendedThemeConfig;
     } => {
         const preset = getPresetById(presetId);
@@ -219,7 +219,7 @@ export function useEasyModeBuilder({
     }, []);
 
     // Derive layout config from current state
-    const derivedLayoutConfig = useMemo((): SectionConfig[] => {
+    const derivedLayoutConfig = useMemo((): StorefrontSection[] => {
         if (!selectedPreset) {
             return initialLayoutConfig;
         }

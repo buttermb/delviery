@@ -7,10 +7,10 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type SectionConfig } from './storefront-builder.config';
+import { type StorefrontSection } from './storefront-builder.config';
 
 interface SortableSectionItemProps {
-    section: SectionConfig;
+    section: StorefrontSection;
     isSelected: boolean;
     onSelect: () => void;
     onRemove: (e: React.MouseEvent) => void;

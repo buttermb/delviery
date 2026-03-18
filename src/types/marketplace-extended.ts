@@ -53,7 +53,7 @@ export type MarketplaceProfile = {
   shipping_states?: string[];
   shipping_policy?: string | null;
   return_policy?: string | null;
-  layout_config?: SectionConfig[] | null;
+  layout_config?: StorefrontSection[] | null;
   theme_config?: ExtendedThemeConfig | null;
   average_rating?: number;
   total_reviews?: number;
@@ -124,7 +124,7 @@ export interface ExtendedThemeConfig {
 /**
  * Section configuration for storefront layout
  */
-export interface SectionConfig {
+export interface StorefrontSection {
   id: string;
   type: string;
   content: Record<string, unknown>;
@@ -152,7 +152,7 @@ export type MarketplaceStore = {
   font_family?: string | null;
   is_active?: boolean;
   is_public?: boolean;
-  layout_config?: SectionConfig[] | null;
+  layout_config?: StorefrontSection[] | null;
   theme_config?: ExtendedThemeConfig | null;
   operating_hours?: Record<string, unknown> | null;
   checkout_settings?: Record<string, unknown> | null;
