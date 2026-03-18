@@ -519,19 +519,37 @@ export function RoleManagement() {
                       className="text-destructive hover:text-destructive"
                       aria-label={`Delete role ${role.name}`}
                     >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete</span>
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Delete role</TooltipContent>
+                  <TooltipContent>Edit role</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            )}
-          </div>
-        ),
+              {!role.is_system && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(role)}
+                        disabled={isMutating}
+                        className="text-destructive hover:text-destructive"
+                        aria-label={`Delete role ${role.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete role</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          );
+        },
       },
     ],
-    [handleEdit, handleDelete]
+    [handleEdit, handleDelete, deleteRoleMutation.isPending, updateRoleMutation.isPending]
   );
 
   const isSubmitting = createRoleMutation.isPending || updateRoleMutation.isPending;
@@ -571,7 +589,7 @@ export function RoleManagement() {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <p className="text-muted-foreground">Failed to load roles. Please try again.</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) })}>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) })} aria-label="Retry loading roles">
           Retry
         </Button>
       </div>
@@ -589,7 +607,7 @@ export function RoleManagement() {
               Create and manage custom roles with specific permissions for your team
             </p>
           </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
+          <Button onClick={() => setIsDialogOpen(true)} disabled={isSubmitting} aria-label="Create new role">
             <Plus className="h-4 w-4 mr-2" />
             Create Role
           </Button>
@@ -755,10 +773,10 @@ export function RoleManagement() {
             </div>
 
             <DialogFooter className="mt-4 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>
+              <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting} aria-label="Cancel role form">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formData.name.trim()}>
+              <Button type="submit" disabled={isSubmitting || !formData.name.trim()} aria-label={editingRole ? 'Update role' : 'Create role'}>
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingRole ? 'Update Role' : 'Create Role'}
               </Button>
@@ -786,5 +804,4 @@ export function RoleManagement() {
   );
 }
 
-// Named export only (no default export per project conventions)
 export default RoleManagement;
