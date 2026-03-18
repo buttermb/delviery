@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { notifyDeliveryAlert } from '@/components/notifications/notificationHelpers';
 
 interface DeliveryExceptionHandlerProps {
   deliveryId: string;
@@ -31,7 +32,7 @@ interface DeliveryExceptionHandlerProps {
 type ExceptionType = 'wrong_address' | 'no_answer' | 'refused' | 'damaged' | 'other';
 
 export function DeliveryExceptionHandler({ deliveryId, orderId }: DeliveryExceptionHandlerProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [exceptionType, setExceptionType] = useState<ExceptionType | ''>('');
   const [notes, setNotes] = useState('');

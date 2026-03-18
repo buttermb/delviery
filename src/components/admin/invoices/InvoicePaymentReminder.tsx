@@ -37,6 +37,9 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
 import { Bell, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/hooks/useTenantAdminAuth";
+import { queryKeys } from "@/lib/queryKeys";
 
 const reminderSchema = z.object({
   invoice_id: z.string(),
