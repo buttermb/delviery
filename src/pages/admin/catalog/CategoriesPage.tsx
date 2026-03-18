@@ -3,15 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Plus,
   Search,
@@ -25,6 +16,13 @@ import {
   Package,
   ExternalLink,
 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +38,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -47,12 +46,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { queryKeys } from '@/lib/queryKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { TruncatedText } from '@/components/shared/TruncatedText';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 // --- Types ---
 
@@ -84,7 +85,7 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 // --- Component ---
 
 export default function CategoriesPage() {
-  const { navigateToAdmin, navigate, tenantSlug } = useTenantNavigation();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
@@ -142,13 +143,14 @@ export default function CategoriesPage() {
         if (error) throw error;
         setTableMissing(false);
         return (data ?? []) as Category[];
-      } catch (error) {
-        if ((error as { code?: string })?.code === '42P01') {
+      } catch (err: unknown) {
+        const pgCode = (err as { code?: string })?.code;
+        if (pgCode === '42P01') {
           setTableMissing(true);
           return [];
         }
-        handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to load categories' });
-        throw error;
+        handleError(err, { component: 'CategoriesPage', toastTitle: 'Failed to load categories' });
+        throw err;
       }
     },
     enabled: !!tenantId,
@@ -169,18 +171,18 @@ export default function CategoriesPage() {
           .not('category_id', 'is', null);
 
         if (error && error.code !== '42P01') {
-          logger.warn('Failed to fetch products for category counts', { error });
+          logger.warn('Failed to fetch products for category counts', { error, tenantId });
         }
 
         const counts = new Map<string, number>();
-        (products ?? []).forEach(p => {
+        for (const p of products ?? []) {
           if (p.category_id) {
             counts.set(p.category_id, (counts.get(p.category_id) ?? 0) + 1);
           }
-        });
+        }
         return counts;
-      } catch (error) {
-        logger.error('Failed to calculate product counts', { error });
+      } catch (err: unknown) {
+        logger.error('Failed to calculate product counts', { error: err, tenantId });
         return new Map<string, number>();
       }
     },
@@ -340,9 +342,8 @@ export default function CategoriesPage() {
   }, []);
 
   const navigateToFilteredProducts = useCallback((categoryId: string) => {
-    const basePath = tenantSlug ? `/${tenantSlug}` : '';
-    navigate(`${basePath}/admin/products?category_id=${categoryId}`);
-  }, [navigate, tenantSlug]);
+    navigateToAdmin(`products?category_id=${categoryId}`);
+  }, [navigateToAdmin]);
 
   // --- Derived Data ---
 
@@ -361,9 +362,36 @@ export default function CategoriesPage() {
   const totalProducts = useMemo(() => {
     if (!productCounts) return 0;
     let total = 0;
-    productCounts.forEach(count => { total += count; });
+    for (const count of productCounts.values()) {
+      total += count;
+    }
     return total;
   }, [productCounts]);
+
+  /** Collect all descendant IDs for a category to prevent circular parent selection */
+  const getDescendantIds = useCallback((categoryId: string, allCategories: Category[]): Set<string> => {
+    const descendants = new Set<string>();
+    const queue = [categoryId];
+    while (queue.length > 0) {
+      const currentId = queue.pop()!;
+      for (const cat of allCategories) {
+        if (cat.parent_id === currentId && !descendants.has(cat.id)) {
+          descendants.add(cat.id);
+          queue.push(cat.id);
+        }
+      }
+    }
+    return descendants;
+  }, []);
+
+  /** Categories available as parent options (excludes self and descendants when editing) */
+  const availableParentCategories = useMemo(() => {
+    if (!categories) return [];
+    if (!editingCategory) return categories;
+    const excluded = getDescendantIds(editingCategory.id, categories);
+    excluded.add(editingCategory.id);
+    return categories.filter(c => !excluded.has(c.id));
+  }, [categories, editingCategory, getDescendantIds]);
 
   const isFormPending = createCategory.isPending || updateCategory.isPending;
 
@@ -597,7 +625,7 @@ export default function CategoriesPage() {
       )}
 
       {/* Create/Edit Category Dialog */}
-      <Dialog open={dialogOpen || !!editingCategory} onOpenChange={(open) => {
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
         if (!open) closeDialog();
       }}>
         <DialogContent>
@@ -658,13 +686,11 @@ export default function CategoriesPage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="__none__">None (top-level)</SelectItem>
-                        {categories
-                          ?.filter(c => c.id !== editingCategory?.id)
-                          .map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                        {availableParentCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
