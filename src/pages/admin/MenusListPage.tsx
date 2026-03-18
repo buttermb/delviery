@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import LinkIcon from "lucide-react/dist/esm/icons/link";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
 import Filter from "lucide-react/dist/esm/icons/filter";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,19 +42,34 @@ export function MenusListPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-    const { data: menus, isLoading } = useDisposableMenus(tenant?.id);
+    const { data: menus, isLoading, isError, refetch } = useDisposableMenus(tenant?.id);
     const mod = useModifierKey();
 
-    const filteredMenus = menus?.filter((menu) => {
-        const matchesSearch =
-            menu.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (menu.description && typeof menu.description === 'string' &&
-                menu.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Keyboard shortcut: Cmd/Ctrl+N to open create dialog
+    const openCreateDialog = useCallback(() => setCreateDialogOpen(true), []);
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'n' && !e.shiftKey) {
+                e.preventDefault();
+                openCreateDialog();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [openCreateDialog]);
 
-        const matchesStatus = statusFilter === 'all' ? true : menu.status === statusFilter;
+    const filteredMenus = useMemo(() =>
+        menus?.filter((menu) => {
+            const matchesSearch =
+                menu.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (menu.description && typeof menu.description === 'string' &&
+                    menu.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        return matchesSearch && matchesStatus;
-    }) ?? [];
+            const matchesStatus = statusFilter === 'all' ? true : menu.status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        }) ?? []
+    , [menus, searchQuery, statusFilter]);
 
     // Pagination
     const {
@@ -71,12 +87,26 @@ export function MenusListPage() {
         urlKey: 'menus',
     });
 
-    // Calculate stats
-    const activeMenus = menus?.filter(m => m.status === 'active').length ?? 0;
-    const totalViews = menus?.reduce((sum, m) => sum + (m.view_count ?? 0), 0) ?? 0;
-    const totalOrders = menus?.reduce((sum, m) => sum + (m.order_count ?? 0), 0) ?? 0;
-    const totalRevenue = menus?.reduce((sum, m) => sum + (m.total_revenue ?? 0), 0) ?? 0;
+    // Calculate stats (memoized)
+    const { activeMenus, totalViews, totalOrders, totalRevenue } = useMemo(() => ({
+        activeMenus: menus?.filter(m => m.status === 'active').length ?? 0,
+        totalViews: menus?.reduce((sum, m) => sum + (m.view_count ?? 0), 0) ?? 0,
+        totalOrders: menus?.reduce((sum, m) => sum + (m.order_count ?? 0), 0) ?? 0,
+        totalRevenue: menus?.reduce((sum, m) => sum + (m.total_revenue ?? 0), 0) ?? 0,
+    }), [menus]);
 
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+                <p className="text-destructive font-medium">Failed to load menus</p>
+                <p className="text-sm text-muted-foreground mt-1">An unexpected error occurred while loading your menus.</p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4 p-4 pb-16">
@@ -88,7 +118,7 @@ export function MenusListPage() {
                     </p>
                 </div>
                 <ShortcutHint keys={[mod, "N"]} label="New">
-                    <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Button onClick={openCreateDialog}>
                         <Plus className="mr-2 h-4 w-4" /> Create Menu
                     </Button>
                 </ShortcutHint>
@@ -239,7 +269,7 @@ export function MenusListPage() {
                             }
                             primaryAction={!searchQuery && statusFilter === 'all' ? {
                                 label: "Create Menu",
-                                onClick: () => setCreateDialogOpen(true),
+                                onClick: openCreateDialog,
                                 icon: Plus
                             } : undefined}
                         />
