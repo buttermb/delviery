@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showInfoToast, showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useEscalateClient } from "@/hooks/useFinancialData";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -43,8 +44,10 @@ export default function ClientDetail() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [creditLimitDialogOpen, setCreditLimitDialogOpen] = useState(false);
+  const [escalateDialogOpen, setEscalateDialogOpen] = useState(false);
   const [newCreditLimit, setNewCreditLimit] = useState("");
   const queryClient = useQueryClient();
+  const escalateClient = useEscalateClient();
 
   // Mutation to delete client
   const deleteClientMutation = useMutation({
@@ -319,10 +322,10 @@ export default function ClientDetail() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => {
-                  showSuccessToast("Escalated", `${displayClient.business_name} escalated to collections team`);
-                }}
+                onClick={() => setEscalateDialogOpen(true)}
+                disabled={escalateClient.isPending}
               >
+                {escalateClient.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Escalate
               </Button>
@@ -611,6 +614,25 @@ export default function ClientDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Escalation Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={escalateDialogOpen}
+        onOpenChange={setEscalateDialogOpen}
+        onConfirm={() =>
+          escalateClient.mutateAsync({
+            client_id: displayClient.id,
+            client_name: displayClient.business_name,
+            outstanding_amount: displayClient.outstanding_balance,
+          })
+        }
+        title="Escalate to Collections"
+        description={`This will escalate ${displayClient.business_name} to the collections team and suspend their account. Outstanding balance: ${formatCurrency(displayClient.outstanding_balance)}. This action cannot be easily undone.`}
+        itemName={displayClient.business_name}
+        itemType="account"
+        destructive={true}
+        isLoading={escalateClient.isPending}
+      />
     </div>
   );
 }
