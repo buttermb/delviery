@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --marketing-bg: 0 0% 100%;
+        --marketing-text: 222 47% 11%;
+        --marketing-text-light: 215 16% 47%;
+        --marketing-primary: 160 84% 39%;
+        --marketing-secondary: 160 84% 29%;
+        --marketing-accent: 187 92% 35%;
+        --marketing-border: 214 32% 91%;
+    }
+}

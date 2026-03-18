@@ -1,0 +1,511 @@
+project_id = "mtvwmyerntkhrcdnhahp"
+
+[functions]
+# typecheck = false
+
+
+# ===========================================
+# AUTH & PUBLIC ENDPOINTS (no JWT required)
+# ===========================================
+
+[functions.tenant-signup]
+verify_jwt = false
+
+[functions.tenant-admin-auth]
+verify_jwt = false
+
+[functions.super-admin-auth]
+verify_jwt = false
+
+[functions.admin-auth]
+verify_jwt = false
+
+[functions.customer-auth]
+verify_jwt = false
+
+[functions.verify-email-code]
+verify_jwt = false
+
+[functions.clerk-webhook]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.check-stripe-config]
+verify_jwt = false
+
+[functions.validate-tenant]
+verify_jwt = false
+
+[functions.check-sendgrid-config]
+verify_jwt = false
+
+[functions.check-twilio-config]
+verify_jwt = false
+
+[functions.portal-data]
+verify_jwt = false
+
+[functions.api]
+verify_jwt = false
+
+# ===========================================
+# MENU ACCESS (public-facing, no JWT)
+# ===========================================
+
+[functions.menu-access-validate]
+verify_jwt = false
+
+[functions.access-encrypted-menu]
+verify_jwt = false
+
+[functions.access-encrypted-menu-v2]
+verify_jwt = false
+
+[functions.menu-order-place]
+verify_jwt = false
+
+[functions.notify-order-placed]
+verify_jwt = false
+
+[functions.track-access]
+verify_jwt = false
+
+[functions.leafly-suggestions]
+verify_jwt = false
+
+[functions.send-menu-access-link]
+verify_jwt = false
+
+[functions.pricing-advisor]
+verify_jwt = false
+
+# ===========================================
+# SCHEDULED/CRON JOBS (no JWT - service calls)
+# ===========================================
+
+[functions.send-trial-reminder]
+verify_jwt = false
+
+[functions.check-trial-reminders]
+verify_jwt = false
+
+[functions.check-expired-trials]
+verify_jwt = false
+
+[functions.retry-failed-emails]
+verify_jwt = false
+
+[functions.send-trial-expiration-notice]
+verify_jwt = false
+
+[functions.send-trial-expired-notice]
+verify_jwt = false
+
+[functions.enforce-tenant-limits]
+verify_jwt = false
+
+[functions.check-usage-limits]
+verify_jwt = false
+
+[functions.invoice-management]
+verify_jwt = false
+
+[functions.admin-api-operations]
+verify_jwt = false
+
+[functions.credit-threshold-alerts]
+verify_jwt = false
+
+[functions.credit-usage-reset]
+verify_jwt = false
+
+[functions.credit-warning-emails]
+verify_jwt = false
+
+[functions.collect-metrics]
+verify_jwt = false
+
+[functions.uptime-checker]
+verify_jwt = false
+
+[functions.weekly-encryption-report]
+verify_jwt = false
+
+[functions.process-delivery-notifications]
+verify_jwt = false
+
+[functions.detect-orphaned-orders]
+verify_jwt = false
+# schedule = "0 2 * * *"
+
+# ===========================================
+# VERIFICATION ENDPOINTS (public for OTP/email flows)
+# ===========================================
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-phone]
+verify_jwt = false
+
+[functions.validate-phone]
+verify_jwt = false
+
+[functions.validate-email]
+verify_jwt = false
+
+[functions.verify-email]
+verify_jwt = false
+
+[functions.send-verification-email]
+verify_jwt = false
+
+[functions.send-verification-sms]
+verify_jwt = false
+
+[functions.request-password-reset]
+verify_jwt = false
+
+[functions.reset-password]
+verify_jwt = false
+
+# ===========================================
+# COURIER APP (public for driver access)
+# ===========================================
+
+[functions.courier-app]
+verify_jwt = false
+
+[functions.runner-location-update]
+verify_jwt = false
+
+[functions.calculate-eta]
+verify_jwt = false
+
+[functions.check-geofence]
+verify_jwt = false
+
+[functions.realtime-tracking]
+verify_jwt = false
+
+# ===========================================
+# MARKETPLACE (public storefront access)
+# ===========================================
+
+[functions.create-marketplace-order]
+verify_jwt = false
+
+[functions.create-marketplace-profile]
+verify_jwt = false
+
+[functions.storefront-checkout]
+verify_jwt = false
+
+[functions.send-order-confirmation]
+verify_jwt = false
+
+[functions.storefront-stripe-webhook]
+verify_jwt = false
+
+# ===========================================
+# PROTECTED ENDPOINTS (JWT required)
+# ===========================================
+
+# Trial & Subscription
+[functions.start-trial]
+verify_jwt = true
+
+[functions.cancel-trial]
+verify_jwt = true
+
+[functions.update-trial-status]
+verify_jwt = true
+
+[functions.update-subscription]
+verify_jwt = true
+
+[functions.stripe-customer-portal]
+verify_jwt = true
+
+[functions.verify-tenant-stripe]
+verify_jwt = true
+
+[functions.create-setup-session]
+verify_jwt = true
+
+[functions.tenant-stripe-checkout]
+verify_jwt = true
+
+[functions.create-stripe-connect]
+verify_jwt = true
+
+[functions.setup-stripe-products]
+verify_jwt = true
+
+[functions.billing]
+verify_jwt = true
+
+[functions.create-stripe-refund]
+verify_jwt = true
+
+[functions.retry-stripe-payment]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.process-payment]
+verify_jwt = true
+
+[functions.purchase-credits]
+verify_jwt = true
+
+[functions.credits-balance]
+verify_jwt = false
+
+[functions.grant-free-credits]
+verify_jwt = true
+
+[functions.process-auto-topup]
+verify_jwt = true
+
+# Menu Management
+[functions.menu-generate]
+verify_jwt = true
+
+[functions.menu-burn]
+verify_jwt = true
+
+[functions.menu-whitelist-manage]
+verify_jwt = true
+
+[functions.menu-parse]
+verify_jwt = true
+
+[functions.menu-ocr]
+verify_jwt = true
+
+[functions.create-encrypted-menu]
+verify_jwt = true
+
+[functions.convert-menu-order-to-invoice]
+verify_jwt = true
+
+# Product Management
+[functions.generate-product-images]
+verify_jwt = true
+
+[functions.generate-product-barcode]
+verify_jwt = true
+
+[functions.sync-product-to-menu]
+verify_jwt = true
+
+[functions.process-product-image]
+verify_jwt = true
+
+# Tenant & Team Management
+[functions.tenant-invite]
+verify_jwt = true
+
+[functions.impersonate-tenant]
+verify_jwt = true
+
+[functions.apply-tier-preset]
+verify_jwt = true
+
+[functions.staff-management]
+verify_jwt = true
+
+[functions.create-user-profile]
+verify_jwt = true
+
+# Orders & Payments
+[functions.create-order]
+verify_jwt = true
+
+[functions.update-order-status]
+verify_jwt = true
+
+[functions.check-order-fraud]
+verify_jwt = true
+
+[functions.process-return]
+verify_jwt = true
+
+[functions.create-purchase-order]
+verify_jwt = true
+
+[functions.receive-purchase-order]
+verify_jwt = true
+
+# Notifications & Communications
+[functions.send-notification]
+verify_jwt = true
+
+[functions.send-sms]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.send-invitation-email]
+verify_jwt = true
+
+[functions.send-klaviyo-email]
+verify_jwt = true
+
+[functions.send-klaviyo-sms]
+verify_jwt = true
+
+[functions.send-marketing-campaign]
+verify_jwt = true
+
+[functions.execute-marketing-workflow]
+verify_jwt = true
+
+[functions.send-scheduled-report]
+verify_jwt = true
+
+[functions.notify-recall]
+verify_jwt = true
+
+[functions.send-webhook]
+verify_jwt = true
+
+[functions.customer-chat]
+verify_jwt = true
+
+# Loyalty & Rewards
+[functions.redeem-loyalty-reward]
+verify_jwt = true
+
+# Reports & Analytics
+[functions.reports]
+verify_jwt = true
+
+[functions.generate-report]
+verify_jwt = true
+
+[functions.generate-custom-report]
+verify_jwt = true
+
+[functions.export-customer-data]
+verify_jwt = true
+
+[functions.process-data-export]
+verify_jwt = true
+
+[functions.compliance-report]
+verify_jwt = true
+
+# GDPR & Compliance
+[functions.gdpr-export]
+verify_jwt = true
+
+[functions.gdpr-erase]
+verify_jwt = true
+
+[functions.gdpr-portability]
+verify_jwt = true
+
+[functions.delete-customer-account]
+verify_jwt = true
+
+# Wholesale Operations
+[functions.wholesale-order-create]
+verify_jwt = true
+
+[functions.wholesale-delivery-assign]
+verify_jwt = true
+
+[functions.wholesale-delivery-update]
+verify_jwt = true
+
+[functions.wholesale-payment-process]
+verify_jwt = true
+
+# Delivery & Logistics
+[functions.assign-courier]
+verify_jwt = true
+
+[functions.add-courier]
+verify_jwt = true
+
+[functions.optimize-route]
+verify_jwt = true
+
+# AI & Automation
+[functions.predict-revenue]
+verify_jwt = true
+
+[functions.assess-risk]
+verify_jwt = true
+
+[functions.marketing-automation]
+verify_jwt = true
+
+[functions.run-automation]
+verify_jwt = true
+
+[functions.workflow-executor]
+verify_jwt = true
+
+[functions.workflows]
+verify_jwt = true
+
+# Security & Sessions
+[functions.get-active-sessions]
+verify_jwt = true
+
+[functions.revoke-all-sessions]
+verify_jwt = true
+
+[functions.verify-backup-code]
+verify_jwt = true
+
+[functions.log-security-event]
+verify_jwt = true
+
+[functions.verify-age-jumio]
+verify_jwt = true
+
+[functions.detect-fraud]
+verify_jwt = true
+
+# Admin Operations
+[functions.admin-dashboard]
+verify_jwt = true
+
+[functions.admin-actions]
+verify_jwt = true
+
+[functions.admin-database-backup]
+verify_jwt = true
+
+[functions.admin-database-maintenance]
+verify_jwt = true
+
+[functions.create-admin-user]
+verify_jwt = true
+
+[functions.create-super-admin]
+verify_jwt = true
+
+# Other Protected Functions
+[functions.forum-approvals]
+verify_jwt = true
+
+[functions.seed-demo-data]
+verify_jwt = true
+
+[functions.encrypt-all-data]
+verify_jwt = true
+
+[functions.encrypted-operations]
+verify_jwt = true
+
+[functions.panic-reset]
+verify_jwt = true

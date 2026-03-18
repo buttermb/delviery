@@ -20,7 +20,6 @@ import {
     Plus,
     MoreHorizontal,
     FileText,
-    Filter,
     CheckCircle,
     Clock,
     DollarSign,
@@ -38,7 +37,7 @@ import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { TruncatedText } from "@/components/shared/TruncatedText";
-import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
@@ -854,6 +853,13 @@ export function InvoicesPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
+                            navigate(`/${tenantSlug}/admin/advanced-invoice?edit=${invoice.id}`);
+                        }}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Edit in Builder
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
                             handleDuplicateInvoice.execute(invoice.id);
                         }}>
                             <Copy className="mr-2 h-4 w-4" />
@@ -977,6 +983,13 @@ export function InvoicesPage() {
                             }}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 Download PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3" onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/${tenantSlug}/admin/advanced-invoice?edit=${invoice.id}`);
+                            }}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Edit in Builder
                             </DropdownMenuItem>
                             <DropdownMenuItem className="py-3" onClick={(e) => {
                                 e.stopPropagation();
@@ -1107,46 +1120,57 @@ export function InvoicesPage() {
                             ]}
                         />
                         <ShortcutHint keys={[mod, "N"]} label="New">
-                            <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                            <Button onClick={() => navigate(`/${tenantSlug}/admin/advanced-invoice`)}>
                                 <Plus className="mr-2 h-4 w-4" /> Create Invoice
                             </Button>
                         </ShortcutHint>
                     </>
                 }
                 filters={
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2 w-full md:w-auto justify-center">
-                                <Filter className="h-4 w-4" />
-                                Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[200px]">
-                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter(null)}>
-                                All Statuses
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("draft")}>
-                                Draft
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("sent")}>
-                                Sent
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
-                                Paid
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
-                                Partially Paid
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
-                                Overdue
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("cancelled")}>
-                                Cancelled
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none max-w-full">
+                        <Badge 
+                            variant={statusFilter === null ? "default" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap" 
+                            onClick={() => setStatusFilter(null)}
+                        >
+                            All
+                        </Badge>
+                        <Badge 
+                            variant={statusFilter === "draft" ? "default" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap bg-gray-100/50 hover:bg-gray-100 dark:bg-gray-900/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800" 
+                            onClick={() => setStatusFilter("draft")}
+                        >
+                            Draft
+                        </Badge>
+                        <Badge 
+                            variant={statusFilter === "sent" ? "default" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap bg-blue-100/50 hover:bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" 
+                            onClick={() => setStatusFilter("sent")}
+                        >
+                            Sent
+                        </Badge>
+                        <Badge 
+                            variant={statusFilter === "partially_paid" ? "default" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap bg-amber-100/50 hover:bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800" 
+                            onClick={() => setStatusFilter("partially_paid")}
+                        >
+                            Partial
+                        </Badge>
+                        <Badge 
+                            variant={statusFilter === "paid" ? "default" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap bg-emerald-100/50 hover:bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
+                            onClick={() => setStatusFilter("paid")}
+                        >
+                            Paid
+                        </Badge>
+                        <Badge 
+                            variant={statusFilter === "overdue" ? "destructive" : "outline"} 
+                            className="cursor-pointer whitespace-nowrap" 
+                            onClick={() => setStatusFilter("overdue")}
+                        >
+                            Overdue
+                        </Badge>
+                    </div>
                 }
             />
 
@@ -1163,9 +1187,13 @@ export function InvoicesPage() {
                     label: "Clear Filters",
                     onClick: () => { setSearchQuery(""); setStatusFilter(null); },
                 } : {
-                    label: "Create Invoice",
-                    onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
+                    label: "Advanced Builder",
+                    onClick: () => navigate(`/${tenantSlug}/admin/advanced-invoice`),
                     icon: Plus
+                }}
+                emptyStateSecondaryAction={searchQuery || statusFilter ? undefined : {
+                    label: "Quick Invoice",
+                    onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`)
                 }}
             />
 
@@ -1184,15 +1212,17 @@ export function InvoicesPage() {
             )}
 
             <ConfirmDialog
-                isOpen={voidDialogOpen}
+                open={voidDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setVoidDialogOpen(false);
+                        setInvoiceToVoid(null);
+                    }
+                }}
                 onConfirm={() => {
                     if (invoiceToVoid) {
                         handleVoidInvoice.execute(invoiceToVoid.id);
                     }
-                    setVoidDialogOpen(false);
-                    setInvoiceToVoid(null);
-                }}
-                onCancel={() => {
                     setVoidDialogOpen(false);
                     setInvoiceToVoid(null);
                 }}

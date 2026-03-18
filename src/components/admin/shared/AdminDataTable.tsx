@@ -32,6 +32,10 @@ export interface AdminDataTableProps<T> {
         onClick: () => void;
         icon?: React.ElementType | React.ReactNode;
     };
+    emptyStateSecondaryAction?: {
+        label: string;
+        onClick: () => void;
+    };
 
     // Responsive / View Mode
     viewMode?: "list" | "grid";
@@ -62,6 +66,7 @@ export function AdminDataTable<T>({
     emptyStateDescription = "You have no records to display. Create one to get started.",
     emptyStateIcon,
     emptyStateAction,
+    emptyStateSecondaryAction,
     viewMode = "list",
     renderGridItem,
     renderMobileItem,
@@ -159,6 +164,7 @@ export function AdminDataTable<T>({
                             description={emptyStateDescription}
                             icon={emptyStateIcon as React.ReactNode}
                             primaryAction={emptyStateAction as any}
+                            secondaryAction={emptyStateSecondaryAction}
                         />
                     </div>
                 ) : viewMode === "grid" && renderGridItem ? (

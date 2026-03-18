@@ -1,0 +1,20 @@
+﻿fdfb1d49 fix: delete StickyMobileCTA component and remove from MarketingHome
+94ea21e7 fix: update marketing SEO title to Cannabis Wholesale Operations Platform
+6da5a11e fix: add og:image prop to SEOHead in MarketingHome
+dc06f3bb fix: replace useToast with sonner toast in SettingsPage, verify useAccount is correctly scoped
+d4061f0c fix: resolve SettingsPage nested tabs conflict with embedded prop
+c4d027b1 fix: remove invalid 'void' status check from InvoiceDetailPage
+98c087dd fix: rename misleading 'overdue' filter to 'high_balance' in WholesaleClients
+0a0f5370 fix: replace useToast with sonner toast in CashRegister
+ea25bca0 fix: standardize marketing colors on emerald CSS variables
+56fdcb85 fix: replace marketing hero copy with accurate platform messaging
+72cd72da fix: remove heavy marketing components to fix LCP
+b2e99d03 fix: remove dead _FrontedInventory lazy import from FinanceHubPage
+fee70963 fix: replace inline query keys with queryKeys factory in InventoryDashboard
+78b59dc7 fix: add tenant_id filter to InventoryDashboard realtime subscription
+46569630 fix: use event-based cache invalidation for customer delete
+af81d14b fix: remove orphaned SMS state and UI from WholesaleClients
+5a9bc18c fix: add converted_to_invoice_id to menu_orders query select
+dd815e9d fix: add OrderDetailsPage route to admin routes in App.tsx
+5d78c2ad fix: resolve schema mismatches in useProductsForMenu, WholesaleClients, AddProductsStep, ShopLayout
+f3bafdad fix: migrate CustomerManagement from useEffect/useState to useQuery

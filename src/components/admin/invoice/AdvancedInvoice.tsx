@@ -4,7 +4,8 @@
  * Professional invoicing with multiple features
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,14 @@ import {
 } from 'lucide-react';
 import { InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
 import { toast } from 'sonner';
+
+// Database Hooks
+import { useClients } from '@/hooks/crm/useClients';
+import { useInvoices, useCreateInvoice, useUpdateInvoice } from '@/hooks/crm/useInvoices';
+import { useCRMSettings } from '@/hooks/crm/useCRMSettings';
+import { Loader2 } from 'lucide-react';
+import { CRMClient } from '@/types/crm';
+
 interface InvoiceItem {
   id: string;
   description: string;
@@ -44,6 +53,7 @@ interface InvoiceData {
   issueDate: string;
   dueDate: string;
   status: 'draft' | 'sent' | 'paid' | 'overdue';
+  clientId: string;
   customerName: string;
   customerEmail: string;
   customerAddress?: string;
@@ -59,11 +69,22 @@ interface InvoiceData {
 
 export function AdvancedInvoice() {
   const { navigateToAdmin } = useTenantNavigation();
+  const [searchParams] = useSearchParams();
+  const editInvoiceId = searchParams.get('edit');
+
+  const { data: clients, isLoading: clientsLoading } = useClients();
+  const { useInvoiceQuery } = useInvoices();
+  const { data: existingInvoice, isLoading: loadingExisting } = useInvoiceQuery(editInvoiceId || '');
+  const { data: crmSettings } = useCRMSettings();
+  const createInvoice = useCreateInvoice();
+  const updateInvoice = useUpdateInvoice();
+
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: `INV-${Date.now()}`,
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'draft',
+    clientId: '',
     customerName: '',
     customerEmail: '',
     customerAddress: '',
@@ -78,6 +99,60 @@ export function AdvancedInvoice() {
     notes: '',
     terms: 'Payment due within 30 days',
   });
+
+  useEffect(() => {
+    if (crmSettings && !editInvoiceId) {
+      setInvoice(prev => ({
+        ...prev,
+        companyName: crmSettings.company_name || 'Your Company',
+        companyAddress: crmSettings.company_address || '',
+        terms: crmSettings.default_payment_terms ? `Net ${crmSettings.default_payment_terms}` : 'Due on receipt'
+      }));
+    }
+  }, [crmSettings, editInvoiceId]);
+
+  useEffect(() => {
+    if (existingInvoice && editInvoiceId) {
+      const mappedItems = existingInvoice.line_items?.map((li: any) => ({
+        id: li.id || crypto.randomUUID(),
+        description: li.description || li.product_name || '',
+        quantity: li.quantity || 1,
+        unitPrice: li.unit_price || 0,
+        taxRate: existingInvoice.tax_rate || 0,
+        total: li.line_total || 0
+      })) || [{ id: '1', description: '', quantity: 1, unitPrice: 0, taxRate: 0, total: 0 }];
+
+      setInvoice({
+        invoiceNumber: existingInvoice.invoice_number,
+        issueDate: new Date(existingInvoice.invoice_date).toISOString().split('T')[0],
+        dueDate: new Date(existingInvoice.due_date).toISOString().split('T')[0],
+        status: existingInvoice.status as any,
+        clientId: existingInvoice.client_id,
+        customerName: existingInvoice.client?.name || '',
+        customerEmail: existingInvoice.client?.email || '',
+        companyName: crmSettings?.company_name || 'Your Company',
+        companyAddress: crmSettings?.company_address || '',
+        lineItems: mappedItems,
+        subtotal: existingInvoice.subtotal,
+        tax: existingInvoice.tax_amount || 0,
+        total: existingInvoice.total,
+        notes: existingInvoice.notes || '',
+        terms: '', // Not strictly in DB Schema yet
+      });
+    }
+  }, [existingInvoice, editInvoiceId, crmSettings]);
+
+  const handleClientChange = (clientId: string) => {
+    const activeClient = clients?.find(c => c.id === clientId);
+    if (activeClient) {
+      setInvoice({
+        ...invoice,
+        clientId,
+        customerName: activeClient.name,
+        customerEmail: activeClient.email || '',
+      });
+    }
+  };
 
   const addItem = () => {
     setInvoice({
@@ -131,8 +206,42 @@ export function AdvancedInvoice() {
     }));
   };
 
-  const handleSave = () => {
-    toast.success("Invoice has been saved as draft");
+  const handleSave = async () => {
+    if (!invoice.clientId) {
+      toast.error('Please select a customer');
+      return;
+    }
+
+    try {
+      const payload = {
+        client_id: invoice.clientId,
+        invoice_date: invoice.issueDate,
+        due_date: invoice.dueDate,
+        tax_rate: invoice.lineItems[0]?.taxRate || 0, // Fallback to first line item tax rate
+        subtotal: invoice.subtotal,
+        tax_amount: invoice.tax,
+        total: invoice.total,
+        status: invoice.status,
+        notes: invoice.notes,
+        line_items: invoice.lineItems.map(item => ({
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          line_total: item.total
+        }))
+      };
+
+      if (editInvoiceId) {
+        await updateInvoice.mutateAsync({ id: editInvoiceId, ...payload } as any);
+      } else {
+        const newInvoice = await createInvoice.mutateAsync(payload as any);
+        if (newInvoice?.id) {
+          navigateToAdmin(`crm/invoices/${newInvoice.id}`);
+        }
+      }
+    } catch {
+      // handeled by hook toast
+    }
   };
 
   const handleSend = () => {
@@ -177,8 +286,16 @@ ${invoice.companyName}
     }
   };
 
+  if (editInvoiceId && loadingExisting) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Header */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-4">
@@ -188,10 +305,10 @@ ${invoice.companyName}
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <FileText className="h-6 w-6" />
-              Create Invoice
+              {editInvoiceId ? 'Edit Invoice' : 'Create Invoice'}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Professional invoicing inspired by Invoice Ninja
+              Professional invoicing builder
             </p>
           </div>
         </div>
@@ -199,8 +316,8 @@ ${invoice.companyName}
           <Badge className={getStatusColor(invoice.status)}>
             {invoice.status.toUpperCase()}
           </Badge>
-          <Button variant="outline" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={handleSave} disabled={createInvoice.isPending || updateInvoice.isPending}>
+            {createInvoice.isPending || updateInvoice.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save
           </Button>
           <Button variant="outline" onClick={handleSend}>
@@ -271,11 +388,23 @@ ${invoice.companyName}
                   />
                 </div>
                 <div>
-                  <Label className="print:hidden">Customer Name</Label>
+                  <Label className="print:hidden">Customer</Label>
+                  <div className="print:hidden">
+                    <Select value={invoice.clientId} onValueChange={handleClientChange} disabled={clientsLoading}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients?.map((c: CRMClient) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Input
                     value={invoice.customerName}
-                    onChange={(e) => setInvoice({ ...invoice, customerName: e.target.value })}
-                    className="print:border-none print:p-0 print:font-bold"
+                    readOnly
+                    className="hidden print:block print:border-none print:p-0 print:font-bold"
                   />
                 </div>
                 <div>
@@ -294,6 +423,7 @@ ${invoice.companyName}
                     value={invoice.customerEmail}
                     onChange={(e) => setInvoice({ ...invoice, customerEmail: e.target.value })}
                     className="print:border-none print:p-0"
+                    readOnly
                   />
                 </div>
               </div>
@@ -429,7 +559,7 @@ ${invoice.companyName}
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <InvoiceDownloadButton invoice={invoice} />
+              <InvoiceDownloadButton invoice={invoice as any} />
               <Button variant="outline" className="w-full" onClick={handlePreview}>
                 <Eye className="h-4 w-4 mr-2" />
                 Preview PDF

@@ -1,0 +1,508 @@
+- Tenants relation provides store business_name
+- Status timeline handles cancelled state separately
+- Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
+
+## task-207: Create delivery runner mobile view
+- Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
+- Shows assigned deliveries in route order with numbered badges
+- Each delivery card displays customer name, address, items, special instructions, total amount
+- Navigate button opens Google Maps (Android) or Apple Maps (iOS) with address or coordinates
+- Call button allows direct phone call to customer
+- Status update buttons: Pick Up -> Start Delivery -> Delivered (using mutation pattern)
+- Photo proof of delivery modal with camera capture and delivery notes
+- Offline support with localStorage queue for status updates
+- Auto-sync offline queue when connection restored
+- Supabase realtime subscription for live delivery updates
+- Used useOnlineStatus hook for connection detection
+- Maps delivery status from orders table to delivery status types
+- Expandable delivery cards show full item list and instructions
+
+## task-208: Create delivery notification chain
+- Created src/hooks/useDeliveryNotifications.ts for automated delivery notifications
+- Follows useNotificationDispatcher and useOrderStatusNotification patterns
+- Listens to delivery_status_changed events from eventBus
+- Notification chain by status:
+  - assigned: Notifies runner with customer info and order number
+  - picked_up: Notifies customer "Your order is on its way!" + optional SMS
+  - nearby: Geo-proximity notification "Your delivery is almost there!" + optional SMS
+  - delivered: Notifies customer + admin of completion + optional SMS
+  - failed/cancelled: Notifies admin, cancelled also notifies customer
+- SMS notifications via existing send-sms Edge Function (Twilio)
+- checkNearbyAndNotify() calculates Haversine distance between runner and customer
+- nearbyThresholdMeters config (default 500m) for proximity triggering
+- Uses Set to prevent duplicate nearby notifications per delivery
+- Fetches delivery info from unified_orders with fallback to orders table
+- All queries filter by tenant_id for multi-tenant isolation
+- ESLint warning fixed by copying ref value for cleanup function
+- Publishes notification_sent event after each notification
+
+
+## task-209: Create delivery proof of delivery
+- Created src/components/admin/delivery/ProofOfDelivery.tsx for capturing proof of delivery
+- Component captures photo evidence, customer signature, recipient name, and delivery notes
+- Uses react-signature-canvas for signature capture on canvas
+- Photo upload supports both file selection and device camera capture
+- Form validation with react-hook-form + zod schema
+- Geolocation capture for delivery location verification (lat/lng with accuracy)
+- Uploads images to Supabase Storage "delivery-proofs" bucket
+- Stores proof in delivery_proofs table (with graceful fallback if table doesn't exist yet)
+- Generates text-based delivery receipt for compliance documentation
+- Compliance alert reminds runner of age verification (21+) requirements
+- Uses useTenantAdminAuth for tenant context (tenant_id filtering)
+- DeliveryProofData interface exported for consumer components
+- All logging via logger from @/lib/logger — no console.log
+- Proper error handling with toast notifications
+- Loading states during submission and location capture
+- Tabs UI separates photo and signature capture for better mobile UX
+
+## 2026-02-12 06:13:52 - DeliveryScheduler Component
+Created src/components/admin/delivery/DeliveryScheduler.tsx
+- Calendar view showing scheduled deliveries by week
+- Time slot management with capacity limits per slot
+- Slot availability visualization with utilization percentages
+- Block full slots automatically
+- CRUD operations for time slot configuration
+- Created migration 20260212120000_add_delivery_time_slots.sql with RLS policies
+- Uses useTenantContext for tenant isolation
+- Uses TanStack Query with proper queryKeys
+- Follows all FloraIQ coding conventions
+
+## task-216: Create delivery runner performance tracking
+- Created `src/hooks/useRunnerMetrics.ts` with three main hooks:
+  - `useRunnerMetrics(options)`: Fetches individual runner performance metrics
+  - `useWeeklyPerformanceReport(weekOffset)`: Generates weekly team performance reports
+  - `useRunnerLeaderboard(options)`: Returns ranked list of runners by composite score
+- Metrics tracked:
+  - Deliveries completed (total and weekly)
+  - Average delivery time (from pickup to delivery)
+  - On-time rate (within 60 minutes threshold)
+  - Customer ratings (from runner.rating field)
+  - Exceptions count (from delivery_exceptions table)
+  - Distance covered (calculated via Haversine formula from location history)
+  - Week-over-week change percentage
+- Created supporting components:
+  - `RunnerMetricsPanel`: Displays individual runner metrics (full and compact modes)
+  - `WeeklyPerformanceReport`: Weekly team report with runner breakdown and insights
+  - `RunnerLeaderboard`: Ranked runner list with period selector (week/month/all)
+- Extended `queryKeys.runners` with `metrics`, `leaderboard`, and `weeklyReport` factories
+- All queries filter by `tenant_id` via `useTenantContext()`
+- Used `logger` from `@/lib/logger` for all debug/error logging
+- Composite score formula: 30% deliveries + 30% on-time + 20% avg time + 20% rating
+- Error handling for missing tables (delivery_exceptions, runner_location_history)
+- Components export from `src/components/admin/delivery/index.ts`
+
+## task-210: Create Supabase migration for delivery_proofs table
+- Migration file already exists at supabase/migrations/add_delivery_proofs.sql
+- Contains: id, tenant_id, delivery_id, order_id, photo_url, signature_url, recipient_name, notes, location_lat, location_lng, captured_at, created_at
+- RLS policies for tenant isolation implemented
+- Marked as passes: true
+
+## task-217: Create delivery compliance checks
+- Four files implemented: types (`src/types/delivery-compliance.ts`), hook (`src/hooks/useDeliveryCompliance.ts`), component (`src/components/admin/delivery/DeliveryComplianceChecklist.tsx`), migration (`supabase/migrations/20260212130000_create_delivery_compliance_checks.sql`)
+- Six compliance check types: age_verification, id_on_file, licensed_zone, time_restriction, quantity_limit, customer_status
+- Hook provides: fetch checks, create/verify/override mutations, batch initialization, auto-verify system checks, can_complete_delivery RPC
+- Component features: progress bar, collapsible check details, manual verify/fail buttons, admin override dialog with reason, audit log viewer, blocking alert
+- Migration includes: delivery_compliance_checks table, delivery_compliance_audit_log table, RLS policies, trigger-based audit logging, can_complete_delivery RPC function
+- Fixed rule violations: changed .single() to .maybeSingle() (3 occurrences), fixed import ordering (React -> Third-party -> Types -> Components -> Utils), removed unused queryKeys import, moved sonner import to third-party group, separated DEFAULT_COMPLIANCE_SETTINGS value import from type imports
+- Exported DeliveryComplianceChecklist from delivery barrel file (index.ts)
+- TypeScript compilation passes with no errors
+- Marked as passes: true
+
+## Product Grid section edit dialog has all fields and saves correctly
+- Updated ProductGridEditor in SectionEditors.tsx with new "Grid Settings" accordion section
+- Added fields: columns (2/3/4), max_products (4-50), sort_order (newest/price/name), category_filter (all/flower/edibles/pre-rolls/concentrates/vapes), show_view_all_link toggle
+- Updated sectionDefaults() in storefront-builder.config.ts to include new default values for all product grid content fields
+- Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
+- Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
+- TypeScript compilation passes with zero errors
+
+## Live Orders notification sound on new order with settings toggle
+- Added synthesized tone fallback to `src/lib/soundAlerts.ts` using Web Audio API oscillators
+  - When MP3 files are unavailable (no `/public/sounds/*.mp3` present), the system now plays synthesized tones instead of silently failing
+  - `newOrder`: Two-tone ascending chime (C5 → E5) — distinct and attention-grabbing
+  - `success`: Quick ascending ding (A5)
+  - All other types: Default notification beep (F#5)
+  - Volume-controlled via gain node, consistent with existing volume settings
+- Fixed `StorefrontLiveOrders.tsx` sound toggle to persist to localStorage
+  - Changed `useState(true)` → `useState(isSoundEnabled)` to load saved preference
+  - Toggle now calls `persistSoundEnabled()` to save state via `STORAGE_KEYS.SOUND_ALERTS_ENABLED`
+  - Toggle also calls `initAudio()` to ensure AudioContext is initialized on interaction
+  - Button now uses `variant={soundEnabled ? 'default' : 'outline'}` for visual feedback (matches LiveOrders.tsx pattern)
+- Both LiveOrders.tsx and StorefrontLiveOrders.tsx now share the same persisted sound preference
+- TypeScript compilation passes with zero errors
+## StorefrontPage renders all sections from layout_config in correct order
+- Verified StorefrontPage component at src/pages/shop/StorefrontPage.tsx already has complete section rendering logic
+- SECTION_COMPONENTS map covers all 14 section types: hero, features, product_grid, testimonials, newsletter, gallery, faq, custom_html, hot_items, promotions_banner, deals_highlight, luxury_hero, luxury_products, luxury_features
+- Sections render in layout_config array order with data-section-type and data-section-index attributes
+- Sections with visible=false are filtered out before rendering
+- Default fallback layout (hero + deals + hot items + products) renders when layout_config is null/empty
+- SEO structured data (JSON-LD) generates from store info
+- AnnouncementBar renders independently above sections
+- ShareButtons bar renders below sections
+- Fixed vitest.config.ts to exclude .ralphy-sandboxes directory from test runs
+- Fixed test mocks: added sanitizeWithLineBreaks and sanitizeHtml to sanitize mock
+- Fixed framer-motion mock to use Proxy-based approach supporting all motion.* elements (not just div/h1/p)
+- Fixed 404 error message test to match actual component text ("taken offline" not "no longer available")
+- Fixed skeleton loader test to use role="status" selector matching actual Skeleton component
+- Fixed empty products test to use data-testid="empty-product-grid" selector
+- Added new test: verifies sections render in correct order via data-section-index attributes
+- Added new test: verifies sections with visible=false are skipped
+- All 29 tests pass, TypeScript compilation clean
+## ShopLayout age verification gate for cannabis stores
+- Rewrote StorefrontAgeGate as a presentational full-page overlay component with props (storeName, logoUrl, minimumAge, primaryColor, onVerify)
+- Removed broken self-querying logic from StorefrontAgeGate (was querying non-existent enable_age_gate/age_gate_min_age columns)
+- ShopLayout now uses StorefrontAgeGate for default theme and LuxuryAgeVerification for luxury theme
+- Simplified LuxuryAgeVerification to be a pure presentational component (removed internal localStorage management)
+- ShopLayout owns all age verification state: checks require_age_verification flag, persists per store slug in localStorage
+- Removed redundant StorefrontAgeGate instances from bottom of both layout renders (unreachable after inline gate)
+- "No" redirects to google.com, "Yes" saves to localStorage and shows store
+- Preview mode bypasses age gate
+## Checkout Step 1: Customer Info Form with React Hook Form + Zod
+- Created `src/components/shop/CheckoutCustomerInfoStep.tsx` as extracted Step 1 component
+- Uses React Hook Form + Zod validation (per project conventions)
+- Fields: first name (required), last name (required), phone (required, validated with regex), email (optional), preferred contact method radio (Text/Phone/Email/Telegram)
+- Includes create account option with conditional password field (min 8 chars)
+- Integrates with returning customer auto-fill (useReturningCustomerLookup)
+- Exposes validation function to parent via callback ref for step navigation
+- Updated CheckoutPage.tsx to use the new component, replacing inline Step 1 JSX
+- Made validateStep and nextStep async to support React Hook Form async validation
+- Removed dead code: showErrors state, EMAIL_REGEX, PHONE_REGEX (from CheckoutPage)
+## Post-checkout confirmation popup before navigation
+- Created `src/components/shop/PostCheckoutConfirmationDialog.tsx` — modal shown immediately after successful order placement
+- Dialog displays: success checkmark icon, "Order Confirmed!" title, thank-you message with order number, tenant Telegram link button (if configured), and "View Order Details" button
+- Auto-closes after 10 seconds with visible countdown, then navigates to order confirmation page
+- Integrated into `src/pages/shop/CheckoutPage.tsx` — onSuccess stores order data in state and shows popup instead of navigating immediately
+- Integrated into `src/components/shop/SinglePageCheckout.tsx` — same pattern, shows popup before navigation
+- Uses store primary color for theming, shadcn Dialog component
+## Live Orders order detail slide-over panel with full info
+- Created `src/components/admin/live-orders/LiveOrderDetailPanel.tsx` — right-side Sheet panel with full order details
+- Fetches complete order data on demand when panel opens (from `orders` + `order_items` for app orders, `menu_orders` + parsed items for menu orders)
+- Sections: header with order # and status badge, action buttons (next status + cancel), customer info, fulfillment/delivery address, line items table, price breakdown (subtotal/delivery/discount/tip/total), payment method with status, notes (delivery/special/customer), menu info for menu orders, timeline, footer with call customer and print actions
+- Wired into `LiveOrdersKanban.tsx` — clicking a kanban card opens the detail panel
+- Added `onViewDetails` callback prop to `LiveOrdersKanban` and `KanbanCard` components
+- Added click stop propagation on action buttons row to prevent card click when using buttons
+- Integrated into `LiveOrders.tsx` with `selectedOrder` and `detailPanelOpen` state management
+- Uses `queryKeys.orders.detail()` for TanStack Query caching with 30s stale time
+- All Supabase queries filter by `tenant_id` for multi-tenant isolation
+- Uses `.maybeSingle()` for optional data fetching
+- Follows all FloraIQ coding standards: logger, @/ imports, sonner toast, shadcn/ui components
+- TypeScript compilation passes with zero errors
+
+## Final console audit — all storefront pages clean
+- Audited entire src/ directory for console.log, console.warn, console.error, console.info, console.debug usage
+- Result: ZERO violations found — only console.* calls are inside src/lib/logger.ts (the approved logging utility)
+- All storefront pages, components, hooks, and utilities correctly use `logger` from `@/lib/logger`
+- Edge functions (supabase/functions/) use console.* which is appropriate for Deno runtime
+- TypeScript compilation passes with zero errors
+
+## E2E test guest checkout with Venmo payment flow
+- Created tests/e2e/guest-checkout-venmo.spec.ts with 4 test cases
+- Test 1: Complete guest checkout with Venmo — full flow from browse to order confirmation
+  - Adds product, fills contact info, delivery address, selects Venmo, confirms payment, places order
+- Test 2: Venmo requires confirmation checkbox — validates that skipping checkbox shows error toast
+- Test 3: Venmo handle and copy button displayed — verifies handle text, copy button, and checkbox label
+- Test 4: Review step shows Venmo — confirms payment method displays as "Venmo" in review summary
+- Follows existing E2E test patterns (helpers, age verification, flexible selectors)
+- Handles stores without Venmo enabled via test.skip
+- TypeScript compilation passes with zero errors
+
+## E2E test product price change reflects on storefront and checkout
+- Rewrote tests/e2e/price-change.spec.ts with comprehensive E2E coverage
+- 6 test suites, 14 tests covering the full price change flow:
+  1. Storefront Catalog — Price Display: products show prices, detail page prices, refresh consistency
+  2. Cart — Price Validation: cart item prices, price change warning capability, subtotal recalculation
+  3. Checkout — Server-Side Price Validation: checkout loads with prices, validates on navigation
+  4. Price Change — Admin to Storefront E2E: price consistency across catalog→detail→cart→checkout, after reload
+  5. Admin Price Edit — Storefront Verification: two-context test where admin edits wholesale_price and customer sees updated price on catalog, cart (via syncCartPrices), and checkout; restores original price after test
+  6. Real-time Price Sync Infrastructure: inventory sync hook active, warning banner rendering, navigation consistency
+- Key test: 'admin edits product price and storefront shows updated price on reload' uses browser.newContext() for admin/customer isolation, edits wholesale_price via admin ProductForm, verifies storefront catalog shows new price, cart syncs to new price, checkout reflects new price, then restores original price
+- Uses parseDollarAmount helper to extract and compare numeric prices
+- Follows existing E2E patterns: handleAgeVerification, clearBrowserStorage, loginAsAdmin
+- TypeScript compilation passes with zero errors
+
+## E2E test cart persists across browser restart
+- Added "Cart Persistence — Browser Restart" test suite to tests/e2e/cart-persistence.spec.ts
+- Three new tests using Playwright's storageState API to simulate full browser restart:
+  1. Single item survives full browser restart (context destroyed and recreated with saved storage state)
+  2. Multiple items persist across browser restart
+  3. Cart persists across browser restart and completes checkout normally
+- Key technique: context1.storageState() saves localStorage + cookies, context2 created with that state
+- This differs from existing tab-close tests which reuse the same context — these tests destroy/recreate contexts
+- Tests verify: cart count badge, cart item count, checkout progression
+- TypeScript compilation passes with zero errors
+
+## No sensitive keys in client bundle and proper CORS on edge functions
+- **Edge functions CORS fixes**: Added proper CORS headers and OPTIONS preflight handling to 3 edge functions that were missing them:
+  - `collect-metrics/index.ts`: Switched from inline imports to shared `_shared/deps.ts`, wrapped in `secureHeadersMiddleware`, added `corsHeaders` to all responses, sanitized error messages
+  - `predict-revenue/index.ts`: Same treatment — shared deps, CORS headers, secure headers middleware, sanitized error responses, replaced `any` types with `Record<string, unknown>`
+  - `uptime-checker/index.ts`: Same treatment — shared deps, CORS, secure headers, sanitized errors
+- **Sensitive key removal from client→server flow**: Updated `test-telegram` edge function to fetch `bot_token` and `chat_id` from the database server-side instead of receiving them from the client
+  - Edge function now accepts `{ accountId }` instead of `{ bot_token, chat_id }`
+  - Reads credentials from `account_settings.notification_settings` using service role key
+  - If settings not saved yet, returns helpful "Save your Telegram settings first" message
+- **Client-side update**: Updated `SettingsPage.tsx` `onTestTelegram` to save notification settings before testing, then send only `accountId` to the edge function (no sensitive tokens in the request body)
+- **Bundle verification**: Built production bundle and verified:
+  - No `service_role` or `SERVICE_ROLE` patterns in dist/
+  - `sk_test_`/`sk_live_` only appear as placeholder text and format validation (not actual keys)
+  - `bot_token` only appears as property names in form schema (not actual values)
+  - Supabase anon key in vite.config.ts is the public/publishable key (designed to be client-facing)
+- TypeScript compilation passes with zero errors
+
+## Test with lots of data: 100 products, 50 orders, pagination works
+- Enhanced seed-demo-data edge function with `scale` parameter ('small' | 'large')
+  - 'large' scale generates 100 products, 50 orders, 15 customers
+  - Product names generated from prefix/strain/type combinations for variety
+  - Products include SKU, wholesale_price, available_quantity, menu_visibility
+  - Orders distributed across customers with varied statuses and payment states
+  - Products inserted in batches of 50 to avoid payload limits
+  - 'small' scale preserves original behavior (5 products, 10 orders, 5 customers)
+- Added pagination to WholesaleOrdersPage (was missing entirely)
+  - Uses usePagination hook with 25 items per page default
+  - StandardPagination component with page size selector
+  - Select-all checkbox scoped to current page only
+- Added pagination to customer OrdersListPage (was missing entirely)
+  - Simple prev/next pagination with 10 orders per page
+  - Shows "Showing X-Y of Z" count text
+  - Customer-themed UI matching existing page design
+- ProductsListPage and ProductCatalogPage already had proper pagination
+- TypeScript compilation passes with zero errors
+
+## Getting started checklist for new tenants
+- Created src/hooks/useStorefrontChecklist.ts - hook that queries marketplace_stores + products to derive 7-step completion status
+- Steps: create store, add products, customize, configure delivery, set payments, publish, share
+- Each step derives completion from actual DB data (store row + product count)
+- Rewrote src/components/admin/storefront/OnboardingProgressChecklist.tsx to use the new hook
+  - Shows progress bar with X of 7 complete + percentage
+  - Each item has a unique icon, label, and description
+  - Completed items show green checkmark with strikethrough
+  - Incomplete items link to the relevant storefront hub tab
+  - Dismissable via localStorage (STORAGE_KEYS.STOREFRONT_CHECKLIST_DISMISSED_PREFIX)
+  - Collapsible for compact view
+  - Skeleton loading state
+- Added STOREFRONT_CHECKLIST_DISMISSED_PREFIX to STORAGE_KEYS
+- Added storefrontChecklist.byStore() to queryKeys factory
+- Updated StorefrontDashboard to pass storeId instead of old props
+- TypeScript compilation passes with zero errors
+
+## Every page has loading skeleton, empty state, and error state
+- Created reusable PageErrorState component at src/components/admin/shared/PageErrorState.tsx
+  - AlertCircle icon, friendly error message, retry button with RefreshCw icon
+  - role="alert" for accessibility, configurable message and onRetry callback
+- VendorManagement.tsx: Replaced basic spinner with card-grid skeleton, added loadError state + PageErrorState
+- LocationsManagement.tsx: Replaced basic spinner with card-grid skeleton, added loadError state + PageErrorState
+- LiveOrders.tsx: Added kanban-column skeleton during loading, added isError + PageErrorState
+- PurchaseOrdersPage.tsx: Added full-page skeleton (header + filters + table rows), moved isLoading check to page-level, added isError + PageErrorState
+- SalesDashboard.tsx: Added isError + PageErrorState (already had skeleton + empty states)
+- VendorDashboard.tsx: Replaced Loader2 spinner with full dashboard skeleton (stats + charts + activity), added statsError + PageErrorState
+- InventoryTransfers.tsx: Added isError + PageErrorState (already had EnhancedLoadingState + empty state)
+- StorefrontDashboard.tsx: Added storesError + PageErrorState (already had skeleton + empty states)
+- CustomerDashboard.tsx and DeliveryTracking.tsx already had all three states — no changes needed
+- TypeScript compilation passes with zero errors
+
+## Rate limiting checkout endpoint and input sanitization
+- Added CHECKOUT_IP (5/hour) and CHECKOUT_PHONE (3/hour) rate limit configs to rateLimiting.ts
+- Integrated rate limiting into storefront-checkout edge function:
+  - IP-based: max 5 checkout attempts per IP per hour via checkRateLimit + getClientIP
+  - Phone-based: max 3 checkout attempts per phone per hour (when phone provided)
+  - Returns 429 with rate limit headers when exceeded
+- Added input sanitization via Zod transforms in checkout schemas:
+  - firstName/lastName: trimmed, max 100 chars, HTML stripped, min 1 after sanitization
+  - email: trimmed, lowercased, max 255 chars
+  - phone: trimmed, max 20 chars, HTML stripped
+  - storeSlug: trimmed, max 100 chars, HTML stripped
+  - deliveryAddress: trimmed, max 500 chars, HTML stripped
+  - notes: trimmed, max 1000 chars, HTML stripped
+  - variant: trimmed, max 100 chars, HTML stripped
+  - idempotencyKey: trimmed, max 100 chars, HTML stripped
+  - quantity: capped at max 100
+  - items array: capped at max 50
+- All sanitization uses existing sanitizeString from _shared/validation.ts
+- TypeScript compilation passes with zero errors
+
+## Builder preview shows real products not placeholders
+- Added `tenantId` prop to `ProductGridSectionProps` interface
+- Updated `ProductGridSection` queryFn: when `storeId` is absent but `tenantId` is present (builder preview mode), fetches products directly from `products` table filtered by `tenant_id` and `is_visible=true`
+- Updated empty state: shows "No products yet / Add products to see them here" in builder mode vs "Coming soon / Check back soon" on public storefront
+- Passed `tenantId={tenant?.id}` through StorefrontBuilder inline preview and BuilderPreview component to section components
+- Updated component type casts in both StorefrontBuilder.tsx and BuilderPreview.tsx to include `tenantId` prop
+- TypeScript compilation passes with zero errors
+
+## All forms use React Hook Form and Zod with inline error display
+- Converted 12 forms from manual useState to React Hook Form + Zod with inline error display:
+  1. TicketForm (admin/support) - Zod schema for subject, description, priority, status
+  2. SupplierForm (admin/suppliers) - Zod schema with email/phone validation, kept activity logging
+  3. RecallForm (admin/recall) - Zod schema for batch_number, reason, severity, status
+  4. AppointmentForm (admin/appointments) - Zod schema for customer_id, scheduled_at, duration, type
+  5. CouponCreateForm (admin/coupons) - Complex form with Switch toggles, CurrencyInput, auto-generated codes
+  6. ReviewForm (shop) - Star rating as controlled RHF field with inline error display
+  7. ReviewSubmissionForm (reviews) - StarRating component integrated with RHF FormField
+  8. SinglePageCheckout (shop) - Full checkout form with address/contact/payment validation
+  9. SignupForm (auth) - Password strength, phone formatting, terms checkbox with z.literal(true)
+  10. CreateMenuForm (admin/disposable-menus) - Product selection array validated with z.array().min(1)
+  11. CustomIntegrationForm (admin/sidebar) - URL validation, dynamic auth fields
+  12. DeliveryRatingForm (shop) - Star rating with optional comment
+- All forms use shadcn Form/FormField/FormItem/FormLabel/FormControl/FormMessage
+- All required fields show red asterisk via FormLabel required prop
+- Validation errors display inline below each field via FormMessage
+- Preserved all existing mutation logic, sanitization, activity logging, and UI layouts
+- Already-converted forms verified: LoginForm, OrganizationForm, CreateOrderForm, PaymentSettingsForm
+- TypeScript compilation passes with zero errors
+
+## Storefront homepage mobile layout at 375px with no horizontal scroll
+- Fixed horizontal overflow across all storefront homepage sections at 375px viewport
+- 11 files modified to eliminate overflow sources:
+  - ProductGridSection: Heading scaled from text-4xl to text-2xl base, added break-words, tracking-wide on mobile, sort select width responsive (w-[140px] sm:w-[180px])
+  - FeaturesSection: Heading scaled from text-4xl to text-2xl base, added break-words, container px-4 sm:px-6, grid explicit single-col on mobile
+  - LuxuryHeroSection: Heading scaled from text-5xl to text-3xl base
+  - TestimonialsSection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - GallerySection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - FAQSection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - NewsletterSection: px-4 sm:px-6
+  - HeroSection: px-4 sm:px-6, trust badges gap-4 sm:gap-8
+  - LuxuryFeaturesSection: px-4 sm:px-6
+  - PromotionsBannerSection: Content container px-4 sm:px-6
+  - LuxuryFooter: Container px-4 sm:px-6
+- Two categories of fixes: (1) Typography overflow from large heading sizes, (2) Padding overflow from fixed px-6
+- TypeScript compilation passes with zero errors
+
+## Handle out-of-stock during checkout with per-item error
+- Modified CheckoutPage.tsx to show per-item stock warnings when checkout fails due to out-of-stock
+- Added `outOfStockItems` state to track unavailable products returned from edge function/pre-check
+- Review step (step 4) now shows a destructive Alert with per-item badges:
+  - "Out of stock" (red) for items with 0 available
+  - "Only N left (requested M)" (amber) for insufficient quantity
+- Two action buttons: "Remove unavailable items" (removes from cart, clears warning) and "Back to cart"
+- Place Order button is disabled while out-of-stock warnings are visible
+- Per-item stock indicators also appear in the order summary sidebar next to affected items
+- Warnings clear automatically on retry (handlePlaceOrder clears state before re-attempting)
+- Backend already returned structured `unavailableProducts` array — no edge function changes needed
+- TypeScript compilation passes with zero errors
+
+## storefront-checkout has client-side fallback if edge function fails
+- Audited existing fallback implementation in CheckoutPage.tsx
+- The edge function primary path (tryEdgeFunction) was already implemented with:
+  - Proper error detection for FunctionsFetchError, FunctionsRelayError, and 500s
+  - Returning null to trigger fallback
+  - Structured OutOfStockError parsing
+- The RPC fallback path (attemptOrder) was already implemented with:
+  - Direct create_marketplace_order RPC call
+  - Network error retry with exponential backoff (3 attempts)
+  - Function-not-found detection
+  - Coupon redemption
+  - Order details fetch
+- Identified and fixed gaps between edge function and fallback to ensure identical results:
+  1. Added customer upsert via upsert_customer_on_checkout RPC (mirrors edge function step 6)
+     - Syncs customer to CRM with name, phone, email, preferred contact, address, order total
+     - Links CRM customer ID to the order via marketplace_orders update
+     - Wrapped in try-catch: non-blocking since order is already placed
+  2. Added Telegram link retrieval from account_settings (mirrors edge function step 7b)
+     - Fetches telegram_customer_link for the confirmation page
+     - Returns it in the fallback result so confirmation page shows Telegram contact
+  3. Telegram notification was already handled (fire-and-forget call after fallback)
+- Note: Stripe checkout session creation intentionally NOT in fallback (requires server-side secret key)
+- TypeScript compilation passes with zero errors
+
+## Create customer upsert RPC function for checkout
+- RPC function `upsert_customer_on_checkout` already existed across migrations 000006, 000008, 000015
+- Migration 000006: initial function + total_orders/preferred_contact columns + phone+tenant_id index
+- Migration 000008: added source, type, first_order_at, last_order_at, admin_notes, name (generated) columns
+- Migration 000015: enhanced function with source='storefront', type='guest' on inserts + crm_customer_id on marketplace_orders
+- Created migration 20260228000017_grant_upsert_customer_on_checkout.sql:
+  - GRANT EXECUTE to anon, authenticated, service_role roles (was missing)
+- Updated CheckoutPage.tsx fallback path to call upsert_customer_on_checkout:
+  - Fires non-blocking after order creation in the direct RPC fallback path
+  - Edge function path already handled this (storefront-checkout/index.ts line 364)
+  - Ensures customer CRM sync happens regardless of whether edge function or fallback is used
+- TypeScript compilation passes with zero errors
+
+## Dark theme all elements readable and Luxury theme gold accents applied
+- Fixed StorefrontProductCard: replaced hardcoded bg-white/bg-neutral-50/bg-neutral-100/text-neutral-400/text-neutral-500 with CSS variable-driven colors using --storefront-card-bg, --storefront-border, --storefront-text
+- Fixed HotItemsSection: same pattern - card backgrounds, text colors, borders, loading skeletons all use CSS variables
+- Fixed LuxuryProductGridSection: search overlay, category strip, empty states, loading skeletons all theme-aware
+- Fixed ProductGridSection: list view image backgrounds and text colors use CSS variables
+- Fixed CartPreviewPopup: "View Cart" button uses --storefront-primary for theme-aware styling
+- Fixed ShopLayout: luxury wrapper uses --storefront-text instead of hardcoded text-neutral-900; dark mode wrapper also sets text color from theme vars
+- Updated LuxuryNav: nav background, cart button, logo badge, mobile menu accent dots, mobile menu background all use --storefront-primary (gold #d4af37) and --storefront-bg
+- Updated LuxuryFooter: footer heading colors use gold accent via --storefront-primary, background uses --storefront-bg, social buttons hover to gold
+- Added CSS overrides in index.css scoped to [data-theme="dark-mode"] and [data-theme="luxury"] that automatically fix: bg-neutral-50/100, bg-white, text-neutral-300/400/500/900, border-neutral-100/200/300, hover states
+- Added luxury-specific gold accent CSS: focus rings, scrollbar thumb, selection highlight, emerald->gold replacement
+- All sold-out overlays changed from bg-white/40 to bg-black/40 for universal readability
+- Out-of-stock buttons changed from bg-neutral-100 text-neutral-300 to opacity-based approach
+- TypeScript compilation passes with zero errors
+
+## Create RPC function for single-query storefront data load
+- Created `get_storefront_page_data(p_slug, p_page_type, p_product_id)` RPC function
+  - Migration: `supabase/migrations/20260301000001_create_storefront_page_data_rpc.sql`
+  - Returns JSONB with store config + page-specific data in a single round trip
+  - Replaces 2-3 waterfall queries (store → products → categories) with 1 query
+  - Supports 3 page types: 'landing' (store + 8 featured products + category counts),
+    'menu' (store + all visible products), 'product_detail' (store + product + 8 related)
+  - SECURITY DEFINER with SET search_path = public
+  - All queries filter by tenant_id from store lookup
+  - Server-side category aggregation (was client-side before)
+  - GRANT EXECUTE to anon + authenticated
+- Created `src/hooks/useStorefrontPageData.ts` hook
+  - Generic hook with conditional types per page type
+  - Exports shared types: StorefrontStoreData, StorefrontProduct, StorefrontMenuProduct,
+    StorefrontProductDetail, StorefrontCategory, StorefrontRelatedProduct
+  - Uses queryKeys.storePages.pageData() for cache key
+- Updated all 3 store pages to use the new hook:
+  - StoreLandingPage.tsx: replaced 3 queries (store + products + categories) with 1
+  - StoreMenuPage.tsx: replaced 2 queries (store + products) with 1
+  - StoreProductPage.tsx: replaced 3 queries (store + product + related) with 1
+  - Removed unused imports (useQuery, supabase client, logger, queryKeys)
+  - Removed dead ProductGridSkeleton component from StoreMenuPage
+- Added `pageData` key to `queryKeys.storePages` factory
+- TypeScript compilation passes with zero errors
+
+## Theme consistency: Replace hardcoded colors with semantic theme tokens
+- Added `warning`, `success`, `info` color mappings to `tailwind.config.ts` (CSS vars existed in index.css but weren't exposed as Tailwind utilities)
+- Replaced hardcoded Tailwind color classes across 18 storefront files with semantic theme tokens:
+  - `tailwind.config.ts` — added warning/success/info color definitions
+  - `StorefrontProductCard.tsx` — bg-white/dark:bg-zinc→bg-card, bg-red-500→bg-destructive, bg-emerald-500→bg-success, etc.
+  - `CartDrawer.tsx` — bg-neutral-950→bg-card, text-white→text-foreground, text-amber→text-warning, text-emerald→text-success
+  - `WishlistButton.tsx` — fill-red-500→fill-destructive
+  - `CartStockWarning.tsx` — text-amber-500→text-warning, border-amber-500→border-warning
+  - `EnhancedStickyAddToCart.tsx` — bg-amber-50→bg-warning/10, text-red-500→text-destructive
+  - `HotItemsSection.tsx` — card/badge/button colors to semantic tokens
+  - `ProductQuickViewModal.tsx` — bg-neutral-950→bg-card, text-white→text-foreground
+  - `CartPreviewPopup.tsx` — text-emerald-400→text-success
+  - `CheckoutSignInDialog.tsx` — text-red-500→text-destructive
+  - `ReviewForm.tsx` — fill-yellow-400→fill-warning
+  - `SinglePageCheckout.tsx` — text-green-600→text-success
+  - `ShareButtons.tsx` — text-green-500→text-success
+  - `CheckoutPage.tsx` — comprehensive color replacements (13+ patterns)
+  - `ProductDetailPage.tsx` — 25 replacements (stars, badges, stock, buttons, tabs)
+  - `ShopLayout.tsx` — preview banners, header, navigation, closed badge
+  - `AccountPage.tsx` — status icons, cards, text, backgrounds, badges
+  - `OrdersHubPage.tsx` — STATUS_COLORS map, status icons, cards, stats badges
+  - `OrderTrackingPage.tsx` — payment badges, cancelled icon, discount text
+- Preserved intentionally: strain-type colors (indica/sativa/hybrid), social media brand colors, accentColor dynamic props, ambient decorative gradients
+- TypeScript compilation passes with zero errors
+
+## Lazy load ProductCatalogPage with React.lazy
+- Already implemented — no changes needed
+- ProductCatalogPage is lazy-loaded in src/routes/lazyImports.ts:187 as ShopProductCatalogPage
+- Uses React.lazy with .then() pattern to handle named export: `lazy(() => import("@/pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })))`
+- Imported in src/App.tsx:124 from @/routes/lazyImports
+- Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
+- No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Create FileUploadDropzone component
+- Created `src/components/ui/file-upload-dropzone.tsx` — drag-and-drop file upload component powered by react-dropzone
+- Integrates with existing `useMultiFileUpload` hook for Supabase Storage uploads
+- Props: bucket, pathPrefix, tenantId, uploadContext, maxFiles, maxSize, disabled, onFileUploaded, onAllComplete, validationOverrides, hint
+- Features:
+  - Drag-and-drop zone with visual feedback (border highlight, "Drop files here" text)
+  - Click-to-browse file picker
+  - Accepted file types and size limits derived from `UploadContext` (productImage, compliance, etc.)
+  - Per-file progress bars during upload/validation
+  - Per-file status icons: spinner (uploading), checkmark (success), error icon (failed)
+  - Retry button on failed uploads (calls `retryFile` from useMultiFileUpload)
+  - Remove button on each file row
+  - Image thumbnails shown for successfully uploaded images (uses public URL)
+  - Summary bar showing upload count and "Clear all" button when multiple files
+  - Hint text prop for contextual guidance
+- Uses react-dropzone v14 (already in package.json) for reliable drop handling, accept/maxSize/maxFiles validation
+- Follows all FloraIQ conventions: @/ imports, logger, shadcn/ui components, no console.log, no `any` types
+- TypeScript compilation passes with zero errors

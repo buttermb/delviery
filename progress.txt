@@ -2,6 +2,41 @@
 - Status timeline handles cancelled state separately
 - Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
 
+## Create formatters utility library
+- Completed the central formatters hub at src/lib/formatters.ts
+- Added missing re-exports for formatWeight, formatWeightSmart (from utils/formatWeight.ts)
+- Added missing re-exports for formatPercentage, formatPercentageWithTrend (from utils/formatPercentage.ts)
+- Added missing re-exports for formatPhoneInput, normalizePhoneNumber (from utils/formatPhone.ts)
+- Updated JSDoc quick reference with Weight, Percentage, and full Phone sections
+- All 8 individual formatter modules now fully re-exported from central hub:
+  - formatCurrency.ts (3 exports), formatDate.ts (5 exports), formatNumber.ts (7 exports)
+  - formatWeight.ts (2 exports), formatPercentage.ts (2 exports), formatPhone.ts (3 exports)
+  - timeValidation.ts (6 exports), exportUtils.ts (5 exports), displayValue.ts (2 exports)
+  - Plus statusColors from @/constants/statusColors (3 exports)
+- Total: 38 formatting utilities available via `import { ... } from '@/lib/formatters'`
+- TypeScript compilation passes with zero errors
+
+## Create skeleton loader components library
+- Created src/components/loading/skeletons.tsx with 10 reusable skeleton patterns:
+  - PageHeaderSkeleton: breadcrumb + title + actions layout
+  - TabsSkeleton: horizontal tab bar with optional content area
+  - SearchBarSkeleton: search input + filter buttons
+  - BadgeGroupSkeleton: pill-shaped badge/tag group
+  - MetricRowSkeleton: horizontal metric values grid
+  - TimelineSkeleton: vertical timeline/activity feed
+  - SidebarSkeleton: sidebar navigation with sections
+  - HubPageSkeleton: standard admin hub page (header + tabs + content)
+  - SwitchRowSkeleton: settings toggle row with label
+  - InlineStatSkeleton: compact stat with icon
+- Created src/components/loading/index.ts barrel export consolidating all loading components:
+  - Re-exports common patterns from ./skeletons
+  - Re-exports page-level skeletons (SkeletonAdminLayout, SkeletonDashboard, SkeletonStorefront, SkeletonCourier)
+  - Re-exports dashboard widget skeletons (20+ components)
+  - Re-exports analytics skeletons (5 components)
+  - Provides documentation comments with usage examples and component layers
+- All components follow FloraIQ patterns: ARIA labels, role="status", cn() utility, proper interfaces
+- TypeScript compiles cleanly (npx tsc --noEmit passes)
+
 ## task-207: Create delivery runner mobile view
 - Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
 - Shows assigned deliveries in route order with numbered badges
@@ -487,3 +522,169 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Create FileUploadDropzone component
+- Created `src/components/ui/file-upload-dropzone.tsx` — drag-and-drop file upload component powered by react-dropzone
+- Integrates with existing `useMultiFileUpload` hook for Supabase Storage uploads
+- Props: bucket, pathPrefix, tenantId, uploadContext, maxFiles, maxSize, disabled, onFileUploaded, onAllComplete, validationOverrides, hint
+- Features:
+  - Drag-and-drop zone with visual feedback (border highlight, "Drop files here" text)
+  - Click-to-browse file picker
+  - Accepted file types and size limits derived from `UploadContext` (productImage, compliance, etc.)
+  - Per-file progress bars during upload/validation
+  - Per-file status icons: spinner (uploading), checkmark (success), error icon (failed)
+  - Retry button on failed uploads (calls `retryFile` from useMultiFileUpload)
+  - Remove button on each file row
+  - Image thumbnails shown for successfully uploaded images (uses public URL)
+  - Summary bar showing upload count and "Clear all" button when multiple files
+  - Hint text prop for contextual guidance
+- Uses react-dropzone v14 (already in package.json) for reliable drop handling, accept/maxSize/maxFiles validation
+- Follows all FloraIQ conventions: @/ imports, logger, shadcn/ui components, no console.log, no `any` types
+- TypeScript compilation passes with zero errors
+
+## Create BulkCSVUploader component
+- Created `src/components/admin/products/BulkCSVUploader.tsx` — multi-step wizard for bulk importing products from CSV/Excel
+- Five-step flow: Upload → Map Columns → Preview & Validate → Import → Complete
+- Features:
+  - File parsing with xlsx library (supports .csv, .xlsx, .xls)
+  - Auto-mapping of CSV columns to system fields by name matching
+  - 13 mappable fields: name, sku, category, vendor, strain, THC/CBD%, prices, quantity, description, batch number
+  - Category normalization with alias support (e.g. "preroll" → "pre-rolls", "wax" → "concentrates")
+  - SKU sanitization handling Excel scientific notation (e.g. 1.23E+11 → full number)
+  - Validation preview showing valid/invalid/duplicate/new record counts
+  - Duplicate detection by SKU via Supabase query filtered by tenant_id
+  - Duplicate handling strategies: Skip (keep existing) or Update (overwrite with CSV data)
+  - Duplicates preview table showing matched existing products
+  - Invalid records preview table with per-row validation errors
+  - Batch insert (10 records/batch) with progress tracking
+  - Fallback to individual inserts on batch failure (e.g. duplicate SKU constraint violations)
+  - Import results summary with breakdown: imported/updated/skipped/failed
+  - Downloadable JSON error report for failed records
+  - CSV template download with sample data
+  - Dialog prevented from closing during import
+- Follows CustomerImport.tsx pattern (same multi-step wizard architecture)
+- Uses: useTenantAdminAuth for tenant context, queryKeys.products.all for cache invalidation, logger, toast from sonner, humanizeError
+- All Supabase queries filter by tenant_id
+- Exported as both named and default export
+- TypeScript compilation passes with zero errors
+
+## Create sanitizeForIlike utility
+- Utility already exists at src/lib/utils/searchSanitize.ts (lines 50-53)
+- Also mirrored at supabase/functions/_shared/searchSanitize.ts (lines 39-42)
+- Implementation: sanitizes input via sanitizeSearchInput (null/undefined handling, trim, HTML stripping, length truncation, LIKE char escaping) then wraps in %..% for ILIKE pattern matching
+- Returns '%' for empty/null input (matches everything)
+- No changes needed — utility is complete and well-implemented
+
+## Create queryKeys factory for all entities
+- Extended `src/lib/queryKeys.ts` factory with ~40 new methods covering all inline spread-operator patterns
+- New factory methods added per entity:
+  - **products**: priceHistory, recentPriceChange, menuAppearances, storefrontPreview, vendors, importDuplicates, filterOptions
+  - **customers**: storefrontProfile, browsingHistory, wishlist, byTags, filterOptions
+  - **customerTags**: batch, counts
+  - **menus**: availabilityRules, expiringSoon, archived, scheduled, staticPages, templates, templateVersions, schedules, withProducts, availableForProduct, source
+  - **frontedInventory**: product
+  - **inventory**: movementsChart
+  - **orders**: stats, customerPortal, widget, session, posRefundLookup, relatedCustomer
+  - **shopProducts**: hotItems
+  - **vendors**: priceHistory, priceAlerts, alertSettings, priceTrend, withStats
+  - **productTags**: search, byIds
+  - **coupons**: usageStats, redemptions
+  - **deliveries**: analytics, exceptions
+  - **couriers**: available
+  - **customerInvoices**: byOrder
+  - **categories**: productCounts
+  - **accountSettings**: telegramLink
+  - **reporting**: dataSources
+- Migrated RealtimeDashboard.tsx inline key `['realtime-dashboard', tenantId]` to use `queryKeys.realtimeDashboard.byTenant(tenantId)`
+- Note: `useRealtimeSync.ts` uses dynamic `[table]` keys at runtime — cannot be migrated to factory (expected fallback pattern)
+- TypeScript compilation passes with zero errors
+
+## Task 471: Build global error boundary with recovery
+- Enhanced `src/components/ErrorBoundary.tsx` with robust recovery features
+- Added auto-retry for chunk/module loading errors (up to 2 retries with 3s delay)
+  - Displays animated spinner with "Retrying automatically..." message during auto-retry
+  - Falls back to manual recovery after exhausting retries
+- Integrated `errorReporter` from `@/utils/errorReporting` for persistent error logging
+- Added retry count tracking to prevent infinite retry loops (MAX_AUTO_RETRIES = 2)
+- Added "Copy error report" button that copies error details to clipboard:
+  - Includes: error message, URL, timestamp, user agent, stack trace, component stack
+  - Shows checkmark confirmation for 2 seconds after copying
+- Extracted `isChunkLoadError()` helper function for consistent chunk error detection
+- Improved chunk error detection: uses lowercase matching, includes 'loading module' pattern
+- Renamed handleReset to handleRetry with cleaner state reset (no setTimeout race condition)
+- Properly typed Props/State interfaces (ErrorBoundaryProps, ErrorBoundaryState)
+- Cleanup: clears auto-retry timer in componentWillUnmount
+- Buttons disable during auto-retry to prevent conflicting user actions
+- TypeScript compilation passes with zero errors
+
+## Create empty state components library
+- Created `src/components/empty-states/` directory mirroring `src/components/loading/` pattern
+- Created `src/components/empty-states/presets.tsx` with 21 domain-specific preset components:
+  - Entity presets: OrdersEmptyState, ProductsEmptyState, CustomersEmptyState, VendorsEmptyState, MenusEmptyState, DeliveriesEmptyState, PaymentsEmptyState, InventoryEmptyState, StorefrontEmptyState
+  - Functional presets: SearchEmptyState, AnalyticsEmptyState, NotificationsEmptyState, ScheduleEmptyState, CommentsEmptyState, ComplianceEmptyState, TicketsEmptyState, InvoicesEmptyState, CouponsEmptyState, LocationsEmptyState, DriversEmptyState, GenericEmptyState
+  - Each preset provides sensible icon (Lucide), title, and description with full override support
+  - All presets delegate to the base EmptyState from `@/components/ui/empty-state`
+  - Shared PresetProps interface supports actionLabel/onAction shorthand + full action config + variant + className
+- Created `src/components/empty-states/index.ts` barrel export consolidating all empty state components:
+  - Re-exports base components from `@/components/ui/empty-state` (EmptyState, EmptyStateCompact, ErrorState, illustrations)
+  - Re-exports all 21 domain presets from `./presets`
+  - Re-exports EnhancedEmptyState from `@/components/shared/EnhancedEmptyState`
+  - Re-exports all relevant TypeScript types (EmptyStateProps, EmptyStatePresetProps, etc.)
+  - Documentation comments with usage examples and component layers
+- All components follow FloraIQ patterns: @/ imports, proper interfaces, Lucide icons, cn() utility
+- TypeScript compilation passes with zero errors
+
+## Create useToast wrapper with standard messages
+- Created `src/hooks/useToast.ts` — centralized React hook wrapping sonner toast with standard messages
+- Provides consistent API for all CRUD and common operations:
+  - Generic methods: `success()`, `error()`, `info()`, `warning()`
+  - CRUD shortcuts: `created()`, `updated()`, `deleted()`, `saved()`, `archived()`, `restored()`, `duplicated()`
+  - Utility shortcuts: `copied()`, `exported()`, `imported()`
+  - Error helpers: `failed()` (auto-humanizes errors via humanizeError), `permissionDenied()`, `networkError()`
+  - Loading: `loading()` (returns ID for dismissal), `dismiss()`
+- Built-in deduplication prevents toast spam (3-second window per message)
+- All methods accept optional `ExternalToast` options for customization (description, duration, action, etc.)
+- Uses `humanizeError` from `@/lib/humanizeError` to convert raw Supabase/Postgres errors to user-friendly messages
+- All callbacks wrapped in `useCallback` for stable references
+- Deduplication state stored in `useRef` to avoid re-renders
+- Standard message templates defined in `STANDARD` const object for consistency
+- Complements existing toast utilities (toastActions.ts, toastUtils.ts, notifications/toast.ts) by providing a hook-based API
+- TypeScript compilation passes with zero errors
+
+## Create ConfirmDialog component
+- Created canonical `src/components/shared/ConfirmDialog.tsx` — production-quality reusable confirmation modal
+  - Built on shadcn AlertDialog with `open`/`onOpenChange` prop API (matching shadcn conventions)
+  - Supports `variant` prop: 'default' | 'destructive' (red button for dangerous actions)
+  - Loading state with Loader2 spinner and disabled buttons during processing
+  - Customizable title, description, confirmLabel, cancelLabel, className
+  - Uses `buttonVariants` for proper destructive styling
+  - Exports `ConfirmDialogProps` and `ConfirmDialogVariant` types
+- Updated `src/components/admin/shared/ConfirmDialog.tsx` to re-export from shared location
+  - Eliminates code duplication, single source of truth
+- Updated 2 consumers to use new canonical API:
+  - `Orders.tsx`: Changed `isOpen`/`onCancel` → `open`/`onOpenChange`, import from shared
+  - `InvoicesPage.tsx`: Same prop migration, import from shared
+- Deleted unused `src/components/ConfirmDialog.tsx` (had zero imports — dead code)
+- Companion components in ecosystem: `ConfirmDeleteDialog` (delete-specific with haptics), `useConfirmDialog` hook (state management)
+- TypeScript compilation passes with zero errors
+
+## Create product_images migration
+- Created `supabase/migrations/20260313000004_product_images.sql` for multi-image product support
+- New `product_images` table references `public.products(id)` with `tenant_id` FK for multi-tenant isolation
+- Schema: id, product_id, tenant_id, is_primary, original_filename, file_path, image_order, sizes (JSONB for thumb/medium/large/full URLs), original_size_bytes, optimized_size_bytes, dimensions (JSONB), uploaded_at, created_at
+- Partial unique index ensures only one primary image per product
+- Performance indexes on product_id, tenant_id, and (product_id, image_order)
+- RLS policies: authenticated SELECT (via user_roles + admin_users), anon blocked, admin ALL with tenant_id filtering
+- Helper RPC: `set_primary_product_image(product_id, image_id, tenant_id)` — SECURITY DEFINER, search_path = public
+- TypeScript check: N/A (SQL migration only)
+
+## Create inventory_categories migration
+- Created `supabase/migrations/20260313000002_create_inventory_categories.sql`
+- New `inventory_categories` table normalizes free-text category values from `wholesale_inventory`
+- Schema: id (UUID PK), tenant_id (FK → tenants, CASCADE), name, slug (UNIQUE per tenant), description, color, icon, sort_order, is_active, created_at, updated_at
+- Added `category_id UUID` FK column to `wholesale_inventory` (ON DELETE SET NULL)
+- Full RLS policies with tenant_id isolation (SELECT, INSERT, UPDATE, DELETE)
+- Performance indexes on tenant_id, slug, sort_order, is_active, and category_id FK
+- `updated_at` trigger with SECURITY DEFINER + SET search_path = public
+- Data migration: seeds inventory_categories from existing distinct category values in wholesale_inventory
+- Backfill: updates wholesale_inventory.category_id to reference the newly created category rows

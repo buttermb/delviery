@@ -1,0 +1,78 @@
+# New York Minute NYC - Robots Configuration
+# Built by WebFlow Studios Team (2024)
+# SEO Engineer: Marcus Rodriguez
+# Contact: contact@webflowstudios.dev
+
+User-agent: Googlebot
+Allow: /
+Allow: /product/*
+Allow: /about
+Allow: /faq
+Allow: /support
+
+User-agent: Bingbot
+Allow: /
+Allow: /product/*
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# General rules for all bots
+User-agent: *
+Allow: /
+Allow: /product/*
+Allow: /about
+Allow: /faq
+Allow: /support
+Allow: /terms
+Allow: /privacy
+Allow: /partner-shops
+Allow: /become-courier
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /courier/
+Disallow: /courier/*
+Disallow: /api/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /account
+Disallow: /my-orders
+Disallow: /order-tracking
+
+# Security decoy paths (not accessible but listed to confuse scrapers)
+Disallow: /_next/
+Disallow: /api/internal/
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /config/
+Disallow: /.env
+Disallow: /wp-admin/
+Disallow: /wp-content/
+Disallow: /administrator/
+
+# Sitemap location
+Sitemap: https://newyorkminutenyc.com/sitemap.xml
+
+# Crawl delay to prevent aggressive scraping
+Crawl-delay: 5
+
+# Block aggressive bots and scrapers
+User-agent: AhrefsBot
+Crawl-delay: 30
+
+User-agent: SemrushBot
+Crawl-delay: 30
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: dotbot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /

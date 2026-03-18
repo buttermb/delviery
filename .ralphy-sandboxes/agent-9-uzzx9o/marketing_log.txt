@@ -1,0 +1,10 @@
+﻿f2a6a6ca fix: extract inline pricing section into PricingSection.tsx component
+a42d2307 fix: delete dead IntegrationEcosystem marketing component and remove references from MarketingHome
+b7a36f2b fix: delete dead CountUpNumber and StatsSection marketing components and remove references from MarketingHome
+8b5f2ad0 fix: delete dead ScrollProgressIndicator, KeyboardNavigationHelper, FloatingChatButton, LiveChatWidget and remove references
+8c7179ae fix: delete dead ROICalculator.tsx and remove references from MarketingHome
+177c00f2 fix: delete dead ComparisonSection.tsx and remove references from MarketingHome
+9ecaada9 fix: delete dead TestimonialsCarousel.tsx and remove references from MarketingHome
+d52e4eee fix: delete dead TrustedBy.tsx marketing component and remove references
+fdfb1d49 fix: delete StickyMobileCTA component and remove from MarketingHome
+94ea21e7 fix: update marketing SEO title to Cannabis Wholesale Operations Platform

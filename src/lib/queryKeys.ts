@@ -23,6 +23,20 @@ export const queryKeys = {
     search: (tenantId: string, query: string) => [...queryKeys.products.byTenant(tenantId), 'search', query] as const,
     related: (tenantId: string, productId: string) => [...queryKeys.products.detail(tenantId, productId), 'related'] as const,
     posGrid: (tenantId?: string) => [...queryKeys.products.all, 'pos-grid', tenantId] as const,
+    priceHistory: (productId?: string, timeRange?: string) =>
+      [...queryKeys.products.details(), 'priceHistory', productId, timeRange] as const,
+    recentPriceChange: (productId?: string, withinDays?: number) =>
+      [...queryKeys.products.details(), 'recentPriceChange', productId, withinDays] as const,
+    menuAppearances: (productId?: string, tenantId?: string) =>
+      [...queryKeys.products.all, 'menu-appearances', productId, tenantId] as const,
+    storefrontPreview: (productId?: string, tenantId?: string) =>
+      [...queryKeys.products.all, 'storefront-preview', productId, tenantId] as const,
+    vendors: (productId?: string) =>
+      [...queryKeys.products.all, 'vendors', productId] as const,
+    importDuplicates: (tenantId?: string, skus?: string[]) =>
+      [...queryKeys.products.all, 'import-duplicates', tenantId, skus] as const,
+    filterOptions: (tenantId?: string) =>
+      [...queryKeys.products.byTenant(tenantId ?? ''), 'filter-options'] as const,
   },
 
   // Storefront products (shop-facing)
@@ -40,6 +54,8 @@ export const queryKeys = {
       ['shop-product-reviews', storeId, productId] as const,
     carousels: (storeId?: string) => ['marketplace-products-map', storeId] as const,
     variants: (productId?: string) => ['shop-product-variants', productId] as const,
+    hotItems: (storeId?: string, timePeriod?: string, isWeekend?: boolean) =>
+      [...queryKeys.shopProducts.list(storeId), 'hot-items', timePeriod, isWeekend] as const,
   },
 
   // Orders
@@ -60,6 +76,18 @@ export const queryKeys = {
     live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
     byProduct: (tenantId: string, productId: string) => [...queryKeys.orders.byTenant(tenantId), 'product', productId] as const,
     byCustomer: (customerId: string, tenantSlug?: string) => [...queryKeys.orders.all, 'customer', customerId, tenantSlug] as const,
+    stats: (tenantId?: string, orderType?: string) =>
+      [...queryKeys.orders.all, 'stats', tenantId, orderType] as const,
+    customerPortal: (customerEmail?: string, tenantId?: string) =>
+      [...queryKeys.orders.all, 'customer-portal', customerEmail, tenantId] as const,
+    widget: (tenantId?: string) =>
+      [...queryKeys.orders.lists(), 'widget', tenantId] as const,
+    session: (sessionId?: string | null) =>
+      [...queryKeys.orders.lists(), 'session', sessionId] as const,
+    posRefundLookup: (search?: string, tenantId?: string) =>
+      [...queryKeys.orders.all, 'pos-refund-lookup', search, tenantId] as const,
+    relatedCustomer: (customerId?: string) =>
+      [...queryKeys.orders.all, 'related', 'customer', customerId ?? ''] as const,
   },
 
   // Wholesale Orders
@@ -120,6 +148,8 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'low-stock-alerts', tenantId] as const,
     movements: (productId?: string) =>
       [...queryKeys.inventory.all, 'movements', productId] as const,
+    movementsChart: (productId?: string, timeRange?: string) =>
+      [...queryKeys.inventory.all, 'movements', productId, 'chart', timeRange] as const,
     history: (filters?: Record<string, unknown>) =>
       [...queryKeys.inventory.all, 'history', filters] as const,
     transfers: (tenantId?: string) =>
@@ -176,6 +206,28 @@ export const queryKeys = {
     public: (token: string) => [...queryKeys.menus.all, 'public', token] as const,
     analytics: (tenantId: string, menuId: string) => [...queryKeys.menus.detail(tenantId, menuId), 'analytics'] as const,
     products: (tenantId: string, menuId: string) => [...queryKeys.menus.detail(tenantId, menuId), 'products'] as const,
+    availabilityRules: (menuId?: string, productId?: string, tenantId?: string) =>
+      [...queryKeys.menus.all, 'availability-rules', menuId, productId, tenantId] as const,
+    expiringSoon: (tenantId?: string, hoursAhead?: number) =>
+      [...queryKeys.menus.all, 'expiring-soon', tenantId, hoursAhead] as const,
+    archived: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'archived', tenantId] as const,
+    scheduled: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'scheduled', tenantId] as const,
+    staticPages: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'static-pages', tenantId] as const,
+    templates: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'templates', tenantId] as const,
+    templateVersions: (templateId?: string) =>
+      [...queryKeys.menus.all, 'template-versions', templateId] as const,
+    schedules: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'schedules', tenantId] as const,
+    withProducts: (tenantId?: string) =>
+      [...queryKeys.menus.all, 'with-products', tenantId] as const,
+    availableForProduct: (productId?: string, tenantId?: string) =>
+      [...queryKeys.menus.all, 'available-for-product', productId, tenantId] as const,
+    source: (tenantId?: string, menuId?: string | null) =>
+      [...queryKeys.menus.byTenant(tenantId || ''), 'source', menuId] as const,
   },
 
   // Couriers
@@ -188,6 +240,8 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.couriers.details(), id] as const,
     earnings: (id: string) => [...queryKeys.couriers.detail(id), 'earnings'] as const,
     location: (id: string) => [...queryKeys.couriers.detail(id), 'location'] as const,
+    available: (tenantId?: string) =>
+      [...queryKeys.couriers.all, 'available', tenantId] as const,
   },
 
   // Deliveries
@@ -204,6 +258,10 @@ export const queryKeys = {
     active: (tenantId?: string) => [...queryKeys.deliveries.all, 'active', tenantId] as const,
     byDriver: (tenantId: string, driverId: string) => [...queryKeys.deliveries.byTenant(tenantId), 'driver', driverId] as const,
     byOrder: (tenantId: string, orderId: string) => [...queryKeys.deliveries.byTenant(tenantId), 'order', orderId] as const,
+    analytics: (tenantId?: string, dateFrom?: string, dateTo?: string) =>
+      [...queryKeys.deliveries.all, 'analytics', tenantId, dateFrom, dateTo] as const,
+    exceptions: (tenantId?: string, dateFrom?: string, dateTo?: string) =>
+      [...queryKeys.deliveries.all, 'exceptions', tenantId, dateFrom, dateTo] as const,
   },
 
   // Delivery Settings & Zones
@@ -233,6 +291,16 @@ export const queryKeys = {
     analytics: (tenantId: string, customerId: string) => [...queryKeys.customers.detail(tenantId, customerId), 'analytics'] as const,
     stats: (tenantId: string, customerId: string) => [...queryKeys.customers.detail(tenantId, customerId), 'stats'] as const,
     dropdown: (tenantId?: string) => [...queryKeys.customers.all, 'dropdown', tenantId] as const,
+    storefrontProfile: (tenantId?: string, customerEmail?: string) =>
+      [...queryKeys.customers.all, 'storefront-profile', tenantId, customerEmail] as const,
+    browsingHistory: (tenantId?: string, profileId?: string) =>
+      [...queryKeys.customers.all, 'browsing-history', tenantId, profileId] as const,
+    wishlist: (tenantId?: string, profileId?: string) =>
+      [...queryKeys.customers.all, 'wishlist', tenantId, profileId] as const,
+    byTags: (tagIds?: string[]) =>
+      [...queryKeys.customers.all, 'by-tags', tagIds] as const,
+    filterOptions: (tenantId?: string) =>
+      [...queryKeys.customers.dropdown(tenantId), 'filter-options'] as const,
   },
 
   // Tenants
@@ -303,9 +371,11 @@ export const queryKeys = {
   categories: {
     all: ['categories'] as const,
     lists: () => [...queryKeys.categories.all, 'list'] as const,
-    list: (tenantId?: string) => 
+    list: (tenantId?: string) =>
       [...queryKeys.categories.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.categories.all, id] as const,
+    productCounts: (tenantId?: string) =>
+      [...queryKeys.categories.list(tenantId), 'product-counts'] as const,
   },
 
   // Product Images
@@ -456,10 +526,14 @@ export const queryKeys = {
   coupons: {
     all: ['coupons'] as const,
     lists: () => [...queryKeys.coupons.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.coupons.lists(), filters] as const,
     details: () => [...queryKeys.coupons.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.coupons.details(), id] as const,
+    usageStats: (tenantId?: string) =>
+      [...queryKeys.coupons.all, 'usage-stats', tenantId] as const,
+    redemptions: (tenantId?: string, dateFilter?: string) =>
+      [...queryKeys.coupons.all, 'redemptions', tenantId, dateFilter] as const,
   },
 
   // Marketing
@@ -565,6 +639,7 @@ export const queryKeys = {
     all: ['reporting'] as const,
     custom: () => [...queryKeys.reporting.all, 'custom'] as const,
     scheduled: () => [...queryKeys.reporting.all, 'scheduled'] as const,
+    dataSources: () => [...queryKeys.reporting.all, 'data-sources'] as const,
   },
 
   // Vendor
@@ -717,11 +792,13 @@ export const queryKeys = {
   frontedInventory: {
     all: ['fronted-inventory'] as const,
     lists: () => [...queryKeys.frontedInventory.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.frontedInventory.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.frontedInventory.all, id] as const,
-    payments: (frontedId: string) => 
+    payments: (frontedId: string) =>
       [...queryKeys.frontedInventory.detail(frontedId), 'payments'] as const,
+    product: (productId?: string) =>
+      [...queryKeys.frontedInventory.all, 'product', productId] as const,
   },
 
   // Sessions
@@ -770,6 +847,10 @@ export const queryKeys = {
     all: ['customer-tags'] as const,
     byContact: (contactId: string) => [...queryKeys.customerTags.all, 'contact', contactId] as const,
     byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
+    batch: (tenantId?: string, ids?: string) =>
+      [...queryKeys.customerTags.all, 'batch', tenantId, ids] as const,
+    counts: (tenantId?: string) =>
+      [...queryKeys.customerTags.all, 'counts', tenantId] as const,
   },
 
   // Credits
@@ -958,6 +1039,16 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'documents'] as const,
     documentDetail: (tenantId: string, documentId: string) =>
       [...queryKeys.vendors.all, 'document', tenantId, documentId] as const,
+    priceHistory: (tenantId: string, vendorId: string, productId?: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'price-history', productId] as const,
+    priceAlerts: (tenantId?: string, vendorId?: string) =>
+      [...queryKeys.vendors.all, 'price-alerts', tenantId, vendorId] as const,
+    alertSettings: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'alert-settings'] as const,
+    priceTrend: (tenantId: string, vendorId: string, productId?: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'price-trend', productId] as const,
+    withStats: (tenantId?: string) =>
+      [...queryKeys.vendors.list(tenantId ?? ''), 'with-stats'] as const,
   },
 
   // Storefront
@@ -1008,6 +1099,8 @@ export const queryKeys = {
       [...queryKeys.customerInvoices.all, 'customer', customerId] as const,
     stats: (tenantId?: string) =>
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
+    byOrder: (orderId?: string) =>
+      [...queryKeys.customerInvoices.all, 'by-order', orderId] as const,
   },
 
   // Order Audit Log
@@ -1124,6 +1217,10 @@ export const queryKeys = {
       [...queryKeys.productTags.all, 'popular', tenantId, limit] as const,
     byProduct: (productId: string) =>
       [...queryKeys.productTags.all, 'product', productId] as const,
+    search: (tenantId?: string, searchTerm?: string) =>
+      [...queryKeys.productTags.list(tenantId), 'search', searchTerm] as const,
+    byIds: (tenantId?: string, tagIds?: string[]) =>
+      [...queryKeys.productTags.list(tenantId), 'by-ids', tagIds] as const,
   },
 
   // Inventory Forecast
@@ -2859,6 +2956,8 @@ export const queryKeys = {
     all: ['account-settings'] as const,
     byTenant: (tenantId?: string) =>
       [...queryKeys.accountSettings.all, tenantId] as const,
+    telegramLink: (tenantId?: string) =>
+      [...queryKeys.accountSettings.byTenant(tenantId), 'telegram-link'] as const,
   },
 
   // Products for PO

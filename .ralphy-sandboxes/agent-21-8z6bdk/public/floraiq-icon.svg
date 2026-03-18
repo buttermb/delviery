@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#059669"/>
+  <g transform="translate(256, 256)">
+    <!-- Leaf shape -->
+    <path d="M0-120C60-120 120-60 120 0C120 60 60 120 0 120C-30 120-60 90-60 60C-60 30-30 0 0 0C30 0 60 30 60 60C60 90 30 120 0 120" fill="none" stroke="white" stroke-width="24" stroke-linecap="round"/>
+    <!-- Center vein -->
+    <line x1="0" y1="-100" x2="0" y2="100" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+    <!-- Side veins -->
+    <line x1="0" y1="-50" x2="50" y2="-20" stroke="white" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
+    <line x1="0" y1="0" x2="55" y2="30" stroke="white" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
+    <line x1="0" y1="50" x2="40" y2="70" stroke="white" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
+  </g>
+  <!-- Text -->
+  <text x="256" y="440" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="700" fill="white" letter-spacing="4">FloraIQ</text>
+</svg>

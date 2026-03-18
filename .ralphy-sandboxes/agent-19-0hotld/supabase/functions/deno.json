@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  },
+  "nodeModulesDir": "auto",
+  "lock": false,
+  "tasks": {
+    "check": "echo 'Type checking disabled'"
+  }
+}

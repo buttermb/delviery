@@ -1,0 +1,50 @@
+﻿8395e9ff chore: Ralph R5 cleanup ΓÇö update sitemap, version, script
+24c7d242 fix: Task 400 ΓÇö Production build verified with zero errors
+e2e28d15 fix: Task 399 ΓÇö Full TypeScript check passes with zero errors
+d2e8b3e1 fix: Task 398 ΓÇö Prefetch data on sidebar link hover for faster navigation
+24ff5037 fix: Task 397 ΓÇö Add proper staleTime to queries that don't need real-time
+1c00db83 fix: Task 396 ΓÇö Replace bare text loading states with skeleton components to prevent layout shift
+b8c37e5c fix: Task 395 ΓÇö Add skeleton loaders to all pages that show blank while loading
+0898169e fix: Task 394 ΓÇö TypeScript checkpoint passes with zero errors
+5d5f39f9 fix: Task 393 ΓÇö Image alt text: all img tags have meaningful alt or role='presentation'
+46453c88 fix: Task 392 ΓÇö Skip-to-content link targets all layouts with id="main-content"
+c37f9e94 fix: Task 391 ΓÇö Table header scope th scope='col' on all table headers
+fa5939dc fix: Task 390 ΓÇö Form label associations for all inputs via aria-label
+e2110122 fix: Task 389 ΓÇö Focus trap in modals keeps Tab within dialog, restores focus on close
+55e4b0d5 fix: Task 388 ΓÇö Color contrast meets WCAG AA 4.5:1 ratio for all text
+ab04ca6f fix: Task 387 ΓÇö Focus ring visibility uses high-contrast Indigo instead of low-contrast Gold
+fc74cd3d fix: Task 386 ΓÇö TypeScript checkpoint passes with zero errors
+d3aa753b fix: Task 385 ΓÇö Show Access Denied page for unauthorized access instead of blank/redirect
+8d72ded1 fix: Task 384 ΓÇö Role-based UI hides buttons/actions the user's role cannot perform
+166cecd1 fix: Task 383 ΓÇö Auth loading state shows spinner during session check, not flash of login page
+57ebce38 fix: Task 382 ΓÇö Register validation inline errors and toast migration to sonner
+a524f818 fix: Task 381 ΓÇö Forgot password always shows success regardless of email existence (security)
+4089ca3e fix: Task 380 ΓÇö Map raw Supabase auth errors to user-friendly login messages
+e28dbc98 fix: Task 379 ΓÇö Redirect to login with 'Session expired' message on session expiry
+5e5dad3d fix: Task 378 ΓÇö TypeScript checkpoint passes clean (0 errors)
+e4c6a7dd fix: Task 377 ΓÇö Add search-specific empty state message 'No orders match your search'
+336cdad3 fix: Task 376 ΓÇö Add search results count 'Showing X of Y orders' below table
+6479cc58 fix: Task 375 ΓÇö Fix date range picker with presets (Today, This Week, This Month, Custom)
+656b856d fix: Task 374 ΓÇö Add 'Clear all filters' button when any filter is active
+216af6dc fix: Task 373 ΓÇö Add active filter indicators with badge count showing how many filters are active
+be507051 fix: Task 372 ΓÇö Fix combined filters so search + status + date range all work together
+8553d323 fix: Task 371 ΓÇö Fix filter persistence so filters survive page navigation and back button
+0cf3d9d8 fix: Task 370 ΓÇö Fix search clear button so X resets search and shows all results
+aefced60 fix: Task 369 ΓÇö Run npx tsc --noEmit checkpoint, clean with 0 errors
+7fc38a35 fix: Task 368 ΓÇö Fix viewport height issues so no content hidden behind fixed headers/footers on iOS
+3936bffc fix: Task 367 ΓÇö Fix print stylesheets so invoices, receipts, reports print clean with no nav/sidebar
+8032030f fix: Task 366 ΓÇö Fix header/toolbar wrapping with flex-wrap so actions wrap gracefully on small screens
+1aed5432 fix: Task 365 ΓÇö Fix table horizontal scroll with shadow indicators showing more content
+ef5dc0ae fix: Task 364 ΓÇö Fix form layouts on mobile, full-width inputs no side-by-side on small screens
+8709a37c fix: Task 363 ΓÇö Fix dashboard stat cards stack vertically on mobile, no horizontal scroll
+6f9761c6 fix: Task 362 ΓÇö Fix card grid responsiveness (1 col mobile, 2 col tablet, 3-4 col desktop)
+d388fc31 fix: Task 361 ΓÇö Fix sidebar overlap on tablet (768-1024px) collapse by default
+13111fbd fix: Task 360 ΓÇö Run npx tsc --noEmit checkpoint (zero errors)
+88d0ae65 fix: Task 359 ΓÇö Fix floating action buttons consistent position bottom-right on mobile
+e68df784 fix: Task 358 ΓÇö Add keyboard shortcut hints with Cmd+S to save, Cmd+N for new, Escape to cancel
+53c28ed4 fix: Task 357 ΓÇö Fix disabled button states with cursor-not-allowed and tooltips
+07ac09da fix: Task 356 ΓÇö Wire all action dropdown menus on tables
+285bfc2a fix: Task 355 ΓÇö Add ConfirmDeleteDialog to all destructive actions missing confirmation
+5e4dc1a8 fix: Task 354 ΓÇö Add loading spinners to all submit buttons during save
+f3b7d8b9 fix: Task 353 ΓÇö Disable submit buttons during pending mutations to prevent double-submit
+f06428e5 fix: Task 352 ΓÇö Run npx tsc --noEmit checkpoint (zero errors)
