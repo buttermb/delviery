@@ -1516,6 +1516,11 @@ export const queryKeys = {
   // Chat / Conversations
   chat: {
     all: ['chat'] as const,
+    sessions: {
+      all: () => [...queryKeys.chat.all, 'sessions'] as const,
+      byTenant: (tenantId?: string) =>
+        [...queryKeys.chat.sessions.all(), tenantId] as const,
+    },
     conversations: {
       all: () => [...queryKeys.chat.all, 'conversations'] as const,
       list: (userId: string, userType: string, tenantId?: string) =>
