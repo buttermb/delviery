@@ -162,9 +162,102 @@ serve(async (req) => {
     const tenantId = tenantUser.tenant_id;
 
     // -----------------------------------------------------------------------
-    // 4. Validate request body
+    // 4. Parse request body & handle resend_invite shortcut
     // -----------------------------------------------------------------------
     const rawBody = await req.json();
+
+    // Handle resend invite flow (separate from creating a new driver)
+    if (rawBody.resend_invite === true && rawBody.driver_id) {
+      const driverId = rawBody.driver_id as string;
+      logger.info('Resend invite requested', { driverId });
+
+      // Look up driver
+      const { data: driver, error: driverErr } = await supabase
+        .from('couriers')
+        .select('id, email, full_name, phone, user_id, tenant_id')
+        .eq('id', driverId)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (driverErr || !driver) {
+        logger.warn('Driver not found for resend', { driverId });
+        return errorResponse(404, 'Driver not found', 'NOT_FOUND');
+      }
+
+      // Generate a new temp password and reset it
+      const newTempPassword = generateTempPassword();
+      if (driver.user_id) {
+        const { error: resetErr } = await supabase.auth.admin.updateUserById(driver.user_id, {
+          password: newTempPassword,
+        });
+        if (resetErr) {
+          logger.error('Failed to reset password for resend', { error: resetErr.message });
+          return errorResponse(500, 'Failed to reset credentials', 'RESET_FAILED');
+        }
+      }
+
+      // Send invite email via Resend
+      let emailSent = false;
+      const resendApiKey = Deno.env.get('RESEND_API_KEY');
+      const portalUrl = Deno.env.get('COURIER_PORTAL_URL') || `${Deno.env.get('SITE_URL') || ''}/courier`;
+
+      if (resendApiKey) {
+        try {
+          const emailHtml = `
+            <div style="font-family: Inter, -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #1a1a1a;">
+              <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">Welcome to FloraIQ</h1>
+              <p style="color: #6b7280; margin-bottom: 32px;">Your driver account credentials have been updated. Use the details below to log in.</p>
+              <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                <p style="margin: 0 0 12px 0;"><strong>Portal:</strong> <a href="${portalUrl}" style="color: #10b981;">${portalUrl}</a></p>
+                <p style="margin: 0 0 12px 0;"><strong>Email:</strong> ${driver.email}</p>
+                <p style="margin: 0;"><strong>Temporary Password:</strong> <code style="background: #e5e7eb; padding: 2px 8px; border-radius: 4px;">${newTempPassword}</code></p>
+              </div>
+              <p style="color: #ef4444; font-size: 13px; margin-bottom: 24px;">Please change your password after logging in.</p>
+              <a href="${portalUrl}" style="display: inline-block; background: #10b981; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500;">Open Courier Portal</a>
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+              <p style="color: #9ca3af; font-size: 12px;">This is an automated message from FloraIQ.</p>
+            </div>
+          `;
+
+          const resendResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: 'FloraIQ <noreply@resend.dev>',
+              to: [driver.email],
+              subject: 'Your FloraIQ Driver Account – Updated Credentials',
+              html: emailHtml,
+            }),
+          });
+
+          if (resendResponse.ok) {
+            emailSent = true;
+            logger.info('Resend invite email sent', { email: driver.email });
+          } else {
+            const errorData = await resendResponse.json();
+            logger.error('Resend API error', { error: JSON.stringify(errorData) });
+          }
+        } catch (emailError) {
+          logger.error('Email send failed', {
+            error: emailError instanceof Error ? emailError.message : 'Unknown',
+          });
+        }
+      } else {
+        logger.warn('RESEND_API_KEY not configured, skipping resend email');
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, email_sent: emailSent }),
+        { status: 200, headers: jsonHeaders },
+      );
+    }
+
+    // -----------------------------------------------------------------------
+    // 4b. Validate full add-driver request body
+    // -----------------------------------------------------------------------
     const validation = addDriverSchema.safeParse(rawBody);
 
     if (!validation.success) {
