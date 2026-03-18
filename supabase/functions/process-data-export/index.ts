@@ -1,172 +1,201 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
+import { withZenProtection } from "../_shared/zen-firewall.ts";
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
-
-    try {
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-        );
-
-        // Get the request body
-        const { exportId } = await req.json();
-
-        if (!exportId) {
-            throw new Error("Missing exportId");
-        }
-
-        // Initialize Admin Client for Data Fetching & Storage (bypassing RLS for background job if needed, but here we prefer strict auth. 
-        // However, for storage upload and potentially long running query, service role might be safer if we validate tenant access first).
-        // Let's use service role for robust processing but validate ownership.
-        const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
-
-        // 1. Fetch Export Job Details
-        const { data: job, error: jobError } = await supabaseAdmin
-            .from('data_exports')
-            .select('*')
-            .eq('id', exportId)
-            .single();
-
-        if (jobError || !job) throw new Error("Export job not found");
-
-        // Update status to processing
-        await supabaseAdmin.from('data_exports').update({ status: 'processing' }).eq('id', exportId);
-
-        // 2. Fetch Data (Streaming/Batched)
-        // Simplified logic: Fetch all for now, but in real "large scale" we'd cursor.
-        // Given the prompt "times out at 50k", we should try to be efficient. 
-        // But standard JSON.stringify can handle 50k objects (~10MB-50MB) in memory on Edge usually.
-        // If truly massive, we generate CSV line by line.
-
-        const data = [];
-        const csvContent = "";
-
-        // Fetch Query based on type
-        const query = supabaseAdmin.from(job.data_type).select('*').eq('tenant_id', job.tenant_id);
-
-        // For orders, we might want relations like in AdminQuickExport, but let's stick to base table for "Raw Data Export" 
-        // or try to match the "Detailed" expectation if possible.
-        // Let's just fetch raw table data for generic export.
-
-        // Batched Fetching to avoid timeout
-        const batchSize = 1000;
-        let hasMore = true;
-        let page = 0;
-        const allRows = [];
-
-        while (hasMore) {
-            const { data: batch, error: fetchError } = await query
-                .range(page * batchSize, (page + 1) * batchSize - 1);
-
-            if (fetchError) throw fetchError;
-
-            if (batch.length < batchSize) {
-                hasMore = false;
-            }
-            allRows.push(...batch);
-            page++;
-
-            // Safety Break for demo (prevent infinite loops if something is wrong)
-            if (page > 100) break; // 100k limit
-        }
-
-        // 3. Generate File
-        const timestamp = new Date().toISOString().split('T')[0];
-        const filename = `${job.tenant_id}/${job.data_type}-${timestamp}-${exportId}.${job.format}`;
-        let fileBody;
-        let contentType;
-
-        if (job.format === 'csv') {
-            contentType = 'text/csv';
-            if (allRows.length > 0) {
-                const headers = Object.keys(allRows[0]);
-                const headerRow = headers.join(',');
-                const rows = allRows.map(row =>
-                    headers.map(field => {
-                        const val = row[field] === null || row[field] === undefined ? '' : String(row[field]);
-                        // escape quotes
-                        return `"${val.replace(/"/g, '""')}"`;
-                    }).join(',')
-                );
-                fileBody = [headerRow, ...rows].join('\n');
-            } else {
-                fileBody = "";
-            }
-        } else {
-            contentType = 'application/json';
-            fileBody = JSON.stringify(allRows, null, 2);
-        }
-
-        // 4. Upload to Storage
-        const { error: uploadError } = await supabaseAdmin
-            .storage
-            .from('exports')
-            .upload(filename, fileBody, {
-                contentType,
-                upsert: true
-            });
-
-        if (uploadError) throw uploadError;
-
-        // 5. Generate Signed URL (valid for 7 days)
-        const { data: urlData, error: urlError } = await supabaseAdmin
-            .storage
-            .from('exports')
-            .createSignedUrl(filename, 60 * 60 * 24 * 7);
-
-        if (urlError) throw urlError;
-
-        // 6. Update Job Status
-        await supabaseAdmin
-            .from('data_exports')
-            .update({
-                status: 'completed',
-                download_url: urlData.signedUrl,
-                row_count: allRows.length,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', exportId);
-
-        // 7. Send Email (Optional - placeholder)
-        // if (job.user_id) ... send email via Resend/SendGrid
-
-        return new Response(
-            JSON.stringify({ success: true, message: "Export completed" }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-
-    } catch (error: unknown) {
-        // Attempt to mark job as failed
-        try {
-            const { exportId } = await req.json().catch(() => ({ exportId: null }));
-            if (exportId) {
-                const supabaseAdmin = createClient(
-                    Deno.env.get('SUPABASE_URL') ?? '',
-                    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-                );
-                await supabaseAdmin.from('data_exports').update({
-                    status: 'failed',
-                    error_message: error instanceof Error ? error.message : 'Unknown error'
-                }).eq('id', exportId);
-            }
-        } catch (_e) { /* ignore */ }
-
-        return new Response(
-            JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    }
+const RequestSchema = z.object({
+  exportId: z.string().uuid(),
 });
+
+serve(withZenProtection(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Parse and validate request body early so we can reference exportId in error handler
+  let exportId: string | null = null;
+
+  try {
+    const body = RequestSchema.parse(await req.json());
+    exportId = body.exportId;
+
+    // Verify caller is authenticated
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Service role client for processing (bypasses RLS for background job)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // 1. Fetch export job
+    const { data: job, error: jobError } = await supabaseAdmin
+      .from("data_exports")
+      .select("*")
+      .eq("id", exportId)
+      .maybeSingle();
+
+    if (jobError || !job) {
+      return new Response(
+        JSON.stringify({ error: "Export job not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify user belongs to the tenant that owns this export
+    const { data: membership } = await supabaseAdmin
+      .from("tenant_users")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("tenant_id", job.tenant_id)
+      .maybeSingle();
+
+    if (!membership) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 2. Mark as processing
+    await supabaseAdmin
+      .from("data_exports")
+      .update({ status: "processing" })
+      .eq("id", exportId);
+
+    // 3. Fetch data in batches
+    const batchSize = 1000;
+    const maxPages = 100; // 100k row safety limit
+    let page = 0;
+    let hasMore = true;
+    const allRows: Record<string, unknown>[] = [];
+
+    while (hasMore && page < maxPages) {
+      const from = page * batchSize;
+      const to = from + batchSize - 1;
+
+      const { data: batch, error: fetchError } = await supabaseAdmin
+        .from(job.data_type)
+        .select("*")
+        .eq("tenant_id", job.tenant_id)
+        .range(from, to);
+
+      if (fetchError) throw fetchError;
+      if (!batch || batch.length === 0) break;
+
+      allRows.push(...batch);
+      hasMore = batch.length === batchSize;
+      page++;
+    }
+
+    // 4. Generate file content
+    const timestamp = new Date().toISOString().split("T")[0];
+    const filename = `${job.tenant_id}/${job.data_type}-${timestamp}-${exportId}.${job.format}`;
+    let fileBody: string;
+    let contentType: string;
+
+    if (job.format === "csv") {
+      contentType = "text/csv";
+      if (allRows.length > 0) {
+        const headers = Object.keys(allRows[0]);
+        const headerRow = headers.join(",");
+        const rows = allRows.map((row) =>
+          headers
+            .map((field) => {
+              const val = row[field] === null || row[field] === undefined ? "" : String(row[field]);
+              return `"${val.replace(/"/g, '""')}"`;
+            })
+            .join(",")
+        );
+        fileBody = [headerRow, ...rows].join("\n");
+      } else {
+        fileBody = "";
+      }
+    } else {
+      contentType = "application/json";
+      fileBody = JSON.stringify(allRows, null, 2);
+    }
+
+    // 5. Upload to storage
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("exports")
+      .upload(filename, fileBody, { contentType, upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    // 6. Generate signed URL (7 days)
+    const { data: urlData, error: urlError } = await supabaseAdmin.storage
+      .from("exports")
+      .createSignedUrl(filename, 60 * 60 * 24 * 7);
+
+    if (urlError) throw urlError;
+
+    // 7. Update job as completed
+    await supabaseAdmin
+      .from("data_exports")
+      .update({
+        status: "completed",
+        download_url: urlData.signedUrl,
+        row_count: allRows.length,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", exportId);
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Export completed" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error: unknown) {
+    console.error("process-data-export error:", error);
+
+    // Mark job as failed if we have an exportId
+    if (exportId) {
+      try {
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        );
+        await supabaseAdmin
+          .from("data_exports")
+          .update({
+            status: "failed",
+            error_message: error instanceof Error ? error.message : "Unknown error",
+          })
+          .eq("id", exportId);
+      } catch (_markError) {
+        console.error("Failed to mark export as failed:", _markError);
+      }
+    }
+
+    // Zod validation errors return 400
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: "Invalid request", details: error.errors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Internal server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+}));
