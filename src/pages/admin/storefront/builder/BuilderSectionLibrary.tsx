@@ -21,7 +21,7 @@ export function BuilderSectionLibrary({ onAddSection }: BuilderSectionLibraryPro
         const result: Partial<Record<SectionCategory, typeof SECTION_REGISTRY>> = {};
 
         // Iterate through all defined categories to maintain consistent order
-        Object.entries(SECTION_CATEGORIES).forEach(([categoryKey, categoryInfo]) => {
+        Object.entries(SECTION_CATEGORIES).forEach(([categoryKey, _categoryInfo]) => {
             const key = categoryKey as SectionCategory;
             const categorySections = Object.entries(SECTION_REGISTRY).filter(
                 ([_, config]) => config.category === key

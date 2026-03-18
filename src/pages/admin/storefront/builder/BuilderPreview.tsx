@@ -36,7 +36,7 @@ function PreviewSectionElement({
     onSelect,
     storeId,
     tenantId,
-    themeConfig,
+    themeConfig: _themeConfig,
 }: {
     section: StorefrontSection;
     isSelected: boolean;

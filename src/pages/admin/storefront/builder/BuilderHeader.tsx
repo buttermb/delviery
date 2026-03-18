@@ -6,7 +6,7 @@
 import { X, ArrowLeft, Monitor, Tablet, Smartphone, Undo2, Redo2, ZoomOut, ZoomIn, Globe, GlobeLock, Wand2, Settings2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { SaveButton } from '@/components/ui/save-button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 
 interface BuilderHeaderProps {

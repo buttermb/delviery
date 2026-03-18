@@ -41,8 +41,8 @@ export function useStorefrontBuilder() {
     } = useCreditGatedAction();
 
     // URL params for menu → storefront conversion
-    const fromMenuId = searchParams.get('from_menu');
-    const menuName = searchParams.get('menu_name');
+    const _fromMenuId = searchParams.get('from_menu');
+    const _menuName = searchParams.get('menu_name');
 
     // UI State
     const [activeTab, setActiveTab] = useState('sections');

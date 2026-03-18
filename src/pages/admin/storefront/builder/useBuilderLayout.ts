@@ -4,7 +4,7 @@
  * the builder UI accordingly (panel visibility, drawer mode, etc.)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export type BuilderBreakpoint = 'mobile' | 'tablet' | 'desktop';
 
