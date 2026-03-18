@@ -23,8 +23,17 @@ serve(
     }
 
     try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseKey) {
+        logger.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+        return new Response(
+          JSON.stringify({ error: 'Server configuration error' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       // Verify authentication
@@ -105,7 +114,7 @@ serve(
         .select('*')
         .eq('id', order_id)
         .eq('tenant_id', tenant_id)
-        .single();
+        .maybeSingle();
 
       if (orderError || !order) {
         return new Response(
@@ -121,6 +130,9 @@ serve(
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Resolve account_id for logging and payment records
+      const account_id = order.account_id;
 
       // Process payment based on method
       let paymentResult: Record<string, unknown> = {
@@ -141,7 +153,7 @@ serve(
       } else if (payment_method === 'card') {
         // Stripe payment processing
         const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-        
+
         if (!stripeSecretKey) {
           return new Response(
             JSON.stringify({ error: 'Stripe not configured' }),
@@ -150,21 +162,21 @@ serve(
         }
 
         try {
-          // Create Stripe payment intent
+          // Create Stripe payment intent with properly encoded metadata
+          const params = new URLSearchParams({
+            amount: Math.round(amount * 100).toString(),
+            currency: 'usd',
+            'metadata[order_id]': order_id,
+            'metadata[user_id]': user.id,
+          });
+
           const stripeResponse = await fetch('https://api.stripe.com/v1/payment_intents', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${stripeSecretKey}`,
               'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-              amount: Math.round(amount * 100).toString(), // Convert to cents
-              currency: 'usd',
-              metadata: JSON.stringify({
-                order_id: order_id,
-                user_id: user.id,
-              }),
-            }),
+            body: params,
           });
 
           const stripeData = await stripeResponse.json();
@@ -178,27 +190,34 @@ serve(
             payment_id: stripeData.id,
             transaction_id: stripeData.id,
             message: 'Payment processed successfully',
-            client_secret: stripeData.client_secret, // For frontend confirmation
+            client_secret: stripeData.client_secret,
           };
         } catch (stripeError) {
           // Retry logic
           if (retry_count < 3) {
-            // Log retry
-            await supabase.from('activity_logs').insert({
-              user_id: user.id,
-              tenant_id: order.tenant_id,
-              action: 'payment_retry',
-              resource: 'order',
-              resource_id: order_id,
-              metadata: {
-                payment_method: 'card',
-                retry_count: retry_count + 1,
-                error: stripeError instanceof Error ? stripeError.message : 'Unknown error',
-              },
-              created_at: new Date().toISOString(),
+            logger.warn('Payment retry', {
+              userId: user.id,
+              tenantId: tenant_id,
+              retryCount: String(retry_count + 1),
+              error: stripeError instanceof Error ? stripeError.message : 'Unknown error',
             });
 
-            // Return retry instruction
+            // Log retry to activity_logs if account_id available
+            if (account_id) {
+              await supabase.from('activity_logs').insert({
+                account_id,
+                user_id: user.id,
+                action: 'payment_retry',
+                entity_type: 'order',
+                entity_id: order_id,
+                changes: {
+                  payment_method: 'card',
+                  retry_count: retry_count + 1,
+                  error: stripeError instanceof Error ? stripeError.message : 'Unknown error',
+                },
+              });
+            }
+
             return new Response(
               JSON.stringify({
                 error: 'Payment processing failed',
@@ -302,7 +321,8 @@ serve(
           payment_transaction_id: paymentResult.transaction_id as string,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', order_id);
+        .eq('id', order_id)
+        .eq('tenant_id', tenant_id);
 
       // Create payment record
       await supabase.from('customer_payments').insert({
@@ -369,4 +389,3 @@ serve(
     }
   })
 );
-
