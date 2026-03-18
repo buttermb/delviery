@@ -310,6 +310,8 @@ export const useWholesaleInventory = (tenantId?: string) => {
       }));
     },
     enabled: !!tenantId,
+    staleTime: 30_000,
+    gcTime: 300_000,
     retry: 2,
   });
 };

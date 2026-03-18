@@ -2,7 +2,7 @@
  * Reports Page - Comprehensive reporting and analytics
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,12 +16,41 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
+import type { WholesalePaymentWithClient } from '@/hooks/useWholesaleData';
 import { useExport } from '@/hooks/useExport';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { reportsTutorial } from '@/lib/tutorials/tutorialConfig';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { showInfoToast } from '@/utils/toastHelpers';
+
+interface WholesaleOrder {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  runner_id: string | null;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  client: { business_name: string; contact_name: string } | null;
+  runner: { full_name: string; phone: string } | null;
+}
+
+interface InventoryItem {
+  id: string;
+  product_name: string;
+  category: string | null;
+  quantity_lbs: number;
+  quantity_units: number;
+  reorder_point: number;
+  price_per_lb: number;
+  cost_per_lb: number;
+  image_url: string | null;
+  in_stock: boolean | null;
+  source: 'products';
+}
 
 export default function ReportsPage() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -29,7 +58,7 @@ export default function ReportsPage() {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
   const [searchQuery, setSearchQuery] = useState('');
-  const { exportCSV } = useExport();
+  const { exportCSV, isExporting } = useExport();
 
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
@@ -39,7 +68,7 @@ export default function ReportsPage() {
   const loading = clientsLoading || ordersLoading || paymentsLoading || inventoryLoading;
 
   // Calculate date range based on selection
-  const getDateRange = () => {
+  const dateRange = useMemo(() => {
     const now = new Date();
     switch (timeRange) {
       case 'week':
@@ -53,19 +82,22 @@ export default function ReportsPage() {
       default:
         return { start: startOfMonth(now), end: endOfMonth(now) };
     }
-  };
+  }, [timeRange]);
 
-  const { start: startDate, end: endDate } = getDateRange();
+  const { start: startDate, end: endDate } = dateRange;
+
+  const typedOrders = orders as unknown as WholesaleOrder[];
+  const typedInventory = inventory as unknown as InventoryItem[];
 
   // Filter data by date range
-  const filteredOrders = useMemo(() => orders.filter(o => {
+  const filteredOrders = useMemo(() => typedOrders.filter(o => {
     const orderDate = new Date(o.created_at);
     const matchesDate = orderDate >= startDate && orderDate <= endDate;
     const matchesSearch = !searchQuery ||
       o.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       o.client?.business_name?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDate && matchesSearch;
-  }), [orders, startDate, endDate, searchQuery]);
+  }), [typedOrders, startDate, endDate, searchQuery]);
 
   const filteredPayments = useMemo(() => payments.filter(p => {
     const paymentDate = new Date(p.created_at);
@@ -83,77 +115,148 @@ export default function ReportsPage() {
   const totalCollected = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Compare with previous period
-  const prevStart = new Date(startDate);
-  prevStart.setDate(prevStart.getDate() - (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const prevOrders = orders.filter(o => {
-    const orderDate = new Date(o.created_at);
-    return orderDate >= prevStart && orderDate < startDate;
-  });
-  const prevRevenue = prevOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-  const revenueGrowth = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+  const revenueGrowth = useMemo(() => {
+    const periodLength = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+    const prevStart = new Date(startDate);
+    prevStart.setDate(prevStart.getDate() - periodLength);
+    const prevOrders = typedOrders.filter(o => {
+      const orderDate = new Date(o.created_at);
+      return orderDate >= prevStart && orderDate < startDate;
+    });
+    const prevRevenue = prevOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    return prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+  }, [typedOrders, startDate, endDate, totalRevenue]);
 
-  const handleExport = () => {
-    if (reportType === 'business') {
-      exportCSV(
-        filteredOrders.map(o => ({
-          order_number: o.order_number,
-          date: format(new Date(o.created_at), 'yyyy-MM-dd'),
-          client: o.client?.business_name || 'N/A',
-          amount: Number(o.total_amount),
-          status: o.status
-        })),
-        [],
-        `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
-      );
-    } else if (reportType === 'financial') {
-      exportCSV(
-        filteredPayments.map(p => ({
-          date: format(new Date(p.created_at), 'yyyy-MM-dd'),
-          client: p.client?.business_name || 'N/A',
-          amount: Number(p.amount),
-          method: p.payment_method
-        })),
-        [],
-        `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
-      );
-    } else if (reportType === 'inventory') {
-      const inventoryRecord = inventory as unknown as Array<Record<string, unknown>>;
-      exportCSV(
-        inventoryRecord.map(i => ({
-          product: (i.product_name as string) ?? '',
-          quantity_lbs: Number(i.quantity_lbs ?? 0),
-          quantity_units: (i.quantity_units as number) ?? 0,
-          category: (i.category as string) || 'N/A',
-          warehouse: (i.warehouse_location as string) || 'N/A',
-          updated: i.updated_at ? format(new Date(i.updated_at as string), 'yyyy-MM-dd') : 'N/A'
-        })),
-        [],
-        `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
-      );
+  const exportBusinessReport = useCallback(() => {
+    exportCSV(
+      filteredOrders.map(o => ({
+        order_number: o.order_number,
+        date: format(new Date(o.created_at), 'yyyy-MM-dd'),
+        client: o.client?.business_name || 'N/A',
+        amount: Number(o.total_amount),
+        status: o.status,
+      })),
+      [],
+      `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [filteredOrders, exportCSV]);
+
+  const exportFinancialReport = useCallback(() => {
+    exportCSV(
+      filteredPayments.map(p => ({
+        date: format(new Date(p.created_at), 'yyyy-MM-dd'),
+        client: p.client?.business_name || 'N/A',
+        amount: Number(p.amount),
+        method: p.payment_method,
+      })),
+      [],
+      `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [filteredPayments, exportCSV]);
+
+  const exportInventoryReport = useCallback(() => {
+    exportCSV(
+      typedInventory.map(i => ({
+        product: i.product_name,
+        stock_quantity: i.quantity_lbs,
+        available_quantity: i.quantity_units,
+        category: i.category || 'N/A',
+        price: i.price_per_lb,
+        cost: i.cost_per_lb,
+      })),
+      [],
+      `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [typedInventory, exportCSV]);
+
+  const exportCustodyReport = useCallback((reportName: string) => {
+    // Chain of custody reports export order data with tracking context
+    exportCSV(
+      filteredOrders.map(o => ({
+        order_number: o.order_number,
+        date: format(new Date(o.created_at), 'yyyy-MM-dd'),
+        client: o.client?.business_name || 'N/A',
+        status: o.status,
+        amount: Number(o.total_amount),
+        runner: o.runner?.full_name || 'Unassigned',
+      })),
+      [],
+      `${reportName}-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [filteredOrders, exportCSV]);
+
+  const exportPnlReport = useCallback(() => {
+    const revenue = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    const collected = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    exportCSV(
+      [{
+        period: `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`,
+        total_revenue: revenue,
+        total_collected: collected,
+        outstanding: revenue - collected,
+        collection_rate_pct: revenue > 0 ? Number(((collected / revenue) * 100).toFixed(1)) : 0,
+        total_orders: filteredOrders.length,
+        avg_order_value: filteredOrders.length > 0 ? Number((revenue / filteredOrders.length).toFixed(2)) : 0,
+      }],
+      [],
+      `pnl-statement-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [filteredOrders, filteredPayments, startDate, endDate, exportCSV]);
+
+  const exportCashFlowReport = useCallback(() => {
+    exportCSV(
+      filteredPayments.map(p => ({
+        date: format(new Date(p.created_at), 'yyyy-MM-dd'),
+        client: p.client?.business_name || 'N/A',
+        amount: Number(p.amount),
+        method: p.payment_method,
+        direction: 'inflow',
+      })),
+      [],
+      `cash-flow-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    );
+  }, [filteredPayments, exportCSV]);
+
+  const handleExport = useCallback(() => {
+    switch (reportType) {
+      case 'business':
+        exportBusinessReport();
+        break;
+      case 'financial':
+        exportFinancialReport();
+        break;
+      case 'inventory':
+        exportInventoryReport();
+        break;
+      case 'custody':
+        exportCustodyReport('custody-report');
+        break;
+      default:
+        showInfoToast('Export', 'Select a report tab to export');
     }
-  };
+  }, [reportType, exportBusinessReport, exportFinancialReport, exportInventoryReport, exportCustodyReport]);
 
-  // Define Columns
-  const businessColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
+  // Define typed columns
+  const businessColumns = useMemo<ResponsiveColumn<WholesaleOrder>[]>(() => [
     { header: 'Order #', accessorKey: 'order_number', className: 'font-mono' },
-    { header: 'Date', cell: (item: Record<string, unknown>) => format(new Date(item.created_at as string), 'MMM d, yyyy') },
-    { header: 'Client', cell: (item: Record<string, unknown>) => (item.client as Record<string, unknown>)?.business_name as string || 'N/A' },
-    { header: 'Amount', cell: (item: Record<string, unknown>) => formatCurrency(item.total_amount as number), className: 'text-right' },
-    { header: 'Status', cell: (item: Record<string, unknown>) => <Badge variant="outline">{item.status as string}</Badge> }
+    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
+    { header: 'Amount', cell: (item) => formatCurrency(Number(item.total_amount)), className: 'text-right' },
+    { header: 'Status', cell: (item) => <Badge variant="outline">{item.status}</Badge> },
   ], []);
 
-  const inventoryColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
+  const inventoryColumns = useMemo<ResponsiveColumn<InventoryItem>[]>(() => [
     { header: 'Product', accessorKey: 'product_name', className: 'font-medium' },
-    { header: 'Quantity (lbs)', accessorKey: 'quantity_lbs' },
-    { header: 'Warehouse', cell: (item: Record<string, unknown>) => (item.warehouse_location as string) || 'Unassigned' },
-    { header: 'Category', accessorKey: 'category' }
+    { header: 'Stock Qty', accessorKey: 'quantity_lbs' },
+    { header: 'Available', accessorKey: 'quantity_units' },
+    { header: 'Category', accessorKey: 'category' },
   ], []);
 
-  const financialColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
-    { header: 'Date', cell: (item: Record<string, unknown>) => format(new Date(item.created_at as string), 'MMM d, yyyy') },
-    { header: 'Client', cell: (item: Record<string, unknown>) => (item.client as Record<string, unknown>)?.business_name as string || 'N/A' },
-    { header: 'Amount', cell: (item: Record<string, unknown>) => formatCurrency(item.amount as number), className: 'text-right' },
-    { header: 'Method', cell: (item: Record<string, unknown>) => <Badge variant="secondary">{item.payment_method as string}</Badge> }
+  const financialColumns = useMemo<ResponsiveColumn<WholesalePaymentWithClient>[]>(() => [
+    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
+    { header: 'Amount', cell: (item) => formatCurrency(Number(item.amount)), className: 'text-right' },
+    { header: 'Method', cell: (item) => <Badge variant="secondary">{item.payment_method}</Badge> },
   ], []);
 
   if (loading) {
@@ -200,10 +303,19 @@ export default function ReportsPage() {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExport} data-tutorial="export-options" className="min-h-[44px] touch-manipulation text-sm sm:text-base flex-1 sm:flex-initial min-w-[100px]">
-            <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Export</span>
-            <span className="sm:hidden">Export</span>
+          <Button
+            onClick={handleExport}
+            disabled={isExporting}
+            data-tutorial="export-options"
+            className="min-h-[44px] touch-manipulation text-sm sm:text-base flex-1 sm:flex-initial min-w-[100px]"
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+            ) : (
+              <Download className="h-4 w-4 sm:mr-2" />
+            )}
+            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
+            <span className="sm:hidden">{isExporting ? '...' : 'Export'}</span>
           </Button>
           <TakeTourButton
             tutorialId={reportsTutorial.id}
@@ -295,7 +407,7 @@ export default function ReportsPage() {
             <ResponsiveTable
               columns={businessColumns}
               data={filteredOrders}
-              keyExtractor={(item: Record<string, unknown>) => item.id as string}
+              keyExtractor={(item) => item.id}
               emptyState={{ title: "No orders", description: "No orders found for this period.", icon: FileText }}
               className="border-0 rounded-none"
             />
@@ -315,7 +427,12 @@ export default function ReportsPage() {
                       Complete audit trail for all batches
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isExporting}
+                    onClick={() => exportCustodyReport('batch-tracking')}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
@@ -329,7 +446,12 @@ export default function ReportsPage() {
                       All inventory transfers and movements
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isExporting}
+                    onClick={() => exportCustodyReport('transfer-history')}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
@@ -343,7 +465,12 @@ export default function ReportsPage() {
                       All barcode/QR code scans and verifications
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isExporting}
+                    onClick={() => exportCustodyReport('package-scans')}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
@@ -363,7 +490,12 @@ export default function ReportsPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Current inventory levels across all locations
                 </p>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isExporting}
+                  onClick={exportInventoryReport}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -377,8 +509,8 @@ export default function ReportsPage() {
             </div>
             <ResponsiveTable
               columns={inventoryColumns}
-              data={inventory}
-              keyExtractor={(item: Record<string, unknown>) => (item.id as string) || `inventory-${item.product_name}` as string}
+              data={typedInventory}
+              keyExtractor={(item) => item.id}
               emptyState={{ title: "No inventory", description: "No inventory found.", icon: Package }}
               className="border-0 rounded-none"
             />
@@ -395,7 +527,12 @@ export default function ReportsPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Profit and loss statement for selected period
                 </p>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isExporting}
+                  onClick={exportPnlReport}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -405,7 +542,12 @@ export default function ReportsPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Incoming and outgoing cash flow
                 </p>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isExporting}
+                  onClick={exportCashFlowReport}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -419,8 +561,8 @@ export default function ReportsPage() {
             </div>
             <ResponsiveTable
               columns={financialColumns}
-              data={filteredPayments as unknown as Record<string, unknown>[]}
-              keyExtractor={(item: Record<string, unknown>) => item.id as string}
+              data={filteredPayments}
+              keyExtractor={(item) => item.id}
               emptyState={{ title: "No payments", description: "No payments found for this period.", icon: DollarSign }}
               className="border-0 rounded-none"
             />
