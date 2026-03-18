@@ -277,6 +277,7 @@ export default function ProductManagement() {
       return store;
     },
     enabled: !!tenant?.id,
+    staleTime: 300_000,
     retry: 2,
   });
 
@@ -343,6 +344,7 @@ export default function ProductManagement() {
       return data;
     },
     enabled: !!tenant?.id,
+    staleTime: 300_000,
     retry: 2,
   });
 

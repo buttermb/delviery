@@ -148,6 +148,7 @@ function CashRegisterContent() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 60_000,
   });
 
   // Enable realtime updates for shifts and cash drawer
@@ -298,6 +299,7 @@ function CashRegisterContent() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 120_000,
   });
 
   // Load recent transactions
@@ -324,6 +326,7 @@ function CashRegisterContent() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 60_000,
   });
 
   // Calculate totals with discount and tax
