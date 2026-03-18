@@ -261,10 +261,7 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 
   function handleOpenMap() {
     if (hasLocation) {
-      window.open(
-        `https://www.google.com/maps?q=${driver.current_lat},${driver.current_lng}`,
-        '_blank',
-      );
+      navigateToAdmin(`fleet?driver=${driver.id}`);
     } else {
       toast.info('No location data available');
     }
