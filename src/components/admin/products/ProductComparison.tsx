@@ -16,7 +16,7 @@
  * Task 115: Create product comparison view
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import X from 'lucide-react/dist/esm/icons/x';
@@ -87,6 +87,23 @@ interface ProductRevenue {
 
 type ComparisonMetric = 'highest' | 'lowest' | 'neutral';
 
+// Comparison limits
+const MIN_COMPARISON_PRODUCTS = 2;
+const MAX_COMPARISON_PRODUCTS = 4;
+
+// Revenue analysis window (days)
+const REVENUE_WINDOW_DAYS = 30;
+
+// Compliance test expiration threshold (days)
+const TEST_EXPIRATION_DAYS = 365;
+
+// Stockout urgency thresholds (days)
+const STOCKOUT_URGENT_DAYS = 7;
+const STOCKOUT_SOON_DAYS = 14;
+
+// Revenue-eligible order statuses
+const REVENUE_ORDER_STATUSES = ['completed', 'delivered', 'processing', 'confirmed'];
+
 // ============================================================================
 // Query Keys
 // ============================================================================
@@ -143,7 +160,7 @@ function useComparisonProducts(productIds: string[]) {
 
       return (data ?? []) as ProductData[];
     },
-    enabled: !!tenant?.id && productIds.length >= 2,
+    enabled: !!tenant?.id && productIds.length >= MIN_COMPARISON_PRODUCTS,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -160,8 +177,8 @@ function useProductRevenueData(productIds: string[]) {
         return revenueMap;
       }
 
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const windowStart = new Date();
+      windowStart.setDate(windowStart.getDate() - REVENUE_WINDOW_DAYS);
 
       const { data, error } = await supabase
         .from('order_items')
@@ -173,7 +190,7 @@ function useProductRevenueData(productIds: string[]) {
         `)
         .in('product_id', productIds)
         .eq('orders.tenant_id', tenant.id)
-        .gte('orders.created_at', thirtyDaysAgo.toISOString());
+        .gte('orders.created_at', windowStart.toISOString());
 
       if (error) {
         logger.error('Failed to fetch product revenue data', error, {
@@ -192,7 +209,7 @@ function useProductRevenueData(productIds: string[]) {
       }
 
       // Aggregate revenue data
-      const validStatuses = ['completed', 'delivered', 'processing', 'confirmed'];
+      const validStatuses = REVENUE_ORDER_STATUSES;
       for (const item of data ?? []) {
         const order = item.orders as unknown as {
           tenant_id: string;
@@ -213,7 +230,7 @@ function useProductRevenueData(productIds: string[]) {
 
       return revenueMap;
     },
-    enabled: !!tenant?.id && productIds.length >= 2,
+    enabled: !!tenant?.id && productIds.length >= MIN_COMPARISON_PRODUCTS,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -235,7 +252,7 @@ function getComplianceStatus(product: ProductData): 'compliant' | 'warning' | 'm
     const daysSinceTest = Math.floor(
       (Date.now() - testDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (daysSinceTest > 365) {
+    if (daysSinceTest > TEST_EXPIRATION_DAYS) {
       return 'warning';
     }
   }
@@ -381,7 +398,7 @@ function ProductHeader({
         size="icon"
         className="absolute top-2 right-2 h-6 w-6"
         onClick={onRemove}
-        aria-label="Remove"
+        aria-label={`Remove ${product.name} from comparison`}
       >
         <X className="h-4 w-4" />
       </Button>
@@ -438,7 +455,7 @@ export function ProductComparison({
   const [localProductIds, setLocalProductIds] = useState<string[]>(productIds);
 
   // Update local state when productIds prop changes
-  useMemo(() => {
+  useEffect(() => {
     setLocalProductIds(productIds);
   }, [productIds]);
 
@@ -455,7 +472,7 @@ export function ProductComparison({
     isLoading: velocitiesLoading,
   } = useBulkProductVelocity({
     productIds: localProductIds,
-    enabled: localProductIds.length >= 2,
+    enabled: localProductIds.length >= MIN_COMPARISON_PRODUCTS,
   });
 
   // Fetch revenue data
@@ -485,7 +502,7 @@ export function ProductComparison({
   // Handle removing a product from comparison
   const handleRemoveProduct = (productId: string) => {
     const newIds = localProductIds.filter((id) => id !== productId);
-    if (newIds.length < 2) {
+    if (newIds.length < MIN_COMPARISON_PRODUCTS) {
       onClose();
     } else {
       setLocalProductIds(newIds);
@@ -493,7 +510,7 @@ export function ProductComparison({
   };
 
   // Validate product count
-  if (productIds.length < 2) {
+  if (productIds.length < MIN_COMPARISON_PRODUCTS) {
     return (
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
         <DialogContent>
@@ -502,14 +519,14 @@ export function ProductComparison({
           </DialogHeader>
           <div className="text-center py-8 text-muted-foreground">
             <GitCompare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Select at least 2 products to compare</p>
+            <p>Select at least {MIN_COMPARISON_PRODUCTS} products to compare</p>
           </div>
         </DialogContent>
       </Dialog>
     );
   }
 
-  if (productIds.length > 4) {
+  if (productIds.length > MAX_COMPARISON_PRODUCTS) {
     return (
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
         <DialogContent>
@@ -518,7 +535,7 @@ export function ProductComparison({
           </DialogHeader>
           <div className="text-center py-8 text-muted-foreground">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Select up to 4 products to compare</p>
+            <p>Select up to {MAX_COMPARISON_PRODUCTS} products to compare</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -569,7 +586,7 @@ export function ProductComparison({
                 <div className="divide-y">
                   {/* Price */}
                   <ComparisonRow label="Wholesale Price" icon={DollarSign}>
-                    {orderedProducts.map((product, _idx) => (
+                    {orderedProducts.map((product) => (
                       <MetricCell
                         key={product.id}
                         value={
@@ -593,7 +610,7 @@ export function ProductComparison({
 
                   {/* Stock */}
                   <ComparisonRow label="Stock Level" icon={Package}>
-                    {orderedProducts.map((product, _idx) => {
+                    {orderedProducts.map((product) => {
                       const qty = product.available_quantity ?? 0;
                       const threshold = product.low_stock_alert ?? 10;
                       const isLow = qty > 0 && qty <= threshold;
@@ -722,8 +739,8 @@ export function ProductComparison({
                     {orderedProducts.map((product) => {
                       const velocity = velocities.get(product.id);
                       const days = velocity?.daysUntilStockout ?? 999;
-                      const isUrgent = days <= 7;
-                      const isSoon = days <= 14 && days > 7;
+                      const isUrgent = days <= STOCKOUT_URGENT_DAYS;
+                      const isSoon = days <= STOCKOUT_SOON_DAYS && days > STOCKOUT_URGENT_DAYS;
 
                       return (
                         <MetricCell
