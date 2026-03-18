@@ -1,7 +1,8 @@
 /**
  * useLocationInventory Hook
- * 
- * Provides inventory data filtered by location
+ *
+ * Provides inventory data filtered by location.
+ * When no locationId is provided, fetches all inventory for the tenant.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -15,7 +16,7 @@ export interface LocationInventoryItem {
   product_id: string;
   location_id: string;
   quantity: number;
-  reserved_quantity?: number;
+  reserved_quantity: number;
   product?: {
     id: string;
     name: string;
@@ -35,19 +36,26 @@ export function useLocationInventory(locationId?: string) {
   return useQuery({
     queryKey: queryKeys.locationInventory.byLocation(tenant?.id, locationId),
     queryFn: async (): Promise<LocationInventoryItem[]> => {
-      if (!tenant?.id || !locationId) return [];
+      if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('location_inventory')
         .select(`
           id,
           product_id,
           location_id,
           quantity,
-          product:products(id, name, sku, category, image_url)
+          reserved_quantity,
+          product:products(id, name, sku, category, image_url),
+          location:locations(id, name)
         `)
-        .eq('tenant_id', tenant.id)
-        .eq('location_id', locationId);
+        .eq('tenant_id', tenant.id);
+
+      if (locationId) {
+        query = query.eq('location_id', locationId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         logger.error('Failed to fetch location inventory', error, { component: 'useLocationInventory' });
@@ -56,7 +64,7 @@ export function useLocationInventory(locationId?: string) {
 
       return (data ?? []) as LocationInventoryItem[];
     },
-    enabled: !!tenant?.id && !!locationId,
+    enabled: !!tenant?.id,
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
