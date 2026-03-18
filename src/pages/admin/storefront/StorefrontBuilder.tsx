@@ -109,8 +109,10 @@ export function StorefrontBuilder({
     
     if (builder.isLoading) {
         return (
-            <div className={`flex flex-col bg-muted overflow-hidden max-w-full ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
-                style={{ height: isFullScreen ? '100vh' : 'calc(100vh - 56px)', maxWidth: '100vw' }}>
+            <div
+                className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : 'h-full'}`}
+                style={isFullScreen ? { height: '100vh' } : undefined}
+            >
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
@@ -120,11 +122,8 @@ export function StorefrontBuilder({
 
     return (
         <div
-            className={`flex flex-col bg-muted overflow-hidden max-w-full ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
-            style={{
-                height: isFullScreen ? '100vh' : 'calc(100vh - 56px)',
-                maxWidth: '100vw',
-            }}
+            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : 'h-full'}`}
+            style={isFullScreen ? { height: '100vh' } : undefined}
         >
             {/* No-store empty state */}
             {!builder.store && (
