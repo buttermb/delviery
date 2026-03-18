@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
   Bell,
   Mail,
@@ -31,6 +30,7 @@ import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface NotificationPreference {
   email: boolean;
@@ -130,7 +130,6 @@ export default function NotificationSettings() {
       }
 
       setSettings(newSettings);
-      // Note: Quiet hours and sound aren't in the DB schema provided, so keeping them local/default for now
     }
   }, [preferences]);
 
@@ -181,13 +180,23 @@ export default function NotificationSettings() {
     }
   });
 
-  const [quietHours, setQuietHours] = useState({
-    enabled: true,
-    start: '22:00',
-    end: '08:00',
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED);
+      return stored !== null ? stored === 'true' : true;
+    } catch {
+      return true;
+    }
   });
 
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const handleSoundToggle = useCallback((checked: boolean) => {
+    setSoundEnabled(checked);
+    try {
+      localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED, String(checked));
+    } catch {
+      logger.warn('Failed to persist sound preference to localStorage');
+    }
+  }, []);
 
   const handleToggle = (type: keyof NotificationSettings, channel: keyof NotificationPreference) => {
     const updated = {
@@ -358,45 +367,10 @@ export default function NotificationSettings() {
         <SettingsCard>
           <SettingsRow
             label="Enable Quiet Hours"
-            description="Only critical alerts will be sent during this time"
+            description="Only critical alerts will be sent during quiet hours"
           >
-            <Switch
-              checked={quietHours.enabled}
-              onCheckedChange={(checked) => setQuietHours({ ...quietHours, enabled: checked })}
-              disabled={true} // Persisting this requires a new column or table update
-            />
+            <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
           </SettingsRow>
-
-          {quietHours.enabled && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 pt-4 border-t">
-              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                <div className="space-y-1 flex-1 sm:flex-none">
-                  <label className="text-xs text-muted-foreground">Start</label>
-                  <Input
-                    type="time"
-                    value={quietHours.start}
-                    onChange={(e) => setQuietHours({ ...quietHours, start: e.target.value })}
-                    className="w-full sm:w-28 min-h-[44px]"
-                    disabled={true}
-                  />
-                </div>
-                <span className="text-muted-foreground mt-5 hidden sm:inline">to</span>
-                <div className="space-y-1 flex-1 sm:flex-none">
-                  <label className="text-xs text-muted-foreground">End</label>
-                  <Input
-                    type="time"
-                    value={quietHours.end}
-                    onChange={(e) => setQuietHours({ ...quietHours, end: e.target.value })}
-                    className="w-full sm:w-28 min-h-[44px]"
-                    disabled={true}
-                  />
-                </div>
-              </div>
-              <Badge variant="secondary" className="sm:mt-5 opacity-50">
-                {quietHours.start} - {quietHours.end} (Coming Soon)
-              </Badge>
-            </div>
-          )}
         </SettingsCard>
       </SettingsSection>
 
@@ -413,7 +387,7 @@ export default function NotificationSettings() {
           >
             <Switch
               checked={soundEnabled}
-              onCheckedChange={setSoundEnabled}
+              onCheckedChange={handleSoundToggle}
             />
           </SettingsRow>
         </SettingsCard>

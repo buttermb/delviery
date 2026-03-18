@@ -67,7 +67,7 @@ export async function notifyOrderStatusChange(
     type: 'order_status',
     title: `Order ${orderNumber} ${newStatus}`,
     message: statusMessages[newStatus] || `Order status changed to ${newStatus}`,
-    actionUrl: `/admin/orders/${orderId}`,
+    actionUrl: `admin/orders/${orderId}`,
     metadata: { orderId, orderNumber, status: newStatus },
   });
 }
@@ -88,7 +88,7 @@ export async function notifyLowStock(
       type: 'stock',
       title: 'Low Stock Alert',
       message: `${productName} is running low (${currentStock} left, threshold: ${threshold})`,
-      actionUrl: `/admin/products/${productId}`,
+      actionUrl: `admin/products/${productId}`,
       metadata: { productId, productName, currentStock, threshold },
     })
   );
@@ -118,7 +118,7 @@ export async function notifyDeliveryAlert(
     type: 'delivery',
     title: titles[alertType],
     message,
-    actionUrl: `/admin/deliveries/${deliveryId}`,
+    actionUrl: `admin/deliveries/${deliveryId}`,
     metadata: { deliveryId, deliveryNumber, alertType },
   });
 }
@@ -138,7 +138,7 @@ export async function notifyPaymentReceived(
     type: 'payment',
     title: 'Payment Received',
     message: `Payment of $${amount.toFixed(2)} received for order ${orderNumber} via ${paymentMethod}`,
-    actionUrl: `/admin/orders/${orderId}`,
+    actionUrl: `admin/orders/${orderId}`,
     metadata: { orderId, orderNumber, amount, paymentMethod },
   });
 }
@@ -164,7 +164,7 @@ export async function notifyDriverStatusChange(
     type: 'driver',
     title: `${driverName} status changed`,
     message: statusMessages[newStatus],
-    actionUrl: `/admin/drivers/${driverId}`,
+    actionUrl: `admin/drivers/${driverId}`,
     metadata: { driverId, driverName, status: newStatus },
   });
 }
@@ -184,7 +184,7 @@ export async function notifyMenuExpiring(
       type: 'menu',
       title: 'Menu Expiring Soon',
       message: `${menuName} expires ${expiresAt}`,
-      actionUrl: `/admin/menus/${menuId}`,
+      actionUrl: `admin/menus/${menuId}`,
       metadata: { menuId, menuName, expiresAt },
     })
   );
@@ -207,7 +207,7 @@ export async function notifyNewCustomer(
       type: 'customer',
       title: 'New Customer Signup',
       message: `${customerName} (${customerEmail}) just signed up`,
-      actionUrl: `/admin/customers/${customerId}`,
+      actionUrl: `admin/customers/${customerId}`,
       metadata: { customerId, customerName, customerEmail },
     })
   );
@@ -252,7 +252,7 @@ export async function notifyInvoiceOverdue(
     type: 'invoice',
     title: 'Invoice Overdue',
     message: `Invoice ${invoiceNumber} is overdue (due: ${dueDate}, amount: $${amount.toFixed(2)})`,
-    actionUrl: `/admin/invoices/${invoiceId}`,
+    actionUrl: `admin/invoices/${invoiceId}`,
     metadata: { invoiceId, invoiceNumber, dueDate, amount },
   });
 }
