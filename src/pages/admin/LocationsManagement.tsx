@@ -96,7 +96,8 @@ export default function LocationsManagement() {
         const { error } = await supabase
           .from('locations')
           .update(formData)
-          .eq('id', editingLocation.id);
+          .eq('id', editingLocation.id)
+          .eq('tenant_id', tenant.id);
 
         if (error) throw error;
 
@@ -117,7 +118,6 @@ export default function LocationsManagement() {
       setIsDialogOpen(false);
       setEditingLocation(null);
       setFormData({ name: '', address: '', city: '', state: '', zip_code: '', phone: '', email: '', license_number: '' });
-      loadLocations();
       loadLocations();
     } catch (error) {
       handleError(error, { component: 'LocationsManagement', toastTitle: 'Error saving location' });
@@ -163,7 +163,6 @@ export default function LocationsManagement() {
 
       loadLocations();
       setDeleteDialogOpen(false);
-      setLocationToDelete(null);
       setLocationToDelete(null);
     } catch (error) {
       handleError(error, {
