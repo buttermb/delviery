@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EditDriverDialog } from '@/components/drivers/profile/EditDriverDialog';
+import { SendMessageDialog } from '@/components/drivers/dialogs/SendMessageDialog';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -63,6 +64,7 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
   const availStyle = AVAILABILITY_STYLES[driver.availability] ?? AVAILABILITY_STYLES.offline;
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
 
   const memberSince = new Date(driver.created_at).toLocaleDateString('en-US', {
     month: 'short',
@@ -136,12 +138,8 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
   }, []);
 
   const handleMessage = useCallback(() => {
-    if (driver.phone) {
-      window.open(`sms:${driver.phone}`, '_self');
-    } else {
-      toast.info('No phone number available');
-    }
-  }, [driver.phone]);
+    setMessageDialogOpen(true);
+  }, []);
 
   const handleTrack = useCallback(() => {
     if (driver.current_lat != null && driver.current_lng != null) {
@@ -326,6 +324,13 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
       <EditDriverDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
+        driver={driver}
+        tenantId={tenantId}
+      />
+
+      <SendMessageDialog
+        open={messageDialogOpen}
+        onOpenChange={setMessageDialogOpen}
         driver={driver}
         tenantId={tenantId}
       />
