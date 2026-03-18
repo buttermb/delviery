@@ -12,13 +12,14 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 
 interface TicketCommentsProps {
   ticketId: string;
 }
 
 export function TicketComments({ ticketId }: TicketCommentsProps) {
-  const { admin } = useTenantAdminAuth();
+  const { admin, tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
 
@@ -26,32 +27,46 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
   const { data: comments, isLoading } = useQuery({
     queryKey: queryKeys.supportTicketComments.byTicket(ticketId),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('support_ticket_comments')
-        .select('id, created_by_name, created_at, comment')
-        .eq('ticket_id', ticketId)
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      return data;
+      if (!tenant?.id) return [];
+
+      try {
+        const { data, error } = await supabase
+          .from('support_ticket_comments')
+          .select('id, created_by_name, created_at, comment')
+          .eq('ticket_id', ticketId)
+          .eq('tenant_id', tenant.id)
+          .order('created_at', { ascending: true });
+
+        if (error && error.code !== '42P01') {
+          logger.error('Failed to fetch comments', error, { component: 'TicketComments' });
+          return [];
+        }
+
+        return data ?? [];
+      } catch {
+        return [];
+      }
     },
-    enabled: !!ticketId,
+    enabled: !!ticketId && !!tenant?.id,
   });
 
   // Add comment mutation
   const addCommentMutation = useMutation({
     mutationFn: async (commentText: string) => {
+      if (!tenant?.id) throw new Error("Tenant ID required");
+
       const { error } = await supabase
         .from('support_ticket_comments')
         .insert({
           ticket_id: ticketId,
-          comment: commentText,
+          tenant_id: tenant.id,
+          comment: sanitizeTextareaInput(commentText, 2000),
           created_by: admin?.id,
           created_by_name: admin?.name || admin?.email,
           is_internal: false,
         });
 
-      if (error) throw error;
+      if (error && error.code !== '42P01') throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.supportTicketComments.byTicket(ticketId) });
@@ -124,8 +139,12 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a comment..."
           aria-label="Add a comment"
+          maxLength={2000}
           rows={3}
         />
+        <div className="text-xs text-muted-foreground text-right">
+          {comment.length}/2000
+        </div>
         <div className="flex justify-end">
           <Button
             onClick={handleSubmit}
