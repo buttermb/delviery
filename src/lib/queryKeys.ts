@@ -638,6 +638,7 @@ export const queryKeys = {
       byToken: (token: string) => [...queryKeys.crm.invoices.all(), 'token', token] as const,
       byClient: (clientId: string) => [...queryKeys.crm.invoices.all(), 'client', clientId] as const,
       recent: (limit: number) => [...queryKeys.crm.invoices.lists(), 'recent', limit] as const,
+      reminders: (invoiceId: string) => [...queryKeys.crm.invoices.all(), 'reminders', invoiceId] as const,
     },
     creditNotes: {
       all: () => [...queryKeys.crm.all, 'credit-notes'] as const,

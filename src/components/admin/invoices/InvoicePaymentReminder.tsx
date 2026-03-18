@@ -1,7 +1,8 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,8 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
-import { Badge } from "@/components/ui/badge";
 import { Bell, Loader2 } from "lucide-react";
 
 const reminderSchema = z.object({
@@ -54,8 +57,8 @@ interface InvoicePaymentReminderProps {
 }
 
 /**
- * Task 297: Add invoice payment reminder automation
- * Allows scheduling automated payment reminders before invoice due date
+ * Allows scheduling automated payment reminders before invoice due date.
+ * Inserts into the invoice_payment_reminders table with status 'scheduled'.
  */
 export function InvoicePaymentReminder({
   open,
@@ -65,7 +68,8 @@ export function InvoicePaymentReminder({
   dueDate,
   onSuccess,
 }: InvoicePaymentReminderProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
 
   const form = useForm<ReminderFormData>({
     resolver: zodResolver(reminderSchema),
@@ -78,21 +82,44 @@ export function InvoicePaymentReminder({
     },
   });
 
-  const onSubmit = async (data: ReminderFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_payment_reminders table
-      logger.info("Payment reminder configured", { data });
-      toast.success("Payment reminder scheduled");
+  const scheduleReminder = useMutation({
+    mutationFn: async (data: ReminderFormData) => {
+      if (!tenant?.id) throw new Error("No tenant context");
+
+      const dueDateObj = new Date(dueDate);
+      const scheduledAt = new Date(dueDateObj);
+      scheduledAt.setDate(scheduledAt.getDate() - data.days_before_due);
+
+      const { error } = await supabase
+        .from("invoice_payment_reminders")
+        .insert({
+          tenant_id: tenant.id,
+          invoice_id: data.invoice_id,
+          reminder_type: data.reminder_type,
+          days_before_due: data.days_before_due,
+          message_template: data.message_template || null,
+          auto_send: data.auto_send,
+          status: "scheduled",
+          scheduled_at: scheduledAt.toISOString(),
+          sent_at: null,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+      toast.success("Payment reminder scheduled", {
+        description: `Reminder set for ${form.getValues("days_before_due")} days before due date`,
+      });
+      form.reset();
       onSuccess?.();
       onOpenChange(false);
-    } catch (error) {
-      logger.error("Failed to schedule reminder", { error });
+    },
+    onError: (error: unknown) => {
+      logger.error("Failed to schedule payment reminder", { error, invoiceId });
       toast.error("Failed to schedule payment reminder");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,12 +128,11 @@ export function InvoicePaymentReminder({
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-emerald-600" />
             Payment Reminder - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit((data) => scheduleReminder.mutate(data))} className="space-y-4">
             <FormField
               control={form.control}
               name="days_before_due"
@@ -204,8 +230,8 @@ export function InvoicePaymentReminder({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={scheduleReminder.isPending}>
+                {scheduleReminder.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Schedule Reminder
               </Button>
             </DialogFooter>
