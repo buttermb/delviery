@@ -293,10 +293,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {
-        // If not on admin route but have stored session, keep it (don't clear)
-        if (!hasStoredSession) {
-          setLoading(false);
-        }
+        // Always mark loading as done for non-admin routes.
+        // Stored session data is preserved (not cleared) for when user navigates to admin.
+        setLoading(false);
         return;
       }
 
@@ -744,6 +743,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     initializeAuth().finally(() => {
       clearTimeout(safetyTimeout);
+      // Safety: ensure loading is always cleared when initializeAuth completes
+      setLoading(false);
       setInitialized(true);
     });
 
