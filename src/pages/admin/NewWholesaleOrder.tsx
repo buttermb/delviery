@@ -37,10 +37,12 @@ import {
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useCreditGatedAction } from "@/hooks/useCredits";
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { useCreateNote } from '@/hooks/crm/useNotes';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/formatters';
+import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { queryKeys } from '@/lib/queryKeys';
@@ -65,6 +67,7 @@ interface OrderProduct {
   qty: number;
   price: number;
   basePrice: number;
+  costPerUnit: number;
 }
 
 interface OrderData {
@@ -109,6 +112,32 @@ interface CourierItem {
 }
 
 const QUICK_QTY_PRESETS = [1, 5, 10, 25];
+
+const orderProductSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  qty: z.number().int().min(1, 'Quantity must be at least 1'),
+  price: z.number().min(0, 'Price must be non-negative'),
+  basePrice: z.number().min(0),
+  costPerUnit: z.number().min(0),
+});
+
+const orderSubmissionSchema = z.object({
+  client: z.object({
+    id: z.string().min(1, 'Client is required'),
+    business_name: z.string(),
+    credit_limit: z.number(),
+    outstanding_balance: z.number(),
+  }).passthrough(),
+  products: z.array(orderProductSchema).min(1, 'At least one product is required'),
+  paymentTerms: z.enum(['cash', 'credit']),
+  runnerId: z.string(),
+  deliveryAddress: z.string(),
+  scheduledTime: z.string(),
+  collectOutstanding: z.boolean(),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
+  tierId: z.string(),
+});
 
 export default function NewWholesaleOrder() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -175,12 +204,11 @@ export default function NewWholesaleOrder() {
     );
   }, [inventory, productSearch]);
 
-  // Calculate totals
+  // Calculate totals using actual cost_per_unit from inventory
   const totals = useMemo(() => {
     const subtotal = orderData.products.reduce((sum, p) => sum + p.qty * p.price, 0);
     const totalWeight = orderData.products.reduce((sum, p) => sum + p.qty, 0);
-    // Estimate profit margin (this would ideally come from inventory cost data)
-    const estimatedCost = subtotal * 0.6;
+    const estimatedCost = orderData.products.reduce((sum, p) => sum + p.qty * p.costPerUnit, 0);
     const estimatedProfit = subtotal - estimatedCost;
     const margin = subtotal > 0 ? (estimatedProfit / subtotal) * 100 : 0;
 
@@ -272,6 +300,7 @@ export default function NewWholesaleOrder() {
             qty: 1,
             price: calculatePrice(basePrice, prev.tierId),
             basePrice: basePrice,
+            costPerUnit: product.cost_per_unit ?? 0,
           },
         ],
       };
@@ -302,6 +331,13 @@ export default function NewWholesaleOrder() {
     }));
   }, []);
 
+  const handleRemoveProduct = useCallback((productId: string) => {
+    setOrderData((prev) => ({
+      ...prev,
+      products: prev.products.filter((p) => p.id !== productId),
+    }));
+  }, []);
+
   const handleQuickQty = useCallback((productId: string, preset: number) => {
     setOrderData((prev) => ({
       ...prev,
@@ -312,21 +348,20 @@ export default function NewWholesaleOrder() {
   }, []);
 
   // Submit handler with retry capability
-  const [_lastError, setLastError] = useState<string | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 2;
 
   const { execute: executeCreditAction } = useCreditGatedAction();
+  const createNoteMutation = useCreateNote();
   const attemptIdRef = useRef<string>('');
 
   const handleSubmit = async (isRetry = false) => {
-    if (!orderData.client) {
-      showErrorToast('Please select a client first');
-      return;
-    }
-
-    if (orderData.products.length === 0) {
-      showErrorToast('Please add at least one product');
+    // Validate order data with Zod schema
+    const validation = orderSubmissionSchema.safeParse(orderData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message ?? 'Invalid order data';
+      showErrorToast('Validation Error', firstError);
       return;
     }
 
@@ -765,7 +800,7 @@ export default function NewWholesaleOrder() {
                                 size="icon"
                                 variant="ghost"
                                 className="h-11 w-11 sm:h-6 sm:w-6 shrink-0"
-                                onClick={() => handleUpdateQty(product.id, 0)}
+                                onClick={() => handleRemoveProduct(product.id)}
                                 aria-label="Remove product"
                               >
                                 <X className="h-3 w-3" />
@@ -861,8 +896,8 @@ export default function NewWholesaleOrder() {
 
               <div className="space-y-3">
                 {[
-                  { value: 'cash' as const, label: 'Paid in Full (Cash/Transfer)', icon: '', description: 'Payment collected at time of order' },
-                  { value: 'credit' as const, label: 'Credit (Invoice) - Net 7 days', icon: '', description: 'Add to client credit balance' },
+                  { value: 'cash' as const, label: 'Paid in Full (Cash/Transfer)', Icon: DollarSign, description: 'Payment collected at time of order' },
+                  { value: 'credit' as const, label: 'Credit (Invoice) - Net 7 days', Icon: AlertCircle, description: 'Add to client credit balance' },
                 ].map((option) => (
                   <Card
                     key={option.value}
@@ -875,7 +910,7 @@ export default function NewWholesaleOrder() {
                     onClick={() => setOrderData((prev) => ({ ...prev, paymentTerms: option.value }))}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="text-2xl">{option.icon}</span>
+                      <option.Icon className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0" />
                       <div>
                         <span className="font-medium">{option.label}</span>
                         <p className="text-sm text-muted-foreground mt-0.5">{option.description}</p>
@@ -939,9 +974,30 @@ export default function NewWholesaleOrder() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => showSuccessToast('Request Sent', 'Manager approval requested')}
+                            disabled={createNoteMutation.isPending}
+                            onClick={() => {
+                              if (!orderData.client) return;
+                              createNoteMutation.mutate({
+                                clientId: orderData.client.id,
+                                values: {
+                                  note_text: `Credit override requested: Order total ${formatCurrency(totals.subtotal)} exceeds available credit by ${formatCurrency(creditImpact.overLimitAmount)}. Awaiting manager approval.`,
+                                  account_id: tenant?.id,
+                                },
+                              }, {
+                                onSuccess: () => {
+                                  showSuccessToast('Approval Requested', 'A note has been added to the client record for manager review.');
+                                },
+                              });
+                            }}
                           >
-                            Request Manager Approval
+                            {createNoteMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                Requesting...
+                              </>
+                            ) : (
+                              'Request Manager Approval'
+                            )}
                           </Button>
                           <Button
                             size="sm"
@@ -1165,6 +1221,27 @@ export default function NewWholesaleOrder() {
                   <Card className="p-4 md:col-span-2">
                     <h3 className="font-semibold text-sm text-muted-foreground mb-2">Special Instructions</h3>
                     <p className="text-sm">{orderData.notes}</p>
+                  </Card>
+                )}
+
+                {/* Submission Error */}
+                {lastError && (
+                  <Card className="p-4 md:col-span-2 bg-destructive/10 border-destructive/30">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-destructive mb-1">Submission Failed</h3>
+                        <p className="text-sm text-destructive">{lastError}</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+                          onClick={() => setLastError(null)}
+                        >
+                          Dismiss
+                        </Button>
+                      </div>
+                    </div>
                   </Card>
                 )}
 
