@@ -62,7 +62,12 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateInvoicePage() {
     const { tenant } = useTenantAdminAuth();
     const { navigateToAdmin, navigate } = useTenantNavigation();
-    const accountId = useAccountIdSafe();
+    const { account, loading: accountLoading } = useAccount();
+    const accountId = account?.id ?? tenant?.id ?? null;
+    const isAccountReady = !accountLoading && !!accountId;
+    const accountError = !accountLoading && !accountId
+        ? 'Account context not available. Please refresh the page or contact support.'
+        : null;
     const createInvoice = useCreateInvoice();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);

@@ -761,7 +761,9 @@ const App = () => {
                                         <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvoicesPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CreateInvoicePage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvoiceDetailPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/pre-orders" element={<Navigate to="orders?tab=preorders" replace />} />
+                                         <Route path="invoices" element={<Navigate to="../crm/invoices" replace />} />
+                                         <Route path="invoices/*" element={<Navigate to="../crm/invoices" replace />} />
+                                         <Route path="crm/pre-orders" element={<Navigate to="orders?tab=preorders" replace />} />
                                         <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CreatePreOrderPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CRMSettingsPage /></FeatureProtectedRoute>} />
