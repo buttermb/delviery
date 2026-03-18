@@ -459,8 +459,8 @@ export function OrderDetailPanel({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item, idx) => (
-                  <TableRow key={idx}>
+                {items.map((item) => (
+                  <TableRow key={`${item.name}-${item.variant ?? ''}-${item.quantity}`}>
                     <TableCell className="text-sm py-2">
                       <span>{item.name}</span>
                       {item.variant && (
@@ -565,8 +565,8 @@ export function OrderDetailPanel({
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                 Notes
               </h3>
-              {notes.map((note, idx) => (
-                <div key={idx} className="flex items-start gap-2">
+              {notes.map((note) => (
+                <div key={note.label} className="flex items-start gap-2">
                   <StickyNote className="h-3.5 w-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div>
                     <p className="text-xs text-muted-foreground">{note.label}</p>
@@ -588,7 +588,7 @@ export function OrderDetailPanel({
               </h3>
               <div className="space-y-3">
                 {timeline.map((entry, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
+                  <div key={`${entry.label}-${entry.timestamp}`} className="flex items-start gap-3">
                     <div className="relative flex flex-col items-center">
                       <div className={cn(
                         'h-2.5 w-2.5 rounded-full mt-1',

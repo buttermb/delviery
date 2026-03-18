@@ -240,8 +240,8 @@ export function StorefrontLiveOrdersTable({
                     <TooltipContent side="bottom" className="max-w-[250px]">
                       {itemNames.length > 0 ? (
                         <ul className="text-xs space-y-0.5">
-                          {itemNames.map((name, idx) => (
-                            <li key={idx}>{name}</li>
+                          {itemNames.map((name) => (
+                            <li key={name}>{name}</li>
                           ))}
                         </ul>
                       ) : (
