@@ -52,6 +52,7 @@ export default function OrderDetailPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [trackingNumber, setTrackingNumber] = useState('');
+    const [shippingMethod, setShippingMethod] = useState('');
     const [sellerNotes, setSellerNotes] = useState('');
     const [showTrackingDialog, setShowTrackingDialog] = useState(false);
     const [showNotesDialog, setShowNotesDialog] = useState(false);
@@ -62,7 +63,7 @@ export default function OrderDetailPage() {
     const { data: order, isLoading } = useQuery({
         queryKey: queryKeys.marketplaceOrders.orderDetail(orderId),
         queryFn: async () => {
-            if (!orderId) return null;
+            if (!orderId || !tenant?.id) return null;
 
             const { data, error } = await supabase
                 .from('marketplace_orders')
@@ -75,6 +76,7 @@ export default function OrderDetailPage() {
           )
         `)
                 .eq('id', orderId)
+                .eq('seller_tenant_id', tenant.id)
                 .maybeSingle();
 
             if (error) {
@@ -84,7 +86,7 @@ export default function OrderDetailPage() {
 
             return data;
         },
-        enabled: !!orderId,
+        enabled: !!orderId && !!tenant?.id,
         retry: 2,
     });
 
@@ -92,12 +94,15 @@ export default function OrderDetailPage() {
 
     // Update order status
     const updateStatusMutation = useMutation({
-        mutationFn: async ({ newStatus, trackingNum }: { newStatus: string; trackingNum?: string }) => {
+        mutationFn: async ({ newStatus, trackingNum, shipMethod }: { newStatus: string; trackingNum?: string; shipMethod?: string }) => {
             const updateData: Record<string, unknown> = { status: newStatus };
 
             if (newStatus === 'shipped' && trackingNum) {
                 updateData.tracking_number = trackingNum;
                 updateData.shipped_at = new Date().toISOString();
+                if (shipMethod) {
+                    updateData.shipping_method = shipMethod;
+                }
             } else if (newStatus === 'delivered') {
                 updateData.delivered_at = new Date().toISOString();
             }
@@ -118,6 +123,7 @@ export default function OrderDetailPage() {
             toast.success("Order status has been updated");
             setShowTrackingDialog(false);
             setTrackingNumber('');
+            setShippingMethod('');
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrderDetailPage' });
@@ -176,7 +182,8 @@ export default function OrderDetailPage() {
             setIsMessageDialogOpen(false);
             setMessageText('');
         },
-        onError: (error) => {
+        onError: (error: unknown) => {
+            logger.error('Failed to send message to buyer', error, { component: 'OrderDetailPage' });
             toast.error("Error sending message", { description: humanizeError(error) });
         }
     });
@@ -355,7 +362,7 @@ export default function OrderDetailPage() {
                                         <DialogHeader>
                                             <DialogTitle>Message Buyer</DialogTitle>
                                             <DialogDescription>
-                                                Send a message to {(order as unknown as Record<string, Record<string, string>>).buyer_tenant?.business_name || 'Buyer'} about Order #{order.order_number}.
+                                                Send a message to {(order.buyer_tenant as unknown as { business_name?: string })?.business_name || 'Buyer'} about Order #{order.order_number}.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
@@ -563,10 +570,10 @@ export default function OrderDetailPage() {
                                 <Label className="text-xs text-muted-foreground mb-1">Payment Terms</Label>
                                 <div className="text-sm">{order.payment_terms || 'Prepaid'}</div>
                             </div>
-                            {(order as unknown as Record<string, unknown>).paid_at && (
+                            {order.paid_at && (
                                 <div>
                                     <Label className="text-xs text-muted-foreground mb-1">Paid At</Label>
-                                    <div className="text-sm">{formatSmartDate((order as unknown as Record<string, unknown>).paid_at as string)}</div>
+                                    <div className="text-sm">{formatSmartDate(order.paid_at)}</div>
                                 </div>
                             )}
                             {order.payment_status !== 'paid' && (
@@ -646,6 +653,8 @@ export default function OrderDetailPage() {
                                             <div>
                                                 <Label>Shipping Method (Optional)</Label>
                                                 <Input
+                                                    value={shippingMethod}
+                                                    onChange={(e) => setShippingMethod(e.target.value)}
                                                     placeholder="UPS Ground, FedEx, etc."
                                                 />
                                             </div>
@@ -658,7 +667,7 @@ export default function OrderDetailPage() {
                                                 Cancel
                                             </Button>
                                             <Button
-                                                onClick={() => updateStatusMutation.mutate({ newStatus: 'shipped', trackingNum: trackingNumber })}
+                                                onClick={() => updateStatusMutation.mutate({ newStatus: 'shipped', trackingNum: trackingNumber, shipMethod: shippingMethod || undefined })}
                                                 disabled={updateStatusMutation.isPending || !trackingNumber}
                                             >
                                                 {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Truck className="h-4 w-4 mr-2" />}
@@ -690,9 +699,14 @@ export default function OrderDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm">
-                                <div className="font-medium mb-1">{String((order as unknown as Record<string, unknown>).buyer_business_name || 'Guest/Unknown')}</div>
-                                <div className="text-muted-foreground">Order #{order.order_number}</div>
+                            <div className="text-sm space-y-1">
+                                <div className="font-medium">{(order.buyer_tenant as unknown as { business_name?: string })?.business_name || order.customer_name || 'Guest/Unknown'}</div>
+                                {order.customer_email && (
+                                    <div className="text-muted-foreground">{order.customer_email}</div>
+                                )}
+                                {order.customer_phone && (
+                                    <div className="text-muted-foreground">{order.customer_phone}</div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
