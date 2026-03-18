@@ -4,10 +4,14 @@
  * Allows users to add custom webhooks and API integrations
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { sanitizeUrlInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
@@ -25,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { humanizeError } from '@/lib/humanizeError';
+import { handleError } from '@/utils/errorHandling/handlers';
 import { logger } from '@/lib/logger';
 
 const integrationSchema = z.object({
@@ -48,11 +52,15 @@ interface CustomIntegrationFormProps {
 export function CustomIntegrationForm({
   open,
   onOpenChange,
-  onIntegrationAdded: _onIntegrationAdded,
+  onIntegrationAdded,
 }: CustomIntegrationFormProps) {
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customHeaders, setCustomHeaders] = useState<Array<{ key: string; value: string }>>([
-    { key: '', value: '' },
+  const headerIdCounter = useRef(1);
+  const [customHeaders, setCustomHeaders] = useState<Array<{ id: number; key: string; value: string }>>([
+    { id: 0, key: '', value: '' },
   ]);
 
   const form = useForm<IntegrationFormValues>({
@@ -75,20 +83,26 @@ export function CustomIntegrationForm({
   );
 
   const handleAddHeader = () => {
-    setCustomHeaders([...customHeaders, { key: '', value: '' }]);
+    headerIdCounter.current += 1;
+    setCustomHeaders((prev) => [...prev, { id: headerIdCounter.current, key: '', value: '' }]);
   };
 
-  const handleRemoveHeader = (index: number) => {
-    setCustomHeaders(customHeaders.filter((_, i) => i !== index));
+  const handleRemoveHeader = (id: number) => {
+    setCustomHeaders((prev) => prev.filter((h) => h.id !== id));
   };
 
-  const handleHeaderChange = (index: number, field: 'key' | 'value', value: string) => {
-    const updated = [...customHeaders];
-    updated[index][field] = value;
-    setCustomHeaders(updated);
+  const handleHeaderChange = (id: number, field: 'key' | 'value', value: string) => {
+    setCustomHeaders((prev) =>
+      prev.map((h) => (h.id === id ? { ...h, [field]: value } : h))
+    );
   };
 
   const onSubmit = async (values: IntegrationFormValues) => {
+    if (!tenantId) {
+      toast.error('Tenant context is required');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const sanitizedUrl = sanitizeUrlInput(values.endpoint_url);
@@ -98,20 +112,53 @@ export function CustomIntegrationForm({
       return;
     }
 
+    const headersMap: Record<string, string> = {};
+    for (const h of customHeaders) {
+      if (h.key.trim()) {
+        headersMap[h.key.trim()] = h.value;
+      }
+    }
+
     try {
-      // Mock implementation until custom_integrations table is created
-      toast.success('Custom integration feature coming soon!', {
-        description: 'This feature will be available in a future update',
-      });
+      const { error } = await supabase
+        .from('custom_integrations')
+        .insert({
+          tenant_id: tenantId,
+          name: values.name,
+          type: values.type,
+          config: {
+            endpoint_url: sanitizedUrl,
+            description: values.description || '',
+            auth_type: values.auth_type,
+            auth_value: values.auth_value || '',
+            custom_headers: headersMap,
+          },
+          status: 'pending',
+        })
+        .select()
+        .maybeSingle();
 
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Custom integrations table does not exist. Please run database migrations.');
+        }
+        throw error;
+      }
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.customIntegrations.byTenant(tenantId) });
+      toast.success('Custom integration added');
+      onIntegrationAdded();
       onOpenChange(false);
-
-      // Reset form
       form.reset();
-      setCustomHeaders([{ key: '', value: '' }]);
+      headerIdCounter.current = 1;
+      setCustomHeaders([{ id: 0, key: '', value: '' }]);
     } catch (error) {
       logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
-      toast.error('Failed to add custom integration', { description: humanizeError(error) });
+      handleError(error, {
+        component: 'CustomIntegrationForm',
+        toastTitle: 'Failed to add custom integration',
+        showToast: true,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -250,26 +297,26 @@ export function CustomIntegrationForm({
               </Button>
             </div>
 
-            {customHeaders.map((header, index) => (
-              <div key={index} className="flex gap-2">
+            {customHeaders.map((header) => (
+              <div key={header.id} className="flex gap-2">
                 <Input
                   placeholder="Header name"
                   aria-label="Custom header name"
                   value={header.key}
-                  onChange={(e) => handleHeaderChange(index, 'key', e.target.value)}
+                  onChange={(e) => handleHeaderChange(header.id, 'key', e.target.value)}
                 />
                 <Input
                   placeholder="Header value"
                   aria-label="Custom header value"
                   value={header.value}
-                  onChange={(e) => handleHeaderChange(index, 'value', e.target.value)}
+                  onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
                 />
                 {customHeaders.length > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleRemoveHeader(index)}
+                    onClick={() => handleRemoveHeader(header.id)}
                     aria-label="Remove header"
                   >
                     <Trash2 className="h-4 w-4" />
