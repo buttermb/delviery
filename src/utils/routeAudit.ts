@@ -83,6 +83,7 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/fulfillment-hub',
   '/admin/delivery-management',
   '/admin/delivery-zones',
+  '/admin/drivers',
   '/admin/route-optimizer',
   '/admin/delivery-analytics',
   '/admin/gps-tracking',

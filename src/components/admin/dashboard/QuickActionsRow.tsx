@@ -25,8 +25,8 @@ const DASHBOARD_ACTIONS: QuickActionItem[] = [
   { label: 'New Order', icon: <PlusCircle className="h-5 w-5" />, path: '/admin/orders?new=true', shortcut: 'Alt+N' },
   { label: 'Add Product', icon: <PlusCircle className="h-5 w-5" />, path: '/admin/inventory-hub?action=add', shortcut: 'Alt+I' },
   { label: 'Add Customer', icon: <Users className="h-5 w-5" />, path: '/admin/customer-hub?action=add', shortcut: 'Alt+C' },
-  { label: 'Create Invoice', icon: <FileText className="h-5 w-5" />, path: '/admin/invoices?action=create' },
-  { label: 'Open POS', icon: <Monitor className="h-5 w-5" />, path: '/admin/pos', shortcut: 'Alt+P' },
+  { label: 'Create Invoice', icon: <FileText className="h-5 w-5" />, path: '/admin/crm/invoices/new' },
+  { label: 'Open POS', icon: <Monitor className="h-5 w-5" />, path: '/admin/pos-system', shortcut: 'Alt+P' },
   { label: 'Record Payment', icon: <DollarSign className="h-5 w-5" />, path: '/admin/finance-hub?action=payment' },
 ];
 
@@ -34,7 +34,7 @@ const SHORTCUT_ACTIONS = [
   { key: 'n', path: '/admin/orders?new=true' },
   { key: 'i', path: '/admin/inventory-hub?action=add' },
   { key: 'c', path: '/admin/customer-hub?action=add' },
-  { key: 'p', path: '/admin/pos' },
+  { key: 'p', path: '/admin/pos-system' },
 ];
 
 export function QuickActionsRow() {
