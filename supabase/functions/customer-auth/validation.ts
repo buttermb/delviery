@@ -28,6 +28,14 @@ export const updatePasswordSchema = z.object({
   newPassword: z.string().min(8, 'New password must be at least 8 characters').max(100),
 });
 
+// Update profile validation schema
+export const updateProfileSchema = z.object({
+  firstName: z.string().max(100).optional().nullable(),
+  lastName: z.string().max(100).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

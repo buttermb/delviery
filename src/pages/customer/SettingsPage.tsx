@@ -35,6 +35,12 @@ export default function CustomerSettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: customer?.first_name || "",
+    lastName: customer?.last_name || "",
+    phone: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Password breach checking
   const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(passwordData.newPassword);
@@ -204,6 +210,41 @@ export default function CustomerSettingsPage() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=update-profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN)}`,
+        },
+        body: JSON.stringify({
+          firstName: profileData.firstName || null,
+          lastName: profileData.lastName || null,
+          phone: profileData.phone || null,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update profile");
+      }
+
+      toast.success("Profile Updated", {
+        description: "Your profile has been saved successfully",
+      });
+    } catch (error: unknown) {
+      logger.error("Profile update error", error, { component: "CustomerSettingsPage" });
+      toast.error("Error", {
+        description: error instanceof Error ? error.message : "Failed to update profile",
+      });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   return (
     <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
@@ -239,17 +280,19 @@ export default function CustomerSettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">First Name</Label>
-                <Input 
-                  placeholder="First Name" 
-                  defaultValue={customer?.first_name || ""}
+                <Input
+                  placeholder="First Name"
+                  value={profileData.firstName}
+                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Last Name</Label>
-                <Input 
-                  placeholder="Last Name" 
-                  defaultValue={customer?.last_name || ""}
+                <Input
+                  placeholder="Last Name"
+                  value={profileData.lastName}
+                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
@@ -257,17 +300,21 @@ export default function CustomerSettingsPage() {
 
             <div className="space-y-2">
               <Label className="text-[hsl(var(--customer-text))]">Phone</Label>
-              <Input 
-                placeholder="Phone Number" 
+              <Input
+                placeholder="Phone Number"
                 type="tel"
+                value={profileData.phone}
+                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                 className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
               />
             </div>
 
-            <Button 
+            <Button
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
               className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
             >
-              Save Changes
+              {savingProfile ? "Saving..." : "Save Changes"}
             </Button>
           </CardContent>
         </Card>
@@ -344,45 +391,36 @@ export default function CustomerSettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <p className="text-sm text-[hsl(var(--customer-text-light))]">
+              Notification preferences are coming soon. You will receive all order updates by default.
+            </p>
+            <div className="flex items-center justify-between opacity-50">
               <div>
                 <p className="font-medium text-[hsl(var(--customer-text))]">Order Updates</p>
                 <p className="text-sm text-[hsl(var(--customer-text-light))]">Receive notifications about your orders</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
-              />
+              <Switch checked disabled className="data-[state=checked]:bg-[hsl(var(--customer-primary))]" />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-50">
               <div>
                 <p className="font-medium text-[hsl(var(--customer-text))]">New Menu Alerts</p>
                 <p className="text-sm text-[hsl(var(--customer-text-light))]">Notify when new menus are available</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
-              />
+              <Switch checked disabled className="data-[state=checked]:bg-[hsl(var(--customer-primary))]" />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-50">
               <div>
                 <p className="font-medium text-[hsl(var(--customer-text))]">Email Notifications</p>
                 <p className="text-sm text-[hsl(var(--customer-text-light))]">Receive updates via email</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
-              />
+              <Switch checked disabled className="data-[state=checked]:bg-[hsl(var(--customer-primary))]" />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-50">
               <div>
                 <p className="font-medium text-[hsl(var(--customer-text))]">Special Offers</p>
                 <p className="text-sm text-[hsl(var(--customer-text-light))]">Get notified about promotions and discounts</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
-              />
+              <Switch checked disabled className="data-[state=checked]:bg-[hsl(var(--customer-primary))]" />
             </div>
           </CardContent>
         </Card>

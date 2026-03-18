@@ -36,8 +36,8 @@ const SystemSettings = () => {
   const { tenant } = useTenantAdminAuth();
   const [isRunningOperation, setIsRunningOperation] = useState(false);
 
-  // Fraud Detection Rules
-  const [fraudRules, setFraudRules] = useState({
+  // Fraud Detection Rules — defaults
+  const defaultFraudRules = {
     max_orders_per_hour: 3,
     max_failed_payments: 3,
     high_risk_score_threshold: 40,
@@ -47,6 +47,31 @@ const SystemSettings = () => {
     velocity_check_enabled: true,
     device_fingerprint_enabled: true,
     ip_blacklist_enabled: true,
+  };
+  const [fraudRules, setFraudRules] = useState(defaultFraudRules);
+
+  // Load saved fraud rules from account_settings.compliance_settings
+  useQuery({
+    queryKey: queryKeys.systemSettings.fraudRules(),
+    queryFn: async () => {
+      if (!tenant) return null;
+      const { data, error } = await supabase
+        .from('account_settings')
+        .select('compliance_settings')
+        .eq('account_id', tenant.id)
+        .maybeSingle();
+      if (error) {
+        logger.warn('Failed to load fraud rules', error, { component: 'SystemSettings' });
+        return null;
+      }
+      const saved = (data?.compliance_settings as Record<string, unknown>)?.fraud_rules;
+      if (saved && typeof saved === 'object') {
+        setFraudRules({ ...defaultFraudRules, ...(saved as typeof defaultFraudRules) });
+      }
+      return saved;
+    },
+    enabled: !!tenant,
+    staleTime: 300_000,
   });
 
   // System Health Monitoring
@@ -140,10 +165,27 @@ const SystemSettings = () => {
 
   const saveFraudRules = useMutation({
     mutationFn: async (rules: typeof fraudRules) => {
-      // In a real implementation, save to a settings table
-      logger.debug("Saving fraud rules", { rules, component: 'SystemSettings' });
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!tenant) throw new Error("Tenant required");
+
+      // Read current compliance_settings to merge
+      const { data: current } = await supabase
+        .from('account_settings')
+        .select('compliance_settings')
+        .eq('account_id', tenant.id)
+        .maybeSingle();
+
+      const existing = (current?.compliance_settings ?? {}) as Record<string, unknown>;
+      const merged = { ...existing, fraud_rules: rules };
+
+      const { error } = await supabase
+        .from('account_settings')
+        .upsert({
+          account_id: tenant.id,
+          compliance_settings: merged,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'account_id' });
+
+      if (error) throw error;
       return rules;
     },
     onSuccess: () => {
