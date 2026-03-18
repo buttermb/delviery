@@ -59,6 +59,7 @@ export function SortableSectionItem({
                 <button
                     {...attributes}
                     {...listeners}
+                    aria-label={`Reorder ${sectionLabel}`}
                     className="touch-none cursor-grab active:cursor-grabbing"
                 >
                     <GripVertical className="w-4 h-4 text-muted-foreground" />
