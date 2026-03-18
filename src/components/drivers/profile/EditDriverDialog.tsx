@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -59,6 +59,19 @@ export function EditDriverDialog({ open, onOpenChange, driver, tenantId }: EditD
     },
   });
 
+  // Reset form values when dialog opens or driver data changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        full_name: driver.full_name,
+        display_name: driver.display_name ?? '',
+        email: driver.email,
+        phone: driver.phone,
+        notes: driver.notes ?? '',
+      });
+    }
+  }, [open, driver, form]);
+
   const updateDriver = useMutation({
     mutationFn: async (values: EditDriverFormValues) => {
       const { error } = await supabase
@@ -77,6 +90,7 @@ export function EditDriverDialog({ open, onOpenChange, driver, tenantId }: EditD
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.couriersAdmin.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.couriers.detail(driver.id) });
       toast.success('Profile updated');
       handleClose();
     },
