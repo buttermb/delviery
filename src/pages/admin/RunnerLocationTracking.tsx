@@ -77,7 +77,7 @@ export default function RunnerLocationTracking() {
   const { data: deliveries = [], refetch: refetchDeliveries } = useQuery({
     queryKey: queryKeys.runners.deliveries(selectedRunnerId),
     queryFn: async () => {
-      if (!selectedRunnerId) return [];
+      if (!selectedRunnerId || !tenant?.id) return [];
 
       const { data, error } = await supabase
         .from('wholesale_deliveries')
@@ -88,6 +88,7 @@ export default function RunnerLocationTracking() {
           current_location,
           order:orders(id, order_number, delivery_address, customer_name)
         `)
+        .eq('tenant_id', tenant.id)
         .eq('runner_id', selectedRunnerId)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -95,7 +96,7 @@ export default function RunnerLocationTracking() {
       if (error) throw error;
       return (data ?? []) as unknown as DeliveryWithETA[];
     },
-    enabled: !!selectedRunnerId,
+    enabled: !!selectedRunnerId && !!tenant?.id,
     refetchInterval: 30000, // Refresh every 30 seconds
     retry: 2,
   });
@@ -137,31 +138,41 @@ export default function RunnerLocationTracking() {
 
   const selectedRunner = runners.find(r => r.id === selectedRunnerId);
 
-  // Calculate ETAs for active deliveries
+  // Calculate ETAs for active deliveries using Mapbox geocoding
   useEffect(() => {
     async function calculateDeliveryETAs() {
+      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (!mapboxToken) return;
+
       const newETAs = new Map<string, ETAResult>();
 
       for (const delivery of allActiveDeliveries) {
         const currentLoc = delivery.current_location as { lat: number; lng: number } | null;
         const order = delivery.order as { delivery_address?: string } | null;
 
-        if (currentLoc && order?.delivery_address) {
-          // For demo, use a fixed destination offset since we don't have geocoded addresses
-          const destLng = currentLoc.lng + 0.02;
-          const destLat = currentLoc.lat + 0.01;
+        if (!currentLoc || !order?.delivery_address) continue;
 
-          try {
-            const eta = await calculateETA(
-              [currentLoc.lng, currentLoc.lat],
-              [destLng, destLat]
-            );
-            if (eta) {
-              newETAs.set(delivery.id, eta);
-            }
-          } catch (error) {
-            logger.error('Error calculating ETA for delivery', error as Error, { deliveryId: delivery.id });
+        try {
+          // Geocode the delivery address to get coordinates
+          const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(order.delivery_address)}.json?access_token=${mapboxToken}&limit=1`;
+          const geoResponse = await fetch(geocodeUrl);
+          if (!geoResponse.ok) continue;
+
+          const geoData = await geoResponse.json();
+          const feature = geoData.features?.[0];
+          if (!feature?.center) continue;
+
+          const [destLng, destLat] = feature.center as [number, number];
+
+          const eta = await calculateETA(
+            [currentLoc.lng, currentLoc.lat],
+            [destLng, destLat]
+          );
+          if (eta) {
+            newETAs.set(delivery.id, eta);
           }
+        } catch (error) {
+          logger.error('Error calculating ETA for delivery', error as Error, { deliveryId: delivery.id });
         }
       }
 
@@ -512,9 +523,13 @@ export default function RunnerLocationTracking() {
                                           ETA: {format(eta.eta, 'h:mm a')}
                                         </div>
                                       </>
-                                    ) : (
+                                    ) : order?.delivery_address ? (
                                       <div className="text-sm text-muted-foreground">
                                         Calculating...
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground">
+                                        No address
                                       </div>
                                     )}
                                   </div>
@@ -601,7 +616,7 @@ export default function RunnerLocationTracking() {
                               </div>
                             </div>
                             <div className="ml-4 border-l-2 border-muted pl-6 mt-2 space-y-3">
-                              {dayLocations.slice(0, 20).map((location, _idx) => (
+                              {dayLocations.slice(0, 20).map((location) => (
                                 <div
                                   key={location.id}
                                   className="relative flex items-start gap-3"
