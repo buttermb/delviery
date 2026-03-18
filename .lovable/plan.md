@@ -1,56 +1,62 @@
 
 
-# Fix: Static Menu Page "Menu Not Found"
+# Fix: "Account context not available" on Create Invoice Page
 
 ## Root Cause
 
-The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
+The `CreateInvoicePage` and all CRM hooks (`useInvoices`, `usePreOrders`, `useCreateCRMOrder`) depend on `useAccount()` to get an `account_id`. However, this user's `profiles.account_id` is `null` (confirmed in network response), so `AccountContext` never loads an account, and the page shows the error.
 
-1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
-2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
-3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
-
-These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
+The user operates through the **tenant admin** system (`TenantAdminAuthContext`), which provides `tenant.id`. The `accounts` table is a separate SaaS-level concept that was never populated for this user.
 
 ## Fix
 
-### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
+**Use `tenant.id` as the fallback for `account_id`** in the CRM context. Since the `crm_invoices.account_id` foreign key references `accounts(id)`, and the tenant may not have a matching account, the cleanest fix is to update `AccountContext` to fall back to using `tenant.id` when no account is found.
 
-Update the `loadMenuDirect` function's product query:
+### Changes
 
-**Before (broken):**
-```
-.select(`
-  product_id, custom_price, prices, display_order,
-  is_visible, vendor_name, badge,
-  products (name, price, description, image_url, category, strain_type, created_at)
-`)
-.eq('is_visible', true)
-```
+**1. `src/contexts/AccountContext.tsx`** — Add tenant fallback logic
 
-**After (fixed):**
-```
-.select(`
-  product_id, custom_price, prices, display_order, display_availability,
-  wholesale_inventory!product_id (
-    product_name, base_price, description, image_url,
-    category, strain_type, created_at
-  )
-`)
-.eq('display_availability', true)
+When `profile.account_id` is null, attempt to find an account linked to the current tenant, or fall back to using the tenant ID directly. Import and use `useTenantAdminAuth` to get the tenant context:
+
+- If `profile.account_id` is null, query `accounts` table by matching tenant data (e.g., owner email) or use tenant ID
+- If no account exists at all, create a synthetic account object using `tenant.id` so the CRM system can function
+
+**2. Alternative (simpler): `src/pages/admin/CreateInvoicePage.tsx`** — Fall back to `tenant.id`
+
+Replace the account dependency with a tenant fallback:
+```tsx
+const { tenant } = useTenantAdminAuth();
+const { account, loading: accountLoading } = useAccount();
+const accountId = account?.id ?? tenant?.id ?? null;
 ```
 
-Then update the mapping code (lines 350-397) to use the correct field names:
-- `mp.products` becomes `mp.wholesale_inventory`
-- `inv.name` becomes `inv.product_name`
-- `inv.price` becomes `inv.base_price`
-- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+This same pattern needs to be applied in `useAccountIdSafe` and `useAccountId` hooks so all CRM hooks benefit:
 
-## Also Fix: Pre-existing build errors in unrelated edge functions
+**3. `src/hooks/crm/useAccountId.ts`** — Add tenant fallback
 
-The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+```tsx
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
-## Result
+export function useAccountIdSafe(): string | null {
+    const { account, loading } = useAccount();
+    const { tenant } = useTenantAdminAuth();
+    
+    if (loading) return null;
+    return account?.id ?? tenant?.id ?? null;
+}
+```
 
-The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+This single change propagates the fix to `useInvoices`, `usePreOrders`, `useCreateCRMOrder`, and all other CRM hooks that use `useAccountIdSafe()`.
+
+**4. `src/pages/admin/CreateInvoicePage.tsx`** — Same tenant fallback for the local `accountId`
+
+Update lines 66-73 to use tenant ID as fallback when account is unavailable.
+
+### Scope
+- `src/hooks/crm/useAccountId.ts` — 2 functions updated
+- `src/pages/admin/CreateInvoicePage.tsx` — ~5 lines changed
+- `src/components/crm/CreateClientDialog.tsx` — Same pattern if it uses `useAccount`
+
+### Risk
+Low. The `crm_invoices.account_id` column accepts any UUID string. Using `tenant.id` as the value simply means CRM data is scoped to the tenant, which is the intended behavior.
 
