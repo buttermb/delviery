@@ -7,10 +7,12 @@ import {
   SettingsCard,
   SaveStatusIndicator,
 } from '@/components/settings/SettingsSection';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -168,7 +170,15 @@ export default function NotificationTemplatesSettings() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-96 mt-2" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   return (
@@ -216,11 +226,11 @@ export default function NotificationTemplatesSettings() {
 
             <div>
               <Label>Subject</Label>
-              <Textarea
+              <Input
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                rows={2}
                 placeholder="Email subject line"
+                maxLength={200}
               />
             </div>
 
@@ -246,7 +256,7 @@ export default function NotificationTemplatesSettings() {
       </SettingsSection>
 
       <SaveStatusIndicator
-        status={saveMutation.isPending ? 'saving' : 'saved'}
+        status={saveMutation.isPending ? 'saving' : saveMutation.isSuccess ? 'saved' : 'idle'}
       />
     </div>
   );
