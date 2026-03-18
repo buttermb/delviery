@@ -1,15 +1,6 @@
-import { logger } from '@/lib/logger';
 import { useState } from 'react';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { format } from 'date-fns';
 import {
   Plus,
   Search,
@@ -19,8 +10,17 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import type { Database } from '@/integrations/supabase/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -36,12 +36,79 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { format } from 'date-fns';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
-import { Loader2 } from 'lucide-react';
-import { useCreditGatedAction } from '@/hooks/useCredits';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { logger } from '@/lib/logger';
+
+type BatchRow = Database['public']['Tables']['inventory_batches']['Row'];
+
+interface BatchWithProduct extends BatchRow {
+  tenant_id?: string | null;
+  product: { name: string; image_url: string | null } | null;
+}
+
+interface NewBatchFormData {
+  batch_number: string;
+  product_id: string;
+  quantity_lbs: number;
+  received_date: string;
+  expiration_date: string;
+  warehouse_location: string;
+  notes: string;
+}
+
+const INITIAL_FORM_DATA: NewBatchFormData = {
+  batch_number: '',
+  product_id: '',
+  quantity_lbs: 0,
+  received_date: new Date().toISOString().split('T')[0],
+  expiration_date: '',
+  warehouse_location: '',
+  notes: '',
+};
+
+function isExpiringSoon(expirationDate: string | null | undefined): boolean {
+  if (!expirationDate) return false;
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+  return new Date(expirationDate) <= thirtyDaysFromNow;
+}
+
+function isExpired(expirationDate: string | null | undefined): boolean {
+  if (!expirationDate) return false;
+  return new Date(expirationDate) < new Date();
+}
+
+function getStatusBadge(batch: BatchWithProduct) {
+  if (isExpired(batch.expiration_date)) {
+    return (
+      <Badge variant="destructive" className="gap-1">
+        <XCircle className="h-3 w-3" />
+        Expired
+      </Badge>
+    );
+  }
+  if (isExpiringSoon(batch.expiration_date)) {
+    return (
+      <Badge variant="outline" className="gap-1 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+        <AlertTriangle className="h-3 w-3" />
+        Expiring Soon
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="gap-1 bg-green-500/10 text-green-500 border-green-500/20">
+      <CheckCircle className="h-3 w-3" />
+      Active
+    </Badge>
+  );
+}
 
 export default function BatchesPage() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -52,17 +119,13 @@ export default function BatchesPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newBatch, setNewBatch] = useState({
-    batch_number: '',
-    product_id: '',
-    quantity_lbs: 0,
-    received_date: new Date().toISOString().split('T')[0],
-    expiration_date: '',
-    warehouse_location: '',
-    notes: ''
-  });
-
+  const [newBatch, setNewBatch] = useState<NewBatchFormData>(INITIAL_FORM_DATA);
   const [tableMissing, setTableMissing] = useState(false);
+
+  const resetForm = () => {
+    setNewBatch({ ...INITIAL_FORM_DATA, received_date: new Date().toISOString().split('T')[0] });
+    setCreateDialogOpen(false);
+  };
 
   // Fetch batches
   const { data: batches, isLoading } = useQuery({
@@ -80,20 +143,19 @@ export default function BatchesPage() {
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
-        // Gracefully handle missing table
         if (error && error.code === '42P01') {
           setTableMissing(true);
           return [];
         }
         if (error) throw error;
         setTableMissing(false);
-        return data ?? [];
-      } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && error.code === '42P01') {
+        return (data ?? []) as BatchWithProduct[];
+      } catch (err: unknown) {
+        if (err instanceof Error && 'code' in err && (err as { code: string }).code === '42P01') {
           setTableMissing(true);
           return [];
         }
-        throw error;
+        throw err;
       }
     },
     enabled: !!tenantId,
@@ -110,17 +172,15 @@ export default function BatchesPage() {
         const { data, error } = await supabase
           .from('products')
           .select('id, name')
-          .eq('tenant_id', tenantId);
+          .eq('tenant_id', tenantId)
+          .order('name');
 
-        // Gracefully handle missing table
-        if (error && error.code === '42P01') {
-          return [];
-        }
+        if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data ?? [];
-      } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
-        throw error;
+      } catch (err: unknown) {
+        if (err instanceof Error && 'code' in err && (err as { code: string }).code === '42P01') return [];
+        throw err;
       }
     },
     enabled: !!tenantId,
@@ -129,92 +189,45 @@ export default function BatchesPage() {
 
   // Create batch
   const createBatch = useMutation({
-    mutationFn: async (batch: typeof newBatch) => {
-      if (!tenantId) throw new Error('Tenant ID missing');
+    mutationFn: async (batch: NewBatchFormData) => {
+      if (!tenantId) throw new Error('No tenant context');
 
       const { error } = await supabase
         .from('inventory_batches')
         .insert([{
-          ...batch,
-          tenant_id: tenantId
+          batch_number: batch.batch_number,
+          product_id: batch.product_id || null,
+          quantity_lbs: batch.quantity_lbs,
+          received_date: batch.received_date || null,
+          expiration_date: batch.expiration_date || null,
+          warehouse_location: batch.warehouse_location || null,
+          notes: batch.notes || null,
+          tenant_id: tenantId,
         }]);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Batch created successfully!");
+      toast.success('Batch created successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.batches.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
-      setCreateDialogOpen(false);
-      setNewBatch({
-        batch_number: '',
-        product_id: '',
-        quantity_lbs: 0,
-        received_date: new Date().toISOString().split('T')[0],
-        expiration_date: '',
-        warehouse_location: '',
-        notes: ''
-      });
+      resetForm();
     },
     onError: (error: unknown) => {
-      logger.error('Failed to create batch', error, { component: 'BatchesPage' });
-      toast.error("Failed to create batch", { description: humanizeError(error) });
-    }
+      logger.error('Failed to create batch', error, { component: 'BatchesPage', tenantId });
+      toast.error('Failed to create batch', { description: humanizeError(error) });
+    },
   });
 
-  // Check if batch is expiring soon (within 30 days)
-  const isExpiringSoon = (expirationDate: string) => {
-    if (!expirationDate) return false;
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-    return new Date(expirationDate) <= thirtyDaysFromNow;
-  };
-
-  // Check if batch is expired
-  const isExpired = (expirationDate: string) => {
-    if (!expirationDate) return false;
-    return new Date(expirationDate) < new Date();
-  };
-
-  interface Batch {
-    expiration_date?: string | null;
-    [key: string]: unknown;
-  }
-
-  const getStatusBadge = (batch: Batch) => {
-    if (isExpired(batch.expiration_date)) {
-      return (
-        <Badge variant="destructive" className="gap-1">
-          <XCircle className="h-3 w-3" />
-          Expired
-        </Badge>
-      );
-    }
-    if (isExpiringSoon(batch.expiration_date)) {
-      return (
-        <Badge variant="outline" className="gap-1 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-          <AlertTriangle className="h-3 w-3" />
-          Expiring Soon
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="outline" className="gap-1 bg-green-500/10 text-green-500 border-green-500/20">
-        <CheckCircle className="h-3 w-3" />
-        Active
-      </Badge>
-    );
-  };
-
-  const filteredBatches = batches?.filter(batch =>
+  const filteredBatches = batches?.filter((batch) =>
     batch.batch_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     batch.product?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Calculate stats
   const totalBatches = batches?.length ?? 0;
-  const expiringBatches = batches?.filter(b => isExpiringSoon(b.expiration_date) && !isExpired(b.expiration_date)).length ?? 0;
-  const expiredBatches = batches?.filter(b => isExpired(b.expiration_date)).length ?? 0;
+  const expiringBatches = batches?.filter((b) => isExpiringSoon(b.expiration_date) && !isExpired(b.expiration_date)).length ?? 0;
+  const expiredBatches = batches?.filter((b) => isExpired(b.expiration_date)).length ?? 0;
   const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity_lbs ?? 0), 0) ?? 0;
 
   return (
@@ -286,7 +299,7 @@ export default function BatchesPage() {
         </CardContent>
       </Card>
 
-      {/* Batches Table */}
+      {/* Batches List */}
       {isLoading ? (
         <EnhancedLoadingState variant="table" count={5} message="Loading batches..." />
       ) : tableMissing ? (
@@ -295,7 +308,7 @@ export default function BatchesPage() {
             <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Feature Not Available</h3>
             <p className="text-muted-foreground mb-4">
-              The inventory_batches table has not been created yet. This feature requires additional database setup.
+              The inventory batches table has not been created yet. This feature requires additional database setup.
             </p>
             <p className="text-sm text-muted-foreground">
               Contact support to enable this feature or run the database migration to create the required tables.
@@ -308,9 +321,9 @@ export default function BatchesPage() {
           title="No Batches Found"
           description="Create your first batch to track lot numbers and expiration dates."
           primaryAction={{
-            label: "Create Your First Batch",
+            label: 'Create Your First Batch',
             onClick: () => setCreateDialogOpen(true),
-            icon: Plus
+            icon: Plus,
           }}
         />
       ) : (
@@ -325,7 +338,7 @@ export default function BatchesPage() {
                       {batch.product?.image_url ? (
                         <img
                           src={batch.product.image_url}
-                          alt={batch.product.name}
+                          alt={batch.product.name ?? 'Product'}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
@@ -340,7 +353,7 @@ export default function BatchesPage() {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-semibold">{batch.product?.name || 'Unknown Product'}</p>
+                          <p className="font-semibold">{batch.product?.name ?? 'Unknown Product'}</p>
                           <p className="text-sm text-muted-foreground">
                             Batch #{batch.batch_number}
                           </p>
@@ -361,7 +374,9 @@ export default function BatchesPage() {
                           <div>
                             <p className="text-muted-foreground">Received</p>
                             <p className="font-medium">
-                              {format(new Date(batch.received_date), 'MMM d, yyyy')}
+                              {batch.received_date
+                                ? format(new Date(batch.received_date), 'MMM d, yyyy')
+                                : 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -370,7 +385,9 @@ export default function BatchesPage() {
                           <div>
                             <p className="text-muted-foreground">Expires</p>
                             <p className="font-medium">
-                              {batch.expiration_date ? format(new Date(batch.expiration_date), 'MMM d, yyyy') : 'N/A'}
+                              {batch.expiration_date
+                                ? format(new Date(batch.expiration_date), 'MMM d, yyyy')
+                                : 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -378,7 +395,7 @@ export default function BatchesPage() {
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-muted-foreground">Location</p>
-                            <p className="font-medium">{batch.warehouse_location || 'N/A'}</p>
+                            <p className="font-medium">{batch.warehouse_location ?? 'N/A'}</p>
                           </div>
                         </div>
                       </div>
@@ -396,7 +413,7 @@ export default function BatchesPage() {
       )}
 
       {/* Create Batch Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      <Dialog open={createDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Batch</DialogTitle>
@@ -418,7 +435,7 @@ export default function BatchesPage() {
                 value={newBatch.product_id}
                 onValueChange={(value) => setNewBatch({ ...newBatch, product_id: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="product">
                   <SelectValue placeholder="Select product" />
                 </SelectTrigger>
                 <SelectContent>
@@ -436,6 +453,7 @@ export default function BatchesPage() {
               <Input
                 id="quantity"
                 type="number"
+                min={0}
                 placeholder="10"
                 value={newBatch.quantity_lbs || ''}
                 onChange={(e) => setNewBatch({ ...newBatch, quantity_lbs: parseInt(e.target.value) || 0 })}
@@ -475,19 +493,17 @@ export default function BatchesPage() {
 
             <div>
               <Label htmlFor="notes">Notes</Label>
-              <Input
+              <Textarea
                 id="notes"
                 placeholder="Any additional information..."
                 value={newBatch.notes}
                 onChange={(e) => setNewBatch({ ...newBatch, notes: e.target.value })}
+                rows={3}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setCreateDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={resetForm}>
               Cancel
             </Button>
             <Button
