@@ -272,6 +272,38 @@ describe('CashRegister Component', () => {
       expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
     });
 
+    it('should have aria-label on Keyboard shortcuts button', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        const shortcutsButton = screen.getByRole('button', { name: /Keyboard shortcuts/i });
+        expect(shortcutsButton).toBeInTheDocument();
+        expect(shortcutsButton).toHaveAttribute('aria-label', 'Keyboard shortcuts');
+      });
+    });
+
+    it('should have aria-label on Pay button', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        const payButton = screen.getByRole('button', { name: /Process payment/i });
+        expect(payButton).toBeInTheDocument();
+        expect(payButton).toHaveAttribute('aria-label', 'Process payment');
+      });
+    });
+  });
+
+  describe('Cart Operations', () => {
+    it('should not show totals breakdown when cart is empty', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
+      });
+      // Total breakdown only appears when cart has items
+      expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
+    });
+
     it('should not show clear cart button when cart is empty', async () => {
       renderWithProviders(<CashRegister />);
 
@@ -750,6 +782,22 @@ describe('Cart Item Management', () => {
     const newQuantity = Math.min(stockQuantity, quantity + 1);
 
     expect(newQuantity).toBe(5);
+  });
+
+  it('should treat null stock_quantity as 0 for increase button disabled state', () => {
+    const quantity = 1;
+    const stockQuantity: number | null = null;
+    const isDisabled = quantity >= (stockQuantity ?? 0);
+
+    expect(isDisabled).toBe(true);
+  });
+
+  it('should allow increase when stock_quantity is defined and above quantity', () => {
+    const quantity = 2;
+    const stockQuantity: number | null = 5;
+    const isDisabled = quantity >= (stockQuantity ?? 0);
+
+    expect(isDisabled).toBe(false);
   });
 
   it('should calculate item subtotal correctly', () => {

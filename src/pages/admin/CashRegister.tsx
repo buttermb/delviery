@@ -1177,6 +1177,7 @@ function CashRegisterContent() {
             onClick={() => setRefundDialogOpen(true)}
             disabled={processPayment.isPending}
             className="min-h-[44px] px-3 sm:px-4"
+            aria-label="Refund/Return"
           >
             <RotateCcw className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Refund/Return</span>
@@ -1187,6 +1188,7 @@ function CashRegisterContent() {
             size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
             className="text-xs min-h-[44px] px-3 sm:px-4"
+            aria-label="Keyboard shortcuts"
           >
             <Keyboard className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Shortcuts</span>
@@ -1231,6 +1233,7 @@ function CashRegisterContent() {
                       onClick={() => addToCart(product)}
                       disabled={outOfStock || isAddingToCart === product.id}
                       className="h-auto py-2 px-1.5 sm:py-3 sm:px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
+                      aria-label={`Add ${product.name} to cart`}
                     >
                       {isAddingToCart === product.id ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -1562,6 +1565,7 @@ function CashRegisterContent() {
                 <Button
                   className="flex-1 min-h-[44px]"
                   variant="default"
+                  aria-label={processPayment.isPending ? 'Processing payment' : !isOnline ? 'Queue payment' : 'Process payment'}
                   onClick={async () => {
                     try {
                       await executeCreditAction('pos_process_sale', async () => {
