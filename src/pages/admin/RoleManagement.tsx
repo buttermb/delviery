@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -31,8 +33,21 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { queryKeys } from '@/lib/queryKeys';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
+
+const roleFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Role name is required')
+    .max(50, 'Role name must be 50 characters or less')
+    .regex(/^[a-zA-Z0-9\s_-]+$/, 'Only letters, numbers, spaces, hyphens, and underscores allowed'),
+  description: z
+    .string()
+    .max(200, 'Description must be 200 characters or less')
+    .optional()
+    .or(z.literal('')),
+  permissions: z.array(z.string()),
+});
 
 // Permission categories for UI organization
 const PERMISSION_CATEGORIES = [
@@ -85,6 +100,7 @@ export function RoleManagement() {
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Fetch roles with their permissions
   const { data: roles = [], isLoading, error } = useQuery({
@@ -129,6 +145,7 @@ export function RoleManagement() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 300_000,
   });
 
   // Create role mutation
@@ -303,6 +320,20 @@ export function RoleManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) });
       toast.success("The role has been deleted successfully.");
+
+      if (tenantId && roleToDelete) {
+        logActivityAuto(
+          tenantId,
+          ActivityActions.DELETE_ROLE,
+          'role',
+          roleToDelete.id,
+          {
+            role_name: roleToDelete.name,
+            permissions_count: roleToDelete.permissions.length,
+          }
+        );
+      }
+
       setRoleToDelete(null);
       setIsDeleteDialogOpen(false);
     },
@@ -320,6 +351,7 @@ export function RoleManagement() {
     setEditingRole(null);
     setIsDialogOpen(false);
     setExpandedCategories([]);
+    setFormErrors({});
   }, []);
 
   const handleEdit = useCallback((role: Role) => {
@@ -344,15 +376,25 @@ export function RoleManagement() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error("Role name is required");
+    setFormErrors({});
+
+    const result = roleFormSchema.safeParse(formData);
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string;
+        if (!errors[field]) {
+          errors[field] = issue.message;
+        }
+      }
+      setFormErrors(errors);
       return;
     }
 
     if (editingRole) {
-      updateRoleMutation.mutate({ id: editingRole.id, data: formData });
+      updateRoleMutation.mutate({ id: editingRole.id, data: result.data });
     } else {
-      createRoleMutation.mutate(formData);
+      createRoleMutation.mutate(result.data);
     }
   };
 
@@ -458,7 +500,7 @@ export function RoleManagement() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(role)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(role)} aria-label={`Edit role ${role.name}`}>
                     <Edit className="h-4 w-4" />
                     <span className="sr-only">Edit</span>
                   </Button>
@@ -475,6 +517,7 @@ export function RoleManagement() {
                       size="sm"
                       onClick={() => handleDelete(role)}
                       className="text-destructive hover:text-destructive"
+                      aria-label={`Delete role ${role.name}`}
                     >
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Delete</span>
@@ -494,7 +537,33 @@ export function RoleManagement() {
   const isSubmitting = createRoleMutation.isPending || updateRoleMutation.isPending;
 
   if (isLoading) {
-    return <EnhancedLoadingState variant="table" message="Loading roles..." />;
+    return (
+      <div className="space-y-4 p-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={`role-skeleton-${i}`} className="flex items-center gap-4">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-48 hidden sm:block" />
+                <div className="flex gap-1 ml-auto">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-8 w-8" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (error) {
@@ -537,6 +606,11 @@ export function RoleManagement() {
               title: 'No roles found',
               description: 'Create your first custom role to control team member permissions.',
               icon: Users,
+              primaryAction: {
+                label: 'Create Role',
+                onClick: () => setIsDialogOpen(true),
+                icon: Plus,
+              },
             }}
           />
         </CardContent>
@@ -569,7 +643,12 @@ export function RoleManagement() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Sales Manager"
                     disabled={editingRole?.is_system}
+                    maxLength={50}
+                    aria-invalid={!!formErrors.name}
                   />
+                  {formErrors.name && (
+                    <p className="text-xs text-destructive">{formErrors.name}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role-description">Description</Label>
@@ -578,7 +657,12 @@ export function RoleManagement() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Brief description of this role"
+                    maxLength={200}
+                    aria-invalid={!!formErrors.description}
                   />
+                  {formErrors.description && (
+                    <p className="text-xs text-destructive">{formErrors.description}</p>
+                  )}
                 </div>
               </div>
 
