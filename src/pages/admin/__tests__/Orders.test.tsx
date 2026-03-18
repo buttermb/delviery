@@ -30,6 +30,7 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -86,6 +87,61 @@ vi.mock('@/components/SEOHead', () => ({
   SEOHead: () => null,
 }));
 
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => ({
+    canEdit: () => true,
+    canDelete: () => true,
+    canExport: () => true,
+    canView: () => true,
+  }),
+}));
+
+vi.mock('@/hooks/useAdminOrdersRealtime', () => ({
+  useAdminOrdersRealtime: () => ({
+    newOrderIds: new Set<string>(),
+  }),
+}));
+
+vi.mock('@/hooks/useDeliveryETA', () => ({
+  useDeliveryETA: () => ({
+    etaMap: {},
+  }),
+}));
+
+vi.mock('@/hooks/useTenantFeatureToggles', () => ({
+  useTenantFeatureToggles: () => ({
+    isEnabled: () => false,
+  }),
+}));
+
+vi.mock('@/hooks/useOrderBulkStatusUpdate', () => ({
+  useOrderBulkStatusUpdate: () => ({
+    isRunning: false,
+    showProgress: false,
+    total: 0,
+    completed: 0,
+    succeeded: 0,
+    failed: 0,
+    failedItems: [],
+    isComplete: false,
+    executeBulkUpdate: vi.fn(),
+    cancel: vi.fn(),
+    closeProgress: vi.fn(),
+  }),
+}));
+
+vi.mock('@/lib/auditLog', () => ({
+  logAuditEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/invalidation', () => ({
+  invalidateOnEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/humanizeError', () => ({
+  humanizeError: vi.fn().mockReturnValue('An error occurred'),
+}));
+
 // Mock orders data
 const mockOrders = [
   {
@@ -135,17 +191,38 @@ const mockSupabaseUpdate = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => {
   const createChainableQuery = (table: string) => {
-    const chain = {
+    const resolveData = () => {
+      if (table === 'orders') {
+        return Promise.resolve({ data: mockOrders, error: null });
+      }
+      return Promise.resolve({ data: [], error: null });
+    };
+
+    // Create a thenable object that also has chainable methods
+    const createThenable = (): Record<string, unknown> & PromiseLike<{ data: unknown; error: null }> => {
+      const result = resolveData();
+      const obj = {
+        then: result.then.bind(result),
+        catch: (result as Promise<{ data: unknown; error: null }>).catch.bind(result),
+        // Additional chainable methods that resolve to the same data
+        limit: vi.fn().mockImplementation(() => createThenable()),
+        order: vi.fn().mockImplementation(() => createThenable()),
+        select: vi.fn().mockImplementation(() => createThenable()),
+        eq: vi.fn().mockImplementation(() => createThenable()),
+        in: vi.fn().mockImplementation(() => createThenable()),
+        maybeSingle: vi.fn().mockImplementation(() => resolveData()),
+      };
+      return obj as Record<string, unknown> & PromiseLike<{ data: unknown; error: null }>;
+    };
+
+    const chain: Record<string, unknown> = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockImplementation(() => {
-        if (table === 'orders') {
-          return Promise.resolve({ data: mockOrders, error: null });
-        }
-        return Promise.resolve({ data: [], error: null });
-      }),
-      update: vi.fn().mockImplementation((data) => {
+      order: vi.fn().mockImplementation(() => createThenable()),
+      limit: vi.fn().mockImplementation(() => createThenable()),
+      maybeSingle: vi.fn().mockImplementation(() => resolveData()),
+      update: vi.fn().mockImplementation((data: unknown) => {
         mockSupabaseUpdate(data);
         return {
           in: vi.fn().mockReturnThis(),
@@ -155,6 +232,11 @@ vi.mock('@/integrations/supabase/client', () => {
       delete: vi.fn().mockReturnThis(),
     };
     return chain;
+  };
+
+  const mockSubscription = {
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn().mockReturnValue({ unsubscribe: vi.fn() }),
   };
 
   return {
@@ -169,6 +251,8 @@ vi.mock('@/integrations/supabase/client', () => {
         }
         return createChainableQuery(table);
       }),
+      channel: vi.fn().mockReturnValue(mockSubscription),
+      removeChannel: vi.fn(),
     },
   };
 });
@@ -800,5 +884,102 @@ describe('Search Filtering Logic', () => {
       order.user?.full_name?.toLowerCase().includes(query.toLowerCase())
     );
     expect(filtered).toHaveLength(3); // All orders match 'ord' in order_number
+  });
+});
+
+describe('Button Audit - Source Code Verification', () => {
+  /**
+   * These tests verify the Orders.tsx button audit fixes at the source level.
+   * Full component rendering tests are blocked by complex mock dependencies.
+   * These unit tests verify the key properties we changed.
+   */
+
+  it('should use shadcn Button for filter presets (not raw <button>)', async () => {
+    // Read the source and verify filter presets use Button component
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    // Filter presets section should use <Button instead of <button
+    const presetSection = source.slice(
+      source.indexOf('filterPresets.map'),
+      source.indexOf('</div>', source.indexOf('filterPresets.map')) + 6
+    );
+
+    expect(presetSection).toContain('<Button');
+    expect(presetSection).toContain('type="button"');
+    expect(presetSection).not.toMatch(/<button\s/); // raw <button> should not appear
+  });
+
+  it('should use relative navigation paths (not hardcoded tenant slug)', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    // Navigate calls for offline-create and wholesale-orders/new should use relative paths
+    expect(source).toContain("navigate('orders/offline-create')");
+    expect(source).toContain("navigate('wholesale-orders/new')");
+
+    // Should NOT contain hardcoded tenant slug navigation for these paths
+    expect(source).not.toContain('/${tenant.slug}/admin/orders/offline-create');
+    expect(source).not.toContain('/${tenant.slug}/admin/wholesale-orders/new');
+  });
+
+  it('should have type="button" on filter badge remove buttons', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    // All inline <button elements should have type="button"
+    const buttonMatches = source.match(/<button\s[^>]*>/g) || [];
+    for (const match of buttonMatches) {
+      expect(match).toContain('type="button"');
+    }
+  });
+
+  it('should have aria-label on view order button', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    // View button should have aria-label
+    expect(source).toContain('aria-label={`View order');
+  });
+
+  it('should have aria-label on drawer action buttons', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    expect(source).toContain('aria-label={`Print order');
+    expect(source).toContain('aria-label={`Generate invoice for order');
+    expect(source).toContain('aria-label={`View full details for order');
+  });
+
+  it('should have aria-label on clear filters and column toggle buttons', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../Orders.tsx'),
+      'utf-8'
+    );
+
+    expect(source).toContain('aria-label="Clear all filters"');
+    expect(source).toContain('aria-label="Toggle column visibility"');
   });
 });
