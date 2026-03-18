@@ -93,9 +93,11 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
 
   const createMutation = useMutation({
     mutationFn: async (data: SupplierInsert) => {
+      if (!tenant?.id) throw new Error("Tenant ID required");
+
       const { data: newSupplier, error } = await supabase
         .from("wholesale_suppliers")
-        .insert([data])
+        .insert([{ ...data, tenant_id: tenant.id }])
         .select()
         .maybeSingle();
 
@@ -131,11 +133,13 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
   const updateMutation = useMutation({
     mutationFn: async (data: SupplierUpdate) => {
       if (!supplier?.id) throw new Error("Supplier ID is required");
+      if (!tenant?.id) throw new Error("Tenant ID required");
 
       const { data: updatedSupplier, error } = await supabase
         .from("wholesale_suppliers")
         .update(data)
         .eq("id", supplier.id)
+        .eq("tenant_id", tenant.id)
         .select()
         .maybeSingle();
 

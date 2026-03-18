@@ -130,7 +130,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         type: data.type,
       });
 
-      toast.success("Sent to ${targetTenants.length} tenants");
+      toast.success(`Sent to ${targetTenants.length} tenants`);
 
       setOpen(false);
       form.reset();

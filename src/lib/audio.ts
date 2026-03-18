@@ -34,7 +34,7 @@ export function playSuccessBeep(): void {
     oscillator.stop(ctx.currentTime + 0.1);
   } catch (error) {
     // Silently fail if audio context not available
-    console.warn('Audio playback failed:', error);
+    // Audio playback is non-critical; silently ignore failures
   }
 }
 
@@ -70,6 +70,6 @@ export function playPaymentCompleteBeep(): void {
     osc2.stop(ctx.currentTime + 0.25);
   } catch (error) {
     // Silently fail if audio context not available
-    console.warn('Audio playback failed:', error);
+    // Audio playback is non-critical; silently ignore failures
   }
 }

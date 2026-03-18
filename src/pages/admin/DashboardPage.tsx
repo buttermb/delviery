@@ -274,7 +274,7 @@ export function DashboardPage() {
                     value: ((stats.revenueToday - stats.revenueYesterday) / stats.revenueYesterday) * 100,
                     label: 'vs yesterday',
                   } : undefined}
-                  href="/admin/finance-hub"
+                  href={`/${tenantSlug}/admin/finance-hub`}
                 />
                 <KPICard
                   title="Orders Today"
@@ -286,7 +286,7 @@ export function DashboardPage() {
                     value: ((stats.totalOrdersToday - stats.totalOrdersYesterday) / stats.totalOrdersYesterday) * 100,
                     label: 'vs yesterday',
                   } : undefined}
-                  href="/admin/orders"
+                  href={`/${tenantSlug}/admin/orders`}
                 />
                 <KPICard
                   title="Active Customers"
@@ -294,7 +294,7 @@ export function DashboardPage() {
                   icon={<Users className="h-5 w-5" />}
                   description={`+${stats?.newCustomers ?? 0} this period`}
                   variant="default"
-                  href="/admin/customer-hub"
+                  href={`/${tenantSlug}/admin/customer-hub`}
                 />
                 <KPICard
                   title="Inventory Health"
@@ -304,7 +304,7 @@ export function DashboardPage() {
                   icon={<Package className="h-5 w-5" />}
                   description={`${stats?.lowStockItems ?? 0} low of ${stats?.totalProducts ?? 0} SKUs`}
                   variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
-                  href="/admin/inventory-hub"
+                  href={`/${tenantSlug}/admin/inventory-hub`}
                 />
               </>
             )}

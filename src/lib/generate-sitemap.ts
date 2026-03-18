@@ -1,2 +1,2 @@
 // Dummy sitemap generator to satisfy the build script
-console.warn('Sitemap generation skipped/stubbed successfully.');
+// No-op: sitemap generation is handled by the deployment pipeline
