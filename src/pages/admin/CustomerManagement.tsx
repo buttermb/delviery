@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
+  MoreHorizontal, Edit, Trash, Eye, Download, Upload, Mail, Lock, Phone, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -897,7 +897,7 @@ export function CustomerManagement() {
           actions={
             <>
               {canEdit('customers') && (
-                <Button onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
+                <Button aria-label="Add customer" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Add Customer</span>
                   <span className="sm:hidden">Add</span>
@@ -1022,45 +1022,49 @@ export function CustomerManagement() {
                         if (selectedCustomerForDrawer.phone) window.location.href = `tel:${selectedCustomerForDrawer.phone}`;
                       }} disabled={!selectedCustomerForDrawer.phone}>
                         <Phone className="w-4 h-4 mr-2" />
-                        Call {selectedCustomerForDrawer.phone || 'No Phone'}
+                        {selectedCustomerForDrawer.phone ? `Call ${selectedCustomerForDrawer.phone}` : 'No phone on file'}
                       </Button>
                       <Button className="w-full justify-start" variant="outline" onClick={() => {
                         if (selectedCustomerForDrawer.email) window.location.href = `mailto:${selectedCustomerForDrawer.email}`;
                       }} disabled={!selectedCustomerForDrawer.email}>
                         <Mail className="w-4 h-4 mr-2" />
-                        Email {selectedCustomerForDrawer.email || 'No Email'}
+                        {selectedCustomerForDrawer.email ? `Email ${selectedCustomerForDrawer.email}` : 'No email on file'}
                       </Button>
                     </>
                   )}
                 </div>
 
                 <div className="pt-4 border-t">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0} className="w-full">
-                          <Button
-                            className="w-full mb-2"
-                            disabled={!posEnabled}
-                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
-                          >
-                            <DollarSign className="w-4 h-4 mr-2" />
-                            Create New Order
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      {!posEnabled && (
-                        <TooltipContent>Enable POS in Settings</TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
+                  {canEdit('orders') && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span tabIndex={0} className="w-full">
+                            <Button
+                              className="w-full mb-2"
+                              disabled={!posEnabled}
+                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Create New Order
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {!posEnabled && (
+                          <TooltipContent>Enable POS in Settings</TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
                     </Button>
-                    <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
-                      Edit Details
-                    </Button>
+                    {canEdit('customers') && (
+                      <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
+                        Edit Details
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
