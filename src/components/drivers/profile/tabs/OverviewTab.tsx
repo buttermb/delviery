@@ -225,7 +225,7 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         .select('id, order_number, status, customer_name, delivery_address, merchants(address)')
         .eq('courier_id', driver.id)
         .eq('tenant_id', tenantId)
-        .in('status', ['assigned', 'in_transit'])
+        .in('status', ['confirmed', 'preparing', 'out_for_delivery'])
         .limit(1)
         .maybeSingle();
 
@@ -420,8 +420,16 @@ function ActiveDeliveryCard({
   order: ActiveOrder;
   onViewDetails: () => void;
 }) {
-  const statusLabel = order.status === 'in_transit' ? 'In Transit' : 'Assigned';
-  const statusColor = order.status === 'in_transit' ? 'amber' : 'blue';
+  const statusLabel =
+    order.status === 'out_for_delivery'
+      ? 'In Transit'
+      : order.status === 'preparing'
+        ? 'Preparing'
+        : 'Confirmed';
+  const statusBadgeClass =
+    order.status === 'out_for_delivery'
+      ? 'bg-amber-500/20 text-amber-500'
+      : 'bg-blue-500/20 text-blue-500';
 
   return (
     <>
@@ -429,7 +437,7 @@ function ActiveDeliveryCard({
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Active Delivery
         </span>
-        <span className={`inline-flex items-center rounded-full bg-${statusColor}-500/20 px-2 py-0.5 text-[11px] font-medium text-${statusColor}-500`}>
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadgeClass}`}>
           {statusLabel}
         </span>
       </div>
