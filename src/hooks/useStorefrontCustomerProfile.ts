@@ -149,31 +149,30 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
       const totalOrderValue = orderStats?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) ?? 0;
       const averageOrderValue = orderCount > 0 ? totalOrderValue / orderCount : 0;
 
-      // Get customer preferences (stored in customer_preferences table if exists)
-      const { data: preferencesData } = await supabase
-        .from('customer_preferences')
-        .select('email_notifications, sms_notifications, marketing_emails, preferred_delivery_time, dietary_preferences, favorite_categories')
+      // Get customer notification preferences from customer_notification_preferences table
+      const { data: notifPrefsData } = await supabase
+        .from('customer_notification_preferences')
+        .select('email_enabled, email_order_updates, email_promotions, sms_enabled, sms_order_updates')
         .eq('customer_id', customerData.id)
         .eq('tenant_id', tenantId)
         .maybeSingle();
 
-      interface PreferencesRow {
-        email_notifications?: boolean;
-        sms_notifications?: boolean;
-        marketing_emails?: boolean;
-        preferred_delivery_time?: string | null;
-        dietary_preferences?: string[];
-        favorite_categories?: string[];
+      interface NotifPrefsRow {
+        email_enabled?: boolean;
+        email_order_updates?: boolean;
+        email_promotions?: boolean;
+        sms_enabled?: boolean;
+        sms_order_updates?: boolean;
       }
 
-      const prefs = preferencesData as PreferencesRow | null;
+      const prefs = notifPrefsData as NotifPrefsRow | null;
       const preferences: CustomerPreferences = prefs ? {
-        email_notifications: prefs.email_notifications ?? true,
-        sms_notifications: prefs.sms_notifications ?? false,
-        marketing_emails: prefs.marketing_emails ?? true,
-        preferred_delivery_time: prefs.preferred_delivery_time ?? null,
-        dietary_preferences: prefs.dietary_preferences ?? [],
-        favorite_categories: prefs.favorite_categories ?? [],
+        email_notifications: prefs.email_enabled ?? true,
+        sms_notifications: prefs.sms_enabled ?? false,
+        marketing_emails: prefs.email_promotions ?? true,
+        preferred_delivery_time: null,
+        dietary_preferences: [],
+        favorite_categories: [],
       } : {
         email_notifications: true,
         sms_notifications: false,
@@ -415,23 +414,34 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     },
   });
 
-  // Update preferences mutation
+  // Update preferences mutation — maps CustomerPreferences fields to notification_preferences columns
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<CustomerPreferences>) => {
       if (!profile?.id || !tenantId) {
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await supabase
-        .from('customer_preferences')
-        .upsert({
-          customer_id: profile.id,
-          tenant_id: tenantId,
-          ...updates,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'customer_id,tenant_id',
-        });
+      // Map legacy CustomerPreferences fields to notification_preferences columns
+      const rpcParams: Record<string, unknown> = {
+        p_tenant_id: tenantId,
+        p_customer_id: profile.id,
+      };
+      if (updates.email_notifications !== undefined) {
+        rpcParams.p_email_enabled = updates.email_notifications;
+        rpcParams.p_email_order_updates = updates.email_notifications;
+      }
+      if (updates.sms_notifications !== undefined) {
+        rpcParams.p_sms_enabled = updates.sms_notifications;
+        rpcParams.p_sms_order_updates = updates.sms_notifications;
+      }
+      if (updates.marketing_emails !== undefined) {
+        rpcParams.p_email_promotions = updates.marketing_emails;
+      }
+
+      const { error } = await supabase.rpc(
+        'upsert_customer_notification_preferences',
+        rpcParams
+      );
 
       if (error) {
         logger.error('Failed to update preferences', error, {

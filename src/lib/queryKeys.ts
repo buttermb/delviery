@@ -3338,6 +3338,15 @@ export const queryKeys = {
     all: ['marketplace-order-items'] as const,
   },
 
+  // Customer Notification Preferences
+  customerNotificationPreferences: {
+    all: ['customer-notification-preferences'] as const,
+    byCustomer: (tenantId?: string, customerId?: string) =>
+      ['customer-notification-preferences', tenantId, customerId] as const,
+    byTenant: (tenantId?: string) =>
+      ['customer-notification-preferences', 'tenant', tenantId] as const,
+  },
+
   // Compliance Reports (settings, audit logs)
   complianceReports: {
     all: ['compliance'] as const,
