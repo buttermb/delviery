@@ -14,7 +14,6 @@ import { createLogger } from '../_shared/logger.ts';
 
 const logger = createLogger('credit-warning-emails');
 
-const FREE_CREDITS_AMOUNT = 10000;
 const WARNING_THRESHOLDS = [
   { percent: 25, credits: 2500, column: 'warning_25_sent', severity: 'info' },
   { percent: 10, credits: 1000, column: 'warning_10_sent', severity: 'warning' },
@@ -229,6 +228,18 @@ async function createInAppNotification(
         threshold_percent: threshold.percent,
         action_url: '/settings/billing',
       },
+      body: JSON.stringify({
+        type: 'system',
+        title: subject,
+        message: getNotificationMessage(balance, threshold, daysUntilRefresh),
+        channels: ['email'],
+        metadata: {
+          to_email: email,
+          html,
+          credit_warning: true,
+          severity: threshold.severity,
+        },
+      }),
     });
 }
 
