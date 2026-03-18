@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     Plus,
     MoreHorizontal,
@@ -1033,56 +1033,63 @@ export function InvoicesPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-                        <p className="text-xs text-muted-foreground">
+            <Card className="mb-6 border-border/50 shadow-sm overflow-hidden bg-card">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border w-full">
+                    {/* Total Revenue */}
+                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                            <DollarSign className="h-4 w-4 text-muted-foreground/50" />
+                        </div>
+                        <div className="text-3xl font-bold">{formatCurrency(totalRevenue)}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
                             From {invoices?.filter(i => i.status === 'paid').length ?? 0} paid invoices
                         </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Paid This Month</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(paidThisMonth)}</div>
-                        <p className="text-xs text-muted-foreground">
+                    </div>
+
+                    {/* Paid This Month */}
+                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-emerald-500/[0.02] dark:bg-emerald-500/5 pointer-events-none" />
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-medium text-muted-foreground">Paid This Month</p>
+                            <TrendingUp className="h-4 w-4 text-emerald-500/50" />
+                        </div>
+                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                            {formatCurrency(paidThisMonth)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
                             {paidThisMonthCount} invoices paid
                         </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(outstandingAmount)}</div>
-                        <p className="text-xs text-muted-foreground">
+                    </div>
+
+                    {/* Outstanding */}
+                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                         <div className="absolute inset-0 bg-amber-500/[0.02] dark:bg-amber-500/5 pointer-events-none" />
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
+                            <Clock className="h-4 w-4 text-amber-500/50" />
+                        </div>
+                        <div className="text-3xl font-bold text-amber-600 dark:text-amber-500">
+                            {formatCurrency(outstandingAmount)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
                             {invoices?.filter(i => i.status === 'sent').length ?? 0} sent, {invoices?.filter(i => i.status === 'overdue').length ?? 0} overdue
                         </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Avg. Payment Time</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{avgPaymentTime} days</div>
-                        <p className="text-xs text-muted-foreground">
+                    </div>
+
+                    {/* Avg. Payment Time */}
+                    <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-medium text-muted-foreground">Avg. Payment Time</p>
+                            <Clock className="h-4 w-4 text-muted-foreground/50" />
+                        </div>
+                        <div className="text-3xl font-bold">{avgPaymentTime} days</div>
+                        <p className="text-xs text-muted-foreground mt-1">
                             Based on {paidInvoicesWithDates.length} paid invoices
                         </p>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </div>
+            </Card>
 
             <AdminToolbar
                 searchQuery={searchQuery}

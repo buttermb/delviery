@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { CRMInvoice } from "@/types/crm";
 import { startOfMonth, isAfter } from "date-fns";
@@ -36,54 +36,50 @@ export function InvoiceSummaryStats({ invoices }: InvoiceSummaryStatsProps) {
     const draftCount = invoices.filter(inv => inv.status === "draft").length;
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Outstanding</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(outstanding)}</div>
-                    <p className="text-xs text-muted-foreground">Unpaid & overdue</p>
-                </CardContent>
-            </Card>
+        <Card className="mb-6 border-border/50 shadow-sm overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border w-full">
+                <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-muted-foreground">Total Outstanding</p>
+                        <DollarSign className="h-4 w-4 text-muted-foreground/50" />
+                    </div>
+                    <div className="text-3xl font-bold">{formatCurrency(outstanding)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Unpaid & overdue</p>
+                </div>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-                    <Clock className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-red-500/[0.02] dark:bg-red-500/5 pointer-events-none" />
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-muted-foreground">Overdue</p>
+                        <Clock className="h-4 w-4 text-red-500/50" />
+                    </div>
+                    <div className="text-3xl font-bold text-red-600 dark:text-red-400">
                         {formatCurrency(overdueAmount)}
                     </div>
-                    <p className="text-xs text-muted-foreground">{overdueInvoices.length} invoices overdue</p>
-                </CardContent>
-            </Card>
+                    <p className="text-xs text-muted-foreground mt-1">{overdueInvoices.length} invoices overdue</p>
+                </div>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Paid This Month</CardTitle>
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-emerald-500/[0.02] dark:bg-emerald-500/5 pointer-events-none" />
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-muted-foreground">Paid This Month</p>
+                        <CheckCircle className="h-4 w-4 text-emerald-500/50" />
+                    </div>
+                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(paidThisMonthAmount)}
                     </div>
-                    <p className="text-xs text-muted-foreground">{paidThisMonthInvoices.length} invoices paid</p>
-                </CardContent>
-            </Card>
+                    <p className="text-xs text-muted-foreground mt-1">{paidThisMonthInvoices.length} invoices paid</p>
+                </div>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{draftCount}</div>
-                    <p className="text-xs text-muted-foreground">invoices in draft</p>
-                </CardContent>
-            </Card>
-        </div>
+                <div className="p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-muted-foreground">Drafts</p>
+                        <FileText className="h-4 w-4 text-muted-foreground/50" />
+                    </div>
+                    <div className="text-3xl font-bold">{draftCount}</div>
+                    <p className="text-xs text-muted-foreground mt-1">invoices in draft</p>
+                </div>
+            </div>
+        </Card>
     );
 }
