@@ -191,7 +191,7 @@ export default function MarketingAutomationPage() {
       cell: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-11 w-11 p-0" aria-label="Campaign actions">
+            <Button variant="ghost" size="icon" aria-label="Campaign actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -227,11 +227,14 @@ export default function MarketingAutomationPage() {
             <span className="hidden sm:inline">Workflows</span>
           </Button>
           <Button
-            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
-            onClick={() => setIsCreateOpen(true)}
+            size="lg"
+            onClick={() => {
+              setActiveTab("campaigns");
+              setIsCreateOpen(true);
+            }}
           >
             <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="text-sm sm:text-base">New Campaign</span>
+            <span className="hidden sm:inline">New Campaign</span>
           </Button>
         </div>
       </div>

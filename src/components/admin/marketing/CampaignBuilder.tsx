@@ -229,6 +229,7 @@ export function CampaignBuilder({ campaign, onClose }: CampaignBuilderProps) {
           <Button
             type="button"
             variant="outline"
+            size="lg"
             onClick={onClose}
             disabled={saveMutation.isPending}
             className="min-h-[44px] touch-manipulation"
