@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { logger } from "@/lib/logger";
-import { PullToRefresh } from "@/components/mobile/PullToRefresh";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Plus,
   Phone,
@@ -16,17 +10,34 @@ import {
   Building,
   ArrowUp,
   ArrowDown,
-  ArrowUpDown
+  ArrowUpDown,
+  Link2,
+  Upload,
+  Filter,
+  Eye,
+  MoreHorizontal,
 } from "lucide-react";
-import { useTenantNavigate } from "@/hooks/useTenantNavigate";
-import { PaymentDialog } from "@/components/admin/PaymentDialog";
-import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
-import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
-import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
-import { toast } from "sonner";
-import { humanizeError } from '@/lib/humanizeError';
+
+import type { Database } from "@/integrations/supabase/types";
+import type { ResponsiveColumn } from "@/components/shared/ResponsiveTable";
+
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
+import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
+import { useTablePreferences } from "@/hooks/useTablePreferences";
+import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
+import { usePagination } from "@/hooks/usePagination";
+
+import { PullToRefresh } from "@/components/mobile/PullToRefresh";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -40,19 +51,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PaymentDialog } from "@/components/admin/PaymentDialog";
+import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
+import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
+import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { SendPortalLinkDialog } from "@/components/admin/wholesale/SendPortalLinkDialog";
-import { Link2 } from "lucide-react";
-import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
-import { Database } from "@/integrations/supabase/types";
+import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
 import { TruncatedText } from "@/components/shared/TruncatedText";
-import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
-import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
-import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
-import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
-import { Upload, Filter, Eye, MoreHorizontal } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
+import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
+import CopyButton from "@/components/CopyButton";
+import { ExportButton } from "@/components/ui/ExportButton";
+import { StandardPagination } from "@/components/shared/StandardPagination";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -64,13 +76,6 @@ interface WholesaleClient extends WholesaleClientRow {
 
 type ClientSortField = 'business_name' | 'outstanding_balance' | 'created_at' | 'status';
 type SortOrder = 'asc' | 'desc';
-
-import { useTablePreferences } from "@/hooks/useTablePreferences";
-import CopyButton from "@/components/CopyButton";
-import { ExportButton } from "@/components/ui/ExportButton";
-import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
-import { usePagination } from "@/hooks/usePagination";
-import { StandardPagination } from "@/components/shared/StandardPagination";
 
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
@@ -260,6 +265,27 @@ export default function WholesaleClients() {
     updateClientMutation.mutate({ clientId, updates });
   };
 
+  const handleCreditLimitUpdate = useCallback((clientId: string, newLimit: number) => {
+    updateClientMutation.mutate(
+      { clientId, updates: { credit_limit: newLimit } },
+      {
+        onSuccess: () => {
+          toast.success("Credit limit updated");
+          if (tenant?.id) {
+            invalidateOnEvent(queryClient, "WHOLESALE_CLIENT_UPDATED", tenant.id, {
+              customerId: clientId,
+            });
+          }
+          handleRefresh();
+        },
+        onError: (err) => {
+          logger.error("Error updating credit limit:", err);
+          toast.error("Failed to update credit limit", { description: humanizeError(err) });
+        },
+      }
+    );
+  }, [updateClientMutation, tenant?.id, queryClient, handleRefresh]);
+
   const wholesaleClientColumns = useMemo<ResponsiveColumn<WholesaleClient>[]>(() => [
     {
       header: <SortableHeader field="business_name" label="Client" />,
@@ -358,48 +384,14 @@ export default function WholesaleClients() {
                   className="h-8"
                   disabled={updateClientMutation.isPending}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      updateClientMutation.mutate(
-                        { clientId: client.id, updates: { credit_limit: Number(e.currentTarget.value) } },
-                        {
-                          onSuccess: () => {
-                            toast.success('Credit limit updated');
-                            if (tenant?.id) {
-                              invalidateOnEvent(queryClient, 'WHOLESALE_CLIENT_UPDATED', tenant.id, {
-                                customerId: client.id,
-                              });
-                            }
-                            handleRefresh();
-                          },
-                          onError: (error) => {
-                            logger.error('Error updating credit limit:', error);
-                            toast.error('Failed to update credit limit', { description: humanizeError(error) });
-                          },
-                        }
-                      );
+                    if (e.key === "Enter") {
+                      handleCreditLimitUpdate(client.id, Number(e.currentTarget.value));
                     }
                   }}
                   onBlur={(e) => {
                     const val = Number(e.target.value);
                     if (val !== client.credit_limit) {
-                      updateClientMutation.mutate(
-                        { clientId: client.id, updates: { credit_limit: val } },
-                        {
-                          onSuccess: () => {
-                            toast.success('Credit limit updated');
-                            if (tenant?.id) {
-                              invalidateOnEvent(queryClient, 'WHOLESALE_CLIENT_UPDATED', tenant.id, {
-                                customerId: client.id,
-                              });
-                            }
-                            handleRefresh();
-                          },
-                          onError: (error) => {
-                            logger.error('Error updating credit limit:', error);
-                            toast.error('Failed to update credit limit', { description: humanizeError(error) });
-                          },
-                        }
-                      );
+                      handleCreditLimitUpdate(client.id, val);
                     }
                   }}
                 />
@@ -484,7 +476,7 @@ export default function WholesaleClients() {
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [sortField, sortOrder, updateClientMutation.isPending, tenant?.slug, navigate]);
+  ], [sortField, sortOrder, updateClientMutation.isPending, tenant?.slug, navigate, handleCreditLimitUpdate]);
 
   const renderMobileItem = useCallback((client: WholesaleClient) => (
     <div className="p-4 space-y-3 relative w-full overflow-hidden">
@@ -635,7 +627,7 @@ export default function WholesaleClients() {
                 </Button>
                 <div className="hidden sm:block">
                   <ExportButton
-                    data={filteredClients as any ?? []}
+                    data={filteredClients as Record<string, unknown>[]}
                     filename="wholesale-clients"
                     columns={[
                       { key: "business_name", label: "Business Name" },
@@ -681,7 +673,7 @@ export default function WholesaleClients() {
             emptyStateAction={{
               label: "Add Client",
               onClick: () => setCreateClientDialogOpen(true),
-              icon: Plus as any
+              icon: Plus,
             }}
             renderMobileItem={renderMobileItem}
             onRowClick={(client) => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
