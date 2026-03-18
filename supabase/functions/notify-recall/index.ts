@@ -195,11 +195,13 @@ serve(secureHeadersMiddleware(async (req) => {
       })),
     );
 
-    const { error: notifError } = await supabaseClient
-      .from('recall_notifications')
-      .insert(notifications);
+    if (notifications.length > 0) {
+      const { error: notifError } = await supabaseClient
+        .from('recall_notifications')
+        .insert(notifications);
 
-    if (notifError) throw notifError;
+      if (notifError) throw notifError;
+    }
 
     // Send notifications and track results
     const emailSubject = `Product Recall Notice: ${recall.product_name} (Batch ${recall.batch_number})`;
