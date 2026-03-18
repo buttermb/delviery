@@ -1,13 +1,29 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+/**
+ * Send Menu Access Link
+ * Sends a disposable menu access link to a whitelisted customer via email or SMS.
+ * Validates tenant ownership before sending.
+ */
 
-serve(async (req) => {
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { withZenProtection } from '../_shared/zen-firewall.ts';
+
+const RequestSchema = z.object({
+  whitelistId: z.string().uuid(),
+  method: z.enum(['email', 'sms']).default('email'),
+});
+
+serve(withZenProtection(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing required environment variables');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Authenticate caller
@@ -21,7 +37,6 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -29,13 +44,11 @@ serve(async (req) => {
       );
     }
 
-    const { whitelistId, method = 'email' } = await req.json();
+    // Validate request body
+    const body = RequestSchema.parse(await req.json());
+    const { whitelistId, method } = body;
 
-    if (!whitelistId) {
-      throw new Error('Whitelist ID is required');
-    }
-
-    // Get whitelist entry and menu details
+    // Get whitelist entry with menu details
     const { data: whitelist, error: whitelistError } = await supabase
       .from('menu_access_whitelist')
       .select(`
@@ -45,11 +58,13 @@ serve(async (req) => {
           title,
           description,
           expiration_date,
-          access_code_required
+          access_code_required,
+          tenant_id,
+          never_expires
         )
       `)
       .eq('id', whitelistId)
-      .single();
+      .maybeSingle();
 
     if (whitelistError || !whitelist) {
       return new Response(
@@ -59,17 +74,9 @@ serve(async (req) => {
     }
 
     const menu = whitelist.disposable_menus;
-
-    // Verify the menu belongs to the caller's tenant
-    const { data: menuRecord } = await supabase
-      .from('disposable_menus')
-      .select('tenant_id')
-      .eq('id', menu.id)
-      .maybeSingle();
-
-    if (!menuRecord) {
+    if (!menu) {
       return new Response(
-        JSON.stringify({ error: 'Menu not found' }),
+        JSON.stringify({ error: 'Associated menu not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -79,7 +86,7 @@ serve(async (req) => {
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
-      .eq('tenant_id', menuRecord.tenant_id)
+      .eq('tenant_id', menu.tenant_id)
       .maybeSingle();
 
     if (!tenantUser) {
@@ -87,7 +94,7 @@ serve(async (req) => {
       const { data: tenant } = await supabase
         .from('tenants')
         .select('id')
-        .eq('id', menuRecord.tenant_id)
+        .eq('id', menu.tenant_id)
         .eq('owner_email', user.email)
         .maybeSingle();
 
@@ -98,46 +105,91 @@ serve(async (req) => {
         );
       }
     }
-    const accessUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/menu/${whitelist.unique_access_token}${
-      menu.access_code_required ? '?code=XXXXX' : ''
-    }`;
+
+    // Build access URL using SITE_URL
+    const siteUrl = Deno.env.get('SITE_URL') || supabaseUrl;
+    const accessUrl = `${siteUrl}/menu/${whitelist.unique_access_token}`;
+
+    // Build expiration text
+    const expirationText = menu.never_expires
+      ? 'This link does not expire.'
+      : menu.expiration_date
+        ? `This link expires on: ${new Date(menu.expiration_date).toLocaleDateString()}`
+        : '';
 
     // Prepare notification content
-    const subject = `Access to ${menu.title}`;
-    const message = `
+    const subject = `Access to ${menu.title || 'Menu'}`;
+    const emailMessage = `
 Hello ${whitelist.customer_name || 'Valued Customer'},
 
-You have been granted access to our exclusive menu: ${menu.title}
+You have been granted access to our exclusive menu: ${menu.title || 'Menu'}
 
 ${menu.description || ''}
 
 Access your menu here:
 ${accessUrl}
 
-${menu.access_code_required ? 'Note: You will need an access code to view this menu. Please check your messages or contact us.' : ''}
+${menu.access_code_required ? 'Note: You will need an access code to view this menu. Please contact us for your code.' : ''}
 
-This link expires on: ${new Date(menu.expiration_date).toLocaleDateString()}
+${expirationText}
 
 Best regards,
 Your Team
     `.trim();
 
-    if (method === 'email' && whitelist.customer_email) {
-      // Send email (placeholder - would integrate with email service)
-      console.error('Email notification:', {
-        to: whitelist.customer_email,
-        subject,
-        message,
-      });
+    const smsMessage = `${menu.title || 'Menu'}: Access your menu at ${accessUrl}${
+      menu.access_code_required ? ' (Access code required)' : ''
+    }`;
+
+    if (method === 'email') {
+      if (!whitelist.customer_email) {
+        return new Response(
+          JSON.stringify({ error: 'No email address on file for this customer' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Send email via Klaviyo if configured
+      const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
+      if (klaviyoApiKey) {
+        try {
+          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: whitelist.customer_email,
+              subject,
+              text: emailMessage,
+              fromEmail: Deno.env.get('FROM_EMAIL') || 'noreply@example.com',
+              fromName: menu.title || 'Menu Access',
+            }),
+          });
+
+          if (!emailResponse.ok) {
+            console.error('Failed to send menu access email via Klaviyo:', await emailResponse.text());
+          }
+        } catch (emailError) {
+          console.error('Email sending error:', emailError);
+        }
+      } else {
+        console.error('Menu access email (Klaviyo not configured):', {
+          to: whitelist.customer_email,
+          subject,
+        });
+      }
 
       // Log the notification
-      await supabase.from('account_logs').insert({
+      await supabase.from('menu_access_logs').insert({
         menu_id: menu.id,
-        whitelist_entry_id: whitelistId,
-        action: 'access_link_sent',
-        details: {
+        access_whitelist_id: whitelistId,
+        actions_taken: {
+          type: 'access_link_sent',
           method: 'email',
           recipient: whitelist.customer_email,
+          sent_by: user.id,
         },
       });
 
@@ -145,31 +197,50 @@ Your Team
         JSON.stringify({
           success: true,
           message: 'Access link sent via email',
-          preview: { subject, message },
+          preview: { subject, message: emailMessage },
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (method === 'sms' && whitelist.customer_phone) {
-      // Send SMS (placeholder - would integrate with SMS service)
-      const smsMessage = `${menu.title}: Access your menu at ${accessUrl}${
-        menu.access_code_required ? ' (Access code required)' : ''
-      }`;
+    if (method === 'sms') {
+      if (!whitelist.customer_phone) {
+        return new Response(
+          JSON.stringify({ error: 'No phone number on file for this customer' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-      console.error('SMS notification:', {
-        to: whitelist.customer_phone,
-        message: smsMessage,
-      });
+      // Send SMS via the send-sms edge function
+      try {
+        const smsResponse = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: whitelist.customer_phone,
+            message: smsMessage,
+          }),
+        });
+
+        if (!smsResponse.ok) {
+          console.error('Failed to send menu access SMS:', await smsResponse.text());
+        }
+      } catch (smsError) {
+        console.error('SMS sending error:', smsError);
+      }
 
       // Log the notification
-      await supabase.from('account_logs').insert({
+      await supabase.from('menu_access_logs').insert({
         menu_id: menu.id,
-        whitelist_entry_id: whitelistId,
-        action: 'access_link_sent',
-        details: {
+        access_whitelist_id: whitelistId,
+        actions_taken: {
+          type: 'access_link_sent',
           method: 'sms',
           recipient: whitelist.customer_phone,
+          sent_by: user.id,
         },
       });
 
@@ -183,15 +254,23 @@ Your Team
       );
     }
 
-    throw new Error('Invalid method or missing contact information');
+    return new Response(
+      JSON.stringify({ error: 'Invalid method' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error: unknown) {
     console.error('Error sending access link:', error);
+
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Validation error', details: error.errors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-});
+}));
