@@ -62,15 +62,6 @@ import type { Database } from '@/integrations/supabase/types';
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row'];
 
-interface _ReceivedQuantity {
-  itemId: string;
-  ordered: number;
-  received: number;
-  productId: string | null;
-  productName: string;
-  sku: string | null;
-}
-
 interface DiscrepancyInfo {
   itemId: string;
   productName: string;
@@ -718,5 +709,3 @@ export function POReceiving({
     </Dialog>
   );
 }
-
-export default POReceiving;
