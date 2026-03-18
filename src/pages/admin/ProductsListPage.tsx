@@ -67,8 +67,6 @@ import Edit from "lucide-react/dist/esm/icons/edit";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import Store from "lucide-react/dist/esm/icons/store";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
@@ -460,6 +458,40 @@ export function ProductsListPage() {
     return { totalProducts, totalUnits, inventoryValue, lowStockCount };
   }, [products]);
 
+  // Escape HTML entities to prevent XSS in print labels
+  const escapeHtml = useCallback((str: string) => {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }, []);
+
+  // Print label handler — extracted for readability and XSS-safe
+  const handlePrintLabel = useCallback((product: Product) => {
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+    if (!printWindow) return;
+
+    const name = escapeHtml(product.name);
+    const sku = product.sku ? escapeHtml(product.sku) : '';
+    const category = product.category ? escapeHtml(product.category) : '';
+    const price = product.wholesale_price ? `$${product.wholesale_price}` : '';
+
+    printWindow.document.write(`
+      <html><head><title>Label: ${name}</title>
+      <style>body{font-family:Arial,sans-serif;padding:20px;text-align:center}
+      .label{border:2px solid #000;padding:20px;max-width:300px;margin:0 auto}
+      .name{font-size:18px;font-weight:bold;margin-bottom:8px}
+      .sku{font-size:14px;color:#555;margin-bottom:4px}
+      .price{font-size:16px;font-weight:bold;margin-top:8px}</style></head>
+      <body><div class="label">
+      <div class="name">${name}</div>
+      ${sku ? `<div class="sku">SKU: ${sku}</div>` : ''}
+      ${category ? `<div class="sku">${category}</div>` : ''}
+      <div class="price">${price}</div>
+      </div></body></html>`);
+    printWindow.document.close();
+    printWindow.print();
+  }, [escapeHtml]);
+
   // Handlers
   const handleEdit = useCallback(
     (productId: string) => {
@@ -676,7 +708,7 @@ export function ProductsListPage() {
       cell: (product) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="More options">
+            <Button variant="ghost" size="icon" aria-label="More options">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -684,26 +716,7 @@ export function ProductsListPage() {
             <DropdownMenuItem onClick={() => handleEdit(product.id)}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {
-              const printWindow = window.open('', '_blank', 'noopener,noreferrer');
-              if (printWindow) {
-                printWindow.document.write(`
-                  <html><head><title>Label: ${product.name}</title>
-                  <style>body{font-family:Arial,sans-serif;padding:20px;text-align:center}
-                  .label{border:2px solid #000;padding:20px;max-width:300px;margin:0 auto}
-                  .name{font-size:18px;font-weight:bold;margin-bottom:8px}
-                  .sku{font-size:14px;color:#555;margin-bottom:4px}
-                  .price{font-size:16px;font-weight:bold;margin-top:8px}</style></head>
-                  <body><div class="label">
-                  <div class="name">${product.name}</div>
-                  ${product.sku ? `<div class="sku">SKU: ${product.sku}</div>` : ''}
-                  ${product.category ? `<div class="sku">${product.category}</div>` : ''}
-                  <div class="price">${product.wholesale_price ? `$${product.wholesale_price}` : ''}</div>
-                  </div></body></html>`);
-                printWindow.document.close();
-                printWindow.print();
-              }
-            }}>
+            <DropdownMenuItem onClick={() => handlePrintLabel(product)}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigateTenant(`/admin/inventory-hub?tab=products&edit=${product.id}`)}>
@@ -899,10 +912,10 @@ export function ProductsListPage() {
             variant="outline"
             size="sm"
             onClick={() => refetch()}
-            disabled={isFetching}
+            loading={isFetching}
             className="border-destructive/30 text-destructive hover:bg-destructive/10"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            {!isFetching && <RefreshCw className="h-4 w-4 mr-2" />}
             {isFetching ? 'Retrying...' : 'Try Again'}
           </Button>
         </div>
@@ -918,10 +931,10 @@ export function ProductsListPage() {
             variant="outline"
             size="sm"
             onClick={() => refetch()}
-            disabled={isFetching}
+            loading={isFetching}
             className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            {!isFetching && <RefreshCw className="h-4 w-4 mr-2" />}
             Retry
           </Button>
         </div>
