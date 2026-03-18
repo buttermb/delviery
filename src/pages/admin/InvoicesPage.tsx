@@ -683,11 +683,14 @@ export function InvoicesPage() {
 
     const SortableHeader = ({ field, label }: { field: string; label: string }) => {
         const isActive = sort?.column === field;
+        const sortDirection = isActive ? (sort.ascending ? "ascending" : "descending") : "none";
         return (
             <Button
                 variant="ghost"
                 size="sm"
                 className="-ml-3 h-8 hover:bg-transparent"
+                aria-label={`Sort by ${label}`}
+                aria-sort={sortDirection === "none" ? undefined : sortDirection}
                 onClick={() => handleSort(field)}
             >
                 <span>{label}</span>
@@ -780,7 +783,6 @@ export function InvoicesPage() {
         },
         {
             header: <div className="text-right"><SortableHeader field="balance" label="Balance" /></div>,
-            accessorKey: "balance" as any,
             className: "text-right",
             cell: (invoice) => formatCurrency(invoice.total - (invoice.amount_paid ?? 0))
         },
@@ -804,7 +806,7 @@ export function InvoicesPage() {
             cell: (invoice) => (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-11 w-11 p-0" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" className="h-11 w-11 p-0" aria-label={`Actions for invoice ${invoice.invoice_number}`} onClick={(e) => e.stopPropagation()}>
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -827,35 +829,47 @@ export function InvoicesPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {invoice.status === "draft" && (
-                            <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsSent.execute(invoice.id);
-                            }}>
+                            <DropdownMenuItem
+                                disabled={handleMarkAsSent.isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsSent.execute(invoice.id);
+                                }}
+                            >
                                 <Send className="mr-2 h-4 w-4" />
                                 Mark as Sent
                             </DropdownMenuItem>
                         )}
                         {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                            <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsPaid.execute(invoice.id);
-                            }}>
+                            <DropdownMenuItem
+                                disabled={handleMarkAsPaid.isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsPaid.execute(invoice.id);
+                                }}
+                            >
                                 <CheckCircle className="mr-2 h-4 w-4" />
                                 Mark as Paid
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownloadPDF(invoice);
-                        }}>
+                        <DropdownMenuItem
+                            disabled={isGeneratingPDF}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadPDF(invoice);
+                            }}
+                        >
                             <FileText className="mr-2 h-4 w-4" />
-                            Download PDF
+                            {isGeneratingPDF ? "Generating..." : "Download PDF"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicateInvoice.execute(invoice.id);
-                        }}>
+                        <DropdownMenuItem
+                            disabled={handleDuplicateInvoice.isPending}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDuplicateInvoice.execute(invoice.id);
+                            }}
+                        >
                             <Copy className="mr-2 h-4 w-4" />
                             Duplicate
                         </DropdownMenuItem>
@@ -930,7 +944,7 @@ export function InvoicesPage() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-11 w-11 -mr-2" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 -mr-2" aria-label={`Actions for invoice ${invoice.invoice_number}`} onClick={(e) => e.stopPropagation()}>
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-5 w-5" />
                             </Button>
@@ -953,35 +967,51 @@ export function InvoicesPage() {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {invoice.status === "draft" && (
-                                <DropdownMenuItem className="py-3" onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleMarkAsSent.execute(invoice.id);
-                                }}>
+                                <DropdownMenuItem
+                                    className="py-3"
+                                    disabled={handleMarkAsSent.isPending}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMarkAsSent.execute(invoice.id);
+                                    }}
+                                >
                                     <Send className="mr-2 h-4 w-4" />
                                     Mark as Sent
                                 </DropdownMenuItem>
                             )}
                             {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                                <DropdownMenuItem className="py-3" onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleMarkAsPaid.execute(invoice.id);
-                                }}>
+                                <DropdownMenuItem
+                                    className="py-3"
+                                    disabled={handleMarkAsPaid.isPending}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMarkAsPaid.execute(invoice.id);
+                                    }}
+                                >
                                     <CheckCircle className="mr-2 h-4 w-4" />
                                     Mark as Paid
                                 </DropdownMenuItem>
                             )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="py-3" onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownloadPDF(invoice);
-                            }}>
+                            <DropdownMenuItem
+                                className="py-3"
+                                disabled={isGeneratingPDF}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownloadPDF(invoice);
+                                }}
+                            >
                                 <FileText className="mr-2 h-4 w-4" />
-                                Download PDF
+                                {isGeneratingPDF ? "Generating..." : "Download PDF"}
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="py-3" onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicateInvoice.execute(invoice.id);
-                            }}>
+                            <DropdownMenuItem
+                                className="py-3"
+                                disabled={handleDuplicateInvoice.isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDuplicateInvoice.execute(invoice.id);
+                                }}
+                            >
                                 <Copy className="mr-2 h-4 w-4" />
                                 Duplicate
                             </DropdownMenuItem>
@@ -1107,7 +1137,7 @@ export function InvoicesPage() {
                             ]}
                         />
                         <ShortcutHint keys={[mod, "N"]} label="New">
-                            <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                            <Button aria-label="Create new invoice" onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
                                 <Plus className="mr-2 h-4 w-4" /> Create Invoice
                             </Button>
                         </ShortcutHint>
@@ -1116,7 +1146,7 @@ export function InvoicesPage() {
                 filters={
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2 w-full md:w-auto justify-center">
+                            <Button variant="outline" className="gap-2 w-full md:w-auto justify-center" aria-label="Filter invoices by status">
                                 <Filter className="h-4 w-4" />
                                 Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
                             </Button>
@@ -1185,6 +1215,7 @@ export function InvoicesPage() {
 
             <ConfirmDialog
                 isOpen={voidDialogOpen}
+                loading={handleVoidInvoice.isPending}
                 onConfirm={() => {
                     if (invoiceToVoid) {
                         handleVoidInvoice.execute(invoiceToVoid.id);
