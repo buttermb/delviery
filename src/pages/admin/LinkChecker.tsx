@@ -179,9 +179,9 @@ export default function LinkChecker() {
                 </div>
 
                 <div className="border rounded-lg divide-y max-h-[600px] overflow-auto">
-                  {results.map((result, index) => (
+                  {results.map((result) => (
                     <div
-                      key={index}
+                      key={result.url}
                       className="p-4 hover:bg-muted/50 transition-colors flex items-start gap-3"
                     >
                       <div className="mt-1">

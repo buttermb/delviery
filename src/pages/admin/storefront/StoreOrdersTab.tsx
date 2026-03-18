@@ -560,8 +560,8 @@ export function StoreOrdersTab({
                 <div>
                   <h3 className="font-medium mb-3">Items</h3>
                   <div className="space-y-3">
-                    {selectedOrder.items?.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
+                    {selectedOrder.items?.map((item) => (
+                      <div key={`${item.name}-${item.variant ?? ''}`} className="flex justify-between text-sm">
                         <div className="flex-1">
                           <p className="font-medium">{item.name}</p>
                           <p className="text-muted-foreground">

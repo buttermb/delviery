@@ -183,9 +183,9 @@ export default function PerformanceMonitor() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {resourceTiming.map((resource, index) => (
+            {resourceTiming.map((resource) => (
               <div
-                key={index}
+                key={resource.name}
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex-1 min-w-0">

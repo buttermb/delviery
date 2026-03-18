@@ -308,7 +308,7 @@ export default function FinancialCenterReal() {
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full shrink-0 group-hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-transform group-hover:translate-x-1">
+              <Button variant="ghost" size="icon" aria-label="View details" className="rounded-full shrink-0 group-hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-transform group-hover:translate-x-1">
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </MotionCard>
