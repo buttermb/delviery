@@ -1,5 +1,7 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateCreatePurchaseOrder, type CreatePurchaseOrderInput } from './validation.ts';
+import { generatePurchaseOrderHtml } from './pdf.ts';
+import { sendSupplierEmail } from './email.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -144,15 +146,98 @@ serve(async (req) => {
       throw itemsError;
     }
 
-    // TODO: Generate PDF and upload to storage
-    // TODO: Send email to supplier
+    // Fetch tenant info for branding
+    const { data: tenantInfo } = await supabaseClient
+      .from('tenants')
+      .select('business_name, phone, owner_email')
+      .eq('id', tenant_id)
+      .maybeSingle();
+
+    const businessName = (tenantInfo?.business_name as string) || 'Purchase Order';
+
+    // Generate PDF (HTML document) and upload to storage
+    let pdfUrl: string | null = null;
+    try {
+      const poNumber = po.po_number as string;
+      const html = generatePurchaseOrderHtml({
+        poNumber,
+        businessName,
+        supplierName: (supplier.name ?? supplier.supplier_name ?? 'Supplier') as string,
+        supplierContact: (supplier.contact_person ?? '') as string,
+        supplierAddress: (supplier.address ?? '') as string,
+        items: processedItems,
+        totalAmount,
+        deliveryDate: delivery_date,
+        notes,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Use service role client for storage operations
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Ensure bucket exists (idempotent)
+      await serviceClient.storage.createBucket('purchase-orders', {
+        public: false,
+        fileSizeLimit: 5 * 1024 * 1024, // 5MB
+      });
+
+      const filePath = `${tenant_id}/${poNumber}.html`;
+      const { error: uploadError } = await serviceClient.storage
+        .from('purchase-orders')
+        .upload(filePath, new Blob([html], { type: 'text/html' }), {
+          contentType: 'text/html',
+          upsert: true,
+        });
+
+      if (!uploadError) {
+        const { data: urlData } = serviceClient.storage
+          .from('purchase-orders')
+          .getPublicUrl(filePath);
+        pdfUrl = urlData?.publicUrl ?? null;
+
+        // Store reference on the PO record
+        await supabaseClient
+          .from('purchase_orders')
+          .update({ pdf_url: pdfUrl })
+          .eq('id', po.id as string);
+      } else {
+        console.error('PDF upload failed:', uploadError.message);
+      }
+    } catch (pdfError) {
+      // Non-fatal: PO is still created successfully
+      console.error('PDF generation error:', pdfError);
+    }
+
+    // Send email notification to supplier
+    let emailSent = false;
+    try {
+      emailSent = await sendSupplierEmail({
+        supplierEmail: (supplier.email ?? '') as string,
+        supplierName: (supplier.name ?? supplier.supplier_name ?? 'Supplier') as string,
+        poNumber: po.po_number as string,
+        businessName,
+        items: processedItems,
+        totalAmount,
+        deliveryDate: delivery_date,
+        notes,
+        pdfUrl,
+      });
+    } catch (emailError) {
+      // Non-fatal: PO is still created successfully
+      console.error('Supplier email error:', emailError);
+    }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         purchase_order_id: po.id,
         po_number: po.po_number,
-        total_amount: totalAmount
+        total_amount: totalAmount,
+        pdf_url: pdfUrl,
+        email_sent: emailSent,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
