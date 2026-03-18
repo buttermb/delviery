@@ -66,7 +66,7 @@ export default function CreateInvoicePage() {
     const { tenant } = useTenantAdminAuth();
     const { navigateToAdmin, navigate } = useTenantNavigation();
     const { account, loading: accountLoading } = useAccount();
-    const accountId = account?.id ?? null;
+    const accountId = account?.id ?? tenant?.id ?? null;
     const isAccountReady = !accountLoading && !!accountId;
     const accountError = !accountLoading && !accountId
         ? 'Account context not available. Please refresh the page or contact support.'
