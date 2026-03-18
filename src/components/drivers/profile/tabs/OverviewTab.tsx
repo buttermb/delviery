@@ -259,6 +259,51 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 
   const hasLocation = driver.current_lat != null && driver.current_lng != null;
 
+  // Reverse-geocode lat/lng to a human-readable address
+  const locationQuery = useQuery({
+    queryKey: queryKeys.reverseGeocode.byCoords(
+      driver.current_lat ?? undefined,
+      driver.current_lng ?? undefined,
+    ),
+    queryFn: async (): Promise<string> => {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${driver.current_lat}&lon=${driver.current_lng}&zoom=16`,
+      );
+      if (!response.ok) {
+        throw new Error(`Nominatim error: ${response.status}`);
+      }
+      const data = await response.json() as {
+        display_name?: string;
+        address?: {
+          road?: string;
+          neighbourhood?: string;
+          suburb?: string;
+          city?: string;
+          state?: string;
+        };
+      };
+      // Build a concise label: neighbourhood/suburb + city, or fall back to display_name
+      const addr = data.address;
+      if (addr) {
+        const area = addr.neighbourhood ?? addr.suburb ?? addr.road;
+        const city = addr.city ?? addr.state;
+        if (area && city) return `${area}, ${city}`;
+        if (city) return city;
+      }
+      if (data.display_name) {
+        // Trim to first 2-3 parts for brevity
+        return data.display_name.split(',').slice(0, 3).map(s => s.trim()).join(', ');
+      }
+      return `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}`;
+    },
+    enabled: hasLocation,
+    staleTime: 10 * 60 * 1000, // 10 minutes — coordinates don't change often
+    retry: 1,
+  });
+
+  const locationLabel = locationQuery.data
+    ?? (hasLocation ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}` : 'No location data');
+
   function handleOpenMap() {
     if (hasLocation) {
       window.open(
@@ -372,15 +417,13 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
             <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
               <MapPin className="h-6 w-6 text-emerald-500" />
               <span className="text-[11px]">
-                {hasLocation
-                  ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}`
-                  : 'Location unavailable'}
+                {hasLocation ? locationLabel : 'Location unavailable'}
               </span>
             </div>
           </div>
           <p className="text-sm font-medium text-foreground">Last seen {lastSeen}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {hasLocation ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}` : 'No location data'}
+            {hasLocation ? locationLabel : 'No location data'}
           </p>
           <button
             type="button"
