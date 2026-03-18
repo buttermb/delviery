@@ -154,6 +154,7 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
       const { data: ratingsData } = await supabase
         .from('delivery_ratings')
         .select('rating')
+        .eq('tenant_id', tenantId)
         .eq('runner_id', driver.id);
 
       const avgRating =
@@ -185,6 +186,7 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
       const { data, error } = await supabase
         .from('delivery_ratings')
         .select('rating, created_at')
+        .eq('tenant_id', tenantId)
         .eq('runner_id', driver.id)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: true });
