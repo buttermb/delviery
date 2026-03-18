@@ -1,6 +1,11 @@
-import { logger } from '@/lib/logger';
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+import { logger } from '@/lib/logger';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEncryption } from '@/lib/hooks/useEncryption';
@@ -39,7 +44,12 @@ import { CustomerComplianceVerification } from '@/components/admin/customers/Cus
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { isValidUUID } from '@/lib/utils/uuidValidation';
+import { queryKeys } from '@/lib/queryKeys';
 import { displayName, displayValue, formatSmartDate } from '@/lib/formatters';
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface Customer {
   id: string;
@@ -68,28 +78,225 @@ interface Customer {
   admin_notes?: string;
 }
 
+interface CustomerNote {
+  id: string;
+  created_at: string;
+  note: string;
+  note_type: string;
+}
+
+interface OrderStats {
+  count: number;
+  totalSpent: number;
+  firstOrderDate: string | null;
+}
+
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  created_at: string;
+  payment_method: string;
+  payment_status: string;
+}
+
+// ============================================================================
+// Zod Schemas
+// ============================================================================
+
+const noteFormSchema = z.object({
+  note: z.string().min(1, 'Note cannot be empty').max(2000, 'Note must be under 2000 characters'),
+});
+
+type NoteFormValues = z.infer<typeof noteFormSchema>;
+
+const storeCreditSchema = z.object({
+  amount: z.string()
+    .min(1, 'Amount is required')
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Must be a positive number')
+    .refine((val) => parseFloat(val) <= 100000, 'Amount exceeds maximum'),
+});
+
+type StoreCreditFormValues = z.infer<typeof storeCreditSchema>;
+
+// ============================================================================
+// Component
+// ============================================================================
+
 export default function CustomerDetails() {
   const { id: rawId } = useParams<{ id: string }>();
   const id = rawId && isValidUUID(rawId) ? rawId : undefined;
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   useEncryption();
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [orders, setOrders] = useState<unknown[]>([]);
-  const [storefrontOrderCount, setStorefrontOrderCount] = useState(0);
-  const [storefrontOrderTotal, setStorefrontOrderTotal] = useState(0);
-  const [storefrontFirstOrder, setStorefrontFirstOrder] = useState<string | null>(null);
-  const [payments, setPayments] = useState<Array<{ id: string; amount: number; created_at: string; payment_method: string; payment_status: string }>>([]);
-  const [notes, setNotes] = useState<Array<{ id: string; created_at: string; note: string; profiles?: { full_name: string } }>>([]);
-  const [newNote, setNewNote] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [outstandingBalance, setOutstandingBalance] = useState(0);
-  const [firstOrderDate, setFirstOrderDate] = useState<string | null>(null);
-  const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
-  const [storeCreditAmount, setStoreCreditAmount] = useState('');
 
-  // Get tenant_id from tenant context or customer data
-  const tenantId = tenant?.id || customer?.tenant_id;
+  const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
+
+  const tenantId = tenant?.id;
+
+  // ---- TanStack Query: Customer ----
+  const {
+    data: customer,
+    isLoading: isLoadingCustomer,
+  } = useQuery({
+    queryKey: queryKeys.customers.detail(tenantId ?? '', id ?? ''),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, account_id, tenant_id, first_name, last_name, email, phone, customer_type, date_of_birth, address, city, state, medical_card_number, medical_card_expiration, total_spent, total_orders, loyalty_points, last_purchase_at, created_at, preferred_contact, referral_source, source, type, admin_notes, is_encrypted')
+        .eq('id', id!)
+        .eq('tenant_id', tenantId!)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('Failed to fetch customer', error, { component: 'CustomerDetails' });
+        throw error;
+      }
+      return data as Customer | null;
+    },
+    enabled: !!id && !!tenantId,
+    staleTime: 60_000,
+    retry: 2,
+  });
+
+  // ---- TanStack Query: Order Stats (for stat cards) ----
+  const { data: orderStats } = useQuery({
+    queryKey: queryKeys.customerDetail.ordersTotals(id ?? '', tenantId),
+    queryFn: async (): Promise<OrderStats> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, total_amount, created_at')
+        .eq('customer_id', id!)
+        .eq('tenant_id', tenantId!)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        logger.error('Failed to fetch customer order stats', error, { component: 'CustomerDetails' });
+        throw error;
+      }
+
+      const orders = data ?? [];
+      return {
+        count: orders.length,
+        totalSpent: orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0),
+        firstOrderDate: orders.length > 0 ? orders[0].created_at : null,
+      };
+    },
+    enabled: !!id && !!tenantId,
+    staleTime: 60_000,
+    retry: 2,
+  });
+
+  // ---- TanStack Query: Storefront Order Stats ----
+  const { data: storefrontStats } = useQuery({
+    queryKey: [...queryKeys.customerDetail.orders(id ?? '', tenantId), 'storefront-stats', customer?.email],
+    queryFn: async (): Promise<OrderStats> => {
+      if (!customer?.email) return { count: 0, totalSpent: 0, firstOrderDate: null };
+
+      const { data, error } = await supabase
+        .from('marketplace_orders')
+        .select('id, total_amount, created_at')
+        .eq('seller_tenant_id', tenantId!)
+        .eq('customer_email', customer.email)
+        .not('store_id', 'is', null)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        logger.error('Failed to fetch storefront order stats', error, { component: 'CustomerDetails' });
+        return { count: 0, totalSpent: 0, firstOrderDate: null };
+      }
+
+      const orders = data ?? [];
+      return {
+        count: orders.length,
+        totalSpent: orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0),
+        firstOrderDate: orders.length > 0 ? orders[0].created_at : null,
+      };
+    },
+    enabled: !!id && !!tenantId && !!customer?.email,
+    staleTime: 60_000,
+  });
+
+  // ---- TanStack Query: Payments (for Financial tab) ----
+  const { data: payments = [] } = useQuery({
+    queryKey: queryKeys.customerDetail.payments(id ?? '', tenantId),
+    queryFn: async (): Promise<PaymentRecord[]> => {
+      const { data, error } = await supabase
+        .from('customer_payments')
+        .select('id, amount, created_at, payment_method, payment_status')
+        .eq('customer_id', id!)
+        .eq('tenant_id', tenantId!)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        logger.error('Failed to fetch customer payments', error, { component: 'CustomerDetails' });
+        throw error;
+      }
+      return (data ?? []) as PaymentRecord[];
+    },
+    enabled: !!id && !!tenantId,
+    staleTime: 60_000,
+  });
+
+  // ---- TanStack Query: Notes ----
+  const { data: notes = [] } = useQuery({
+    queryKey: queryKeys.customerNotes.byCustomer(id ?? '', tenantId),
+    queryFn: async (): Promise<CustomerNote[]> => {
+      const result = await (supabase
+        .from('customer_notes')
+        .select('id, created_at, note, note_type')
+        .eq('customer_id', id!)
+        .eq('tenant_id', tenantId!)
+        .order('created_at', { ascending: false })) as {
+          data: CustomerNote[] | null;
+          error: unknown;
+        };
+
+      if (result.error) {
+        logger.error('Failed to fetch customer notes', result.error instanceof Error ? result.error : new Error(String(result.error)), { component: 'CustomerDetails' });
+        throw result.error;
+      }
+      return result.data ?? [];
+    },
+    enabled: !!id && !!tenantId,
+    staleTime: 30_000,
+  });
+
+  // ---- Mutation: Add Note ----
+  const addNoteMutation = useMutation({
+    mutationFn: async (values: NoteFormValues) => {
+      const { error } = await supabase.from('customer_notes').insert({
+        tenant_id: tenantId ?? '',
+        customer_id: id ?? '',
+        note: values.note,
+        note_type: 'general',
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Note added successfully');
+      noteForm.reset();
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.customerNotes.byCustomer(id ?? '', tenantId),
+      });
+    },
+    onError: (error) => {
+      logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
+      toast.error('Failed to add note', { description: humanizeError(error) });
+    },
+  });
+
+  // ---- React Hook Form: Notes ----
+  const noteForm = useForm<NoteFormValues>({
+    resolver: zodResolver(noteFormSchema),
+    defaultValues: { note: '' },
+  });
+
+  // ---- React Hook Form: Store Credit ----
+  const storeCreditForm = useForm<StoreCreditFormValues>({
+    resolver: zodResolver(storeCreditSchema),
+    defaultValues: { amount: '' },
+  });
 
   // Set breadcrumb label to show customer name
   useBreadcrumbLabel(
@@ -101,147 +308,30 @@ export default function CustomerDetails() {
     balance: storeCredit,
     addCredit,
     isAddingCredit,
-    refetch: refetchCredit,
   } = useCustomerCredit(id);
 
-  useEffect(() => {
-    if (id) {
-      loadCustomerData();
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadCustomerData is defined below, only run when id changes
-  }, [id]);
+  // ---- Computed Values ----
+  const wholesaleCount = orderStats?.count ?? 0;
+  const wholesaleSpent = orderStats?.totalSpent ?? 0;
+  const sfCount = storefrontStats?.count ?? 0;
+  const sfSpent = storefrontStats?.totalSpent ?? 0;
 
-  const loadCustomerData = async () => {
-    try {
-      // Load customer
-      const { data: customerData, error: customerError } = await supabase
-        .from('customers')
-        .select('id, account_id, tenant_id, first_name, last_name, email, phone, customer_type, date_of_birth, address, city, state, medical_card_number, medical_card_expiration, total_spent, total_orders, loyalty_points, last_purchase_at, created_at, preferred_contact, referral_source, source, type, admin_notes, is_encrypted')
-        .eq('id', id)
-        .eq('tenant_id', tenantId) // Ensure customer belongs to current tenant
-        .maybeSingle();
+  const totalOrdersCount = wholesaleCount + sfCount;
+  const totalSpentCombined = wholesaleSpent + sfSpent;
+  const computedTotalSpent = totalSpentCombined > 0 ? totalSpentCombined : Number(customer?.total_spent ?? 0);
+  const averageOrderValue = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 
-      if (customerError) throw customerError;
+  const combinedFirstOrder = useMemo(() => {
+    const dates = [orderStats?.firstOrderDate, storefrontStats?.firstOrderDate].filter(Boolean) as string[];
+    if (dates.length === 0) return null;
+    return dates.reduce((earliest, d) => new Date(d) < new Date(earliest) ? d : earliest);
+  }, [orderStats?.firstOrderDate, storefrontStats?.firstOrderDate]);
 
-      // Customer data is NOT encrypted - use plaintext fields directly
-      setCustomer(customerData as Customer);
+  const totalPayments = payments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
+  const outstandingBalance = Math.max(0, wholesaleSpent - totalPayments);
 
-      // Load orders (filter by tenant_id)
-      const ordersQuery = supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items(
-            *,
-            products(name, price)
-          )
-        `)
-        .eq('customer_id', id)
-        .order('created_at', { ascending: false });
-
-      if (tenantId) {
-        ordersQuery.eq('tenant_id', tenantId);
-      }
-
-      const { data: ordersData, error: ordersError } = await ordersQuery;
-
-      if (ordersError) throw ordersError;
-      setOrders(ordersData ?? []);
-
-      // Compute first order date (orders are sorted desc, so last element is earliest)
-      if (ordersData && ordersData.length > 0) {
-        const earliest = ordersData[ordersData.length - 1];
-        setFirstOrderDate((earliest as Record<string, unknown>).created_at as string ?? null);
-      } else {
-        setFirstOrderDate(null);
-      }
-
-      // Load storefront orders from marketplace_orders if customer has an email
-      if (customerData?.email && tenantId) {
-        const { data: sfOrders, error: sfError } = await supabase
-          .from('marketplace_orders')
-          .select('id, total_amount, created_at')
-          .eq('seller_tenant_id', tenantId)
-          .eq('customer_email', customerData.email)
-          .not('store_id', 'is', null)
-          .order('created_at', { ascending: true });
-
-        if (!sfError && sfOrders && sfOrders.length > 0) {
-          setStorefrontOrderCount(sfOrders.length);
-          setStorefrontOrderTotal(sfOrders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0));
-          setStorefrontFirstOrder(sfOrders[0].created_at);
-        } else {
-          setStorefrontOrderCount(0);
-          setStorefrontOrderTotal(0);
-          setStorefrontFirstOrder(null);
-        }
-      }
-
-      // Load payments
-      const { data: paymentsData, error: paymentsError } = await supabase
-        .from('customer_payments')
-        .select('id, customer_id, amount, created_at, payment_method, payment_status')
-        .eq('customer_id', id)
-        .order('created_at', { ascending: false });
-
-      if (paymentsError) throw paymentsError;
-      setPayments(paymentsData ?? []);
-
-      // Load notes (customer_notes not in generated types)
-      const notesResult = await (supabase
-        .from('customer_notes')
-        .select('id, created_at, note, note_type')
-        .eq('customer_id', id as string)
-        .eq('tenant_id', tenantId as string)
-        .order('created_at', { ascending: false })) as {
-          data: Array<{ id: string; created_at: string; note: string; note_type: string }> | null;
-          error: unknown;
-        };
-
-      if (notesResult.error) throw notesResult.error;
-      setNotes((notesResult.data ?? []).map((n) => ({
-        id: n.id,
-        created_at: n.created_at,
-        note: n.note,
-      })));
-
-      // Calculate outstanding balance (total orders - total payments)
-      const ordersTotal = (ordersData ?? []).reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
-      const paymentsTotal = (paymentsData ?? []).reduce((sum, payment) => sum + (payment.amount ?? 0), 0);
-      setOutstandingBalance(Math.max(0, ordersTotal - paymentsTotal));
-    } catch (error) {
-      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
-      toast.error('Failed to load customer data', { description: humanizeError(error) });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addNote = async () => {
-    if (!newNote.trim()) return;
-
-    try {
-      const { error } = await supabase.from('customer_notes').insert({
-        tenant_id: tenant?.id ?? '',
-        customer_id: id ?? '',
-        note: newNote,
-        note_type: 'general'
-      });
-
-      if (error) throw error;
-
-      toast.success('Note added successfully');
-      setNewNote('');
-      loadCustomerData();
-    } catch (error) {
-      logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
-      toast.error('Failed to add note', { description: humanizeError(error) });
-    }
-  };
-
-  if (loading) {
+  // ---- Loading State ----
+  if (isLoadingCustomer) {
     return (
       <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-4">
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-4">
@@ -268,7 +358,7 @@ export default function CustomerDetails() {
           {/* Stats cards skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="shadow-sm">
+              <Card key={`stat-skel-${i}`} className="shadow-sm">
                 <CardContent className="p-3 sm:pt-6 sm:px-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 space-y-2 min-w-0">
@@ -286,7 +376,7 @@ export default function CustomerDetails() {
           <div className="space-y-4 sm:space-y-4">
             <div className="flex gap-1 sm:gap-2 flex-wrap overflow-x-auto">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 sm:h-9 w-20 sm:w-24 rounded-md shrink-0" />
+                <Skeleton key={`tab-skel-${i}`} className="h-8 sm:h-9 w-20 sm:w-24 rounded-md shrink-0" />
               ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -303,7 +393,7 @@ export default function CustomerDetails() {
                 <CardContent className="pt-6 space-y-4">
                   <Skeleton className="h-5 w-40" />
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
+                    <div key={`timeline-skel-${i}`} className="flex items-center gap-3">
                       <Skeleton className="h-8 w-8 rounded-full shrink-0" />
                       <div className="flex-1 space-y-1">
                         <Skeleton className="h-4 w-3/4" />
@@ -327,23 +417,6 @@ export default function CustomerDetails() {
       </div>
     );
   }
-
-  const totalPayments = payments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
-
-  // Customer Lifetime Value: combine wholesale + storefront orders
-  const wholesaleOrdersCount = orders.length;
-  const wholesaleSpent: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) ?? 0), 0);
-  const totalOrdersCount = wholesaleOrdersCount + storefrontOrderCount;
-  const totalSpentCombined = wholesaleSpent + storefrontOrderTotal;
-  const computedTotalSpent: number = totalSpentCombined > 0 ? totalSpentCombined : Number(customer?.total_spent ?? 0);
-  const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
-
-  // Earliest order across both sources
-  const combinedFirstOrder = (() => {
-    const dates = [firstOrderDate, storefrontFirstOrder].filter(Boolean) as string[];
-    if (dates.length === 0) return null;
-    return dates.reduce((earliest, d) => new Date(d) < new Date(earliest) ? d : earliest);
-  })();
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
@@ -519,7 +592,6 @@ export default function CustomerDetails() {
                         }
                       }}
                       onMessage={() => {
-                        // Scroll to communication history or open dialog
                         const commTab = document.querySelector('[value="communications"]');
                         if (commTab) {
                           (commTab as HTMLElement).click();
@@ -568,7 +640,7 @@ export default function CustomerDetails() {
                 />
               )}
 
-              {/* Legacy Account Info (keep for backward compatibility) */}
+              {/* Account Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
                   <CardHeader>
@@ -707,7 +779,7 @@ export default function CustomerDetails() {
             <TabsContent value="financial">
               <Card>
                 <CardHeader>
-                  <CardTitle>Payment History</CardTitle>
+                  <CardTitle>Financial Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -835,19 +907,32 @@ export default function CustomerDetails() {
                   <CardTitle>Add Note</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <Textarea
-                      placeholder="Add a note about this customer..."
-                      aria-label="Customer note"
-                      value={newNote}
-                      onChange={(e) => setNewNote(e.target.value)}
-                      rows={4}
-                    />
-                    <Button onClick={addNote}>
+                  <form
+                    onSubmit={noteForm.handleSubmit((values) => addNoteMutation.mutate(values))}
+                    className="space-y-3"
+                  >
+                    <div>
+                      <Textarea
+                        placeholder="Add a note about this customer..."
+                        aria-label="Customer note"
+                        maxLength={2000}
+                        rows={4}
+                        {...noteForm.register('note')}
+                      />
+                      <div className="flex items-center justify-between mt-1">
+                        {noteForm.formState.errors.note && (
+                          <p className="text-sm text-destructive">{noteForm.formState.errors.note.message}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground ml-auto">
+                          {noteForm.watch('note')?.length ?? 0}/2000
+                        </p>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={addNoteMutation.isPending}>
                       <MessageSquare className="w-4 h-4 mr-2" />
-                      Add Note
+                      {addNoteMutation.isPending ? 'Adding...' : 'Add Note'}
                     </Button>
-                  </div>
+                  </form>
                 </CardContent>
               </Card>
 
@@ -868,9 +953,7 @@ export default function CustomerDetails() {
                       notes.map(note => (
                         <div key={note.id} className="border rounded-lg p-4">
                           <div className="flex items-start justify-between mb-2">
-                            <p className="text-sm font-medium">
-                              {note.profiles?.full_name || 'Staff Member'}
-                            </p>
+                            <p className="text-sm font-medium">Staff Member</p>
                             <p className="text-xs text-muted-foreground">
                               {formatSmartDate(note.created_at, { includeTime: true })}
                             </p>
@@ -888,60 +971,72 @@ export default function CustomerDetails() {
       </div>
 
       {/* Store Credit Dialog */}
-      <Dialog open={storeCreditDialogOpen} onOpenChange={setStoreCreditDialogOpen}>
+      <Dialog
+        open={storeCreditDialogOpen}
+        onOpenChange={(open) => {
+          setStoreCreditDialogOpen(open);
+          if (!open) storeCreditForm.reset();
+        }}
+      >
         <DialogContent className="w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Store Credit</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <form
+            onSubmit={storeCreditForm.handleSubmit(async (values) => {
+              if (!id) return;
+              const result = await addCredit({
+                customerId: id,
+                amount: parseFloat(values.amount),
+                reason: 'Manual credit issued by admin',
+                transactionType: 'issued',
+              });
+              if (result) {
+                setStoreCreditDialogOpen(false);
+                storeCreditForm.reset();
+              }
+            })}
+            className="space-y-4 py-4"
+          >
             <div className="space-y-2">
-              <Label>Amount ($)</Label>
+              <Label htmlFor="store-credit-amount">Amount ($)</Label>
               <Input
+                id="store-credit-amount"
                 type="number"
                 placeholder="Enter credit amount"
-                value={storeCreditAmount}
-                onChange={(e) => setStoreCreditAmount(e.target.value)}
+                aria-label="Store credit amount"
                 min="0"
                 step="0.01"
+                {...storeCreditForm.register('amount')}
               />
+              {storeCreditForm.formState.errors.amount && (
+                <p className="text-sm text-destructive">{storeCreditForm.formState.errors.amount.message}</p>
+              )}
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => {
-                setStoreCreditDialogOpen(false);
-                setStoreCreditAmount('');
-              }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setStoreCreditDialogOpen(false);
+                  storeCreditForm.reset();
+                }}
+              >
                 Cancel
               </Button>
               <DisabledTooltip
-                disabled={!isAddingCredit && (!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)))}
+                disabled={!storeCreditForm.formState.isValid && !isAddingCredit}
                 reason="Enter a valid credit amount"
               >
                 <Button
-                  onClick={async () => {
-                    if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
-                      const result = await addCredit({
-                        customerId: id,
-                        amount: parseFloat(storeCreditAmount),
-                        reason: 'Manual credit issued by admin',
-                        transactionType: 'issued',
-                      });
-                      if (result) {
-                        toast.success(`$${storeCreditAmount} store credit added`);
-                        setStoreCreditDialogOpen(false);
-                        setStoreCreditAmount('');
-                        refetchCredit();
-                      } else {
-                        toast.error('Failed to add store credit');
-                      }
-                    }
-                  }}
-                  disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
+                  type="submit"
+                  disabled={!storeCreditForm.formState.isValid || isAddingCredit}
                 >
                   {isAddingCredit ? 'Adding...' : 'Add Credit'}
                 </Button>
               </DisabledTooltip>
             </div>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </SwipeBackWrapper>
