@@ -156,6 +156,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       return { gross, fees, net, tips, daily };
     },
     enabled: !!driver.id,
+    staleTime: 60_000,
   });
 
   const updateCommission = useMutation({
