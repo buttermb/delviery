@@ -43,29 +43,44 @@ export default function CustomerInvoices() {
     if (!tenant) return;
     try {
       setLoading(true);
-      // Join customers to resolve names
-      const { data, error } = await supabase
+
+      // Fetch invoices without PostgREST join (FK may not exist)
+      const { data: rawInvoices, error: invoiceError } = await supabase
         .from('customer_invoices' as 'tenants')
-        .select(`
-          *,
-          client:customers(id, first_name, last_name, email)
-        `)
+        .select('*')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
+      if (invoiceError) throw invoiceError;
+
+      // Batch-fetch customer names separately
+      const customerIds = [...new Set(
+        (rawInvoices ?? []).map((inv: Record<string, unknown>) => inv.customer_id as string).filter(Boolean)
+      )];
+      const customerMap: Record<string, { first_name: string; last_name: string; email: string }> = {};
+      if (customerIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name, email')
+          .in('id', customerIds);
+        for (const c of customers ?? []) {
+          customerMap[c.id] = c;
+        }
+      }
+
       // Map customer_invoices to CRMInvoice structure to share components
-      const mappedInvoices = (data || []).map((inv: any) => ({
-        ...inv,
-        client: inv.client ? {
-          ...inv.client,
-          name: `${inv.client.first_name || ''} ${inv.client.last_name || ''}`.trim() || 'Unknown Client'
-        } : undefined,
-        // Map missing fields if necessary
-        invoice_date: inv.issue_date || inv.created_at,
-        client_id: inv.customer_id
-      })) as CRMInvoice[];
+      const mappedInvoices = (rawInvoices || []).map((inv: Record<string, unknown>) => {
+        const customer = customerMap[inv.customer_id as string];
+        return {
+          ...inv,
+          client: customer ? {
+            ...customer,
+            name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown Client'
+          } : undefined,
+          invoice_date: (inv.issue_date as string) || (inv.created_at as string),
+          client_id: inv.customer_id
+        };
+      }) as CRMInvoice[];
 
       setInvoices(mappedInvoices);
     } catch (error) {

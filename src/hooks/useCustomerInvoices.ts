@@ -65,6 +65,31 @@ export interface RecordPaymentInput {
 // generated types (which use account_id and lack those columns).
 const db = supabase as unknown as typeof supabase;
 
+// Resolve customer data for invoices (PostgREST join requires FK which may not exist)
+async function resolveCustomers(
+  invoices: Record<string, unknown>[]
+): Promise<CustomerInvoice[]> {
+  const customerIds = [
+    ...new Set(invoices.map((inv) => inv.customer_id as string).filter(Boolean)),
+  ];
+  const customerMap: Record<string, { id: string; first_name: string; last_name: string; email: string; phone?: string }> = {};
+
+  if (customerIds.length > 0) {
+    const { data: customers } = await supabase
+      .from('customers')
+      .select('id, first_name, last_name, email, phone')
+      .in('id', customerIds);
+    for (const c of customers ?? []) {
+      customerMap[c.id] = c;
+    }
+  }
+
+  return invoices.map((inv) => ({
+    ...inv,
+    customer: customerMap[inv.customer_id as string] || null,
+  })) as unknown as CustomerInvoice[];
+}
+
 export function useCustomerInvoices() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
@@ -75,10 +100,7 @@ export function useCustomerInvoices() {
       queryFn: async () => {
         if (!tenant?.id) return [];
 
-        let query = db.from('customer_invoices').select(`
-            *,
-            customer:customers(id, first_name, last_name, email, phone)
-          `).eq('tenant_id', tenant.id);
+        let query = db.from('customer_invoices').select('*').eq('tenant_id', tenant.id);
 
         if (filters?.status && filters.status !== 'all') {
           query = query.eq('status', filters.status);
@@ -86,7 +108,7 @@ export function useCustomerInvoices() {
 
         const result = await query.order('created_at', { ascending: false });
         if (result.error) throw result.error;
-        return (result.data ?? []) as unknown as CustomerInvoice[];
+        return resolveCustomers((result.data ?? []) as Record<string, unknown>[]);
       },
       enabled: !!tenant?.id,
       staleTime: 30_000,
@@ -98,12 +120,11 @@ export function useCustomerInvoices() {
     useQuery({
       queryKey: queryKeys.customerInvoices.detail(id),
       queryFn: async () => {
-        const result = await db.from('customer_invoices').select(`
-            *,
-            customer:customers(id, first_name, last_name, email, phone)
-          `).eq('id', id).maybeSingle();
+        const result = await db.from('customer_invoices').select('*').eq('id', id).maybeSingle();
         if (result.error) throw result.error;
-        return result.data as unknown as CustomerInvoice | null;
+        if (!result.data) return null;
+        const resolved = await resolveCustomers([result.data as Record<string, unknown>]);
+        return resolved[0] ?? null;
       },
       enabled: !!id,
       staleTime: 30_000,
@@ -198,13 +219,12 @@ export function useCustomerInvoices() {
           due_date: input.due_date || null,
           notes: input.notes || null,
           line_items: input.line_items || null,
-        }).select(`
-            *,
-            customer:customers(id, first_name, last_name, email, phone)
-          `).maybeSingle();
+        }).select('*').maybeSingle();
 
         if (result.error) throw result.error;
-        return result.data as unknown as CustomerInvoice;
+        if (!result.data) throw new Error('Invoice insert returned no data');
+        const resolved = await resolveCustomers([result.data as Record<string, unknown>]);
+        return resolved[0];
       },
       onSuccess: (_data, variables) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -230,10 +250,7 @@ export function useCustomerInvoices() {
         const result = await db.from('customer_invoices').update({
           status: 'paid',
           paid_at: new Date().toISOString(),
-        }).eq('id', invoiceId).eq('tenant_id', tenant.id).select(`
-            *,
-            customer:customers(id, first_name, last_name, email, phone)
-          `).maybeSingle();
+        }).eq('id', invoiceId).eq('tenant_id', tenant.id).select('*').maybeSingle();
 
         if (result.error) throw result.error;
 
@@ -247,7 +264,9 @@ export function useCustomerInvoices() {
           if (updatePaidResult.error) throw updatePaidResult.error;
         }
 
-        return result.data as unknown as CustomerInvoice;
+        if (!result.data) throw new Error('Invoice not found');
+        const resolved = await resolveCustomers([result.data as Record<string, unknown>]);
+        return resolved[0];
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -288,13 +307,12 @@ export function useCustomerInvoices() {
           status: isPaidInFull ? 'paid' : invoice.status,
           paid_at: isPaidInFull ? new Date().toISOString() : invoice.paid_at,
           notes: notes ? `${invoice.notes ?? ''}\n\nPayment recorded: ${formatCurrency(amount)}` : invoice.notes,
-        }).eq('id', invoiceId).eq('tenant_id', tenant.id).select(`
-            *,
-            customer:customers(id, first_name, last_name, email, phone)
-          `).maybeSingle();
+        }).eq('id', invoiceId).eq('tenant_id', tenant.id).select('*').maybeSingle();
 
         if (result.error) throw result.error;
-        return result.data as unknown as CustomerInvoice;
+        if (!result.data) throw new Error('Invoice not found');
+        const resolved = await resolveCustomers([result.data as Record<string, unknown>]);
+        return resolved[0];
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
