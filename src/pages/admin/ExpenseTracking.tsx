@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
-  DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
+  DollarSign, Calendar, Tag, Plus, Receipt,
   TrendingDown, X, Trash2
 } from 'lucide-react';
 import {
@@ -345,8 +345,8 @@ export default function ExpenseTracking() {
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
-                    {pieChartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => formatCurrency(value)} />
@@ -470,8 +470,8 @@ export default function ExpenseTracking() {
               <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)} disabled={addExpenseMutation.isPending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={addExpenseMutation.isPending} className="gap-2">
-                {addExpenseMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+              <Button type="submit" loading={addExpenseMutation.isPending} className="gap-2">
+                <Plus className="h-4 w-4" />
                 Add Expense
               </Button>
             </DialogFooter>
