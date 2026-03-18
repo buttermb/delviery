@@ -4,6 +4,7 @@ import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
 
 export const useFinancialSnapshot = () => {
   const { tenant } = useTenantAdminAuth();
@@ -422,5 +423,78 @@ export const useExpenseSummary = () => {
     staleTime: 60_000,
     gcTime: 300_000,
     retry: 2,
+  });
+};
+
+export interface EscalateClientParams {
+  client_id: string;
+  client_name: string;
+  outstanding_amount: number;
+  reason?: string;
+}
+
+export const useEscalateClient = () => {
+  const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
+
+  return useMutation({
+    mutationFn: async (data: EscalateClientParams) => {
+      if (!tenant?.id) throw new Error('No tenant context');
+
+      const userId = (await supabase.auth.getUser()).data.user?.id;
+
+      // Log escalation activity
+      const { error: activityError } = await supabase
+        .from("collection_activities")
+        .insert({
+          client_id: data.client_id,
+          activity_type: "escalation",
+          amount: data.outstanding_amount,
+          notes: data.reason
+            ? `Escalated to collections: ${data.reason}`
+            : `Escalated to collections team. Outstanding: $${data.outstanding_amount.toLocaleString()}`,
+          tenant_id: tenant.id,
+          performed_by: userId,
+        });
+
+      if (activityError) {
+        logger.error("Failed to log escalation activity", activityError, {
+          component: "useEscalateClient",
+          clientId: data.client_id,
+        });
+        throw activityError;
+      }
+
+      // Suspend client account
+      const { error: suspendError } = await supabase
+        .from("wholesale_clients")
+        .update({ status: "suspended" })
+        .eq("id", data.client_id)
+        .eq("tenant_id", tenant.id);
+
+      if (suspendError) {
+        logger.error("Failed to suspend client during escalation", suspendError, {
+          component: "useEscalateClient",
+          clientId: data.client_id,
+        });
+        throw suspendError;
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(variables.client_id) });
+      showSuccessToast(
+        "Client Escalated",
+        `${variables.client_name} has been escalated to collections and account suspended`
+      );
+    },
+    onError: (error) => {
+      showErrorToast(
+        "Escalation Failed",
+        error instanceof Error ? error.message : "Failed to escalate client"
+      );
+    },
   });
 };
