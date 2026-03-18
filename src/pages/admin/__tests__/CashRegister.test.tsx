@@ -58,6 +58,60 @@ vi.mock('@/lib/offlineQueue', () => ({
   queueAction: vi.fn(),
 }));
 
+vi.mock('@/hooks/useRealtimePOS', () => ({
+  useRealtimeShifts: vi.fn(),
+  useRealtimeCashDrawer: vi.fn(),
+  useRealtimeTransactions: vi.fn(),
+}));
+
+vi.mock('@/hooks/useCustomerCredit', () => ({
+  useCustomerCredit: () => ({
+    balance: 0,
+    creditData: null,
+    transactions: [],
+    isLoading: false,
+    isLoadingTransactions: false,
+    error: null,
+    addCredit: vi.fn(),
+    deductCredit: vi.fn(),
+    isAddingCredit: false,
+    isDeductingCredit: false,
+    getBalance: () => 0,
+    hasCredit: () => false,
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock('@/hooks/useCustomerLoyalty', () => ({
+  useLoyaltyConfig: () => ({
+    isActive: false,
+    effectiveConfig: { points_per_dollar: 1 },
+  }),
+  useCustomerLoyaltyStatus: () => ({
+    status: null,
+  }),
+  calculatePointsToEarn: () => 0,
+  TIER_DISPLAY_INFO: {
+    bronze: { label: 'Bronze', color: 'text-amber-700', bgColor: 'bg-amber-100' },
+    silver: { label: 'Silver', color: 'text-gray-700', bgColor: 'bg-gray-100' },
+    gold: { label: 'Gold', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
+    platinum: { label: 'Platinum', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  },
+}));
+
+vi.mock('@/hooks/useCategories', () => ({
+  useCategories: () => ({ data: [], isLoading: false }),
+}));
+
+vi.mock('@/lib/audio', () => ({
+  playSuccessBeep: vi.fn(),
+  playPaymentCompleteBeep: vi.fn(),
+}));
+
+vi.mock('@/lib/invalidation', () => ({
+  invalidateOnEvent: vi.fn(),
+}));
+
 vi.mock('@/hooks/useOfflineQueue', () => ({
   useOfflineQueue: () => ({
     isOnline: true,
@@ -243,13 +297,47 @@ describe('CashRegister Component', () => {
     });
   });
 
-  describe('Cart Operations', () => {
-    it('should show total of $0.00 initially', async () => {
+  describe('Button Accessibility', () => {
+    it('should have aria-label on Refund/Return button', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('$0.00')).toBeInTheDocument();
+        const refundButton = screen.getByRole('button', { name: /Refund\/Return/i });
+        expect(refundButton).toBeInTheDocument();
+        expect(refundButton).toHaveAttribute('aria-label', 'Refund/Return');
       });
+    });
+
+    it('should have aria-label on Keyboard shortcuts button', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        const shortcutsButton = screen.getByRole('button', { name: /Keyboard shortcuts/i });
+        expect(shortcutsButton).toBeInTheDocument();
+        expect(shortcutsButton).toHaveAttribute('aria-label', 'Keyboard shortcuts');
+      });
+    });
+
+    it('should have aria-label on Pay button', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        const payButton = screen.getByRole('button', { name: /Process payment/i });
+        expect(payButton).toBeInTheDocument();
+        expect(payButton).toHaveAttribute('aria-label', 'Process payment');
+      });
+    });
+  });
+
+  describe('Cart Operations', () => {
+    it('should not show totals breakdown when cart is empty', async () => {
+      renderWithProviders(<CashRegister />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
+      });
+      // Total breakdown only appears when cart has items
+      expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
     });
 
     it('should not show clear cart button when cart is empty', async () => {
@@ -262,12 +350,12 @@ describe('CashRegister Component', () => {
   });
 
   describe('Payment Processing', () => {
-    it('should disable Process Payment button when cart is empty', async () => {
+    it('should disable Pay button when cart is empty', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
         const paymentButton = screen.getByRole('button', {
-          name: /Process Payment/i,
+          name: /Process payment/i,
         });
         expect(paymentButton).toBeDisabled();
       });
@@ -309,11 +397,11 @@ describe('CashRegister Component', () => {
   });
 
   describe('Customer Selection', () => {
-    it('should show customer selection button', async () => {
+    it('should show customer selector component', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('Select')).toBeInTheDocument();
+        expect(screen.getByText('Walk-in Customer')).toBeInTheDocument();
       });
     });
   });
@@ -728,6 +816,22 @@ describe('Cart Item Management', () => {
     const newQuantity = Math.min(stockQuantity, quantity + 1);
 
     expect(newQuantity).toBe(5);
+  });
+
+  it('should treat null stock_quantity as 0 for increase button disabled state', () => {
+    const quantity = 1;
+    const stockQuantity: number | null = null;
+    const isDisabled = quantity >= (stockQuantity ?? 0);
+
+    expect(isDisabled).toBe(true);
+  });
+
+  it('should allow increase when stock_quantity is defined and above quantity', () => {
+    const quantity = 2;
+    const stockQuantity: number | null = 5;
+    const isDisabled = quantity >= (stockQuantity ?? 0);
+
+    expect(isDisabled).toBe(false);
   });
 
   it('should calculate item subtotal correctly', () => {
