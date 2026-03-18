@@ -1,18 +1,21 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
-import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
+import { format } from "date-fns";
+import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
+
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
+import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 export default function FinancialCenter() {
   const { tenant } = useTenantAdminAuth();
@@ -28,6 +31,7 @@ export default function FinancialCenter() {
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; amount: number } | null>(null);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [collectionNotes, setCollectionNotes] = useState("");
   const [scheduleData, setScheduleData] = useState({ amount: "", due_date: "", notes: "" });
 
   const { data: snapshot, isLoading: snapshotLoading } = useFinancialSnapshot();
@@ -55,18 +59,19 @@ export default function FinancialCenter() {
     setCollectionDialogOpen(true);
   };
 
-  const submitCollection = async (notes: string) => {
+  const submitCollection = async () => {
     if (!selectedClient) return;
-    
+
     await createCollection.mutateAsync({
       client_id: selectedClient.id,
       activity_type: "collection_call",
       amount: selectedClient.amount,
-      notes
+      notes: collectionNotes
     });
-    
+
     setCollectionDialogOpen(false);
     setSelectedClient(null);
+    setCollectionNotes("");
   };
 
   const submitSchedule = async () => {
@@ -92,7 +97,7 @@ export default function FinancialCenter() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-foreground">Financial Command Center</h1>
-        <p className="text-sm text-muted-foreground mt-1">November 30, 2024</p>
+        <p className="text-sm text-muted-foreground mt-1">{format(new Date(), "MMMM d, yyyy")}</p>
       </div>
 
       {/* Today's Snapshot - Real-time Completed Orders Data */}
@@ -234,13 +239,14 @@ export default function FinancialCenter() {
                 </span>
               </div>
               <div className="space-y-2">
-                {creditOutData.overdue.map((client, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
+                {creditOutData.overdue.map((client) => (
+                  <div key={client.client_id} className="flex items-center justify-between text-sm">
                     <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
                     <Button
                       size="sm"
                       variant="destructive"
                       disabled={createCollection.isPending}
+                      aria-label={`Collect $${client.amount.toLocaleString()} from ${client.client}`}
                       onClick={() => handleCollect({ id: client.client_id, name: client.client, amount: client.amount })}
                     >
                       {createCollection.isPending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
@@ -334,7 +340,10 @@ export default function FinancialCenter() {
       </Card>
 
       {/* Collection Dialog */}
-      <Dialog open={collectionDialogOpen} onOpenChange={setCollectionDialogOpen}>
+      <Dialog open={collectionDialogOpen} onOpenChange={(open) => {
+        setCollectionDialogOpen(open);
+        if (!open) setCollectionNotes("");
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Collection Activity</DialogTitle>
@@ -346,19 +355,18 @@ export default function FinancialCenter() {
             </div>
             <div>
               <Label>Notes</Label>
-              <Textarea 
+              <Textarea
                 placeholder="Record collection activity notes..."
                 rows={4}
-                id="collection-notes"
+                value={collectionNotes}
+                onChange={(e) => setCollectionNotes(e.target.value)}
+                maxLength={2000}
               />
             </div>
             <Button
               className="w-full"
               disabled={createCollection.isPending}
-              onClick={() => {
-                const notes = (document.getElementById("collection-notes") as HTMLTextAreaElement)?.value;
-                submitCollection(notes);
-              }}
+              onClick={submitCollection}
             >
               {createCollection.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Log Collection Activity
