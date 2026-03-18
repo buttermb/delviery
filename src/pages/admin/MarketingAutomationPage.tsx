@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import type { MarketingCampaign } from "@/components/admin/marketing/types";
+import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,13 +22,11 @@ import {
 import { CampaignBuilder } from "@/components/admin/marketing/CampaignBuilder";
 import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
-import { queryKeys } from "@/lib/queryKeys";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,26 +34,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface MarketingCampaign {
-  id: string;
-  name: string;
-  type: 'email' | 'sms' | 'push';
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'paused' | 'failed';
-  subject?: string;
-  content?: string;
-  audience_config?: Record<string, unknown>;
-  scheduled_at?: string;
-  sent_at?: string;
-  created_at: string;
-}
-
 export default function MarketingAutomationPage() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("campaigns");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<MarketingCampaign | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
@@ -64,8 +52,8 @@ export default function MarketingAutomationPage() {
       try {
         const { data, error } = await supabase
           .from('marketing_campaigns')
-          .select('id, name, type, status, subject, content, audience_config, scheduled_at, sent_at, created_at')
-          .eq('tenant_id', tenant?.id)
+          .select('id, name, type, status, subject, content, audience, scheduled_at, sent_count, opened_count, clicked_count, created_at')
+          .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -77,6 +65,7 @@ export default function MarketingAutomationPage() {
     },
     enabled: !!tenant?.id,
     retry: 2,
+    staleTime: 120_000,
   });
 
   const deleteCampaignMutation = useMutation({
@@ -99,7 +88,7 @@ export default function MarketingAutomationPage() {
   });
 
   const handleEditCampaign = (campaign: MarketingCampaign) => {
-    _setEditingCampaign(campaign);
+    setEditingCampaign(campaign);
     setIsCreateOpen(true);
   };
 
@@ -114,9 +103,10 @@ export default function MarketingAutomationPage() {
           status: 'draft',
           subject: campaign.subject,
           content: campaign.content,
-          audience_config: campaign.audience_config,
+          audience: campaign.audience,
         });
       if (error) throw error;
+      toast.success('Campaign duplicated');
       queryClient.invalidateQueries({ queryKey: queryKeys.marketing.campaigns() });
     } catch (error) {
       logger.error('Failed to duplicate campaign', error, { component: 'MarketingAutomationPage' });
@@ -127,6 +117,11 @@ export default function MarketingAutomationPage() {
   const handleDeleteCampaign = (id: string) => {
     setCampaignToDelete(id);
     setDeleteDialogOpen(true);
+  };
+
+  const handleCreateClose = () => {
+    setIsCreateOpen(false);
+    setEditingCampaign(null);
   };
 
   const filteredCampaigns = campaigns.filter(c =>
@@ -183,8 +178,8 @@ export default function MarketingAutomationPage() {
             <span className="flex items-center gap-1 text-blue-600">
               <Calendar className="h-3 w-3" /> {format(new Date(row.scheduled_at), 'MMM d, h:mm a')}
             </span>
-          ) : row.sent_at ? (
-            <span className="text-muted-foreground">Sent: {format(new Date(row.sent_at), 'MMM d, h:mm a')}</span>
+          ) : row.status === 'sent' ? (
+            <span className="text-muted-foreground">Sent</span>
           ) : (
             <span className="text-muted-foreground">-</span>
           )}
@@ -225,11 +220,11 @@ export default function MarketingAutomationPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={() => { setActiveTab('workflows'); }}
             className="min-h-[44px] touch-manipulation"
           >
             <Zap className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">New Workflow</span>
+            <span className="hidden sm:inline">Workflows</span>
           </Button>
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
@@ -307,7 +302,7 @@ export default function MarketingAutomationPage() {
                       <span className="capitalize">{row.type}</span>
                       <span>
                         {row.scheduled_at ? format(new Date(row.scheduled_at), 'MMM d') :
-                          row.sent_at ? `Sent ${format(new Date(row.sent_at), 'MMM d')}` : 'Draft'}
+                          row.status === 'sent' ? 'Sent' : 'Draft'}
                       </span>
                     </div>
                   </div>
@@ -322,22 +317,21 @@ export default function MarketingAutomationPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <CampaignAnalytics campaigns={campaigns ?? []} />
+          <CampaignAnalytics campaigns={campaigns} />
         </TabsContent>
       </Tabs>
 
-      {/* Create Campaign Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      {/* Create/Edit Campaign Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={handleCreateClose}>
         <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New {activeTab === 'campaigns' ? 'Campaign' : 'Workflow'}</DialogTitle>
+            <DialogTitle>{editingCampaign ? 'Edit Campaign' : 'Create New Campaign'}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            {activeTab === 'campaigns' ? (
-              <CampaignBuilder onClose={() => setIsCreateOpen(false)} />
-            ) : (
-              <WorkflowEditor />
-            )}
+            <CampaignBuilder
+              campaign={editingCampaign}
+              onClose={handleCreateClose}
+            />
           </div>
         </DialogContent>
       </Dialog>
