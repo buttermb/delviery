@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BarChart, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, formatCurrency } from '@/lib/formatters';
 import { ZReport } from '@/components/pos/ZReport';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ export default function ZReportPanel() {
             return data;
         },
         enabled: !!tenantId,
+        staleTime: 30_000,
         refetchInterval: 30000,
         retry: 2,
     });
@@ -86,7 +87,7 @@ export default function ZReportPanel() {
                                         <span className="text-muted-foreground">
                                             {formatSmartDate(shift.ended_at)}
                                         </span>
-                                        <Badge variant="outline">${shift.total_sales.toFixed(2)}</Badge>
+                                        <Badge variant="outline">{formatCurrency(shift.total_sales)}</Badge>
                                     </div>
                                 </SelectItem>
                             ))}
@@ -97,12 +98,19 @@ export default function ZReportPanel() {
 
             {selectedShiftId && <ZReport shiftId={selectedShiftId} />}
 
-            {!selectedShiftId && shifts && shifts.length === 0 && (
+            {!selectedShiftId && (!shifts || shifts.length === 0) && (
                 <EmptyState
                     icon={BarChart}
                     title="No shift reports yet"
                     description="Reports are generated when you complete a shift"
                 />
+            )}
+
+            {!selectedShiftId && shifts && shifts.length > 0 && (
+                <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+                    <BarChart className="h-8 w-8 mb-2" />
+                    <p className="text-sm">Select a shift above to view its Z-Report</p>
+                </div>
             )}
         </div>
     );
