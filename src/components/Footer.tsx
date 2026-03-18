@@ -136,10 +136,8 @@ const Footer = () => {
               <li><Link to="/privacy" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">Privacy Policy</Link></li>
             </ul>
             <div className="mt-4 pt-4 border-t border-border space-y-1">
-              <p className="font-semibold text-foreground">Contact Us</p>
-              <p className="text-xs text-muted-foreground">📞 (555) 123-4567</p>
-              <p className="text-xs text-muted-foreground">📧 support@example.com</p>
-              <p className="text-xs text-muted-foreground">🕐 8 AM - 10 PM Daily</p>
+              <p className="font-semibold text-foreground">Need Help?</p>
+              <p className="text-xs text-muted-foreground">Visit our <Link to="/help" className="text-primary hover:underline">Help Center</Link> for support.</p>
             </div>
           </div>
         </div>

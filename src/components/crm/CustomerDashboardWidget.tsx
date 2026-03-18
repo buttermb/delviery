@@ -155,7 +155,7 @@ export function CustomerDashboardWidget() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/admin/${tenant?.slug}/customers`)}
+            onClick={() => navigate(`/${tenant?.slug}/admin/customers`)}
           >
             View All
           </Button>

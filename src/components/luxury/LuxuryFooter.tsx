@@ -82,9 +82,8 @@ export default function LuxuryFooter() {
             <div>
               <h3 className="text-white/40 text-xs font-light tracking-widest uppercase mb-6">Contact</h3>
               <ul className="space-y-4">
-                <li className="text-white/60 text-sm font-light">(555) 123-4567</li>
-                <li className="text-white/60 text-sm font-light">support@example.com</li>
-                <li className="text-white/60 text-sm font-light">8 AM - 10 PM Daily</li>
+                <li className="text-white/60 text-sm font-light">Visit our Help Center</li>
+                <li className="text-white/60 text-sm font-light">for support options</li>
               </ul>
             </div>
             

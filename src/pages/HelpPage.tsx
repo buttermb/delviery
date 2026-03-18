@@ -88,8 +88,8 @@ export default function HelpPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Send us an email and we'll respond within 24 hours
               </p>
-              <Button variant="outline" className="w-full" asChild>
-                <a href="mailto:support@example.com">Contact Us</a>
+              <Button variant="outline" className="w-full" disabled>
+                Coming Soon
               </Button>
             </CardContent>
           </Card>
@@ -196,11 +196,9 @@ export default function HelpPage() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" asChild>
-                  <a href="mailto:support@example.com">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email Us
-                  </a>
+                <Button variant="outline" disabled>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email Support
                 </Button>
                 <Button>
                   <MessageSquare className="mr-2 h-4 w-4" />

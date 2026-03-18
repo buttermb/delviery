@@ -433,10 +433,10 @@ export default function HelpHubPage() {
                                         <h3 className="font-semibold">Email Support</h3>
                                     </div>
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        support@example.com
+                                        Configure in Settings
                                     </p>
-                                    <Button variant="outline" className="w-full" asChild>
-                                        <a href="mailto:support@example.com">Send Email</a>
+                                    <Button variant="outline" className="w-full" disabled>
+                                        Send Email
                                     </Button>
                                 </CardContent>
                             </Card>
