@@ -639,6 +639,10 @@ export const queryKeys = {
       byClient: (clientId: string) => [...queryKeys.crm.invoices.all(), 'client', clientId] as const,
       recent: (limit: number) => [...queryKeys.crm.invoices.lists(), 'recent', limit] as const,
     },
+    creditNotes: {
+      all: () => [...queryKeys.crm.all, 'credit-notes'] as const,
+      byInvoice: (invoiceId: string) => [...queryKeys.crm.creditNotes.all(), 'invoice', invoiceId] as const,
+    },
     preOrders: {
       all: () => [...queryKeys.crm.all, 'pre-orders'] as const,
       lists: () => [...queryKeys.crm.preOrders.all(), 'list'] as const,
