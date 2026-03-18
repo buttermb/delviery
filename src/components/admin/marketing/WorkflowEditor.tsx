@@ -39,7 +39,7 @@ export function WorkflowEditor({ open, onOpenChange }: WorkflowEditorProps) {
                 Set up automated email/SMS sequences
               </CardDescription>
             </div>
-            <Button onClick={() => setIsCreating(true)} className="min-h-[44px] touch-manipulation">
+            <Button size="lg" onClick={() => setIsCreating(true)}>
               <Plus className="h-4 w-4 mr-2" />
               New Workflow
             </Button>
@@ -105,8 +105,8 @@ export function WorkflowEditor({ open, onOpenChange }: WorkflowEditorProps) {
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button
                     variant="outline"
+                    size="lg"
                     onClick={() => setIsCreating(false)}
-                    className="min-h-[44px] touch-manipulation"
                   >
                     Close
                   </Button>
@@ -149,8 +149,8 @@ export function WorkflowEditor({ open, onOpenChange }: WorkflowEditorProps) {
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button
             variant="outline"
+            size="lg"
             onClick={() => onOpenChange!(false)}
-            className="min-h-[44px] touch-manipulation"
           >
             Close
           </Button>

@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
-import { Loader2, Mail, MessageSquare } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface CampaignBuilderProps {
@@ -209,20 +209,17 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
           <Button
             type="button"
             variant="outline"
+            size="lg"
             onClick={onClose}
             disabled={createMutation.isPending}
-            className="min-h-[44px] touch-manipulation"
           >
             Cancel
           </Button>
           <Button
             type="submit"
-            disabled={createMutation.isPending}
-            className="min-h-[44px] touch-manipulation"
+            size="lg"
+            loading={createMutation.isPending}
           >
-            {createMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
             Create Campaign
           </Button>
         </div>

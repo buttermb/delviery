@@ -52,7 +52,7 @@ export default function MarketingAutomationPage() {
   const [activeTab, setActiveTab] = useState("campaigns");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<MarketingCampaign | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
@@ -99,7 +99,7 @@ export default function MarketingAutomationPage() {
   });
 
   const handleEditCampaign = (campaign: MarketingCampaign) => {
-    _setEditingCampaign(campaign);
+    setEditingCampaign(campaign);
     setIsCreateOpen(true);
   };
 
@@ -196,7 +196,7 @@ export default function MarketingAutomationPage() {
       cell: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-11 w-11 p-0" aria-label="Campaign actions">
+            <Button variant="ghost" size="icon" aria-label="Campaign actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -225,18 +225,24 @@ export default function MarketingAutomationPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setIsCreateOpen(true)}
-            className="min-h-[44px] touch-manipulation"
+            size="lg"
+            onClick={() => {
+              setActiveTab("workflows");
+              setIsCreateOpen(true);
+            }}
           >
             <Zap className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">New Workflow</span>
           </Button>
           <Button
-            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
-            onClick={() => setIsCreateOpen(true)}
+            size="lg"
+            onClick={() => {
+              setActiveTab("campaigns");
+              setIsCreateOpen(true);
+            }}
           >
             <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="text-sm sm:text-base">New Campaign</span>
+            <span className="hidden sm:inline">New Campaign</span>
           </Button>
         </div>
       </div>
@@ -327,10 +333,13 @@ export default function MarketingAutomationPage() {
       </Tabs>
 
       {/* Create Campaign Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <Dialog open={isCreateOpen} onOpenChange={(open) => {
+        setIsCreateOpen(open);
+        if (!open) setEditingCampaign(null);
+      }}>
         <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New {activeTab === 'campaigns' ? 'Campaign' : 'Workflow'}</DialogTitle>
+            <DialogTitle>{editingCampaign ? 'Edit' : 'Create New'} {activeTab === 'campaigns' ? 'Campaign' : 'Workflow'}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             {activeTab === 'campaigns' ? (
