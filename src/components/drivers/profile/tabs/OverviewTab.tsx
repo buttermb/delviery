@@ -161,6 +161,79 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
           ? ratingsData.reduce((sum, r) => sum + r.rating, 0) / ratingsData.length
           : 0;
 
+      // On-time rate: prefer denormalized value from couriers table,
+      // fall back to computing from delivered orders
+      let onTimeRate: number | null = null;
+
+      const { data: courierRow } = await supabase
+        .from('couriers')
+        .select('on_time_rate')
+        .eq('id', driver.id)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (courierRow?.on_time_rate != null) {
+        onTimeRate = Math.round(courierRow.on_time_rate);
+      } else {
+        // Compute from orders that have both delivered_at and estimated_delivery
+        const { data: deliveredOrders } = await supabase
+          .from('orders')
+          .select('delivered_at, estimated_delivery')
+          .eq('courier_id', driver.id)
+          .eq('tenant_id', tenantId)
+          .eq('status', 'delivered')
+          .not('delivered_at', 'is', null)
+          .not('estimated_delivery', 'is', null);
+
+        if (deliveredOrders && deliveredOrders.length > 0) {
+          const onTime = deliveredOrders.filter(
+            (o) => new Date(o.delivered_at!) <= new Date(o.estimated_delivery!),
+          ).length;
+          onTimeRate = Math.round((onTime / deliveredOrders.length) * 100);
+        }
+      }
+
+      // Avg delivery time: compute from courier_metrics daily aggregates,
+      // weighted by deliveries_completed per day
+      let avgDeliveryTime: number | null = null;
+
+      const { data: metricsData } = await supabase
+        .from('courier_metrics')
+        .select('avg_delivery_time_minutes, deliveries_completed')
+        .eq('courier_id', driver.id)
+        .not('avg_delivery_time_minutes', 'is', null);
+
+      if (metricsData && metricsData.length > 0) {
+        let totalWeightedMinutes = 0;
+        let totalDeliveries = 0;
+        for (const m of metricsData) {
+          const count = m.deliveries_completed ?? 1;
+          totalWeightedMinutes += (m.avg_delivery_time_minutes ?? 0) * count;
+          totalDeliveries += count;
+        }
+        if (totalDeliveries > 0) {
+          avgDeliveryTime = Math.round(totalWeightedMinutes / totalDeliveries);
+        }
+      } else {
+        // Fall back to computing from orders with delivered_at and created_at
+        const { data: completedOrders } = await supabase
+          .from('orders')
+          .select('created_at, delivered_at')
+          .eq('courier_id', driver.id)
+          .eq('tenant_id', tenantId)
+          .eq('status', 'delivered')
+          .not('delivered_at', 'is', null);
+
+        if (completedOrders && completedOrders.length > 0) {
+          const totalMinutes = completedOrders.reduce((sum, o) => {
+            const created = new Date(o.created_at).getTime();
+            const delivered = new Date(o.delivered_at!).getTime();
+            return sum + (delivered - created) / 60_000;
+          }, 0);
+          avgDeliveryTime = Math.round(totalMinutes / completedOrders.length);
+        }
+      }
+
       return {
         deliveriesToday: deliveriesToday ?? 0,
         deliveriesWeek: deliveriesWeek ?? 0,
@@ -168,8 +241,8 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         deliveriesAllTime: deliveriesAllTime ?? 0,
         totalEarned,
         avgRating,
-        onTimeRate: null,
-        avgDeliveryTime: null,
+        onTimeRate,
+        avgDeliveryTime,
       };
     },
     enabled: !!tenantId && !!driver.id,
