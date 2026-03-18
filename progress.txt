@@ -487,3 +487,12 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## StorefrontDesignPage: Fix all TODO items
+- **Replaced placeholder save mutation** in StorefrontDesignPage.tsx: The save mutation was a no-op stub that only logged. Replaced with a ref-based save delegation pattern where StorefrontBuilder registers its actual save function via `onRegisterSave` callback prop, and the parent uses it during exit-save flows
+- **Implemented mode-switch warning dialog** in StorefrontBuilder.tsx: Three state variables (`showModeSwitchWarning`, `pendingModeSwitch`, `advancedCustomizations`) had their values ignored via `const [, setter]` pattern. Restored the values and implemented the warning Dialog that lists advanced customizations that would be lost when switching from Advanced to Simple mode, with "Keep Advanced" and "Switch Anyway" buttons
+- **Registered save handler** in StorefrontBuilder.tsx: Added `onRegisterSave` prop to interface, registers `saveDraftMutation.mutateAsync` with parent via useEffect, enabling the exit-save flow to work end-to-end
+- **Cleaned up imports** in StorefrontDesignPage.tsx: Removed unused `useMutation`, `useQueryClient`, `toast`, `humanizeError` imports that were only needed by the placeholder mutation
+- **Fixed ESLint disable comment** in StorefrontBuilder.tsx: Corrected inaccurate comment about `saveToHistory` being "defined below" (it's defined above)
+- Created 13 tests in StorefrontDesignPage.test.tsx covering: initial render, full-screen mode, compact mode, save delegation, dirty state tracking, and unsaved changes dialog flows
+- TypeScript compilation passes with zero errors
