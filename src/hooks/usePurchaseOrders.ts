@@ -116,7 +116,7 @@ export function usePurchaseOrders() {
 
       // Then delete the PO
       const { error } = await supabase
-        .from('purchase_orders').delete().eq('id', id).eq('tenant_id', tenant.id);
+        .from('purchase_orders').delete().eq('id', id).eq('account_id', tenant.id);
       if (error) throw error;
       return { id, poNumber };
     },

@@ -217,7 +217,7 @@ export default function ClientsPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all() });
             toast.success(`Deleted ${selectedIds.size} client${selectedIds.size > 1 ? 's' : ''}`);
             setSelectedIds(new Set());
             setBulkDeleteOpen(false);
