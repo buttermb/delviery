@@ -1,13 +1,17 @@
 /**
  * Custom Integration Form
  *
- * Allows users to add custom webhooks and API integrations
+ * Allows users to add custom webhooks and API integrations.
+ * Persists to the custom_integrations table via Supabase.
  */
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { sanitizeUrlInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
@@ -25,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 
@@ -48,9 +53,12 @@ interface CustomIntegrationFormProps {
 export function CustomIntegrationForm({
   open,
   onOpenChange,
-  onIntegrationAdded: _onIntegrationAdded,
+  onIntegrationAdded,
 }: CustomIntegrationFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
+
   const [customHeaders, setCustomHeaders] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' },
   ]);
@@ -74,6 +82,50 @@ export function CustomIntegrationForm({
     formValues
   );
 
+  const createMutation = useMutation({
+    mutationFn: async (values: IntegrationFormValues & { headers: Record<string, string> }) => {
+      if (!tenantId) throw new Error('Tenant context required');
+
+      const config: Record<string, unknown> = {
+        endpoint_url: values.endpoint_url,
+        auth_type: values.auth_type,
+        description: values.description || '',
+        headers: values.headers,
+      };
+
+      if (values.auth_type !== 'none' && values.auth_value) {
+        config.auth_value = values.auth_value;
+      }
+
+      const { data, error } = await supabase
+        .from('custom_integrations')
+        .insert({
+          tenant_id: tenantId,
+          name: values.name,
+          type: values.type,
+          config,
+          status: 'active',
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.customIntegrations.byTenant(tenantId) });
+      toast.success('Custom integration added');
+      onIntegrationAdded();
+      onOpenChange(false);
+      form.reset();
+      setCustomHeaders([{ key: '', value: '' }]);
+    },
+    onError: (error: unknown) => {
+      logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
+      toast.error('Failed to add custom integration', { description: humanizeError(error) });
+    },
+  });
+
   const handleAddHeader = () => {
     setCustomHeaders([...customHeaders, { key: '', value: '' }]);
   };
@@ -84,37 +136,32 @@ export function CustomIntegrationForm({
 
   const handleHeaderChange = (index: number, field: 'key' | 'value', value: string) => {
     const updated = [...customHeaders];
-    updated[index][field] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setCustomHeaders(updated);
   };
 
-  const onSubmit = async (values: IntegrationFormValues) => {
-    setIsSubmitting(true);
-
+  const onSubmit = (values: IntegrationFormValues) => {
     const sanitizedUrl = sanitizeUrlInput(values.endpoint_url);
     if (!sanitizedUrl) {
       toast.error('Invalid endpoint URL');
-      setIsSubmitting(false);
       return;
     }
 
-    try {
-      // Mock implementation until custom_integrations table is created
-      toast.success('Custom integration feature coming soon!', {
-        description: 'This feature will be available in a future update',
-      });
-
-      onOpenChange(false);
-
-      // Reset form
-      form.reset();
-      setCustomHeaders([{ key: '', value: '' }]);
-    } catch (error) {
-      logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
-      toast.error('Failed to add custom integration', { description: humanizeError(error) });
-    } finally {
-      setIsSubmitting(false);
+    // Collect non-empty headers into a record
+    const headers: Record<string, string> = {};
+    for (const header of customHeaders) {
+      const key = header.key.trim();
+      const value = header.value.trim();
+      if (key && value) {
+        headers[key] = value;
+      }
     }
+
+    createMutation.mutate({
+      ...values,
+      endpoint_url: sanitizedUrl,
+      headers,
+    });
   };
 
   return (
@@ -251,7 +298,7 @@ export function CustomIntegrationForm({
             </div>
 
             {customHeaders.map((header, index) => (
-              <div key={index} className="flex gap-2">
+              <div key={`header-${index}`} className="flex gap-2">
                 <Input
                   placeholder="Header name"
                   aria-label="Custom header name"
@@ -280,9 +327,9 @@ export function CustomIntegrationForm({
           </div>
 
           <DialogFooterActions
-            primaryLabel={isSubmitting ? "Adding..." : "Add Integration"}
+            primaryLabel={createMutation.isPending ? "Adding..." : "Add Integration"}
             onPrimary={() => {}}
-            primaryLoading={isSubmitting}
+            primaryLoading={createMutation.isPending}
             secondaryLabel="Cancel"
             onSecondary={() => onOpenChange(false)}
           />
