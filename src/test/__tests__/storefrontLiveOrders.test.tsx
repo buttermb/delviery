@@ -40,6 +40,9 @@ const mockOrders = [
       { name: 'Product A', quantity: 2, price: 20.00 },
       { name: 'Product B', quantity: 1, price: 5.00 },
     ],
+    payment_status: null,
+    payment_terms: null,
+    stripe_payment_intent_id: null,
   },
   {
     id: 'order-2',
@@ -57,6 +60,9 @@ const mockOrders = [
     shipping_method: 'pickup',
     created_at: new Date(Date.now() - 15 * 60000).toISOString(),
     items: [{ name: 'Product C', quantity: 1, price: 30.00 }],
+    payment_status: 'paid',
+    payment_terms: null,
+    stripe_payment_intent_id: 'pi_test123',
   },
   {
     id: 'order-3',
@@ -76,6 +82,9 @@ const mockOrders = [
     items: [
       { name: 'Product D', quantity: 3, price: 25.00 },
     ],
+    payment_status: null,
+    payment_terms: 'cash',
+    stripe_payment_intent_id: null,
   },
   {
     id: 'order-4',
@@ -93,6 +102,9 @@ const mockOrders = [
     shipping_method: 'collect',
     created_at: new Date(Date.now() - 10 * 60000).toISOString(),
     items: [{ name: 'Product E', quantity: 2, price: 10.00 }],
+    payment_status: null,
+    payment_terms: null,
+    stripe_payment_intent_id: null,
   },
 ];
 
@@ -168,6 +180,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 vi.mock('@/contexts/TenantAdminAuthContext', () => ({
   useTenantAdminAuth: () => ({
     tenant: { id: 'tenant-1', name: 'Test Tenant' },
+    admin: { userId: 'admin-1', name: 'Admin User', email: 'admin@test.com' },
     tenantSlug: 'test-tenant',
     isLoading: false,
     isAdmin: true,
@@ -199,6 +212,24 @@ vi.mock('sonner', () => ({
 // Mock formatCurrency
 vi.mock('@/lib/utils/formatCurrency', () => ({
   formatCurrency: (val: number) => `$${val.toFixed(2)}`,
+}));
+
+// Mock soundAlerts
+vi.mock('@/lib/soundAlerts', () => ({
+  playNewOrderSound: vi.fn().mockResolvedValue(undefined),
+  initAudio: vi.fn(),
+  isSoundEnabled: vi.fn(() => true),
+  setSoundEnabled: vi.fn(),
+}));
+
+// Mock activityLog
+vi.mock('@/lib/activityLog', () => ({
+  logActivity: vi.fn(),
+}));
+
+// Mock humanizeError
+vi.mock('@/lib/humanizeError', () => ({
+  humanizeError: vi.fn((err: unknown) => String(err)),
 }));
 
 // Import component after mocks
@@ -399,33 +430,25 @@ describe('StorefrontLiveOrders', () => {
       });
     });
 
-    it('shows item count', async () => {
-      const user = userEvent.setup();
+    it('shows item count in kanban view', async () => {
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
+      // Wait for kanban to render with order data
       await waitFor(() => {
-        expect(screen.getByText('List')).toBeInTheDocument();
+        expect(screen.getByText('#ORD-001')).toBeInTheDocument();
       });
-      await user.click(screen.getByText('List'));
 
-      await waitFor(() => {
-        // Multiple orders have items displayed
-        const twoItemsElements = screen.getAllByText(/2 items/);
-        expect(twoItemsElements.length).toBeGreaterThanOrEqual(1);
-        const oneItemElements = screen.getAllByText(/1 item/);
-        expect(oneItemElements.length).toBeGreaterThanOrEqual(1);
-      });
+      // Kanban (default) shows "N item(s)" text
+      const twoItemsElements = screen.getAllByText(/2 items/);
+      expect(twoItemsElements.length).toBeGreaterThanOrEqual(1);
+      const oneItemElements = screen.getAllByText(/1 item(?!s)/);
+      expect(oneItemElements.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('shows delivery notes when present', async () => {
-      const user = userEvent.setup();
+    it('shows delivery notes in kanban view when present', async () => {
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
-      await waitFor(() => {
-        expect(screen.getByText('List')).toBeInTheDocument();
-      });
-      await user.click(screen.getByText('List'));
-
+      // Kanban is the default view; notes are shown there
       await waitFor(() => {
         expect(screen.getByText(/Leave at door/)).toBeInTheDocument();
       });
@@ -433,7 +456,7 @@ describe('StorefrontLiveOrders', () => {
   });
 
   describe('Status update dropdown', () => {
-    it('renders status dropdown for each order in list view', async () => {
+    it('renders actions dropdown for each order in list view', async () => {
       const user = userEvent.setup();
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
@@ -443,27 +466,19 @@ describe('StorefrontLiveOrders', () => {
       await user.click(screen.getByText('List'));
 
       await waitFor(() => {
-        // Each order should have a status select trigger
-        const triggers = screen.getAllByRole('combobox');
-        // Filter select + 4 order status selects = 5 total
-        expect(triggers.length).toBeGreaterThanOrEqual(4);
+        // Each order row has an actions button (MoreHorizontal icon)
+        const actionButtons = screen.getAllByRole('button', { name: 'Actions' });
+        expect(actionButtons.length).toBe(4);
       });
     });
 
-    it('renders with mutation available for status updates', async () => {
+    it('renders status filter as combobox', async () => {
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
-      const user = userEvent.setup();
-
       await waitFor(() => {
-        expect(screen.getByText('List')).toBeInTheDocument();
-      });
-      await user.click(screen.getByText('List'));
-
-      await waitFor(() => {
-        // Each order card has a status dropdown
-        const triggers = screen.getAllByRole('combobox');
-        expect(triggers.length).toBeGreaterThanOrEqual(4);
+        // Only the status filter uses Select (combobox), not order rows
+        const comboboxes = screen.getAllByRole('combobox');
+        expect(comboboxes.length).toBe(1);
       });
     });
   });
@@ -687,8 +702,8 @@ describe('StorefrontLiveOrders', () => {
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByText('No active orders')).toBeInTheDocument();
-        expect(screen.getByText('New orders will appear here in real-time')).toBeInTheDocument();
+        expect(screen.getByText('No orders yet')).toBeInTheDocument();
+        expect(screen.getByText('Share your store link to start getting orders!')).toBeInTheDocument();
       });
     });
   });
