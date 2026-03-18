@@ -699,23 +699,33 @@ function escapeHtml(text: string): string {
  */
 function calculateNextRun(frequency: string, timeOfDay: string): string {
   const now = new Date();
+  const config = scheduleConfig ?? {};
+  const timeOfDay = typeof config.time === 'string' ? config.time : '09:00';
   const [hours, minutes] = timeOfDay.split(':').map(Number);
 
   const nextRun = new Date(now);
   nextRun.setHours(hours ?? 8, minutes ?? 0, 0, 0);
 
-  switch (frequency) {
+  const nextRun = new Date(now);
+  nextRun.setHours(hours || 9, minutes || 0, 0, 0);
+
+  switch (scheduleType) {
     case 'daily':
       if (nextRun <= now) {
         nextRun.setDate(nextRun.getDate() + 1);
       }
       break;
-    case 'weekly':
-      nextRun.setDate(nextRun.getDate() + 7);
+    case 'weekly': {
+      const dayOfWeek = typeof config.day_of_week === 'number' ? config.day_of_week : 1;
+      nextRun.setDate(nextRun.getDate() + ((7 + dayOfWeek - nextRun.getDay()) % 7 || 7));
       break;
-    case 'monthly':
+    }
+    case 'monthly': {
+      const dayOfMonth = typeof config.day_of_month === 'number' ? config.day_of_month : 1;
       nextRun.setMonth(nextRun.getMonth() + 1);
+      nextRun.setDate(Math.min(dayOfMonth, new Date(nextRun.getFullYear(), nextRun.getMonth() + 1, 0).getDate()));
       break;
+    }
   }
 
   return nextRun.toISOString();
