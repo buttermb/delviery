@@ -57,13 +57,16 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
       coa_url?: string;
       compliance_status: string;
     }) => {
+      if (!tenant?.id) throw new Error("Tenant ID required");
+
       // Store COA data in test_results JSONB field since inventory_batches schema doesn't have these columns
       const { error } = await supabase
         .from("inventory_batches")
         .update({
           notes: `COA: ${data.lab_name} - ${data.test_date}`,
         })
-        .eq("id", batch.id);
+        .eq("id", batch.id)
+        .eq("tenant_id", tenant.id);
 
       // Also update the product with COA data if it exists
       if (batch.product_id) {
@@ -74,13 +77,14 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
             test_date: data.test_date,
             coa_url: data.coa_url,
           })
-          .eq("id", batch.product_id);
+          .eq("id", batch.product_id)
+          .eq("tenant_id", tenant.id);
       }
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all });
       toast.success("COA uploaded and test results saved");
       onSuccess?.();
     },
