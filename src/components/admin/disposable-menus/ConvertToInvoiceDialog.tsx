@@ -237,8 +237,8 @@ export function ConvertToInvoiceDialog({
                 <div className="space-y-2">
                   <Label>Order Items</Label>
                   <div className="border rounded-lg divide-y">
-                    {orderItems.map((item, idx) => (
-                      <div key={idx} className="p-3 flex justify-between items-center">
+                    {orderItems.map((item) => (
+                      <div key={`${item.product_name}-${item.quantity}`} className="p-3 flex justify-between items-center">
                         <div className="flex-1">
                           <div className="font-medium">{item.product_name}</div>
                           <div className="text-sm text-muted-foreground">
