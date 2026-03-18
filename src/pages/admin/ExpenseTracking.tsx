@@ -119,6 +119,7 @@ export default function ExpenseTracking() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 120_000,
   });
 
   // Add expense mutation
@@ -345,8 +346,8 @@ export default function ExpenseTracking() {
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
-                    {pieChartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => formatCurrency(value)} />
@@ -429,6 +430,7 @@ export default function ExpenseTracking() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
+                maxLength={200}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -464,6 +466,7 @@ export default function ExpenseTracking() {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={2}
+                maxLength={1000}
               />
             </div>
             <DialogFooter>
