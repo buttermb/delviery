@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, eachDayOfInterval, format, startOfDay } from 'date-fns';
 import { exportToCSV, generateExportFilename } from '@/lib/utils/exportUtils';
 import type { ExportColumn } from '@/lib/utils/exportUtils';
 
@@ -134,15 +134,24 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       const tips = rows.reduce((s, r) => s + (r.tip_amount ?? 0), 0);
       const net = gross - fees;
 
-      // Group by day label
-      const dailyMap = new Map<string, number>();
+      // Group earnings by date key (YYYY-MM-DD) for accurate aggregation
+      const earningsByDate = new Map<string, number>();
       for (const row of rows) {
         if (!row.created_at) continue;
-        const dayLabel = new Date(row.created_at).toLocaleDateString('en-US', { weekday: 'short' });
-        dailyMap.set(dayLabel, (dailyMap.get(dayLabel) ?? 0) + (row.total_earned ?? 0));
+        const dateKey = format(new Date(row.created_at), 'yyyy-MM-dd');
+        earningsByDate.set(dateKey, (earningsByDate.get(dateKey) ?? 0) + (row.total_earned ?? 0));
       }
 
-      const daily = Array.from(dailyMap.entries()).map(([day, amount]) => ({ day, amount }));
+      // Build complete day range with $0 for days without earnings
+      const clampedEnd = dateRange.end > new Date() ? startOfDay(new Date()) : dateRange.end;
+      const allDays = eachDayOfInterval({ start: dateRange.start, end: clampedEnd });
+      const isWeekly = range === 'This Week';
+
+      const daily: DailyEarning[] = allDays.map((d) => {
+        const dateKey = format(d, 'yyyy-MM-dd');
+        const label = isWeekly ? format(d, 'EEE') : format(d, 'MMM d');
+        return { day: label, amount: earningsByDate.get(dateKey) ?? 0 };
+      });
 
       return { gross, fees, net, tips, daily };
     },
@@ -255,6 +264,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
                   tick={{ fontSize: 11, fill: '#64748B' }}
                   axisLine={false}
                   tickLine={false}
+                  interval={range === 'This Week' ? 0 : 'preserveStartEnd'}
                 />
                 <YAxis
                   tick={{ fontSize: 11, fill: '#64748B' }}
