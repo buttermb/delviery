@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -29,7 +30,6 @@ import {
   CreditCard,
   Clock,
   Globe,
-  Save as _Save,
   Eye,
   Share2,
   MapPin,
@@ -48,7 +48,6 @@ import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedP
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
-// Skeleton already imported above
 
 interface DeliveryZone {
   zip_code: string;
@@ -132,12 +131,25 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-  { id: 'cash', label: 'Cash', icon: '' },
-  { id: 'card', label: 'Credit/Debit Card', icon: '' },
-  { id: 'apple_pay', label: 'Apple Pay', icon: '' },
-  { id: 'google_pay', label: 'Google Pay', icon: '' },
-  { id: 'venmo', label: 'Venmo', icon: '' },
-  { id: 'zelle', label: 'Zelle', icon: '' },
+  { id: 'cash', label: 'Cash' },
+  { id: 'card', label: 'Credit/Debit Card' },
+  { id: 'apple_pay', label: 'Apple Pay' },
+  { id: 'google_pay', label: 'Google Pay' },
+  { id: 'venmo', label: 'Venmo' },
+  { id: 'zelle', label: 'Zelle' },
+];
+
+const FONT_OPTIONS = [
+  'Inter',
+  'Roboto',
+  'Open Sans',
+  'Lato',
+  'Poppins',
+  'Montserrat',
+  'Playfair Display',
+  'Merriweather',
+  'Source Sans Pro',
+  'DM Sans',
 ];
 
 export default function StorefrontSettings() {
@@ -241,7 +253,7 @@ export default function StorefrontSettings() {
   };
 
   // Update checkout settings
-  const updateCheckoutSetting = (key: string, value: boolean | string) => {
+  const updateCheckoutSetting = (key: keyof StoreSettings['checkout_settings'], value: boolean | string) => {
     setFormData((prev) => ({
       ...prev,
       checkout_settings: {
@@ -604,6 +616,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.is_public ?? true}
                       onCheckedChange={(checked) => updateField('is_public', checked)}
+                      aria-label="Toggle public store"
                     />
                   </div>
 
@@ -617,6 +630,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.require_account ?? false}
                       onCheckedChange={(checked) => updateField('require_account', checked)}
+                      aria-label="Toggle require account"
                     />
                   </div>
 
@@ -630,6 +644,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.require_age_verification ?? false}
                       onCheckedChange={(checked) => updateField('require_age_verification', checked)}
+                      aria-label="Toggle age verification"
                     />
                   </div>
 
@@ -717,6 +732,28 @@ export default function StorefrontSettings() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="font_family">Font Family</Label>
+                  <Select
+                    value={formData.font_family || 'Inter'}
+                    onValueChange={(value) => updateField('font_family', value)}
+                  >
+                    <SelectTrigger id="font_family" className="w-full sm:w-64">
+                      <SelectValue placeholder="Select a font" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FONT_OPTIONS.map((font) => (
+                        <SelectItem key={font} value={font}>
+                          {font}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Choose the primary font for your storefront
+                  </p>
+                </div>
+
                 <Separator />
 
                 <div className="space-y-4">
@@ -802,7 +839,7 @@ export default function StorefrontSettings() {
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-muted hover:border-primary/50'
                         }`}
-                      onClick={() => updateField('theme_config', { theme: 'standard' } as ThemeConfig)}
+                      onClick={() => updateField('theme_config', { theme: 'standard' })}
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-8 h-8 rounded bg-white border" />
@@ -819,7 +856,7 @@ export default function StorefrontSettings() {
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-muted hover:border-primary/50'
                         }`}
-                      onClick={() => updateField('theme_config', { theme: 'luxury' } as ThemeConfig)}
+                      onClick={() => updateField('theme_config', { theme: 'luxury' })}
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-8 h-8 rounded bg-black border border-yellow-500" />
@@ -908,7 +945,7 @@ export default function StorefrontSettings() {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   {(formData.delivery_zones ?? []).map((zone, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row gap-4">
+                    <div key={`zone-${zone.zip_code || index}`} className="flex flex-col sm:flex-row gap-4">
                       <Input
                         placeholder="Zip code"
                         aria-label="Delivery zone zip code"
@@ -998,6 +1035,7 @@ export default function StorefrontSettings() {
                     onCheckedChange={(checked) => {
                       updateField('time_slots', checked ? DEFAULT_TIME_SLOTS : []);
                     }}
+                    aria-label="Toggle scheduled delivery"
                   />
                 </div>
 
@@ -1006,7 +1044,7 @@ export default function StorefrontSettings() {
                     <Separator />
                     <h4 className="font-medium">Available Time Slots</h4>
                     {(formData.time_slots ?? []).map((slot, index) => (
-                      <div key={index} className="flex items-center gap-4">
+                      <div key={`slot-${slot.start}-${slot.end}`} className="flex items-center gap-4">
                         <Switch
                           checked={slot.enabled}
                           onCheckedChange={(checked) => {
@@ -1014,6 +1052,7 @@ export default function StorefrontSettings() {
                             slots[index] = { ...slots[index], enabled: checked };
                             updateField('time_slots', slots);
                           }}
+                          aria-label={`Toggle time slot ${slot.label}`}
                         />
                         <Input
                           value={slot.label}
@@ -1092,7 +1131,6 @@ export default function StorefrontSettings() {
                   <div key={method.id} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{method.icon}</span>
                         <Label>{method.label}</Label>
                       </div>
                       <Switch
@@ -1104,6 +1142,7 @@ export default function StorefrontSettings() {
                             : current.filter((m) => m !== method.id);
                           updateField('payment_methods', updated);
                         }}
+                        aria-label={`Toggle ${method.label}`}
                       />
                     </div>
                     {method.id === 'venmo' && (formData.payment_methods || []).includes('venmo') && (
@@ -1165,6 +1204,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.checkout_settings?.allow_guest_checkout ?? true}
                       onCheckedChange={(checked) => updateCheckoutSetting('allow_guest_checkout', checked)}
+                      aria-label="Toggle guest checkout"
                     />
                   </div>
 
@@ -1178,6 +1218,21 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.checkout_settings?.require_phone ?? true}
                       onCheckedChange={(checked) => updateCheckoutSetting('require_phone', checked)}
+                      aria-label="Toggle require phone number"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Require Address</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Require delivery address at checkout
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.checkout_settings?.require_address ?? true}
+                      onCheckedChange={(checked) => updateCheckoutSetting('require_address', checked)}
+                      aria-label="Toggle require address"
                     />
                   </div>
 
@@ -1191,6 +1246,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.checkout_settings?.enable_coupons ?? true}
                       onCheckedChange={(checked) => updateCheckoutSetting('enable_coupons', checked)}
+                      aria-label="Toggle coupons"
                     />
                   </div>
 
@@ -1204,6 +1260,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.checkout_settings?.show_delivery_notes ?? true}
                       onCheckedChange={(checked) => updateCheckoutSetting('show_delivery_notes', checked)}
+                      aria-label="Toggle delivery notes"
                     />
                   </div>
 
@@ -1217,6 +1274,7 @@ export default function StorefrontSettings() {
                     <Switch
                       checked={formData.checkout_settings?.enable_tips ?? false}
                       onCheckedChange={(checked) => updateCheckoutSetting('enable_tips', checked)}
+                      aria-label="Toggle tips"
                     />
                   </div>
                 </div>
@@ -1251,6 +1309,7 @@ export default function StorefrontSettings() {
                         max_weekly: formData.purchase_limits?.max_weekly ?? null,
                       })
                     }
+                    aria-label="Toggle purchase limits"
                   />
                 </div>
 
@@ -1348,6 +1407,7 @@ export default function StorefrontSettings() {
                       <Switch
                         checked={!formData.operating_hours?.[day]?.closed}
                         onCheckedChange={(checked) => updateHours(day, 'closed', !checked)}
+                        aria-label={`Toggle ${day} open`}
                       />
                       {!formData.operating_hours?.[day]?.closed && (
                         <>
@@ -1471,8 +1531,4 @@ export default function StorefrontSettings() {
     </div>
   );
 }
-
-
-
-
 
