@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Building2,
@@ -36,18 +34,13 @@ interface SupplierDetailProps {
 }
 
 export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: SupplierDetailProps) {
-  const { tenant } = useTenantAdminAuth();
-
   const { data: transactions, isLoading: transactionsLoading } = useQuery({
     queryKey: queryKeys.suppliers.transactions(supplier.id),
     queryFn: async () => {
-      if (!tenant?.id) return [];
-
       const { data, error } = await supabase
         .from("supplier_transactions")
         .select('id, transaction_type, description, reference_number, amount, created_at')
         .eq("supplier_id", supplier.id)
-        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
         .limit(20);
 
@@ -58,8 +51,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
 
       return (data ?? []) as SupplierTransaction[];
     },
-    enabled: open && !!supplier.id && !!tenant?.id,
-    staleTime: 30_000,
+    enabled: open && !!supplier.id,
   });
 
   const totalTransactions = transactions?.length ?? 0;
@@ -75,11 +67,11 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
               {supplier.supplier_name}
             </DialogTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={onEdit} aria-label={`Edit supplier ${supplier.supplier_name}`}>
+              <Button variant="outline" size="sm" onClick={onEdit}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} aria-label="Close supplier details">
+              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -157,19 +149,8 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
               </div>
 
               {transactionsLoading ? (
-                <div className="space-y-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={`txn-skel-${i}`} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-40" />
-                      </div>
-                      <div className="text-right space-y-2">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                        <Skeleton className="h-3 w-20 ml-auto" />
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-4 text-muted-foreground">
+                  Loading transactions...
                 </div>
               ) : transactions && transactions.length > 0 ? (
                 <div className="space-y-2">

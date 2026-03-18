@@ -35,8 +35,7 @@ import CopyButton from '@/components/CopyButton';
 import { formatSmartDate } from '@/lib/formatters';
 
 interface OrderDataItems {
-  items?: Array<{ quantity: number; name?: string; product_name?: string; price?: number; price_per_unit?: number }>;
-  [key: string]: unknown;
+  items?: Array<{ quantity: number; name?: string; product_name?: string }>;
 }
 
 interface MenuOrder {
@@ -416,8 +415,8 @@ const DisposableMenuOrders = () => {
                             {orderItems.length} item(s)
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            {orderItems.slice(0, 3).map((item) => (
-                              <Badge key={`${item.name || item.product_name}-${item.quantity}`} variant="outline" className="text-xs">
+                            {orderItems.slice(0, 3).map((item, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
                                 {item.quantity}x {item.name || item.product_name}
                               </Badge>
                             ))}
@@ -451,12 +450,11 @@ const DisposableMenuOrders = () => {
       {/* Order Details Dialog */}
       {selectedOrder && (
         <OrderDetailsDialog
-          order={selectedOrder}
+          order={selectedOrder as any}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdate={() => {
-            refetch();
-            setLastUpdated(new Date());
+            // Refetch orders after update
             setDetailsOpen(false);
           }}
         />

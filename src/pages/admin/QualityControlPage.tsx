@@ -254,7 +254,7 @@ export default function QualityControlPage() {
                             size="sm"
                             onClick={() => handleViewTests(batch)}
                             className="h-11 w-11 p-0"
-                            aria-label={`View test results for batch ${batch.batch_number}`}
+                            title="View Test Results"
                           >
                             <FileText className="h-4 w-4" />
                           </Button>
@@ -263,7 +263,7 @@ export default function QualityControlPage() {
                             size="sm"
                             onClick={() => handleUploadCOA(batch)}
                             className="h-11 w-11 p-0"
-                            aria-label={`Upload COA for batch ${batch.batch_number}`}
+                            title="Upload COA"
                           >
                             <Upload className="h-4 w-4" />
                           </Button>
@@ -273,7 +273,7 @@ export default function QualityControlPage() {
                               size="sm"
                               onClick={() => handleQuarantine(batch)}
                               className="h-11 w-11 p-0 text-destructive"
-                              aria-label={`Quarantine batch ${batch.batch_number}`}
+                              title="Quarantine"
                             >
                               <AlertTriangle className="h-4 w-4" />
                             </Button>

@@ -1,97 +1,85 @@
-import type { MarketingCampaign } from "@/components/admin/marketing/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, TrendingUp, Users, MousePointerClick, Eye } from "lucide-react";
+import { Mail, TrendingUp, Users, Bell, MessageSquare } from "lucide-react";
+
+interface MarketingCampaign {
+  id: string;
+  name: string;
+  type: "email" | "sms" | "push";
+  status: string;
+}
 
 interface CampaignAnalyticsProps {
   campaigns: MarketingCampaign[];
 }
 
 export function CampaignAnalytics({ campaigns }: CampaignAnalyticsProps) {
+  const emailCampaigns = campaigns.filter((c) => c.type === "email");
+  const smsCampaigns = campaigns.filter((c) => c.type === "sms");
+  const pushCampaigns = campaigns.filter((c) => c.type === "push");
   const activeCampaigns = campaigns.filter((c) => c.status === "sent" || c.status === "sending");
-
-  const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count ?? 0), 0);
-  const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count ?? 0), 0);
-  const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count ?? 0), 0);
-
-  const openRate = totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : "0";
-  const clickRate = totalOpened > 0 ? ((totalClicked / totalOpened) * 100).toFixed(1) : "0";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader>
           <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            <TrendingUp className="h-5 w-5" />
             {campaigns.length}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {activeCampaigns.length} active
-          </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Email Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            {totalSent.toLocaleString()}
+            <Mail className="h-5 w-5" />
+            {emailCampaigns.length}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            messages delivered
-          </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Open Rate</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">SMS Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            <Eye className="h-5 w-5 text-muted-foreground" />
-            {openRate}%
+            <MessageSquare className="h-5 w-5" />
+            {smsCampaigns.length}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {totalOpened.toLocaleString()} opened
-          </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Click Rate</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Push Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-            {clickRate}%
+            <Bell className="h-5 w-5" />
+            {pushCampaigns.length}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {totalClicked.toLocaleString()} clicked
-          </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Active Now</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <Users className="h-5 w-5" />
             {activeCampaigns.length}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            sending or scheduled
-          </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+

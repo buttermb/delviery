@@ -1,17 +1,15 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Tag, Trash2, Calendar, Loader2, RefreshCw, TicketPercent } from "lucide-react";
+import { Plus, Tag, Trash2, Calendar, Loader2 } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
     Dialog,
@@ -22,165 +20,80 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { formatCurrency } from "@/lib/formatters";
-import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
-import { humanizeError } from "@/lib/humanizeError";
+import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
-interface CouponRow {
+type Coupon = {
     id: string;
-    store_id: string;
+    tenant_id: string;
     code: string;
-    discount_type: string;
+    type: 'percentage' | 'fixed_amount'; // Frontend type
+    discount_type: 'percentage' | 'fixed_amount'; // DB type might differ, we map it
     discount_value: number;
+    amount?: number; // For backward compat/display logic if needed
     usage_limit: number | null;
-    used_count: number | null;
-    start_date: string | null;
+    used_count: number;
+    start_date: string;
     end_date: string | null;
-    is_active: boolean | null;
-    created_at: string | null;
-    min_order_amount: number | null;
-    max_discount_amount: number | null;
-    description: string | null;
-}
-
-const couponFormSchema = z.object({
-    code: z.string().min(1, "Coupon code is required").max(50, "Code must be 50 characters or less"),
-    discount_type: z.enum(["percentage", "fixed_amount"]),
-    discount_value: z.coerce.number().min(0.01, "Discount value must be greater than 0"),
-    usage_limit: z.coerce.number().int().min(1).optional().or(z.literal("")),
-    end_date: z.string().optional().or(z.literal("")),
-});
-
-type CouponFormValues = z.infer<typeof couponFormSchema>;
-
-function CouponManagerSkeleton() {
-    return (
-        <div className="space-y-4 h-full p-4 md:p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-2">
-                    <Skeleton className="h-7 w-48" />
-                    <Skeleton className="h-4 w-72" />
-                </div>
-                <Skeleton className="h-10 w-36" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-56" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-3">
-                        <div className="flex gap-4">
-                            {Array.from({ length: 6 }).map((_, i) => (
-                                <Skeleton key={`header-col-${i}`} className="h-4 w-20" />
-                            ))}
-                        </div>
-                        {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={`skeleton-row-${i}`} className="flex gap-4 items-center py-3">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-4 w-16" />
-                                <Skeleton className="h-4 w-16" />
-                                <Skeleton className="h-6 w-16 rounded-full" />
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-8 w-8 rounded" />
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
+    is_active: boolean;
+    created_at: string;
+};
 
 export default function CouponManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [couponToDelete, setCouponToDelete] = useState<CouponRow | null>(null);
 
-    const form = useForm<CouponFormValues>({
-        resolver: zodResolver(couponFormSchema),
-        defaultValues: {
-            code: "",
-            discount_type: "percentage",
-            discount_value: 0,
-            usage_limit: "",
-            end_date: "",
-        },
+    // Form state
+    const [newCoupon, setNewCoupon] = useState<Partial<Coupon>>({
+        type: 'percentage',
+        is_active: true,
+        used_count: 0
     });
 
-    // Fetch store for this tenant
-    const { data: store } = useQuery({
-        queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
+    // Fetch coupons
+    const { data: coupons, isLoading } = useQuery({
+        queryKey: queryKeys.marketplaceCoupons.byTenant(tenant?.id),
         queryFn: async () => {
-            if (!tenant?.id) return null;
+            if (!tenant?.id) return [];
             const { data, error } = await supabase
-                .from("marketplace_stores")
-                .select("id")
-                .eq("tenant_id", tenant.id)
-                .maybeSingle();
-            if (error) {
-                logger.error("Failed to fetch marketplace store", error);
-                return null;
-            }
-            return data;
+                .from('marketplace_coupons')
+                .select('id, tenant_id, code, discount_type, discount_value, usage_limit, used_count, start_date, end_date, is_active, created_at')
+                .eq('tenant_id', tenant.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data.map((c) => ({
+                ...c,
+                type: c.discount_type, // Map DB field to UI field if needed
+                amount: c.discount_value
+            })) as Coupon[];
         },
         enabled: !!tenant?.id,
-        staleTime: 60_000,
-    });
-
-    // Fetch coupons by store_id
-    const { data: coupons, isLoading, isFetching } = useQuery({
-        queryKey: queryKeys.marketplaceCoupons.byTenant(store?.id),
-        queryFn: async () => {
-            if (!store?.id) return [];
-            const { data, error } = await supabase
-                .from("marketplace_coupons")
-                .select("id, store_id, code, discount_type, discount_value, usage_limit, used_count, start_date, end_date, is_active, created_at, min_order_amount, max_discount_amount, description")
-                .eq("store_id", store.id)
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                logger.error("Failed to fetch coupons", error);
-                throw error;
-            }
-            return data as CouponRow[];
-        },
-        enabled: !!store?.id,
-        staleTime: 30_000,
         retry: 2,
     });
 
-    // Create coupon mutation
+    // Mutations
     const createCoupon = useMutation({
-        mutationFn: async (values: CouponFormValues) => {
-            if (!store?.id) throw new Error("No store found");
+        mutationFn: async (couponData: Partial<Coupon>) => {
+            if (!tenant?.id) throw new Error("No tenant");
 
             const payload = {
-                store_id: store.id,
-                code: values.code.toUpperCase(),
-                discount_type: values.discount_type,
-                discount_value: values.discount_value,
-                usage_limit: values.usage_limit ? Number(values.usage_limit) : null,
-                end_date: values.end_date || null,
-                is_active: true,
+                tenant_id: tenant.id,
+                code: couponData.code?.toUpperCase(),
+                discount_type: couponData.type,
+                discount_value: couponData.amount,
+                usage_limit: couponData.usage_limit,
+                end_date: couponData.end_date || null,
+                is_active: true
             };
 
             const { error } = await supabase
-                .from("marketplace_coupons")
+                .from('marketplace_coupons')
                 .insert([payload]);
 
             if (error) throw error;
@@ -188,45 +101,41 @@ export default function CouponManager() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCoupons.all });
             setIsDialogOpen(false);
-            form.reset();
+            setNewCoupon({ type: 'percentage', is_active: true, used_count: 0 });
             toast.success("Coupon created successfully");
         },
-        onError: (error: unknown) => {
-            logger.error("Failed to create coupon", error);
-            toast.error("Failed to create coupon", {
-                description: humanizeError(error),
-            });
-        },
+        onError: (err) => toast.error("Failed to create coupon: " + err.message)
     });
 
-    // Delete coupon mutation
     const deleteCoupon = useMutation({
         mutationFn: async (id: string) => {
-            if (!store?.id) throw new Error("No store found");
+            if (!tenant?.id) throw new Error("No tenant");
             const { error } = await supabase
-                .from("marketplace_coupons")
+                .from('marketplace_coupons')
                 .delete()
-                .eq("id", id)
-                .eq("store_id", store.id);
+                .eq('id', id)
+                .eq('tenant_id', tenant.id);
             if (error) throw error;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCoupons.all });
             toast.success("Coupon deleted");
         },
-        onError: (error: unknown) => {
-            logger.error("Failed to delete coupon", error);
-            toast.error("Failed to delete coupon", {
-                description: humanizeError(error),
-            });
-        },
+        onError: () => toast.error("Failed to delete coupon")
     });
+    
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
 
-    const handleCreate = (values: CouponFormValues) => {
-        createCoupon.mutate(values);
+    const handleCreate = () => {
+        if (!newCoupon.code || !newCoupon.amount) {
+            toast.error("Please fill in required fields (Code and Value)");
+            return;
+        }
+        createCoupon.mutate(newCoupon);
     };
 
-    if (isLoading) return <CouponManagerSkeleton />;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading coupons..." />;
 
     return (
         <div className="space-y-4 h-full p-4 md:p-4">
@@ -237,147 +146,87 @@ export default function CouponManager() {
                         Create and manage discount codes for your store.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    {isFetching && !isLoading && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <RefreshCw className="h-3 w-3 animate-spin" />
-                            Refreshing...
-                        </span>
-                    )}
-                    <Dialog open={isDialogOpen} onOpenChange={(open) => {
-                        setIsDialogOpen(open);
-                        if (!open) form.reset();
-                    }}>
-                        <DialogTrigger asChild>
-                            <Button aria-label="Create new coupon">
-                                <Plus className="mr-2 h-4 w-4" />
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Coupon
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Create New Coupon</DialogTitle>
+                            <DialogDescription>
+                                Add a new discount code for your customers.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="code" className="text-right">Code</Label>
+                                <Input
+                                    id="code"
+                                    value={newCoupon.code ?? ''}
+                                    onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                                    placeholder="SUMMER25"
+                                    className="col-span-3 uppercase"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="type" className="text-right">Type</Label>
+                                <Select
+                                    value={newCoupon.type}
+                                    onValueChange={(val) => setNewCoupon(prev => ({ ...prev, type: val as 'percentage' | 'fixed_amount' }))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                                        <SelectItem value="fixed_amount">Fixed Amount ($)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="amount" className="text-right">Value</Label>
+                                <Input
+                                    id="amount"
+                                    type="number"
+                                    value={newCoupon.amount || ''}
+                                    onChange={e => setNewCoupon(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                                    placeholder="20"
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="limit" className="text-right">Limit</Label>
+                                <Input
+                                    id="limit"
+                                    type="number"
+                                    value={newCoupon.usage_limit || ''}
+                                    onChange={e => setNewCoupon(prev => ({ ...prev, usage_limit: Number(e.target.value) }))}
+                                    placeholder="Total uses (optional)"
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="expiry" className="text-right">Expires</Label>
+                                <Input
+                                    id="expiry"
+                                    type="date"
+                                    value={newCoupon.end_date ? format(new Date(newCoupon.end_date), 'yyyy-MM-dd') : ''}
+                                    onChange={e => setNewCoupon(prev => ({ ...prev, end_date: e.target.value }))}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={handleCreate} disabled={createCoupon.isPending}>
+                                {createCoupon.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Create Coupon
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Create New Coupon</DialogTitle>
-                                <DialogDescription>
-                                    Add a new discount code for your customers.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4 py-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="code"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                                <FormLabel className="text-right">Code</FormLabel>
-                                                <div className="col-span-3">
-                                                    <FormControl>
-                                                        <Input
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                                                            placeholder="SUMMER25"
-                                                            className="uppercase"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="discount_type"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                                <FormLabel className="text-right">Type</FormLabel>
-                                                <div className="col-span-3">
-                                                    <Select value={field.value} onValueChange={field.onChange}>
-                                                        <FormControl>
-                                                            <SelectTrigger aria-label="Select discount type">
-                                                                <SelectValue placeholder="Select type" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value="percentage">Percentage (%)</SelectItem>
-                                                            <SelectItem value="fixed_amount">Fixed Amount ($)</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="discount_value"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                                <FormLabel className="text-right">Value</FormLabel>
-                                                <div className="col-span-3">
-                                                    <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0"
-                                                            {...field}
-                                                            placeholder="20"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="usage_limit"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                                <FormLabel className="text-right">Limit</FormLabel>
-                                                <div className="col-span-3">
-                                                    <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            min="1"
-                                                            {...field}
-                                                            value={field.value ?? ""}
-                                                            placeholder="Total uses (optional)"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="end_date"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-4 items-center gap-4">
-                                                <FormLabel className="text-right">Expires</FormLabel>
-                                                <div className="col-span-3">
-                                                    <FormControl>
-                                                        <Input
-                                                            type="date"
-                                                            {...field}
-                                                            value={field.value ?? ""}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <DialogFooter>
-                                        <Button type="submit" disabled={createCoupon.isPending}>
-                                            {createCoupon.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            Create Coupon
-                                        </Button>
-                                    </DialogFooter>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <Card>
@@ -407,36 +256,29 @@ export default function CouponManager() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {coupon.discount_type === "percentage"
-                                            ? `${coupon.discount_value}%`
-                                            : formatCurrency(coupon.discount_value)}
+                                        {coupon.type === 'percentage' ? `${coupon.discount_value}%` : formatCurrency(coupon.discount_value)}
                                     </TableCell>
                                     <TableCell>
-                                        {coupon.used_count ?? 0} / {coupon.usage_limit ?? "\u221E"}
+                                        {coupon.used_count} / {coupon.usage_limit || '∞'}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={(coupon.is_active ?? false) ? "default" : "secondary"}>
-                                            {(coupon.is_active ?? false) ? "Active" : "Inactive"}
+                                        <Badge variant={coupon.is_active ? 'default' : 'secondary'}>
+                                            {coupon.is_active ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
                                         {coupon.end_date ? (
                                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                                 <Calendar className="h-3 w-3" />
-                                                {format(new Date(coupon.end_date), "MMM d, yyyy")}
+                                                {format(new Date(coupon.end_date), 'MMM d, yyyy')}
                                             </div>
-                                        ) : "Never"}
+                                        ) : 'Never'}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            aria-label={`Delete coupon ${coupon.code}`}
-                                            onClick={() => {
-                                                setCouponToDelete(coupon);
-                                                setDeleteDialogOpen(true);
-                                            }}
-                                        >
+                                        <Button variant="ghost" size="sm" onClick={() => {
+                                            setCouponToDelete(coupon);
+                                            setDeleteDialogOpen(true);
+                                        }}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </TableCell>
@@ -444,12 +286,8 @@ export default function CouponManager() {
                             ))}
                             {coupons?.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                            <TicketPercent className="h-8 w-8 opacity-50" />
-                                            <p className="font-medium">No coupons yet</p>
-                                            <p className="text-sm">Create your first discount code to attract customers.</p>
-                                        </div>
+                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                        No coupons found.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -457,12 +295,12 @@ export default function CouponManager() {
                     </Table>
                 </CardContent>
             </Card>
-
+            
             <ConfirmDeleteDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
                 onConfirm={() => couponToDelete && deleteCoupon.mutate(couponToDelete.id)}
-                itemName={couponToDelete?.code ?? "this coupon"}
+                itemName={couponToDelete?.code || 'this coupon'}
                 isLoading={deleteCoupon.isPending}
             />
         </div>

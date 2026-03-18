@@ -4,13 +4,12 @@
  */
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Palette, Upload, Globe, Mail, MessageSquare, Image, Save } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -21,27 +20,10 @@ import { hasFeature } from '@/lib/tenant';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { queryKeys } from '@/lib/queryKeys';
 
-interface WhiteLabelConfig {
-  enabled: boolean;
-  domain: string | null;
-  logo: string | null;
-  theme: {
-    primaryColor: string;
-    secondaryColor: string;
-    backgroundColor: string;
-    textColor: string;
-    accentColor: string;
-    customCSS: string;
-  };
-  emailFrom: string | null;
-  emailLogo: string | null;
-  emailFooter: string | null;
-  smsFrom: string | null;
-}
-
 export default function WhiteLabelSettings() {
   const { tenant, refresh } = useTenant();
   const queryClient = useQueryClient();
+  const [isSaving, setIsSaving] = useState(false);
 
   // White label state
   const [whiteLabelEnabled, setWhiteLabelEnabled] = useState(
@@ -65,32 +47,6 @@ export default function WhiteLabelSettings() {
   const [emailFooter, setEmailFooter] = useState((wl?.emailFooter as string) ?? '');
   const [smsFrom, setSmsFrom] = useState((wl?.smsFrom as string) ?? '');
 
-  const saveMutation = useMutation({
-    mutationFn: async (config: WhiteLabelConfig) => {
-      if (!tenant?.id) throw new Error('Tenant ID required');
-
-      const { error } = await supabase
-        .from('tenants')
-        .update({
-          white_label: config as unknown as import('@/integrations/supabase/types').Json,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', tenant.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success('White-label settings have been updated');
-      refresh();
-      if (tenant?.id) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
-      }
-    },
-    onError: (error) => {
-      handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Failed to Save' });
-    },
-  });
-
   if (!tenant) {
     return (
       <div className="container mx-auto p-6">
@@ -104,30 +60,57 @@ export default function WhiteLabelSettings() {
   // Check if white-label is available for this plan
   const whiteLabelAvailable = hasFeature(tenant, 'white_label');
 
-  const handleSave = () => {
-    saveMutation.mutate({
-      enabled: whiteLabelEnabled,
-      domain: customDomain || null,
-      logo: logo || null,
-      theme: {
-        primaryColor: String(theme.primaryColor ?? ''),
-        secondaryColor: String(theme.secondaryColor ?? ''),
-        backgroundColor: String(theme.backgroundColor ?? ''),
-        textColor: String(theme.textColor ?? ''),
-        accentColor: String(theme.accentColor ?? ''),
-        customCSS: String(theme.customCSS ?? ''),
-      },
-      emailFrom: emailFrom || null,
-      emailLogo: emailLogo || null,
-      emailFooter: emailFooter || null,
-      smsFrom: smsFrom || null,
-    });
+  const handleSave = async () => {
+    if (!tenant?.id) return;
+
+    setIsSaving(true);
+    try {
+      const whiteLabelConfig = {
+        enabled: whiteLabelEnabled,
+        domain: customDomain || null,
+        logo: logo || null,
+        theme: {
+          primaryColor: String(theme.primaryColor ?? ''),
+          secondaryColor: String(theme.secondaryColor ?? ''),
+          backgroundColor: String(theme.backgroundColor ?? ''),
+          textColor: String(theme.textColor ?? ''),
+          accentColor: String(theme.accentColor ?? ''),
+          customCSS: String(theme.customCSS ?? ''),
+        },
+        emailFrom: emailFrom || null,
+        emailLogo: emailLogo || null,
+        emailFooter: emailFooter || null,
+        smsFrom: smsFrom || null,
+      };
+
+      const { error } = await supabase
+        .from('tenants')
+        .update({
+          white_label: whiteLabelConfig as unknown as import('@/integrations/supabase/types').Json,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', tenant.id);
+
+      if (error) throw error;
+
+      toast.success('White-label settings have been updated');
+
+      refresh();
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
+      refresh();
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
+    } catch (error) {
+      handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Failed to Save' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogoUpload = async (file: File) => {
     if (!tenant?.id) return;
 
     try {
+      // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${tenant.id}/logo.${fileExt}`;
 
@@ -141,6 +124,7 @@ export default function WhiteLabelSettings() {
 
       setLogo(data.publicUrl);
       toast.success('Logo has been uploaded successfully');
+      toast.success('Logo has been uploaded successfully');
     } catch (error) {
       handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Upload Failed' });
     }
@@ -150,7 +134,7 @@ export default function WhiteLabelSettings() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">White-Label Settings</h1>
+          <h1 className="text-3xl font-bold mb-2">🎨 White-Label Settings</h1>
           <p className="text-muted-foreground">
             Customize your brand experience for customers and team members
           </p>
@@ -321,9 +305,10 @@ export default function WhiteLabelSettings() {
               </div>
               <div className="mt-4">
                 <Label htmlFor="customCSS">Custom CSS</Label>
-                <Textarea
+                <textarea
                   id="customCSS"
-                  className="mt-1 font-mono text-sm min-h-[200px]"
+                  className="w-full mt-1 p-3 border rounded-md font-mono text-sm"
+                  rows={8}
                   value={theme.customCSS ?? ''}
                   onChange={(e) =>
                     setTheme({ ...theme, customCSS: e.target.value })
@@ -358,7 +343,6 @@ export default function WhiteLabelSettings() {
                         }}
                         className="hidden"
                         id="logo-upload"
-                        aria-label="Upload brand logo"
                       />
                       <Button
                         variant="outline"
@@ -399,9 +383,9 @@ export default function WhiteLabelSettings() {
                 </div>
                 <div>
                   <Label htmlFor="emailFooter">Email Footer Text</Label>
-                  <Textarea
+                  <textarea
                     id="emailFooter"
-                    className="mt-1"
+                    className="w-full mt-1 p-3 border rounded-md"
                     rows={3}
                     value={emailFooter}
                     onChange={(e) => setEmailFooter(e.target.value)}
@@ -467,9 +451,9 @@ export default function WhiteLabelSettings() {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saveMutation.isPending} size="lg">
+            <Button onClick={handleSave} disabled={isSaving} size="lg">
               <Save className="h-4 w-4 mr-2" />
-              {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </Tabs>
@@ -477,3 +461,4 @@ export default function WhiteLabelSettings() {
     </div>
   );
 }
+

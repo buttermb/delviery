@@ -40,7 +40,7 @@ type SortOrder = 'asc' | 'desc';
 export default function LocationInventoryPage() {
   const { locationId } = useParams<{ locationId?: string }>();
   const { tenant } = useTenantAdminAuth();
-  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError } = useLocationOptions();
+  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError, refetch: _refetchLocations } = useLocationOptions();
   const { getLocationById } = useLocations();
 
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(locationId);
@@ -56,12 +56,13 @@ export default function LocationInventoryPage() {
     if (selectedLocationId || !inventory.length) return [];
     const map = new Map<string, { product_id: string; product_name: string; sku: string; location_count: number; total_quantity: number; total_reserved: number }>();
     for (const item of inventory) {
-      const pid = item.product_id || item.product?.id || item.id;
+      const itemRecord = item as unknown as Record<string, unknown>;
+      const pid = (itemRecord.product_id as string) || item.product?.id || item.id;
       const existing = map.get(pid);
       if (existing) {
         existing.location_count += 1;
         existing.total_quantity += item.quantity ?? 0;
-        existing.total_reserved += item.reserved_quantity ?? 0;
+        existing.total_reserved += (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0);
       } else {
         map.set(pid, {
           product_id: pid,
@@ -69,7 +70,7 @@ export default function LocationInventoryPage() {
           sku: item.product?.sku || '',
           location_count: 1,
           total_quantity: item.quantity ?? 0,
-          total_reserved: item.reserved_quantity ?? 0,
+          total_reserved: (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0),
         });
       }
     }

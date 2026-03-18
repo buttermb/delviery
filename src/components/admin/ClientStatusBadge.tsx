@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, Clock, Flag, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, XCircle } from "lucide-react";
 
-export type ClientStatus = 'active' | 'inactive' | 'suspended' | 'pending' | 'flagged';
+export type ClientStatus = 'active' | 'inactive' | 'suspended' | 'pending';
 export type CreditStatus = 'good' | 'warning' | 'critical' | 'paid';
 
 interface ClientStatusBadgeProps {
@@ -87,11 +87,6 @@ export function ClientStatusBadge({
             label: 'Pending',
             color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
             icon: Clock
-        },
-        flagged: {
-            label: 'Flagged',
-            color: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-            icon: Flag
         }
     };
 

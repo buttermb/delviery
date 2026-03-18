@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   Search,
@@ -17,6 +16,7 @@ import {
   Mail,
   Edit,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -31,7 +31,6 @@ import { SupplierDetail } from "@/components/admin/suppliers/SupplierDetail";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { humanizeError } from '@/lib/humanizeError';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -79,7 +78,6 @@ export default function SupplierManagementPage() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 60_000,
   });
 
   const deleteMutation = useMutation({
@@ -121,17 +119,14 @@ export default function SupplierManagementPage() {
     },
   });
 
-  const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
-
   const filteredSuppliers = suppliers?.filter((supplier) => {
-    if (!sanitizedSearch) return true;
+    const matchesSearch =
+      supplier.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return (
-      supplier.supplier_name?.toLowerCase().includes(sanitizedSearch) ||
-      supplier.contact_person?.toLowerCase().includes(sanitizedSearch) ||
-      supplier.email?.toLowerCase().includes(sanitizedSearch) ||
-      supplier.phone?.toLowerCase().includes(sanitizedSearch)
-    );
+    return matchesSearch;
   }) ?? [];
 
   const handleCreate = () => {
@@ -247,33 +242,8 @@ export default function SupplierManagementPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Supplier Name</TableHead>
-                    <TableHead>Contact Person</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Payment Terms</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={`skel-${i}`}>
-                      <TableCell><div className="flex items-center gap-2"><Skeleton className="h-4 w-4 rounded" /><Skeleton className="h-4 w-32" /></div></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                      <TableCell className="text-right"><div className="flex items-center justify-end gap-2"><Skeleton className="h-8 w-8 rounded" /><Skeleton className="h-8 w-8 rounded" /></div></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : filteredSuppliers.length === 0 ? (
             <EnhancedEmptyState
@@ -299,14 +269,13 @@ export default function SupplierManagementPage() {
                     <TableHead>Contact Person</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>Payment Terms</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id} className="cursor-pointer transition-colors duration-200" onClick={() => handleView(supplier)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(supplier); } }}>
+                    <TableRow key={supplier.id} className="cursor-pointer" onClick={() => handleView(supplier)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(supplier); } }}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -335,11 +304,6 @@ export default function SupplierManagementPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={supplier.status === 'active' ? 'default' : 'secondary'} className={supplier.status === 'active' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : ''}>
-                          {supplier.status === 'active' ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
                         {supplier.payment_terms ? (
                           <Badge variant="outline">{supplier.payment_terms}</Badge>
                         ) : (
@@ -352,8 +316,7 @@ export default function SupplierManagementPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEdit(supplier)}
-                            className="h-11 w-11 p-0 transition-colors duration-200"
-                            aria-label={`Edit supplier ${supplier.supplier_name}`}
+                            className="h-11 w-11 p-0"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -361,8 +324,7 @@ export default function SupplierManagementPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDelete(supplier)}
-                            className="h-11 w-11 p-0 text-destructive hover:text-destructive transition-colors duration-200"
-                            aria-label={`Delete supplier ${supplier.supplier_name}`}
+                            className="h-11 w-11 p-0 text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

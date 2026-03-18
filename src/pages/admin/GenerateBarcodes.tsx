@@ -180,11 +180,11 @@ export default function GenerateBarcodes() {
       }
 
       setGeneratedBarcodes(newBarcodes);
-      toast.success(`Generated ${newBarcodes.length} ${mode === 'custom' ? 'custom barcodes' : mode + ' barcodes'}`);
+      toast.success("Generated ${newBarcodes.length} ${mode === ");
     } catch (error: unknown) {
       logger.error('Error generating barcodes', error, { component: 'GenerateBarcodes' });
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
-      toast.error(errorMessage);
+      const _errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
+      toast.error("Error");
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ export default function GenerateBarcodes() {
     if (generatedBarcodes.length === 0) return;
 
     setPdfGenerating(true);
-    toast.info("Creating your label sheet...");
+    toast.success("Please wait while we create your label sheet");
 
     try {
       // Defer heavy operation to avoid blocking UI
@@ -205,9 +205,8 @@ export default function GenerateBarcodes() {
       // Individual label printing can be added later with proper QR code rendering
       await handlePrintSheet();
     } catch (error: unknown) {
-      logger.error('Error generating PDF labels', error, { component: 'GenerateBarcodes' });
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
-      toast.error(errorMessage);
+      const _errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
+      toast.error("Error");
     } finally {
       setPdfGenerating(false);
     }
@@ -282,7 +281,7 @@ export default function GenerateBarcodes() {
   // Handle print preview with async loading
   const handlePrintPreview = async () => {
     setPdfGenerating(true);
-    toast.info("Preparing print preview...");
+    toast.success("Please wait");
 
     try {
       // Small delay to show loading state
@@ -558,6 +557,7 @@ export default function GenerateBarcodes() {
         </TabsContent>
       </Tabs>
 
+      {/* Generated Barcodes Preview */}
       {/* Generated Barcodes Preview */}
       {generatedBarcodes.length > 0 ? (
         <Card>

@@ -1,5 +1,5 @@
 // Edge Function: customer-auth
-import { serve, createClient, z } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
@@ -68,7 +68,7 @@ serve(secureHeadersMiddleware(async (req) => {
     );
   }
 
-  const responseHeaders: Record<string, string> = {
+  const corsHeadersWithOrigin: Record<string, string> = {
     'Access-Control-Allow-Origin': requestOrigin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
@@ -76,18 +76,11 @@ serve(secureHeadersMiddleware(async (req) => {
 
   // Add credentials header when we have a valid origin
   if (requestOrigin) {
-    responseHeaders['Access-Control-Allow-Credentials'] = 'true';
+    corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
 
-  // Helper to create JSON responses with consistent headers
-  const jsonResponse = (body: Record<string, unknown>, status: number) =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { ...responseHeaders, 'Content-Type': 'application/json' },
-    });
-
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: responseHeaders });
+    return new Response(null, { headers: corsHeadersWithOrigin });
   }
 
   try {
@@ -100,16 +93,19 @@ serve(secureHeadersMiddleware(async (req) => {
       const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
       const hasJwtSecret = !!Deno.env.get('JWT_SECRET');
 
-      return jsonResponse({
-        status: 'ok',
-        function: 'customer-auth',
-        timestamp: new Date().toISOString(),
-        env: {
-          SUPABASE_URL: hasSupabaseUrl,
-          SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
-          JWT_SECRET: hasJwtSecret,
-        },
-      }, 200);
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          function: 'customer-auth',
+          timestamp: new Date().toISOString(),
+          env: {
+            SUPABASE_URL: hasSupabaseUrl,
+            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
+            JWT_SECRET: hasJwtSecret,
+          },
+        }),
+        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -131,13 +127,22 @@ serve(secureHeadersMiddleware(async (req) => {
       const validationResult = signupSchema.safeParse(requestBody);
       if (!validationResult.success) {
         const zodError = validationResult as { success: false; error: { errors: unknown[] } };
-        return jsonResponse({ error: "Validation failed", details: zodError.error.errors }, 400);
+        return new Response(
+          JSON.stringify({
+            error: "Validation failed",
+            details: zodError.error.errors
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug, tenantId, isBusinessBuyer, businessName, businessLicenseNumber } = validationResult.data;
 
       if (!tenantSlug && !tenantId) {
-        return jsonResponse({ error: "Either tenantSlug or tenantId is required" }, 400);
+        return new Response(
+          JSON.stringify({ error: "Either tenantSlug or tenantId is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Find tenant by slug or ID
@@ -150,7 +155,10 @@ serve(secureHeadersMiddleware(async (req) => {
       const { data: tenant, error: tenantError } = await tenantQuery.maybeSingle();
 
       if (tenantError || !tenant) {
-        return jsonResponse({ error: "Store not found or inactive" }, 404);
+        return new Response(
+          JSON.stringify({ error: "Store not found or inactive" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Check if customer user already exists
@@ -162,11 +170,19 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (existingUser) {
-        return jsonResponse({ error: "An account with this email already exists" }, 409);
+        return new Response(
+          JSON.stringify({ error: "An account with this email already exists" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Cross-table check: Verify email is not registered as a staff account
-      const { data: tenantUserExists } = await supabase
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: tenantUserExists } = await serviceClient
         .from('tenant_users')
         .select('id, role')
         .eq('email', email.toLowerCase())
@@ -174,10 +190,13 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (tenantUserExists) {
-        return jsonResponse({
-          error: "This email is registered as a staff account",
-          message: `This email is registered as a staff account. Please use the staff login at /${tenant.slug}/admin/login instead.`
-        }, 409);
+        return new Response(
+          JSON.stringify({
+            error: "This email is registered as a staff account",
+            message: `This email is registered as a staff account. Please use the staff login at /${tenant.slug}/admin/login instead.`
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Hash password
@@ -193,10 +212,16 @@ serve(secureHeadersMiddleware(async (req) => {
 
         const minimumAge = tenant.minimum_age || 21;
         if (actualAge < minimumAge) {
-          return jsonResponse({ error: `You must be at least ${minimumAge} years old to create an account` }, 403);
+          return new Response(
+            JSON.stringify({ error: `You must be at least ${minimumAge} years old to create an account` }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
         }
       } else if (tenant.age_verification_required) {
-        return jsonResponse({ error: "Date of birth is required for age verification" }, 400);
+        return new Response(
+          JSON.stringify({ error: "Date of birth is required for age verification" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Validate phone if provided
@@ -214,7 +239,10 @@ serve(secureHeadersMiddleware(async (req) => {
           if (phoneResponse.ok) {
             const phoneResult = await phoneResponse.json();
             if (!phoneResult.valid) {
-              return jsonResponse({ error: phoneResult.reason || "Invalid phone number" }, 400);
+              return new Response(
+                JSON.stringify({ error: phoneResult.reason || "Invalid phone number" }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
             }
           }
         } catch (phoneError) {
@@ -244,7 +272,10 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (createError || !customerUser) {
         console.error('Failed to create customer user:', createError);
-        return jsonResponse({ error: "Failed to create account" }, 500);
+        return new Response(
+          JSON.stringify({ error: "Failed to create account" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Send verification email (async, don't wait for it)
@@ -262,6 +293,7 @@ serve(secureHeadersMiddleware(async (req) => {
         }),
       }).catch((err: unknown) => {
         console.error('Failed to send verification email:', err);
+        // Don't fail signup if email sending fails
       });
 
       // Create marketplace profile for business buyers
@@ -275,6 +307,7 @@ serve(secureHeadersMiddleware(async (req) => {
             .maybeSingle();
 
           if (!existingProfile) {
+            // Create new marketplace profile (buyer profile)
             const { error: profileError } = await supabase
               .from('marketplace_profiles')
               .insert({
@@ -283,18 +316,22 @@ serve(secureHeadersMiddleware(async (req) => {
                 license_number: businessLicenseNumber || null,
                 marketplace_status: 'pending',
                 license_verified: false,
-                can_sell: false,
+                can_sell: false, // Buyers can't sell, only purchase
               });
 
             if (profileError) {
               console.error('Failed to create marketplace profile:', profileError);
+              // Don't fail signup if profile creation fails - user can complete it later
+            } else {
+              console.error('Marketplace profile created for business buyer:', businessName);
             }
           } else {
+            // Update existing profile with business buyer info
             const { error: updateError } = await supabase
               .from('marketplace_profiles')
               .update({
                 business_name: businessName,
-                license_number: businessLicenseNumber || null,
+                license_number: businessLicenseNumber || '',
               })
               .eq('id', existingProfile.id);
 
@@ -304,18 +341,22 @@ serve(secureHeadersMiddleware(async (req) => {
           }
         } catch (profileErr) {
           console.error('Error creating marketplace profile:', profileErr);
+          // Don't fail signup if profile creation fails
         }
       }
 
-      console.log('Customer signup successful:', customerUser.id);
+      console.error('Customer signup successful:', email);
 
-      return jsonResponse({
-        success: true,
-        message: "Account created successfully. Please check your email to verify your account.",
-        requires_verification: true,
-        customer_user_id: customerUser.id,
-        is_business_buyer: isBusinessBuyer || false,
-      }, 201);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Account created successfully. Please check your email to verify your account.",
+          requires_verification: true,
+          customer_user_id: customerUser.id,
+          is_business_buyer: isBusinessBuyer || false,
+        }),
+        { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (action === "login") {
@@ -323,7 +364,13 @@ serve(secureHeadersMiddleware(async (req) => {
       const validationResult = loginSchema.safeParse(requestBody);
       if (!validationResult.success) {
         const zodError = validationResult as { success: false; error: { errors: unknown[] } };
-        return jsonResponse({ error: "Validation failed", details: zodError.error.errors }, 400);
+        return new Response(
+          JSON.stringify({
+            error: "Validation failed",
+            details: zodError.error.errors
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const { email, password, tenantSlug } = validationResult.data;
@@ -344,7 +391,10 @@ serve(secureHeadersMiddleware(async (req) => {
           userAgent,
           metadata: { tenantSlug, failedAttempts: bruteForceResult.failedAttempts },
         });
-        return jsonResponse({ error: GENERIC_AUTH_ERROR }, 401);
+        return new Response(
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Find tenant by slug
@@ -356,7 +406,10 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (tenantError || !tenant) {
-        return jsonResponse({ error: "Tenant not found or inactive" }, 404);
+        return new Response(
+          JSON.stringify({ error: "Tenant not found or inactive" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Find customer user
@@ -378,7 +431,10 @@ serve(secureHeadersMiddleware(async (req) => {
           userAgent,
           metadata: { tenantSlug },
         });
-        return jsonResponse({ error: GENERIC_AUTH_ERROR }, 401);
+        return new Response(
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Verify password
@@ -393,17 +449,23 @@ serve(secureHeadersMiddleware(async (req) => {
           userAgent,
           metadata: { tenantSlug, tenantId: tenant.id },
         });
-        return jsonResponse({ error: GENERIC_AUTH_ERROR }, 401);
+        return new Response(
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Check email verification
       if (!customerUser.email_verified) {
-        return jsonResponse({
-          error: "Email not verified",
-          requires_verification: true,
-          customer_user_id: customerUser.id,
-          message: "Please verify your email address before logging in. Check your inbox for the verification code."
-        }, 403);
+        return new Response(
+          JSON.stringify({
+            error: "Email not verified",
+            requires_verification: true,
+            customer_user_id: customerUser.id,
+            message: "Please verify your email address before logging in. Check your inbox for the verification code."
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Get linked customer record if exists
@@ -418,14 +480,17 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       // Session fixation protection: Invalidate all pre-existing sessions for this customer
+      // This ensures a fresh session state on authentication, preventing session hijacking
       try {
         await supabase
           .from('customer_sessions')
           .delete()
           .eq('customer_user_id', customerUser.id)
           .eq('tenant_id', tenant.id);
+        console.error('[SESSION_FIXATION] Previous customer sessions invalidated:', customerUser.id);
       } catch (sessionCleanupError) {
-        console.warn('Failed to invalidate previous customer sessions:', sessionCleanupError);
+        // Log but don't block login - session cleanup is best-effort
+        console.warn('[SESSION_FIXATION] Failed to invalidate previous customer sessions:', sessionCleanupError);
       }
 
       // Generate JWT token
@@ -459,36 +524,45 @@ serve(secureHeadersMiddleware(async (req) => {
         metadata: { tenantSlug, tenantId: tenant.id },
       });
 
-      return jsonResponse({
-        token,
-        customer: {
-          id: customerUser.id,
-          email: customerUser.email,
-          first_name: customerUser.first_name,
-          last_name: customerUser.last_name,
-          customer_id: customerUser.customer_id,
-          tenant_id: tenant.id,
-        },
-        tenant: {
-          id: tenant.id,
-          business_name: tenant.business_name,
-          slug: tenant.slug,
-        },
-        customerRecord: customer,
-      }, 200);
+      return new Response(
+        JSON.stringify({
+          token,
+          customer: {
+            id: customerUser.id,
+            email: customerUser.email,
+            first_name: customerUser.first_name,
+            last_name: customerUser.last_name,
+            customer_id: customerUser.customer_id,
+            tenant_id: tenant.id,
+          },
+          tenant: {
+            id: tenant.id,
+            business_name: tenant.business_name,
+            slug: tenant.slug,
+          },
+          customerRecord: customer,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (action === "verify") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return jsonResponse({ error: "No token provided" }, 401);
+        return new Response(
+          JSON.stringify({ error: "No token provided" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const token = authHeader.replace("Bearer ", "");
       const payload = await verifyCustomerToken(token);
 
       if (!payload) {
-        return jsonResponse({ error: "Invalid or expired token" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Verify session exists and is valid
@@ -500,20 +574,25 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (sessionError || !session) {
-        return jsonResponse({ error: "Session expired or invalid" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Session expired or invalid" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // Get customer user - use is_active (boolean column), not status
+      // Get customer user
       const { data: customerUser, error: customerError } = await supabase
         .from("customer_users")
         .select("*")
         .eq("id", payload.customer_user_id)
-        .eq("tenant_id", payload.tenant_id)
-        .eq("is_active", true)
+        .eq("status", "active")
         .maybeSingle();
 
       if (customerError || !customerUser) {
-        return jsonResponse({ error: "User not found or inactive" }, 401);
+        return new Response(
+          JSON.stringify({ error: "User not found or inactive" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Get tenant
@@ -525,48 +604,52 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (tenantError || !tenant) {
-        return jsonResponse({ error: "Tenant not found or inactive" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Tenant not found or inactive" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      return jsonResponse({
-        customer: {
-          id: customerUser.id,
-          email: customerUser.email,
-          first_name: customerUser.first_name,
-          last_name: customerUser.last_name,
-          customer_id: customerUser.customer_id,
-          tenant_id: tenant.id,
-        },
-        tenant: {
-          id: tenant.id,
-          business_name: tenant.business_name,
-          slug: tenant.slug,
-        },
-      }, 200);
+      return new Response(
+        JSON.stringify({
+          customer: {
+            id: customerUser.id,
+            email: customerUser.email,
+            first_name: customerUser.first_name,
+            last_name: customerUser.last_name,
+            customer_id: customerUser.customer_id,
+            tenant_id: tenant.id,
+          },
+          tenant: {
+            id: tenant.id,
+            business_name: tenant.business_name,
+            slug: tenant.slug,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (action === "logout") {
       const authHeader = req.headers.get("Authorization");
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
-        // Verify token ownership before deleting session
-        const payload = await verifyCustomerToken(token);
-        if (payload) {
-          await supabase
-            .from("customer_sessions")
-            .delete()
-            .eq("token", token)
-            .eq("customer_user_id", payload.customer_user_id);
-        }
+        await supabase.from("customer_sessions").delete().eq("token", token);
       }
 
-      return jsonResponse({ success: true }, 200);
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (action === "update-password") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return jsonResponse({ error: "Authorization required" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Authorization required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const rawBody = await req.json();
@@ -575,7 +658,13 @@ serve(secureHeadersMiddleware(async (req) => {
       const validationResult = updatePasswordSchema.safeParse(rawBody);
       if (!validationResult.success) {
         const zodError = validationResult as { success: false; error: { errors: unknown[] } };
-        return jsonResponse({ error: "Validation failed", details: zodError.error.errors }, 400);
+        return new Response(
+          JSON.stringify({
+            error: "Validation failed",
+            details: zodError.error.errors
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const { currentPassword, newPassword } = validationResult.data;
@@ -584,56 +673,75 @@ serve(secureHeadersMiddleware(async (req) => {
       const payload = await verifyCustomerToken(token);
 
       if (!payload) {
-        return jsonResponse({ error: "Invalid or expired token" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // Get customer user - use is_active (boolean column), add tenant_id filter
+      // Get customer user
       const { data: customerUser, error: customerError } = await supabase
         .from("customer_users")
         .select("*")
         .eq("id", payload.customer_user_id)
-        .eq("tenant_id", payload.tenant_id)
-        .eq("is_active", true)
+        .eq("status", "active")
         .maybeSingle();
 
       if (customerError || !customerUser) {
-        return jsonResponse({ error: "User not found or inactive" }, 401);
+        return new Response(
+          JSON.stringify({ error: "User not found or inactive" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Verify current password
       const validPassword = await comparePassword(currentPassword, customerUser.password_hash);
       if (!validPassword) {
-        return jsonResponse({ error: "Current password is incorrect" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Current password is incorrect" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Hash new password
       const newPasswordHash = await hashPassword(newPassword);
 
-      // Update password with tenant_id filter for defense-in-depth
+      // Update password
       const { error: updateError } = await supabase
         .from("customer_users")
         .update({ password_hash: newPasswordHash })
-        .eq("id", customerUser.id)
-        .eq("tenant_id", payload.tenant_id);
+        .eq("id", customerUser.id);
 
       if (updateError) {
-        return jsonResponse({ error: "Failed to update password" }, 500);
+        return new Response(
+          JSON.stringify({ error: "Failed to update password" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      return jsonResponse({ success: true, message: "Password updated successfully" }, 200);
+      return new Response(
+        JSON.stringify({ success: true, message: "Password updated successfully" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (action === "update-profile") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return jsonResponse({ error: "Authorization required" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Authorization required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const rawBody = await req.json();
       const validationResult = updateProfileSchema.safeParse(rawBody);
       if (!validationResult.success) {
         const zodError = validationResult as { success: false; error: { errors: unknown[] } };
-        return jsonResponse({ error: "Validation failed", details: zodError.error.errors }, 400);
+        return new Response(
+          JSON.stringify({ error: "Validation failed", details: zodError.error.errors }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const { firstName, lastName, phone } = validationResult.data;
@@ -641,7 +749,10 @@ serve(secureHeadersMiddleware(async (req) => {
       const payload = await verifyCustomerToken(token);
 
       if (!payload) {
-        return jsonResponse({ error: "Invalid or expired token" }, 401);
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const { error: updateError } = await supabase
@@ -656,15 +767,28 @@ serve(secureHeadersMiddleware(async (req) => {
         .eq("tenant_id", payload.tenant_id);
 
       if (updateError) {
-        return jsonResponse({ error: "Failed to update profile" }, 500);
+        return new Response(
+          JSON.stringify({ error: "Failed to update profile" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      return jsonResponse({ success: true, message: "Profile updated successfully" }, 200);
+      return new Response(
+        JSON.stringify({ success: true, message: "Profile updated successfully" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    return jsonResponse({ error: "Invalid action" }, 400);
+    return new Response(
+      JSON.stringify({ error: "Invalid action" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("Customer auth error:", error);
-    return jsonResponse({ error: "Authentication failed" }, 500);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 }));
+

@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts } from '@/hooks/useRealtimePOS';
-import { formatSmartDate, formatCurrency } from '@/lib/formatters';
+import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function ZReportPage() {
@@ -73,7 +73,7 @@ export default function ZReportPage() {
                     <span className="text-muted-foreground">
                       {formatSmartDate(shift.ended_at)}
                     </span>
-                    <Badge variant="outline">{formatCurrency(shift.total_sales)}</Badge>
+                    <Badge variant="outline">${shift.total_sales.toFixed(2)}</Badge>
                   </div>
                 </SelectItem>
               ))}

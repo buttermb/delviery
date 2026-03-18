@@ -175,7 +175,7 @@ export function StorefrontLiveOrders() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
-  const [soundEnabled, setSoundEnabled] = useState(isSoundEnabled());
+  const [soundEnabled, setSoundEnabled] = useState(isSoundEnabled);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);

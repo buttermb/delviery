@@ -638,11 +638,6 @@ export const queryKeys = {
       byToken: (token: string) => [...queryKeys.crm.invoices.all(), 'token', token] as const,
       byClient: (clientId: string) => [...queryKeys.crm.invoices.all(), 'client', clientId] as const,
       recent: (limit: number) => [...queryKeys.crm.invoices.lists(), 'recent', limit] as const,
-      reminders: (invoiceId: string) => [...queryKeys.crm.invoices.all(), 'reminders', invoiceId] as const,
-    },
-    creditNotes: {
-      all: () => [...queryKeys.crm.all, 'credit-notes'] as const,
-      byInvoice: (invoiceId: string) => [...queryKeys.crm.creditNotes.all(), 'invoice', invoiceId] as const,
     },
     preOrders: {
       all: () => [...queryKeys.crm.all, 'pre-orders'] as const,
@@ -756,8 +751,8 @@ export const queryKeys = {
   // Collections
   collections: {
     all: ['collections'] as const,
-    mode: (tenantId?: string) => [...queryKeys.collections.all, 'mode', { tenantId }] as const,
-    activities: (clientId?: string | null) => [...queryKeys.collections.all, 'activities', { clientId }] as const,
+    mode: (tenantId?: string) => ['collection-mode', tenantId] as const,
+    activities: (clientId: string) => ['collection-activities', clientId] as const,
   },
 
   // Tags
@@ -1521,11 +1516,6 @@ export const queryKeys = {
   // Chat / Conversations
   chat: {
     all: ['chat'] as const,
-    sessions: {
-      all: () => [...queryKeys.chat.all, 'sessions'] as const,
-      byTenant: (tenantId?: string) =>
-        [...queryKeys.chat.sessions.all(), tenantId] as const,
-    },
     conversations: {
       all: () => [...queryKeys.chat.all, 'conversations'] as const,
       list: (userId: string, userType: string, tenantId?: string) =>
@@ -2253,6 +2243,12 @@ export const queryKeys = {
       ['storefront-settings', tenantId] as const,
   },
 
+  // Vendor Orders (useVendorOrders hook)
+  vendorOrdersHook: {
+    list: (tenantId?: string, options?: Record<string, unknown>) =>
+      ['vendors', 'list', tenantId, options] as const,
+  },
+
   // Unified Orders
   unifiedOrders: {
     all: ['unified-orders'] as const,
@@ -2895,12 +2891,6 @@ export const queryKeys = {
       ['geocode-address', address] as const,
   },
 
-  // Reverse Geocode (lat/lng → human-readable address)
-  reverseGeocode: {
-    byCoords: (lat?: number, lng?: number) =>
-      ['reverse-geocode', lat, lng] as const,
-  },
-
   // Order Analytics Insights
   orderAnalyticsInsights: {
     byOrder: (tenantId?: string, orderId?: string, customerId?: string) =>
@@ -3346,15 +3336,6 @@ export const queryKeys = {
   // Marketplace Order Items (wholesale line items)
   marketplaceOrderItems: {
     all: ['marketplace-order-items'] as const,
-  },
-
-  // Customer Notification Preferences
-  customerNotificationPreferences: {
-    all: ['customer-notification-preferences'] as const,
-    byCustomer: (tenantId?: string, customerId?: string) =>
-      ['customer-notification-preferences', tenantId, customerId] as const,
-    byTenant: (tenantId?: string) =>
-      ['customer-notification-preferences', 'tenant', tenantId] as const,
   },
 
   // Compliance Reports (settings, audit logs)

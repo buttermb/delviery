@@ -43,9 +43,7 @@ import {
     X,
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const STATUS_COLORS: Record<string, string> = {
     draft: 'bg-gray-500',
@@ -83,7 +81,7 @@ function VendorDetailDialog({ open, onOpenChange, vendor }: VendorDetailDialogPr
                             <Building2 className="h-5 w-5" />
                             {vendor.name}
                         </DialogTitle>
-                        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} aria-label="Close vendor details">
+                        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
@@ -272,14 +270,11 @@ export default function VendorOperationsPage() {
     const [selectedVendor, setSelectedVendor] = useState<VendorWithStats | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-    const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
-
     const filteredVendors = vendors?.filter((vendor) => {
         const matchesSearch =
-            !sanitizedSearch ||
-            vendor.name.toLowerCase().includes(sanitizedSearch) ||
-            vendor.contact_name?.toLowerCase().includes(sanitizedSearch) ||
-            vendor.contact_email?.toLowerCase().includes(sanitizedSearch);
+            vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vendor.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vendor.contact_email?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesFilter =
             filter === 'all' ||
@@ -296,61 +291,8 @@ export default function VendorOperationsPage() {
 
     if (accountLoading || isLoading) {
         return (
-            <div className="space-y-4 p-2 sm:p-4 md:p-4">
-                {/* Header skeleton */}
-                <div>
-                    <Skeleton className="h-7 w-32" />
-                    <Skeleton className="h-4 w-64 mt-2" />
-                </div>
-                {/* Stats skeleton */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <Card key={`stat-skel-${i}`}>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-24" />
-                                        <Skeleton className="h-8 w-16" />
-                                    </div>
-                                    <Skeleton className="h-8 w-8 rounded" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-                {/* Filter skeleton */}
-                <Card className="p-4 sm:p-6">
-                    <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
-                        <Skeleton className="h-11 flex-1" />
-                        <div className="flex gap-2">
-                            <Skeleton className="h-11 w-16" />
-                            <Skeleton className="h-11 w-16" />
-                            <Skeleton className="h-11 w-20" />
-                        </div>
-                    </div>
-                </Card>
-                {/* Table skeleton */}
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-56 mt-1" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                                <div key={`row-skel-${i}`} className="flex items-center gap-4">
-                                    <Skeleton className="h-4 w-4 rounded" />
-                                    <Skeleton className="h-4 flex-1" />
-                                    <Skeleton className="h-4 w-24" />
-                                    <Skeleton className="h-5 w-16 rounded-full" />
-                                    <Skeleton className="h-4 w-12" />
-                                    <Skeleton className="h-4 w-20" />
-                                    <Skeleton className="h-4 w-20" />
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -440,8 +382,6 @@ export default function VendorOperationsPage() {
                             size="sm"
                             onClick={() => setFilter('all')}
                             className="min-h-[44px] touch-manipulation"
-                            aria-label="Show all vendors"
-                            aria-pressed={filter === 'all'}
                         >
                             All
                         </Button>
@@ -450,8 +390,6 @@ export default function VendorOperationsPage() {
                             size="sm"
                             onClick={() => setFilter('active')}
                             className="min-h-[44px] touch-manipulation"
-                            aria-label="Show active vendors only"
-                            aria-pressed={filter === 'active'}
                         >
                             Active
                         </Button>
@@ -460,8 +398,6 @@ export default function VendorOperationsPage() {
                             size="sm"
                             onClick={() => setFilter('inactive')}
                             className="min-h-[44px] touch-manipulation"
-                            aria-label="Show inactive vendors only"
-                            aria-pressed={filter === 'inactive'}
                         >
                             Inactive
                         </Button>
@@ -513,17 +449,8 @@ export default function VendorOperationsPage() {
                                     {filteredVendors.map((vendor) => (
                                         <TableRow
                                             key={vendor.id}
-                                            className="cursor-pointer hover:bg-muted/50 transition-colors duration-200"
+                                            className="cursor-pointer hover:bg-muted/50"
                                             onClick={() => handleView(vendor)}
-                                            aria-label={`View details for ${vendor.name}`}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    handleView(vendor);
-                                                }
-                                            }}
                                         >
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">

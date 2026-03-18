@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -35,11 +34,8 @@ export default function FleetMapPage() {
   const tenantId = tenant?.id ?? '';
   const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
 
-  const [searchParams] = useSearchParams();
   const [panelTab, setPanelTab] = useState<PanelTab>('drivers');
-  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(
-    searchParams.get('driver'),
-  );
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
 
   // -----------------------------------------------------------------------
   // Fetch couriers

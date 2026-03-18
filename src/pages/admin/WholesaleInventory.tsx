@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Plus, ArrowRightLeft, TrendingUp, Truck } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useWholesaleInventory, useWholesaleDeliveries } from "@/hooks/useWholesaleData";
+import { useWholesaleInventory, useWholesaleDeliveries, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
@@ -32,8 +32,9 @@ export default function WholesaleInventory() {
   // Fetch real data
   const { data: inventory = [], isLoading: inventoryLoading, isError: isInventoryError, error: inventoryError, refetch: refetchInventory } = useWholesaleInventory(tenant?.id);
   const { data: deliveries = [], isLoading: deliveriesLoading, isError: isDeliveriesError, error: deliveriesError, refetch: refetchDeliveries } = useWholesaleDeliveries();
+  const { data: _orders = [], isLoading: ordersLoading, isError: isOrdersError, error: ordersError, refetch: refetchOrders } = useWholesaleOrders();
 
-  const isLoading = inventoryLoading || deliveriesLoading;
+  const isLoading = inventoryLoading || deliveriesLoading || ordersLoading;
 
   // Process Inventory Data
   const totalStockLbs = inventory.reduce((sum, item) => sum + (Number(item.quantity_lbs) || 0), 0);
@@ -48,26 +49,17 @@ export default function WholesaleInventory() {
     avg_cost_per_lb: avgCostPerLb
   };
 
-  // Group by Category
-  interface WarehouseGroup {
-    id: string;
-    name: string;
-    location: string;
-    current_stock_lbs: number;
-    value: number;
-    status: string;
-    inventory: InventoryDisplayItem[];
-  }
-
-  const warehouseMap = new Map<string, WarehouseGroup>();
+  // Group by Warehouse
+  const warehouseMap = new Map();
 
   inventory.forEach(item => {
-    const category = item.category || "Uncategorized";
-    if (!warehouseMap.has(category)) {
-      warehouseMap.set(category, {
-        id: category,
-        name: category,
-        location: category,
+    const location = (item as unknown as Record<string, unknown>).warehouse_location as string || "Unassigned";
+    if (!warehouseMap.has(location)) {
+      warehouseMap.set(location, {
+        id: location,
+        name: location,
+        location: location,
+        capacity_lbs: 1000, // Placeholder as we don't have capacity in DB yet
         current_stock_lbs: 0,
         value: 0,
         status: "good",
@@ -75,39 +67,37 @@ export default function WholesaleInventory() {
       });
     }
 
-    const group = warehouseMap.get(category)!;
-    const qty = Number(item.quantity_lbs) || 0;
-    const cost = Number(item.cost_per_lb) || 0;
+    const warehouse = warehouseMap.get(location);
+    warehouse.current_stock_lbs += Number(item.quantity_lbs) || 0;
+    warehouse.value += (Number(item.quantity_lbs) || 0) * (Number(item.cost_per_lb) || 0);
 
-    group.current_stock_lbs += qty;
-    group.value += qty * cost;
-
+    // Determine status based on quantity (simplified logic)
     let status = "good";
-    if (qty < 10) status = "very_low";
-    else if (qty < 25) status = "low";
+    if ((Number(item.quantity_lbs) || 0) < 10) status = "very_low";
+    else if ((Number(item.quantity_lbs) || 0) < 25) status = "low";
 
-    group.inventory.push({
-      id: item.id || `inv-${item.product_name}-${category}`,
+    warehouse.inventory.push({
+      id: item.id || `inv-${item.product_name}-${location}`, // Deterministic fallback ID
       strain: item.product_name,
-      weight_lbs: qty,
-      cost_per_lb: cost,
-      value: qty * cost,
-      status,
+      weight_lbs: Number(item.quantity_lbs) || 0,
+      cost_per_lb: Number(item.cost_per_lb) || 0,
+      value: (Number(item.quantity_lbs) || 0) * (Number(item.cost_per_lb) || 0),
+      status: status
     });
   });
 
   const warehouses = Array.from(warehouseMap.values());
 
-  // Process Active Deliveries — uses joined order/runner data from useWholesaleDeliveries
+  // Process Active Deliveries
   const activeDeliveries = deliveries
     .filter(d => ['pending', 'in_transit'].includes(d.status))
     .slice(0, 5)
     .map(d => ({
       id: d.id,
       runner: d.runner?.full_name || "Unassigned",
-      destination: d.order?.delivery_address || "Address pending",
-      orderNumber: d.order?.order_number || "N/A",
-      status: d.status,
+      weight_lbs: 0, // We'd need to sum order items to get weight
+      destination: "Client Location", // We'd need client address
+      eta: "TBD"
     }));
 
   // Fetch Top Movers from wholesale_order_items (last 30 days)
@@ -167,8 +157,6 @@ export default function WholesaleInventory() {
       return aggregated;
     },
     enabled: !!tenant?.id,
-    staleTime: 60_000,
-    gcTime: 300_000,
     retry: 2,
   });
 
@@ -243,9 +231,9 @@ export default function WholesaleInventory() {
     return <EnhancedLoadingState variant="dashboard" />;
   }
 
-  const isError = isInventoryError || isDeliveriesError || isTopMoversError;
+  const isError = isInventoryError || isDeliveriesError || isOrdersError || isTopMoversError;
   if (isError) {
-    const errorMessage = inventoryError?.message || deliveriesError?.message || topMoversError?.message || 'An unexpected error occurred';
+    const errorMessage = inventoryError?.message || deliveriesError?.message || ordersError?.message || topMoversError?.message || 'An unexpected error occurred';
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <p className="text-destructive font-medium">Failed to load data</p>
@@ -253,6 +241,7 @@ export default function WholesaleInventory() {
         <Button variant="outline" size="sm" className="mt-4" onClick={() => {
           if (isInventoryError) refetchInventory();
           if (isDeliveriesError) refetchDeliveries();
+          if (isOrdersError) refetchOrders();
           if (isTopMoversError) refetchTopMovers();
         }}>
           Try Again
@@ -354,7 +343,7 @@ export default function WholesaleInventory() {
                     <p className="text-xs text-muted-foreground">{warehouse.location}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">{warehouse.current_stock_lbs.toLocaleString()} lbs</div>
+                    <div className="text-sm font-medium">{warehouse.current_stock_lbs} / {warehouse.capacity_lbs} lbs</div>
                     <div className="text-xs text-muted-foreground">{formatCurrency(warehouse.value)} value</div>
                   </div>
                 </div>
@@ -406,15 +395,12 @@ export default function WholesaleInventory() {
                   <div key={delivery.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <div className="font-medium text-sm">{delivery.runner}</div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[180px]">{delivery.destination}</div>
+                      <div className="text-xs text-muted-foreground">{delivery.destination}</div>
                     </div>
                     <div className="text-right">
-                      <Badge variant="outline" className={delivery.status === 'in_transit'
-                        ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-                        : "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
-                      }>
-                        {delivery.status === 'in_transit' ? 'In Transit' : 'Pending'}
-                      </Badge>
+                      <div className="text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                        {delivery.eta}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -435,33 +421,24 @@ export default function WholesaleInventory() {
               </h3>
             </div>
             <div className="p-4 space-y-4">
-              {topMovers.length > 0 ? (
-                topMovers.map((item) => {
-                  const maxMoved = topMovers[0]?.lbs_moved || 1;
-                  return (
-                    <div key={item.strain} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{item.strain}</span>
-                        <span className="text-emerald-500 font-medium">{formatCurrency(item.profit)} profit</span>
-                      </div>
-                      <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-emerald-500 h-full rounded-full"
-                          style={{ width: `${(item.lbs_moved / maxMoved) * 100}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{item.lbs_moved} lbs moved</span>
-                        <span>{formatCurrency(item.revenue)} rev</span>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-4 text-muted-foreground text-sm">
-                  No sales data in the last 30 days
+              {topMovers.map((item, idx) => (
+                <div key={idx} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.strain}</span>
+                    <span className="text-emerald-500 font-medium">{formatCurrency(item.profit)} profit</span>
+                  </div>
+                  <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-emerald-500 h-full rounded-full"
+                      style={{ width: `${(item.lbs_moved / 150) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{item.lbs_moved} lbs moved</span>
+                    <span>{formatCurrency(item.revenue)} rev</span>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </Card>
         </div>
@@ -477,22 +454,16 @@ export default function WholesaleInventory() {
         <div className="mb-6">
           <h3 className="font-semibold mb-3">Top Movers (This Month)</h3>
           <div className="space-y-3">
-            {topMovers.length > 0 ? (
-              topMovers.map((item, idx) => (
-                <div key={item.strain} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">{idx + 1}. {item.strain} - {item.lbs_moved} lbs moved</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatCurrency(item.revenue)} revenue, {formatCurrency(item.profit)} profit
-                    </div>
+            {topMovers.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <div className="font-medium">{idx + 1}. {item.strain} - {item.lbs_moved} lbs moved</div>
+                  <div className="text-sm text-muted-foreground">
+                    {formatCurrency(item.revenue)} revenue, {formatCurrency(item.profit)} profit
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-sm text-muted-foreground p-3">
-                No sales activity this month
               </div>
-            )}
+            ))}
           </div>
         </div>
 
@@ -503,11 +474,11 @@ export default function WholesaleInventory() {
               .filter(item => (Number(item.quantity_lbs) || 0) < 25)
               .sort((a, b) => (Number(a.quantity_lbs) || 0) - (Number(b.quantity_lbs) || 0))
               .slice(0, 5)
-              .map((item) => {
+              .map((item, idx) => {
                 const qty = Number(item.quantity_lbs) || 0;
                 const isVeryLow = qty < 10;
                 return (
-                  <div key={item.id || item.product_name} className="flex items-center gap-2 text-sm">
+                  <div key={idx} className="flex items-center gap-2 text-sm">
                     <span className={isVeryLow ? "text-destructive" : "text-yellow-500"}>
                       {isVeryLow ? "!" : "*"}
                     </span>

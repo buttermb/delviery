@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Fragment, useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -36,6 +37,13 @@ import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBounda
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
+
+const _TabSkeleton = () => (
+    <div className="p-4 space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-64 w-full" />
+    </div>
+);
 
 const tabs = [
     // Learning
@@ -93,22 +101,18 @@ const tutorials = [
 // FAQ items
 const faqs = [
     {
-        id: 'add-products',
         question: 'How do I add products to my inventory?',
         answer: 'You can add products individually through the Products page or import multiple products at once using a CSV file.',
     },
     {
-        id: 'share-menu',
         question: 'How do I share a menu with customers?',
         answer: 'After creating a menu, you\'ll receive a unique link that you can share. Customers can access it without creating an account.',
     },
     {
-        id: 'trial-end',
         question: 'What happens when my trial ends?',
         answer: 'Your data is preserved when your trial ends. Upgrade to a paid plan to continue using the platform.',
     },
     {
-        id: 'platform-fee',
         question: 'How is the platform fee calculated?',
         answer: 'We charge a small platform fee on completed orders. View your transactions in the Billing section.',
     },
@@ -130,14 +134,7 @@ export default function HelpHubPage() {
     const completedSteps = onboardingSteps.filter(s => s.completed).length;
     const progressPercentage = (completedSteps / onboardingSteps.length) * 100;
 
-    const isTicketValid = ticketSubject.trim().length > 0 && ticketMessage.trim().length > 0;
-    const isFeedbackValid = feedbackText.trim().length > 0;
-
     const handleSubmitTicket = () => {
-        if (!isTicketValid) {
-            toast.error('Please fill in both subject and message.');
-            return;
-        }
         toast.success('Ticket Submitted', {
             description: 'We\'ll get back to you within 24 hours.',
         });
@@ -146,10 +143,6 @@ export default function HelpHubPage() {
     };
 
     const handleSubmitFeedback = () => {
-        if (!isFeedbackValid) {
-            toast.error('Please describe your feedback before submitting.');
-            return;
-        }
         toast.success(
             feedbackType === 'bug' ? 'Bug Report Submitted' : 'Feature Request Submitted',
             { description: 'Thank you for your feedback!' },
@@ -314,7 +307,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Complete documentation for all features
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleViewGuide} aria-label="Open user guide documentation">
+                                    <Button variant="outline" className="w-full" onClick={handleViewGuide}>
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         View Guide
                                     </Button>
@@ -330,7 +323,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Technical documentation for developers
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleViewApiDocs} aria-label="Open API reference documentation">
+                                    <Button variant="outline" className="w-full" onClick={handleViewApiDocs}>
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         View API Docs
                                     </Button>
@@ -346,7 +339,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         All tutorial videos in one place
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleWatchVideos} aria-label="Browse video tutorial library">
+                                    <Button variant="outline" className="w-full" onClick={handleWatchVideos}>
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         Watch Videos
                                     </Button>
@@ -364,8 +357,8 @@ export default function HelpHubPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {faqs.map((faq) => (
-                                        <div key={faq.id} className="border-b pb-4 last:border-0 last:pb-0">
+                                    {faqs.map((faq, index) => (
+                                        <div key={index} className="border-b pb-4 last:border-0 last:pb-0">
                                             <h4 className="font-semibold mb-2">{faq.question}</h4>
                                             <p className="text-sm text-muted-foreground">{faq.answer}</p>
                                         </div>
@@ -398,7 +391,6 @@ export default function HelpHubPage() {
                                         placeholder="Brief description of your issue"
                                         value={ticketSubject}
                                         onChange={(e) => setTicketSubject(e.target.value)}
-                                        maxLength={200}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -409,10 +401,9 @@ export default function HelpHubPage() {
                                         rows={5}
                                         value={ticketMessage}
                                         onChange={(e) => setTicketMessage(e.target.value)}
-                                        maxLength={2000}
                                     />
                                 </div>
-                                <Button onClick={handleSubmitTicket} className="w-full" disabled={!isTicketValid}>
+                                <Button onClick={handleSubmitTicket} className="w-full">
                                     Submit Ticket
                                 </Button>
                             </CardContent>
@@ -429,7 +420,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Chat with our support team in real-time
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleStartChat} aria-label="Start live chat with support">
+                                    <Button variant="outline" className="w-full" onClick={handleStartChat}>
                                         Start Chat
                                     </Button>
                                 </CardContent>
@@ -444,7 +435,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Configure in Settings
                                     </p>
-                                    <Button variant="outline" className="w-full" disabled aria-label="Email support - configure in Settings">
+                                    <Button variant="outline" className="w-full" disabled>
                                         Send Email
                                     </Button>
                                 </CardContent>
@@ -460,7 +451,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Dedicated support with 1-hour response time
                                     </p>
-                                    <Button className="w-full" onClick={handleUpgradeEnterprise} aria-label="Learn about enterprise pricing and support">
+                                    <Button className="w-full" onClick={handleUpgradeEnterprise}>
                                         Upgrade to Enterprise
                                     </Button>
                                 </CardContent>
@@ -485,8 +476,6 @@ export default function HelpHubPage() {
                                         variant={feedbackType === 'bug' ? 'default' : 'outline'}
                                         onClick={() => setFeedbackType('bug')}
                                         className="flex-1"
-                                        aria-label="Switch to bug report"
-                                        aria-pressed={feedbackType === 'bug'}
                                     >
                                         <Bug className="h-4 w-4 mr-2" />
                                         Report Bug
@@ -495,8 +484,6 @@ export default function HelpHubPage() {
                                         variant={feedbackType === 'feature' ? 'default' : 'outline'}
                                         onClick={() => setFeedbackType('feature')}
                                         className="flex-1"
-                                        aria-label="Switch to feature request"
-                                        aria-pressed={feedbackType === 'feature'}
                                     >
                                         <Lightbulb className="h-4 w-4 mr-2" />
                                         Request Feature
@@ -517,11 +504,10 @@ export default function HelpHubPage() {
                                         rows={6}
                                         value={feedbackText}
                                         onChange={(e) => setFeedbackText(e.target.value)}
-                                        maxLength={2000}
                                     />
                                 </div>
 
-                                <Button onClick={handleSubmitFeedback} className="w-full" disabled={!isFeedbackValid}>
+                                <Button onClick={handleSubmitFeedback} className="w-full">
                                     Submit {feedbackType === 'bug' ? 'Bug Report' : 'Feature Request'}
                                 </Button>
                             </CardContent>

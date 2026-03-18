@@ -1,6 +1,6 @@
 // Settings Components - Tasks 391-410
 export { TenantGeneralSettings } from './TenantGeneralSettings';
-
+export { NotificationPreferences } from './NotificationPreferences';
 export { BillingSettings } from './BillingSettings';
 export { TaxSettings } from './TaxSettings';
 export { BusinessHoursSettings } from './BusinessHoursSettings';

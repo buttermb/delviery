@@ -1,3 +1,5 @@
+// Marketplace tables not in generated types yet
+
 /**
  * Storefront Coupons Page
  * Create and manage discount coupons for the store
@@ -5,10 +7,9 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import type { Database } from '@/integrations/supabase/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/ui/SaveButton';
@@ -62,36 +63,47 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type CouponRow = Database['public']['Tables']['marketplace_coupons']['Row'];
+interface Coupon {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  minimum_order: number | null;
+  max_uses: number | null;
+  uses_count: number;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+  max_discount_amount?: number | null;
+}
 
 interface CouponFormData {
   code: string;
   discount_type: 'percentage' | 'fixed';
   discount_value: string;
-  min_order_amount: string;
-  usage_limit: string;
-  end_date: string;
+  minimum_order: string;
+  max_uses: string;
+  expires_at: string;
 }
 
 const initialFormData: CouponFormData = {
   code: '',
   discount_type: 'percentage',
   discount_value: '',
-  min_order_amount: '',
-  usage_limit: '',
-  end_date: '',
+  minimum_order: '',
+  max_uses: '',
+  expires_at: '',
 };
 
 export default function StorefrontCoupons() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<CouponRow | null>(null);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [formData, setFormData] = useState<CouponFormData>(initialFormData);
 
   // Fetch store
@@ -114,34 +126,35 @@ export default function StorefrontCoupons() {
   const { data: coupons = [], isLoading } = useQuery({
     queryKey: queryKeys.storefrontCoupons.byStore(store?.id),
     queryFn: async () => {
-      if (!store?.id || !tenantId) return [];
+      if (!store?.id) return [];
 
       const { data, error } = await supabase
         .from('marketplace_coupons')
-        .select('id, code, discount_type, discount_value, min_order_amount, usage_limit, used_count, is_active, end_date, created_at, max_discount_amount, store_id, start_date, description, updated_at')
+        .select('id, code, discount_type, discount_value, minimum_order, max_uses, uses_count, is_active, expires_at, created_at, max_discount_amount')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data ?? []) as CouponRow[];
+      return (data ?? []) as unknown as Coupon[];
     },
-    enabled: !!store?.id && !!tenantId,
+    enabled: !!store?.id,
     retry: 2,
   });
 
   // Create/Update coupon mutation
   const saveCouponMutation = useMutation({
     mutationFn: async (data: CouponFormData) => {
-      if (!store?.id || !tenantId) throw new Error('No store');
+      if (!store?.id) throw new Error('No store');
 
       const couponData = {
         store_id: store.id,
+        tenant_id: tenant?.id, // Ensure tenant_id is included
         code: data.code.toUpperCase().trim(),
         discount_type: data.discount_type,
         discount_value: parseFloat(data.discount_value),
-        min_order_amount: data.min_order_amount ? parseFloat(data.min_order_amount) : null,
-        usage_limit: data.usage_limit ? parseInt(data.usage_limit, 10) : null,
-        end_date: data.end_date || null,
+        minimum_order: data.minimum_order ? parseFloat(data.minimum_order) : null,
+        max_uses: data.max_uses ? parseInt(data.max_uses) : null,
+        expires_at: data.expires_at || null,
         is_active: true,
       };
 
@@ -149,8 +162,7 @@ export default function StorefrontCoupons() {
         const { error } = await supabase
           .from('marketplace_coupons')
           .update(couponData)
-          .eq('id', editingCoupon.id)
-          .eq('store_id', store.id);
+          .eq('id', editingCoupon.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
@@ -162,14 +174,13 @@ export default function StorefrontCoupons() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
       setIsDialogOpen(false);
-      const savedCode = formData.code.toUpperCase();
       setFormData(initialFormData);
       setEditingCoupon(null);
-      toast.success(`Coupon ${savedCode} has been saved.`);
+      toast.success("Coupon ${formData.code.toUpperCase()} has been saved.");
     },
     onError: (error: unknown) => {
       logger.error('Failed to save coupon', error, { component: 'StorefrontCoupons' });
-      toast.error('Error', { description: humanizeError(error) });
+      toast.error("Error", { description: humanizeError(error) });
     },
   });
 
@@ -188,10 +199,6 @@ export default function StorefrontCoupons() {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
       toast.success(isActive ? 'Coupon activated' : 'Coupon deactivated');
     },
-    onError: (error: unknown) => {
-      logger.error('Failed to toggle coupon status', error, { component: 'StorefrontCoupons' });
-      toast.error('Error', { description: humanizeError(error) });
-    },
   });
 
   // Delete coupon mutation
@@ -207,11 +214,7 @@ export default function StorefrontCoupons() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
-      toast.success('Coupon deleted');
-    },
-    onError: (error: unknown) => {
-      logger.error('Failed to delete coupon', error, { component: 'StorefrontCoupons' });
-      toast.error('Error', { description: humanizeError(error) });
+      toast.success("Coupon deleted");
     },
   });
 
@@ -221,15 +224,15 @@ export default function StorefrontCoupons() {
     setIsDialogOpen(true);
   };
 
-  const openEditDialog = (coupon: CouponRow) => {
+  const openEditDialog = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setFormData({
       code: coupon.code,
-      discount_type: coupon.discount_type as 'percentage' | 'fixed',
+      discount_type: coupon.discount_type,
       discount_value: coupon.discount_value.toString(),
-      min_order_amount: coupon.min_order_amount?.toString() ?? '',
-      usage_limit: coupon.usage_limit?.toString() ?? '',
-      end_date: coupon.end_date?.split('T')[0] ?? '',
+      minimum_order: coupon.minimum_order?.toString() ?? '',
+      max_uses: coupon.max_uses?.toString() ?? '',
+      expires_at: coupon.expires_at?.split('T')[0] ?? '',
     });
     setIsDialogOpen(true);
   };
@@ -251,7 +254,7 @@ export default function StorefrontCoupons() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.code || !formData.discount_value) {
-      toast.error('Please fill in the required fields');
+      toast.error("Please fill in the required fields");
       return;
     }
     saveCouponMutation.mutate(formData);
@@ -265,7 +268,7 @@ export default function StorefrontCoupons() {
             <p className="text-muted-foreground">Please create a store first.</p>
             <Button
               className="mt-4"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+              onClick={() => window.location.href = `/${tenantSlug}/admin/storefront`}
             >
               Go to Dashboard
             </Button>
@@ -276,7 +279,7 @@ export default function StorefrontCoupons() {
   }
 
   const activeCoupons = coupons.filter((c) => c.is_active);
-  const totalUses = coupons.reduce((sum, c) => sum + (c.used_count ?? 0), 0);
+  const totalUses = coupons.reduce((sum, c) => sum + (c.uses_count ?? 0), 0);
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -362,26 +365,26 @@ export default function StorefrontCoupons() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="min_order_amount">Minimum Order ($)</Label>
+                  <Label htmlFor="minimum_order">Minimum Order ($)</Label>
                   <Input
-                    id="min_order_amount"
+                    id="minimum_order"
                     type="number"
                     step="0.01"
-                    value={formData.min_order_amount}
+                    value={formData.minimum_order}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, min_order_amount: e.target.value }))
+                      setFormData((prev) => ({ ...prev, minimum_order: e.target.value }))
                     }
                     placeholder="50.00"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="usage_limit">Max Uses</Label>
+                  <Label htmlFor="max_uses">Max Uses</Label>
                   <Input
-                    id="usage_limit"
+                    id="max_uses"
                     type="number"
-                    value={formData.usage_limit}
+                    value={formData.max_uses}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, usage_limit: e.target.value }))
+                      setFormData((prev) => ({ ...prev, max_uses: e.target.value }))
                     }
                     placeholder="Unlimited"
                   />
@@ -389,13 +392,13 @@ export default function StorefrontCoupons() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="end_date">Expiration Date</Label>
+                <Label htmlFor="expires_at">Expiration Date</Label>
                 <Input
-                  id="end_date"
+                  id="expires_at"
                   type="date"
-                  value={formData.end_date}
+                  value={formData.expires_at}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, end_date: e.target.value }))
+                    setFormData((prev) => ({ ...prev, expires_at: e.target.value }))
                   }
                 />
               </div>
@@ -460,7 +463,7 @@ export default function StorefrontCoupons() {
           {isLoading ? (
             <div className="p-6 space-y-4">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={`skeleton-${i}`} className="h-16" />
+                <Skeleton key={i} className="h-16" />
               ))}
             </div>
           ) : coupons.length === 0 ? (
@@ -488,8 +491,8 @@ export default function StorefrontCoupons() {
               </TableHeader>
               <TableBody>
                 {coupons.map((coupon) => {
-                  const isExpired = coupon.end_date != null && new Date(coupon.end_date) < new Date();
-                  const isMaxedOut = coupon.usage_limit != null && (coupon.used_count ?? 0) >= coupon.usage_limit;
+                  const isExpired = coupon.expires_at && new Date(coupon.expires_at) < new Date();
+                  const isMaxedOut = coupon.max_uses && coupon.uses_count >= coupon.max_uses;
 
                   return (
                     <TableRow key={coupon.id}>
@@ -525,20 +528,20 @@ export default function StorefrontCoupons() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {coupon.min_order_amount
-                          ? formatCurrency(coupon.min_order_amount)
+                        {coupon.minimum_order
+                          ? formatCurrency(coupon.minimum_order)
                           : <span className="text-muted-foreground">-</span>}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge variant="outline">
-                          {coupon.used_count ?? 0} / {coupon.usage_limit ?? '∞'}
+                          {coupon.uses_count} / {coupon.max_uses || '∞'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {coupon.end_date ? (
+                        {coupon.expires_at ? (
                           <div className="flex items-center gap-1 text-sm">
                             <Calendar className="w-3 h-3" />
-                            {formatSmartDate(coupon.end_date)}
+                            {formatSmartDate(coupon.expires_at)}
                           </div>
                         ) : (
                           <span className="text-muted-foreground">Never</span>
@@ -566,7 +569,7 @@ export default function StorefrontCoupons() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Switch
-                            checked={coupon.is_active ?? false}
+                            checked={coupon.is_active}
                             onCheckedChange={(checked) =>
                               toggleStatusMutation.mutate({ id: coupon.id, isActive: checked })
                             }

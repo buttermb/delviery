@@ -12,10 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { logger } from '@/lib/logger';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { formatSmartDate } from '@/lib/formatters';
 import {
   Package,
@@ -28,8 +25,8 @@ import {
   DollarSign,
   ArrowRight,
   FileText,
+  Loader2,
   AlertCircle,
-  RefreshCw,
 } from 'lucide-react';
 import {
   Table,
@@ -59,65 +56,6 @@ const STATUS_COLORS: Record<string, string> = {
   partially_received: 'bg-yellow-500',
 };
 
-function POReceivingPageSkeleton() {
-  return (
-    <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
-      {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-40" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-      </div>
-
-      {/* Stats skeleton */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={`stat-skel-${i}`}>
-            <CardContent className="pt-4 sm:pt-6">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-7 w-12" />
-              </div>
-              <Skeleton className="h-3 w-24 mt-2" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Filters skeleton */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
-          <Skeleton className="h-11 flex-1" />
-          <Skeleton className="h-11 w-full lg:w-[200px]" />
-        </div>
-      </Card>
-
-      {/* Table skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-64" />
-          <Skeleton className="h-4 w-80" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={`row-skel-${i}`} className="flex items-center gap-4 py-3">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-9 w-24 ml-auto" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function POReceivingPage() {
   const { tenant } = useTenantAdminAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,7 +64,7 @@ export default function POReceivingPage() {
   const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
 
   // Fetch POs that are approved or submitted (ready for receiving)
-  const { data: purchaseOrders, isLoading: posLoading, isFetching } = useQuery({
+  const { data: purchaseOrders, isLoading: posLoading } = useQuery({
     queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id, receiving: true }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -156,7 +94,6 @@ export default function POReceivingPage() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 60_000,
   });
 
   // Fetch items for selected PO
@@ -167,7 +104,7 @@ export default function POReceivingPage() {
 
       const { data, error } = await supabase
         .from('purchase_order_items')
-        .select('id, purchase_order_id, product_id, product_name, quantity, received_quantity, unit_cost, total_cost, created_at')
+        .select('id, purchase_order_id, product_id, product_name, quantity_ordered, quantity_received, unit_price, total_price, created_at')
         .eq('purchase_order_id', selectedPO.id)
         .order('created_at', { ascending: true });
 
@@ -184,7 +121,7 @@ export default function POReceivingPage() {
 
   // Fetch vendor info for display
   const { data: vendors } = useQuery({
-    queryKey: queryKeys.vendors.byTenant(tenant?.id ?? ''),
+    queryKey: queryKeys.vendors.byTenant(tenant!.id),
     queryFn: async () => {
       if (!tenant?.id) return {};
 
@@ -206,20 +143,15 @@ export default function POReceivingPage() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 60_000,
   });
 
-  const sanitizedSearch = sanitizeSearchInput(searchTerm);
-
   const filteredPOs = purchaseOrders?.filter((po) => {
-    if (!sanitizedSearch) return true;
     const vendorName = vendors?.[po.vendor_id] ?? '';
-    const term = sanitizedSearch.toLowerCase();
-    return (
-      po.po_number?.toLowerCase().includes(term) ||
-      vendorName.toLowerCase().includes(term) ||
-      po.notes?.toLowerCase().includes(term)
-    );
+    const matchesSearch =
+      po.po_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
   }) ?? [];
 
   const handleReceive = (po: PurchaseOrder) => {
@@ -237,10 +169,6 @@ export default function POReceivingPage() {
     return po.expected_delivery_date === today;
   }).length ?? 0;
 
-  if (posLoading && !purchaseOrders) {
-    return <POReceivingPageSkeleton />;
-  }
-
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
@@ -251,12 +179,6 @@ export default function POReceivingPage() {
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Receive and inspect purchase orders from suppliers
-            {isFetching && !posLoading && (
-              <span className="inline-flex items-center gap-1 ml-2 text-xs text-muted-foreground">
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                Refreshing...
-              </span>
-            )}
           </p>
         </div>
       </div>
@@ -320,10 +242,7 @@ export default function POReceivingPage() {
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger
-              className="w-full lg:w-[200px] min-h-[44px] touch-manipulation"
-              aria-label="Filter by status"
-            >
+            <SelectTrigger className="w-full lg:w-[200px] min-h-[44px] touch-manipulation">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -347,18 +266,18 @@ export default function POReceivingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredPOs.length === 0 ? (
-            <EnhancedEmptyState
-              icon={Package}
-              title={sanitizedSearch ? 'No matching purchase orders' : 'No purchase orders awaiting receipt'}
-              description={sanitizedSearch ? 'Try adjusting your search terms' : 'Approved POs will appear here for receiving'}
-              primaryAction={sanitizedSearch ? {
-                label: 'Clear Search',
-                onClick: () => setSearchTerm(''),
-              } : undefined}
-              compact
-              designSystem="tenant-admin"
-            />
+          {posLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredPOs.length === 0 ? (
+            <div className="text-center py-8">
+              <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">No purchase orders awaiting receipt</p>
+              <p className="text-sm text-muted-foreground">
+                Approved POs will appear here for receiving
+              </p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -382,11 +301,10 @@ export default function POReceivingPage() {
                     return (
                       <TableRow
                         key={po.id}
-                        className={`cursor-pointer hover:bg-accent transition-colors duration-200 ${isOverdue ? 'bg-red-500/5' : isDueToday ? 'bg-orange-500/5' : ''}`}
+                        className={`cursor-pointer hover:bg-accent ${isOverdue ? 'bg-red-500/5' : isDueToday ? 'bg-orange-500/5' : ''}`}
                         onClick={() => handleReceive(po)}
                         role="button"
                         tabIndex={0}
-                        aria-label={`Purchase order ${po.po_number}, ${po.status === 'approved' ? 'ready to receive' : 'pending approval'}`}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleReceive(po); } }}
                       >
                         <TableCell className="font-medium">
@@ -440,7 +358,6 @@ export default function POReceivingPage() {
                                 size="sm"
                                 onClick={() => handleReceive(po)}
                                 className="min-h-[36px] touch-manipulation bg-emerald-500 hover:bg-emerald-600"
-                                aria-label={`Receive purchase order ${po.po_number}`}
                               >
                                 <Truck className="h-4 w-4 mr-2" />
                                 Receive
@@ -452,7 +369,6 @@ export default function POReceivingPage() {
                                 variant="outline"
                                 onClick={() => handleReceive(po)}
                                 className="min-h-[36px] touch-manipulation"
-                                aria-label={`View purchase order ${po.po_number}`}
                               >
                                 <Clock className="h-4 w-4 mr-2" />
                                 View

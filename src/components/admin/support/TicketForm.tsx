@@ -106,8 +106,7 @@ export function TicketForm({
           const { error } = await supabase
             .from("support_tickets")
             .update(data)
-            .eq("id", ticket.id)
-            .eq("tenant_id", tenant.id);
+            .eq("id", ticket.id);
 
           if (error && error.code !== "42P01") throw error;
         } else {
@@ -203,7 +202,7 @@ export function TicketForm({
                     <FormLabel>Priority</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger aria-label="Select ticket priority" className="min-h-[44px] touch-manipulation">
+                        <SelectTrigger className="min-h-[44px] touch-manipulation">
                           <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
                       </FormControl>
@@ -227,7 +226,7 @@ export function TicketForm({
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger aria-label="Select ticket status" className="min-h-[44px] touch-manipulation">
+                        <SelectTrigger className="min-h-[44px] touch-manipulation">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>

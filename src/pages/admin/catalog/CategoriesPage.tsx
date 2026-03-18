@@ -3,6 +3,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Plus,
   Search,
@@ -16,13 +25,6 @@ import {
   Package,
   ExternalLink,
 } from 'lucide-react';
-import { toast } from 'sonner';
-
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +40,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -46,14 +47,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { TruncatedText } from '@/components/shared/TruncatedText';
 import { queryKeys } from '@/lib/queryKeys';
-import { logger } from '@/lib/logger';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { logger } from '@/lib/logger';
 
 // --- Types ---
 
@@ -85,7 +84,7 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 // --- Component ---
 
 export default function CategoriesPage() {
-  const { navigateToAdmin } = useTenantNavigation();
+  const { navigateToAdmin, navigate, tenantSlug } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
@@ -143,14 +142,13 @@ export default function CategoriesPage() {
         if (error) throw error;
         setTableMissing(false);
         return (data ?? []) as Category[];
-      } catch (err: unknown) {
-        const pgCode = (err as { code?: string })?.code;
-        if (pgCode === '42P01') {
+      } catch (error) {
+        if ((error as { code?: string })?.code === '42P01') {
           setTableMissing(true);
           return [];
         }
-        handleError(err, { component: 'CategoriesPage', toastTitle: 'Failed to load categories' });
-        throw err;
+        handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to load categories' });
+        throw error;
       }
     },
     enabled: !!tenantId,
@@ -171,18 +169,18 @@ export default function CategoriesPage() {
           .not('category_id', 'is', null);
 
         if (error && error.code !== '42P01') {
-          logger.warn('Failed to fetch products for category counts', { error, tenantId });
+          logger.warn('Failed to fetch products for category counts', { error });
         }
 
         const counts = new Map<string, number>();
-        for (const p of products ?? []) {
+        (products ?? []).forEach(p => {
           if (p.category_id) {
             counts.set(p.category_id, (counts.get(p.category_id) ?? 0) + 1);
           }
-        }
+        });
         return counts;
-      } catch (err: unknown) {
-        logger.error('Failed to calculate product counts', { error: err, tenantId });
+      } catch (error) {
+        logger.error('Failed to calculate product counts', { error });
         return new Map<string, number>();
       }
     },
@@ -342,8 +340,9 @@ export default function CategoriesPage() {
   }, []);
 
   const navigateToFilteredProducts = useCallback((categoryId: string) => {
-    navigateToAdmin(`products?category_id=${categoryId}`);
-  }, [navigateToAdmin]);
+    const basePath = tenantSlug ? `/${tenantSlug}` : '';
+    navigate(`${basePath}/admin/products?category_id=${categoryId}`);
+  }, [navigate, tenantSlug]);
 
   // --- Derived Data ---
 
@@ -362,36 +361,9 @@ export default function CategoriesPage() {
   const totalProducts = useMemo(() => {
     if (!productCounts) return 0;
     let total = 0;
-    for (const count of productCounts.values()) {
-      total += count;
-    }
+    productCounts.forEach(count => { total += count; });
     return total;
   }, [productCounts]);
-
-  /** Collect all descendant IDs for a category to prevent circular parent selection */
-  const getDescendantIds = useCallback((categoryId: string, allCategories: Category[]): Set<string> => {
-    const descendants = new Set<string>();
-    const queue = [categoryId];
-    while (queue.length > 0) {
-      const currentId = queue.pop()!;
-      for (const cat of allCategories) {
-        if (cat.parent_id === currentId && !descendants.has(cat.id)) {
-          descendants.add(cat.id);
-          queue.push(cat.id);
-        }
-      }
-    }
-    return descendants;
-  }, []);
-
-  /** Categories available as parent options (excludes self and descendants when editing) */
-  const availableParentCategories = useMemo(() => {
-    if (!categories) return [];
-    if (!editingCategory) return categories;
-    const excluded = getDescendantIds(editingCategory.id, categories);
-    excluded.add(editingCategory.id);
-    return categories.filter(c => !excluded.has(c.id));
-  }, [categories, editingCategory, getDescendantIds]);
 
   const isFormPending = createCategory.isPending || updateCategory.isPending;
 
@@ -625,7 +597,7 @@ export default function CategoriesPage() {
       )}
 
       {/* Create/Edit Category Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => {
+      <Dialog open={dialogOpen || !!editingCategory} onOpenChange={(open) => {
         if (!open) closeDialog();
       }}>
         <DialogContent>
@@ -686,11 +658,13 @@ export default function CategoriesPage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="__none__">None (top-level)</SelectItem>
-                        {availableParentCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
+                        {categories
+                          ?.filter(c => c.id !== editingCategory?.id)
+                          .map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

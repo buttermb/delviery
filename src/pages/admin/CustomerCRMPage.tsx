@@ -35,7 +35,6 @@ import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
-import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 
 interface Customer {
   id: string;
@@ -44,7 +43,6 @@ interface Customer {
   email: string | null;
   phone: string | null;
   total_spent: number;
-  total_orders: number;
   loyalty_points: number;
   last_purchase_at: string | null;
   created_at: string;
@@ -76,7 +74,7 @@ export default function CustomerCRMPage() {
       try {
         const { data, error } = await supabase
           .from("customers")
-          .select('id, first_name, last_name, email, phone, total_spent, total_orders, loyalty_points, last_purchase_at, created_at, status, is_encrypted')
+          .select('id, first_name, last_name, email, phone, total_spent, loyalty_points, last_purchase_at, created_at, status, is_encrypted')
           .eq("tenant_id", tenant.id)
           .order("created_at", { ascending: false });
 
@@ -140,7 +138,8 @@ export default function CustomerCRMPage() {
       ? Math.floor((now - lastPurchase) / (1000 * 60 * 60 * 24))
       : 999;
 
-    const frequency = customer.total_orders ?? 0;
+    // Frequency would need order count - simplified for now
+    const frequency = 1; // Placeholder
 
     const monetary = customer.total_spent ?? 0;
 
@@ -165,6 +164,12 @@ export default function CustomerCRMPage() {
     return "regular";
   };
 
+  const formatTotalSpent = (value: number | null | undefined): string =>
+    Number(value ?? 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   const filteredCustomers = customers?.map((customer) => ({
     ...customer,
     lifecycle: getLifecycleStage(customer),
@@ -181,7 +186,7 @@ export default function CustomerCRMPage() {
     return matchesSearch && matchesLifecycle && matchesSegment;
   }) ?? [];
 
-  const crmColumns: ResponsiveColumn<EnrichedCustomer>[] = [
+  const crmColumns = [
     {
       header: 'Customer',
       cell: (customer: EnrichedCustomer) => (
@@ -228,7 +233,12 @@ export default function CustomerCRMPage() {
     {
       header: 'Total Spent',
       accessorKey: 'total_spent',
-      cell: (customer: EnrichedCustomer) => formatCurrency(customer.total_spent)
+      cell: (customer: EnrichedCustomer) => (
+        <div className="flex items-center gap-1">
+          <DollarSign className="h-3 w-3 text-muted-foreground" />
+          {formatTotalSpent(customer.total_spent)}
+        </div>
+      )
     },
     {
       header: 'Last Purchase',
@@ -281,9 +291,12 @@ export default function CustomerCRMPage() {
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
-          <span className="font-medium">
-            {formatCurrency(customer.total_spent)}
-          </span>
+          <div className="flex items-center gap-1">
+            <DollarSign className="h-3 w-3 text-muted-foreground" />
+            <span className="font-medium">
+              {formatTotalSpent(customer.total_spent)}
+            </span>
+          </div>
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
@@ -451,7 +464,7 @@ export default function CustomerCRMPage() {
         <TabsContent value="overview" className="space-y-4">
           <AdminDataTable
             data={filteredCustomers}
-            columns={crmColumns}
+            columns={crmColumns as any}
             keyExtractor={(customer: EnrichedCustomer) => customer.id as string}
             isLoading={isLoading}
             emptyStateIcon={Users}

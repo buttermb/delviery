@@ -186,7 +186,6 @@ function useClientActivities(clientId: string | null) {
       const { data, error } = await supabase
         .from('collection_activities')
         .select('id, client_id, activity_type, notes, amount, created_at, performed_by')
-        .eq('tenant_id', tenant?.id)
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -203,7 +202,7 @@ function useClientActivities(clientId: string | null) {
         type: a.activity_type as CollectionActivity['type'],
         notes: a.notes,
         amount: a.amount,
-        createdAt: new Date(a.created_at ?? Date.now()),
+        createdAt: new Date(a.created_at),
         performedBy: a.performed_by
       }));
     },
@@ -242,7 +241,7 @@ function useCollectionActions() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.collections.activities(variables.clientId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
     }
   });
 
@@ -278,7 +277,7 @@ function useCollectionActions() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
       toast.success('Payment recorded successfully');
     },
     onError: (error) => {
@@ -560,12 +559,7 @@ function ClientCard({
                 <div className="text-center py-6">
                   <CreditCard className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground mb-3">No payment plan set up</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-border"
-                    onClick={() => toast.info('Payment plan feature coming soon')}
-                  >
+                  <Button size="sm" variant="outline" className="border-border">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Payment Plan
                   </Button>
@@ -985,8 +979,9 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
           data={filteredClients}
           isLoading={isLoading}
           keyExtractor={(client) => client.id}
-          onRowClick={(client) => {
-            setExpandedClientId(expandedClientId === client.id ? null : client.id);
+          onRowClick={(_client) => {
+            // For desktop table, maybe toggle details or navigation?
+            // Leaving empty to rely on specific action buttons
           }}
           mobileRenderer={(client) => (
             <ClientCard
@@ -1019,7 +1014,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
         onOpenChange={(open) => !open && setPaymentDialogClient(null)}
         client={paymentDialogClient}
         onSubmit={handleRecordPayment}
-        isLoading={recordPayment.isPending}
+        isLoading={false}
       />
 
       <AddNoteDialog
@@ -1027,7 +1022,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
         onOpenChange={(open) => !open && setNoteDialogClient(null)}
         client={noteDialogClient}
         onSubmit={handleAddNote}
-        isLoading={addNote.isPending}
+        isLoading={false}
       />
     </div>
   );

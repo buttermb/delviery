@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check, Trash2, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +14,9 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { useTenantContext } from '@/hooks/useTenantContext';
 
 import { NotificationItem } from './NotificationItem';
@@ -31,8 +36,8 @@ export interface Notification {
 }
 
 export function NotificationCenter() {
-  const { tenantSlug, isReady } = useTenantContext();
-  const navigate = useNavigate();
+  const { tenantId, userId, isReady } = useTenantContext();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
 
@@ -173,7 +178,7 @@ export function NotificationCenter() {
             className="w-full justify-center"
             onClick={() => {
               setOpen(false);
-              navigate(`/${tenantSlug}/admin/settings/notifications`);
+              window.location.href = '/notifications';
             }}
           >
             View all notifications

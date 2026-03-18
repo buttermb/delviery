@@ -1,5 +1,14 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Upload,
   Search,
@@ -8,23 +17,8 @@ import {
   Trash2,
   Download,
   Image as ImageIcon,
-  ArrowLeft,
-  Loader2,
+  ArrowLeft
 } from 'lucide-react';
-import { toast } from 'sonner';
-
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { queryKeys } from '@/lib/queryKeys';
-import { formatSmartDate } from '@/lib/formatters';
-import { humanizeError } from '@/lib/humanizeError';
-import { logger } from '@/lib/logger';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -32,26 +26,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-
-interface ProductImage {
-  id: string;
-  name: string;
-  image_url: string | null;
-  created_at: string | null;
-}
+import { queryKeys } from '@/lib/queryKeys';
+import { Loader2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function ImagesPage() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
-
+  
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  interface ProductImage {
+    id: string;
+    name?: string;
+    image_url?: string | null;
+    created_at?: string;
+    [key: string]: unknown;
+  }
+
   const [selectedImage, setSelectedImage] = useState<ProductImage | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
@@ -63,19 +60,21 @@ export default function ImagesPage() {
       if (!tenantId) return [];
 
       try {
+        // Get all products with images
         const { data, error } = await supabase
           .from('products')
           .select('id, name, image_url, created_at')
           .eq('tenant_id', tenantId)
           .not('image_url', 'is', null);
-
+        
+        // Gracefully handle missing table
         if (error && error.code === '42P01') {
           return [];
         }
         if (error) throw error;
-        return (data ?? []) as ProductImage[];
+        return data ?? [];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
+        if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -93,7 +92,7 @@ export default function ImagesPage() {
         .select('id, name')
         .eq('tenant_id', tenantId)
         .order('name');
-
+      
       if (error) throw error;
       return data ?? [];
     },
@@ -109,7 +108,7 @@ export default function ImagesPage() {
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${tenantId}/${Date.now()}.${fileExt}`;
-
+      
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, file);
@@ -120,6 +119,9 @@ export default function ImagesPage() {
         .from('product-images')
         .getPublicUrl(fileName);
 
+      // Assign image to product with tenant filter for security
+      if (!tenantId) throw new Error('No tenant context');
+      
       const { error: updateError } = await supabase
         .from('products')
         .update({ image_url: publicUrl })
@@ -131,111 +133,78 @@ export default function ImagesPage() {
       return publicUrl;
     },
     onSuccess: () => {
-      toast.success('Image uploaded and assigned successfully!');
+      toast.success("Image uploaded and assigned successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setUploadDialogOpen(false);
       setSelectedProductId('');
     },
     onError: (error: unknown) => {
-      logger.error('Image upload failed', error, { component: 'ImagesPage', tenantId });
-      toast.error('Upload failed', { description: humanizeError(error) });
-    },
+      logger.error('Image upload failed', error, { component: 'ImagesPage' });
+      toast.error("Upload failed", { description: humanizeError(error) });
+    }
   });
 
-  // Delete image (from storage AND clear product reference)
+  // Delete image
   const deleteImage = useMutation({
-    mutationFn: async ({ imageUrl, productId }: { imageUrl: string; productId: string }) => {
-      if (!tenantId) throw new Error('Tenant ID missing');
-
+    mutationFn: async (imageUrl: string) => {
       // Extract file path from URL
       const path = imageUrl.split('/product-images/')[1];
+      
       if (!path) throw new Error('Invalid image URL');
 
-      const { error: storageError } = await supabase.storage
+      const { error } = await supabase.storage
         .from('product-images')
         .remove([path]);
 
-      if (storageError) throw storageError;
-
-      // Clear the product's image_url reference
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({ image_url: null })
-        .eq('id', productId)
-        .eq('tenant_id', tenantId);
-
-      if (updateError) throw updateError;
+      if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Image deleted successfully!');
+      toast.success("Image deleted successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setSelectedImage(null);
     },
     onError: (error: unknown) => {
-      logger.error('Image deletion failed', error, { component: 'ImagesPage', tenantId });
-      toast.error('Delete failed', { description: humanizeError(error) });
-    },
+      logger.error('Image deletion failed', error, { component: 'ImagesPage' });
+      toast.error("Delete failed", { description: humanizeError(error) });
+    }
   });
 
   // Handle file upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+      toast.error("Please upload an image file");
       return;
     }
 
+    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Maximum file size is 5MB');
+      toast.error("Maximum file size is 5MB");
       return;
     }
 
     uploadImage.mutate(file);
   };
 
-  const handleDeleteImage = (image: ProductImage) => {
-    if (!image.image_url) return;
-    confirm({
-      title: 'Delete Image',
-      description: `Are you sure you want to delete the image for "${image.name}"? This action cannot be undone.`,
-      itemName: image.name,
-      itemType: 'image',
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          await deleteImage.mutateAsync({ imageUrl: image.image_url!, productId: image.id });
-        } finally {
-          setLoading(false);
-          closeDialog();
-        }
-      },
-    });
-  };
-
   const filteredImages = images?.filter(img =>
-    (img.name ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+    img.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const addedThisWeek = images?.filter(i => {
-    if (!i.created_at) return false;
-    return i.created_at > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  }).length ?? 0;
 
   return (
     <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <Button 
+            variant="ghost" 
+            size="sm" 
             onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
-            aria-label="Back to inventory"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -252,7 +221,7 @@ export default function ImagesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{images?.length ?? 0}</div>
@@ -261,14 +230,24 @@ export default function ImagesPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{addedThisWeek}</div>
+            <div className="text-2xl font-bold">
+              {Math.round((images?.length ?? 0) * 2.3)}MB
+            </div>
+            <p className="text-xs text-muted-foreground">Storage Used</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">
+              {images?.filter(i => i.created_at > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).length ?? 0}
+            </div>
             <p className="text-xs text-muted-foreground">Added This Week</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{products.length}</div>
-            <p className="text-xs text-muted-foreground">Total Products</p>
+            <div className="text-2xl font-bold">100GB</div>
+            <p className="text-xs text-muted-foreground">Storage Limit</p>
           </CardContent>
         </Card>
       </div>
@@ -333,8 +312,8 @@ export default function ImagesPage() {
               <CardContent className="p-0">
                 <div className="aspect-square relative overflow-hidden rounded-t-lg">
                   <img
-                    src={image.image_url ?? undefined}
-                    alt={image.name ?? 'Product image'}
+                    src={image.image_url}
+                    alt={image.name || 'Product image'}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -361,8 +340,8 @@ export default function ImagesPage() {
                 >
                   <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                     <img
-                      src={image.image_url ?? undefined}
-                      alt={image.name ?? 'Product image'}
+                      src={image.image_url}
+                      alt={image.name || 'Product image'}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
@@ -378,11 +357,9 @@ export default function ImagesPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (image.image_url) {
-                        window.open(image.image_url, '_blank', 'noopener,noreferrer');
-                      }
+                      window.open(image.image_url, '_blank', 'noopener,noreferrer');
                     }}
-                    aria-label={`Download ${image.name}`}
+                    aria-label="Download image"
                   >
                     <Download className="h-4 w-4" />
                   </Button>
@@ -402,7 +379,7 @@ export default function ImagesPage() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="product-select">Select Product</Label>
-              <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+              <Select value={selectedProductId} onValueChange={(v) => setSelectedProductId(v)}>
                 <SelectTrigger id="product-select">
                   <SelectValue placeholder="-- Select a product --" />
                 </SelectTrigger>
@@ -441,8 +418,8 @@ export default function ImagesPage() {
           <div className="space-y-4">
             <div className="rounded-lg overflow-hidden">
               <img
-                src={selectedImage?.image_url ?? undefined}
-                alt={selectedImage?.name ?? 'Product image'}
+                src={selectedImage?.image_url}
+                alt={selectedImage?.name || 'Product image'}
                 className="w-full h-auto"
                 loading="lazy"
               />
@@ -467,25 +444,22 @@ export default function ImagesPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              aria-label="Download image"
-              onClick={() => {
-                if (selectedImage?.image_url) {
-                  window.open(selectedImage.image_url, '_blank', 'noopener,noreferrer');
-                }
-              }}
+              onClick={() => window.open(selectedImage?.image_url, '_blank', 'noopener,noreferrer')}
             >
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
             <Button
               variant="destructive"
-              aria-label="Delete image"
               onClick={() => {
-                if (selectedImage) {
-                  handleDeleteImage(selectedImage);
+                if (!selectedImage) return;
+                try {
+                  deleteImage.mutate(selectedImage.image_url);
+                } catch (error) {
+                  logger.error('Button click error', error, { component: 'ImagesPage' });
                 }
               }}
-              disabled={!selectedImage || !selectedImage.image_url || deleteImage.isPending}
+              disabled={!selectedImage || deleteImage.isPending}
             >
               {deleteImage.isPending ? (
                 <>
@@ -502,17 +476,7 @@ export default function ImagesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <ConfirmDeleteDialog
-        open={dialogState.open}
-        onOpenChange={(open) => !open && closeDialog()}
-        onConfirm={dialogState.onConfirm}
-        title={dialogState.title}
-        description={dialogState.description}
-        itemName={dialogState.itemName}
-        itemType={dialogState.itemType}
-        isLoading={dialogState.isLoading}
-      />
     </div>
   );
 }
+

@@ -559,17 +559,16 @@ export function OrderDetailsPage() {
   const { data: existingInvoice } = useQuery({
     queryKey: [...queryKeys.customerInvoices.all, 'by-order', orderId],
     queryFn: async () => {
-      if (!orderId || !tenant?.id) return null;
+      if (!orderId) return null;
       const { data, error } = await supabase
         .from('customer_invoices')
         .select('id, invoice_number')
         .eq('order_id', orderId)
-        .eq('account_id', tenant.id)
         .maybeSingle();
       if (error) return null;
       return data;
     },
-    enabled: !!orderId && !!tenant?.id,
+    enabled: !!orderId,
     retry: 2,
   });
 
@@ -628,8 +627,8 @@ export function OrderDetailsPage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {['skel-btn-1', 'skel-btn-2', 'skel-btn-3', 'skel-btn-4'].map((key) => (
-              <Skeleton key={key} className="h-8 w-24 rounded-md" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-24 rounded-md" />
             ))}
           </div>
         </div>
@@ -643,8 +642,8 @@ export function OrderDetailsPage() {
                 <Skeleton className="h-5 w-32" />
               </CardHeader>
               <CardContent className="space-y-6">
-                {['skel-step-1', 'skel-step-2', 'skel-step-3', 'skel-step-4', 'skel-step-5'].map((key) => (
-                  <div key={key} className="flex items-start gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-4">
                     <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
                     <div className="space-y-1 flex-1 pt-2">
                       <Skeleton className="h-4 w-28" />
@@ -667,8 +666,8 @@ export function OrderDetailsPage() {
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-16" />
                 </div>
-                {['skel-item-1', 'skel-item-2', 'skel-item-3'].map((key) => (
-                  <div key={key} className="flex items-center gap-3 px-6 py-4 border-b last:border-b-0">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 px-6 py-4 border-b last:border-b-0">
                     <Skeleton className="h-10 w-10 rounded" />
                     <div className="flex-1 space-y-1">
                       <Skeleton className="h-4 w-40" />
@@ -731,8 +730,8 @@ export function OrderDetailsPage() {
                 <Skeleton className="h-5 w-36" />
               </CardHeader>
               <CardContent className="space-y-4">
-                {['skel-activity-1', 'skel-activity-2', 'skel-activity-3', 'skel-activity-4'].map((key) => (
-                  <div key={key} className="flex gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-3">
                     <Skeleton className="h-2 w-2 rounded-full mt-1.5" />
                     <div className="space-y-1">
                       <Skeleton className="h-4 w-28" />
@@ -827,9 +826,9 @@ export function OrderDetailsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2 print:hidden">
-            <Button variant="outline" size="sm" onClick={() => setShowPrintDialog(true)} aria-label={`Print order ${order.order_number}`}>
-              <Printer className="w-4 h-4 mr-1" />
-              Print
+            <Button variant="outline" size="sm" onClick={() => setShowPrintDialog(true)} disabled={updateStatusMutation.isPending}>
+              {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Printer className="w-4 h-4 mr-1" />}
+              {updateStatusMutation.isPending ? 'Printing...' : 'Print'}
             </Button>
 
             <OrderExportButton
@@ -860,17 +859,17 @@ export function OrderDetailsPage() {
             />
 
             {order.tracking_token && (
-              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} aria-label="Copy tracking link">
-                <Copy className="w-4 h-4 mr-1" />
-                Share Tracking
+              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} disabled={updateStatusMutation.isPending}>
+                {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Copy className="w-4 h-4 mr-1" />}
+                {updateStatusMutation.isPending ? 'Sharing...' : 'Share Tracking'}
               </Button>
             )}
 
             {/* Edit Order Button — only for pending/confirmed */}
             {['pending', 'confirmed'].includes(order.status) && (
-              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)} aria-label={`Edit order ${order.order_number}`}>
-                <Edit className="w-4 h-4 mr-1" />
-                Edit Order
+              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)} disabled={updateStatusMutation.isPending}>
+                {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Edit className="w-4 h-4 mr-1" />}
+                {updateStatusMutation.isPending ? 'Editing...' : 'Edit Order'}
               </Button>
             )}
 
@@ -881,7 +880,6 @@ export function OrderDetailsPage() {
                 size="sm"
                 onClick={() => setShowRefundModal(true)}
                 disabled={order.payment_status === 'refunded' || updateStatusMutation.isPending}
-                aria-label={order.payment_status === 'refunded' ? 'Order already refunded' : `Refund order ${order.order_number}`}
               >
                 <RotateCcw className="w-4 h-4 mr-1" />
                 {order.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
@@ -923,7 +921,7 @@ export function OrderDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDeliveryExceptionsDialog(true)}
-                aria-label={`Report delivery issue for order ${order.order_number}`}
+                disabled={updateStatusMutation.isPending}
               >
                 <AlertTriangle className="w-4 h-4 mr-1" />
                 Report Issue
@@ -960,7 +958,6 @@ export function OrderDetailsPage() {
                         size="sm"
                         onClick={() => setShowAssignRunnerDialog(true)}
                         disabled={!deliveryEnabled || updateStatusMutation.isPending}
-                        aria-label={`Assign delivery runner to order ${order.order_number}`}
                       >
                         <UserPlus className="w-4 h-4 mr-1" />
                         Assign Runner
@@ -981,7 +978,6 @@ export function OrderDetailsPage() {
                 size="sm"
                 onClick={() => setShowAssignCourierDialog(true)}
                 disabled={updateStatusMutation.isPending}
-                aria-label={`Assign courier to order ${order.order_number}`}
               >
                 <Truck className="w-4 h-4 mr-1" />
                 Assign Courier
@@ -991,7 +987,7 @@ export function OrderDetailsPage() {
             {!isCancelled && (
               <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" disabled={updateStatusMutation.isPending} aria-label={`Update status of order ${order.order_number}`}>
+                  <Button variant="outline" size="sm" disabled={updateStatusMutation.isPending}>
                     <Edit className="w-4 h-4 mr-1" />
                     Update Status
                   </Button>
@@ -1038,7 +1034,7 @@ export function OrderDetailsPage() {
             {canCancel && (
               <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-destructive border-destructive/50 hover:bg-destructive/10" disabled={updateStatusMutation.isPending} aria-label={`Cancel order ${order.order_number}`}>
+                  <Button variant="outline" size="sm" className="text-destructive border-destructive/50 hover:bg-destructive/10" disabled={updateStatusMutation.isPending}>
                     <Ban className="w-4 h-4 mr-1" />
                     Cancel Order
                   </Button>
@@ -1579,8 +1575,8 @@ export function OrderDetailsPage() {
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Refunded Items</p>
                         <div className="space-y-1">
-                          {order.metadata.refund.lineItems.map((item) => (
-                            <div key={`refund-${item.product_id}`} className="flex justify-between text-sm">
+                          {order.metadata.refund.lineItems.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm">
                               <span>{item.product_name} x{item.quantity}</span>
                               <span>{formatCurrency(item.unit_price * item.quantity)}</span>
                             </div>
@@ -1670,8 +1666,8 @@ export function OrderDetailsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {timelineEvents.map((event) => (
-                    <div key={event.status} className="flex gap-3 text-sm">
+                  {timelineEvents.map((event, index) => (
+                    <div key={index} className="flex gap-3 text-sm">
                       <div className="mt-0.5">
                         <div className={`h-2 w-2 rounded-full ${event.color}`} />
                       </div>

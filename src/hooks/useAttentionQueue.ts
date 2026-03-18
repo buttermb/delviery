@@ -235,7 +235,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${lateDeliveries.data.length} late ${lateDeliveries.data.length === 1 ? 'delivery' : 'deliveries'}`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('fulfillment-hub?tab=tracking'),
+          actionUrl: buildAdminUrl('delivery-hub?tab=tracking'),
           timestamp: oldestTimestamp,
         });
       }
@@ -330,7 +330,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('fulfillment-hub?tab=tracking'),
+          actionUrl: buildAdminUrl('delivery-hub?tab=tracking'),
           timestamp: oldestTimestamp,
         });
       }

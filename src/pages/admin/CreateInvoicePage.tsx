@@ -1,12 +1,12 @@
 import { useState } from "react";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useForm } from "react-hook-form";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CalendarIcon, ArrowLeft, Loader2, Save } from "lucide-react";
-import { format, addDays } from "date-fns";
-import { toast } from "sonner";
-
-import { LineItem } from "@/types/crm";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -32,19 +32,22 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { ClientSelector } from "@/components/crm/ClientSelector";
-import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
-import { UnsavedChangesDialog } from "@/components/unsaved-changes";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { CalendarIcon, ArrowLeft, Loader2, Save } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
 import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
-import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
 import { useCurrencyConvert, useSupportedCurrencies } from "@/hooks/useCurrencyConvert";
+import { useAccount } from "@/contexts/AccountContext";
 import { useCreditGatedAction } from "@/hooks/useCredits";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { ClientSelector } from "@/components/crm/ClientSelector";
+import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
+import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
+import { LineItem } from "@/types/crm";
+import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 const formSchema = z.object({
@@ -97,11 +100,18 @@ export default function CreateInvoicePage() {
         isDirty: form.formState.isDirty || lineItems.length > 0,
     });
 
+
     const { execute: executeCreditAction } = useCreditGatedAction();
 
     const onSubmit = async (values: FormValues) => {
+        // Validate CSRF token
         if (!validateToken()) {
             toast.error("Security validation failed. Please refresh the page and try again.");
+            return;
+        }
+
+        if (!accountId) {
+            toast.error('Account information not available');
             return;
         }
 
@@ -111,37 +121,49 @@ export default function CreateInvoicePage() {
         }
 
         await executeCreditAction('invoice_create', async () => {
-            const invoicePayload: Parameters<typeof createInvoice.mutateAsync>[0] = {
-                client_id: values.client_id,
-                invoice_date: values.issue_date.toISOString().split('T')[0],
-                due_date: values.due_date.toISOString().split('T')[0],
-                status: values.status,
-                line_items: lineItems,
-                tax_rate: taxRate,
-                subtotal,
-                tax_amount: taxAmount,
-                total,
-                notes: values.notes || undefined,
-                currency: values.currency || 'USD',
-            };
-            if (values.currency && values.currency !== 'USD' && currencyConversion.rate) {
-                invoicePayload.exchange_rate = currencyConversion.rate;
-                invoicePayload.original_currency_total = total;
-            }
+            try {
+                const invoicePayload: Parameters<typeof createInvoice.mutateAsync>[0] = {
+                    account_id: accountId,
+                    client_id: values.client_id,
+                    invoice_date: values.issue_date.toISOString().split('T')[0],
+                    due_date: values.due_date.toISOString().split('T')[0],
+                    status: values.status,
+                    line_items: lineItems,
+                    tax_rate: taxRate,
+                    subtotal,
+                    tax_amount: taxAmount,
+                    total,
+                    notes: values.notes,
+                    currency: values.currency || 'USD',
+                };
+                if (values.currency && values.currency !== 'USD' && currencyConversion.rate) {
+                    invoicePayload.exchange_rate = currencyConversion.rate;
+                    invoicePayload.original_currency_total = total;
+                }
+                const invoice = await createInvoice.mutateAsync(invoicePayload);
 
-            const invoice = await createInvoice.mutateAsync(invoicePayload);
+                // Log activity
+                logActivity.mutate({
+                    client_id: values.client_id,
+                    activity_type: "invoice_created",
+                    description: `Invoice #${invoice.invoice_number} created`,
+                    reference_id: invoice.id,
+                    reference_type: "crm_invoices",
+                });
 
-            logActivity.mutate({
-                client_id: values.client_id,
-                activity_type: "invoice_created",
-                description: `Invoice #${invoice.invoice_number} created`,
-                reference_id: invoice.id,
-                reference_type: "crm_invoices",
-            });
-
-            toast.success("Invoice created successfully");
-            if (tenant?.slug) {
-                navigate(`/${tenant.slug}/admin/crm/invoices/${invoice.id}`);
+                toast.success("Invoice created successfully");
+                if (tenant?.slug) {
+                    navigate(`/${tenant.slug}/admin/crm/invoices/${invoice.id}`);
+                }
+            } catch (error: unknown) {
+                logger.error('Failed to create invoice', error, {
+                    component: 'CreateInvoicePage',
+                    clientId: values.client_id
+                });
+                throw error; // Re-throw to be handled by executeCreditAction if desired, though hook handles generic errors, we might want to let toast propagate from here?
+                // Actually the existing code had a try/catch logging error.
+                // useCreditGatedAction catches unexpected errors.
+                // But createInvoice hook might throw specific errors.
             }
         });
     };
@@ -159,6 +181,13 @@ export default function CreateInvoicePage() {
                     </p>
                 </div>
             </div>
+
+            {accountError && (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>{accountError}</AlertDescription>
+                </Alert>
+            )}
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -407,11 +436,13 @@ export default function CreateInvoicePage() {
                         <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/invoices')}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createInvoice.isPending || !accountId}>
-                            {createInvoice.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            Create Invoice
-                        </Button>
+                        <DisabledTooltip disabled={!isAccountReady && !accountLoading && !createInvoice.isPending} reason="Account context not available">
+                            <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
+                                {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                {accountLoading ? 'Loading...' : 'Create Invoice'}
+                            </Button>
+                        </DisabledTooltip>
                     </div>
                 </form>
             </Form>

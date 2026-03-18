@@ -39,7 +39,7 @@ export function CustomerSegmentation({ customers }: CustomerSegmentationProps) {
         <Card key={stat.name}>
           <CardHeader>
             <CardTitle className="text-sm font-medium capitalize">
-              {stat.name.replaceAll("-", " ")}
+              {stat.name.replace("-", " ")}
             </CardTitle>
           </CardHeader>
           <CardContent>

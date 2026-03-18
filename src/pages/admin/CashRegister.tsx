@@ -208,7 +208,7 @@ function CashRegisterContent() {
     enabled: !!tenantId,
     staleTime: 300_000,
   });
-  const taxEnabled = true;
+  const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Split payment state
   const [splitPaymentEnabled, setSplitPaymentEnabled] = useState(false);
@@ -1177,7 +1177,6 @@ function CashRegisterContent() {
             onClick={() => setRefundDialogOpen(true)}
             disabled={processPayment.isPending}
             className="min-h-[44px] px-3 sm:px-4"
-            aria-label="Refund/Return"
           >
             <RotateCcw className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Refund/Return</span>
@@ -1188,7 +1187,6 @@ function CashRegisterContent() {
             size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
             className="text-xs min-h-[44px] px-3 sm:px-4"
-            aria-label="Keyboard shortcuts"
           >
             <Keyboard className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Shortcuts</span>
@@ -1233,7 +1231,6 @@ function CashRegisterContent() {
                       onClick={() => addToCart(product)}
                       disabled={outOfStock || isAddingToCart === product.id}
                       className="h-auto py-2 px-1.5 sm:py-3 sm:px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
-                      aria-label={`Add ${product.name} to cart`}
                     >
                       {isAddingToCart === product.id ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -1350,13 +1347,13 @@ function CashRegisterContent() {
                         </Button>
                       </DisabledTooltip>
                       <span className="w-6 sm:w-8 text-center text-sm md:text-base">{item.quantity}</span>
-                      <DisabledTooltip disabled={item.quantity >= (item.stock_quantity ?? 0)} reason="Maximum stock reached">
+                      <DisabledTooltip disabled={item.quantity >= item.stock_quantity} reason="Maximum stock reached">
                         <Button
                           size="icon"
                           variant="ghost"
                           className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, 1)}
-                          disabled={item.quantity >= (item.stock_quantity ?? 0)}
+                          disabled={item.quantity >= item.stock_quantity}
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3 md:h-4 md:w-4" />
@@ -1565,7 +1562,6 @@ function CashRegisterContent() {
                 <Button
                   className="flex-1 min-h-[44px]"
                   variant="default"
-                  aria-label={processPayment.isPending ? 'Processing payment' : !isOnline ? 'Queue payment' : 'Process payment'}
                   onClick={async () => {
                     try {
                       await executeCreditAction('pos_process_sale', async () => {
@@ -1765,7 +1761,7 @@ function CashRegisterContent() {
                 filteredProducts.map(product => (
                   <Card
                     key={product.id}
-                    className={`cursor-pointer hover:border-primary transition-colors ${(product.stock_quantity ?? 0) <= 0 ? 'opacity-50' : ''}`}
+                    className={`cursor-pointer hover:border-primary transition-colors ${product.stock_quantity <= 0 ? 'opacity-50' : ''}`}
                     onClick={() => addToCart(product)}
                   >
                     <CardContent className="p-3">
@@ -1775,7 +1771,7 @@ function CashRegisterContent() {
                         ) : (
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}
-                        {(product.stock_quantity ?? 0) <= 0 && (
+                        {product.stock_quantity <= 0 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="presentation">
                             <Badge variant="destructive">Out of Stock</Badge>
                           </div>
@@ -1787,7 +1783,7 @@ function CashRegisterContent() {
                       )}
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
-                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity ?? 0}</span>
+                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1989,16 +1985,16 @@ function CashRegisterContent() {
             <Button variant="outline" onClick={() => { setReceiptDialogOpen(false); setLastRefundData(null); }} className="flex-1">
               Close
             </Button>
-            <DisabledTooltip disabled reason="Email receipts are not yet available">
-              <Button
-                variant="outline"
-                disabled
-                className="flex-1"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Email Receipt
-              </Button>
-            </DisabledTooltip>
+            <Button
+              variant="outline"
+              onClick={() => {
+                toast.info('Email receipt feature coming soon');
+              }}
+              className="flex-1"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Email Receipt
+            </Button>
             <Button onClick={handlePrintReceipt} disabled={isPrinting} className="flex-1">
               {isPrinting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

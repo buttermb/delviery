@@ -46,7 +46,6 @@ export function useRealtimeShifts(tenantId: string | undefined) {
           queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.summary(tenantId) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.closedShifts.byTenant(tenantId) });
         }
       )
       .subscribe((status) => {

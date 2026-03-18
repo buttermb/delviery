@@ -54,7 +54,6 @@ import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { humanizeError } from '@/lib/humanizeError';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 interface Product {
   id: string;
@@ -118,7 +117,6 @@ export default function InventoryAudit() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 60_000,
   });
 
   // Fetch audit history
@@ -169,7 +167,6 @@ export default function InventoryAudit() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 30_000,
   });
 
   // Initialize audit entry for a product
@@ -221,10 +218,9 @@ export default function InventoryAudit() {
   // Filter products by search term
   const filteredProducts = useMemo(() => {
     if (!products) return [];
-    const sanitized = sanitizeSearchInput(searchTerm);
-    if (!sanitized) return products;
+    if (!searchTerm) return products;
 
-    const searchLower = sanitized.toLowerCase();
+    const searchLower = searchTerm.toLowerCase();
     return products.filter(p =>
       p.name.toLowerCase().includes(searchLower) ||
       p.sku?.toLowerCase().includes(searchLower) ||
@@ -264,7 +260,7 @@ export default function InventoryAudit() {
       const historyEntries = entries.map(entry => ({
         tenant_id: tenant.id,
         product_id: entry.productId,
-        change_type: 'adjustment',
+        change_type: entry.discrepancy > 0 ? 'increase' : 'decrease',
         previous_quantity: entry.expectedQuantity,
         new_quantity: entry.actualQuantity as number,
         change_amount: entry.discrepancy,
@@ -705,7 +701,6 @@ export default function InventoryAudit() {
                                 aria-label={`Notes for ${product.name}`}
                                 value={entry?.notes ?? ''}
                                 onChange={(e) => updateNotes(product.id, e.target.value, product)}
-                                maxLength={500}
                                 className="text-sm"
                               />
                             </TableCell>
@@ -733,12 +728,8 @@ export default function InventoryAudit() {
                 aria-label="Audit notes"
                 value={auditNotes}
                 onChange={(e) => setAuditNotes(e.target.value)}
-                maxLength={2000}
                 rows={3}
               />
-              <p className="text-xs text-muted-foreground text-right mt-1">
-                {auditNotes.length}/2000
-              </p>
             </CardContent>
           </Card>
         </TabsContent>

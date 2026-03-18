@@ -154,86 +154,12 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
       const { data: ratingsData } = await supabase
         .from('delivery_ratings')
         .select('rating')
-        .eq('tenant_id', tenantId)
         .eq('runner_id', driver.id);
 
       const avgRating =
         ratingsData && ratingsData.length > 0
           ? ratingsData.reduce((sum, r) => sum + r.rating, 0) / ratingsData.length
           : 0;
-
-      // On-time rate: prefer denormalized value from couriers table,
-      // fall back to computing from delivered orders
-      let onTimeRate: number | null = null;
-
-      const { data: courierRow } = await supabase
-        .from('couriers')
-        .select('on_time_rate')
-        .eq('id', driver.id)
-        .eq('tenant_id', tenantId)
-        .maybeSingle();
-
-      if (courierRow?.on_time_rate != null) {
-        onTimeRate = Math.round(courierRow.on_time_rate);
-      } else {
-        // Compute from orders that have both delivered_at and estimated_delivery
-        const { data: deliveredOrders } = await supabase
-          .from('orders')
-          .select('delivered_at, estimated_delivery')
-          .eq('courier_id', driver.id)
-          .eq('tenant_id', tenantId)
-          .eq('status', 'delivered')
-          .not('delivered_at', 'is', null)
-          .not('estimated_delivery', 'is', null);
-
-        if (deliveredOrders && deliveredOrders.length > 0) {
-          const onTime = deliveredOrders.filter(
-            (o) => new Date(o.delivered_at!) <= new Date(o.estimated_delivery!),
-          ).length;
-          onTimeRate = Math.round((onTime / deliveredOrders.length) * 100);
-        }
-      }
-
-      // Avg delivery time: compute from courier_metrics daily aggregates,
-      // weighted by deliveries_completed per day
-      let avgDeliveryTime: number | null = null;
-
-      const { data: metricsData } = await supabase
-        .from('courier_metrics')
-        .select('avg_delivery_time_minutes, deliveries_completed')
-        .eq('courier_id', driver.id)
-        .not('avg_delivery_time_minutes', 'is', null);
-
-      if (metricsData && metricsData.length > 0) {
-        let totalWeightedMinutes = 0;
-        let totalDeliveries = 0;
-        for (const m of metricsData) {
-          const count = m.deliveries_completed ?? 1;
-          totalWeightedMinutes += (m.avg_delivery_time_minutes ?? 0) * count;
-          totalDeliveries += count;
-        }
-        if (totalDeliveries > 0) {
-          avgDeliveryTime = Math.round(totalWeightedMinutes / totalDeliveries);
-        }
-      } else {
-        // Fall back to computing from orders with delivered_at and created_at
-        const { data: completedOrders } = await supabase
-          .from('orders')
-          .select('created_at, delivered_at')
-          .eq('courier_id', driver.id)
-          .eq('tenant_id', tenantId)
-          .eq('status', 'delivered')
-          .not('delivered_at', 'is', null);
-
-        if (completedOrders && completedOrders.length > 0) {
-          const totalMinutes = completedOrders.reduce((sum, o) => {
-            const created = new Date(o.created_at).getTime();
-            const delivered = new Date(o.delivered_at!).getTime();
-            return sum + (delivered - created) / 60_000;
-          }, 0);
-          avgDeliveryTime = Math.round(totalMinutes / completedOrders.length);
-        }
-      }
 
       return {
         deliveriesToday: deliveriesToday ?? 0,
@@ -242,8 +168,8 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         deliveriesAllTime: deliveriesAllTime ?? 0,
         totalEarned,
         avgRating,
-        onTimeRate,
-        avgDeliveryTime,
+        onTimeRate: null,
+        avgDeliveryTime: null,
       };
     },
     enabled: !!tenantId && !!driver.id,
@@ -259,7 +185,6 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
       const { data, error } = await supabase
         .from('delivery_ratings')
         .select('rating, created_at')
-        .eq('tenant_id', tenantId)
         .eq('runner_id', driver.id)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: true });
@@ -300,7 +225,7 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
         .select('id, order_number, status, customer_name, delivery_address, merchants(address)')
         .eq('courier_id', driver.id)
         .eq('tenant_id', tenantId)
-        .in('status', ['confirmed', 'preparing', 'out_for_delivery'])
+        .in('status', ['assigned', 'in_transit'])
         .limit(1)
         .maybeSingle();
 
@@ -334,54 +259,12 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
 
   const hasLocation = driver.current_lat != null && driver.current_lng != null;
 
-  // Reverse-geocode lat/lng to a human-readable address
-  const locationQuery = useQuery({
-    queryKey: queryKeys.reverseGeocode.byCoords(
-      driver.current_lat ?? undefined,
-      driver.current_lng ?? undefined,
-    ),
-    queryFn: async (): Promise<string> => {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${driver.current_lat}&lon=${driver.current_lng}&zoom=16`,
-      );
-      if (!response.ok) {
-        throw new Error(`Nominatim error: ${response.status}`);
-      }
-      const data = await response.json() as {
-        display_name?: string;
-        address?: {
-          road?: string;
-          neighbourhood?: string;
-          suburb?: string;
-          city?: string;
-          state?: string;
-        };
-      };
-      // Build a concise label: neighbourhood/suburb + city, or fall back to display_name
-      const addr = data.address;
-      if (addr) {
-        const area = addr.neighbourhood ?? addr.suburb ?? addr.road;
-        const city = addr.city ?? addr.state;
-        if (area && city) return `${area}, ${city}`;
-        if (city) return city;
-      }
-      if (data.display_name) {
-        // Trim to first 2-3 parts for brevity
-        return data.display_name.split(',').slice(0, 3).map(s => s.trim()).join(', ');
-      }
-      return `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}`;
-    },
-    enabled: hasLocation,
-    staleTime: 10 * 60 * 1000, // 10 minutes — coordinates don't change often
-    retry: 1,
-  });
-
-  const locationLabel = locationQuery.data
-    ?? (hasLocation ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}` : 'No location data');
-
   function handleOpenMap() {
     if (hasLocation) {
-      navigateToAdmin(`fleet?driver=${driver.id}`);
+      window.open(
+        `https://www.google.com/maps?q=${driver.current_lat},${driver.current_lng}`,
+        '_blank',
+      );
     } else {
       toast.info('No location data available');
     }
@@ -489,13 +372,15 @@ export function OverviewTab({ driver, tenantId }: OverviewTabProps) {
             <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
               <MapPin className="h-6 w-6 text-emerald-500" />
               <span className="text-[11px]">
-                {hasLocation ? locationLabel : 'Location unavailable'}
+                {hasLocation
+                  ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}`
+                  : 'Location unavailable'}
               </span>
             </div>
           </div>
           <p className="text-sm font-medium text-foreground">Last seen {lastSeen}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {hasLocation ? locationLabel : 'No location data'}
+            {hasLocation ? `${driver.current_lat!.toFixed(4)}, ${driver.current_lng!.toFixed(4)}` : 'No location data'}
           </p>
           <button
             type="button"
@@ -535,16 +420,8 @@ function ActiveDeliveryCard({
   order: ActiveOrder;
   onViewDetails: () => void;
 }) {
-  const statusLabel =
-    order.status === 'out_for_delivery'
-      ? 'In Transit'
-      : order.status === 'preparing'
-        ? 'Preparing'
-        : 'Confirmed';
-  const statusBadgeClass =
-    order.status === 'out_for_delivery'
-      ? 'bg-amber-500/20 text-amber-500'
-      : 'bg-blue-500/20 text-blue-500';
+  const statusLabel = order.status === 'in_transit' ? 'In Transit' : 'Assigned';
+  const statusColor = order.status === 'in_transit' ? 'amber' : 'blue';
 
   return (
     <>
@@ -552,7 +429,7 @@ function ActiveDeliveryCard({
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Active Delivery
         </span>
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadgeClass}`}>
+        <span className={`inline-flex items-center rounded-full bg-${statusColor}-500/20 px-2 py-0.5 text-[11px] font-medium text-${statusColor}-500`}>
           {statusLabel}
         </span>
       </div>

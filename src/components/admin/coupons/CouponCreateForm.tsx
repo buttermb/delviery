@@ -50,7 +50,7 @@ const generateCouponCode = () => {
 };
 
 export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: CouponCreateFormProps) {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant: _tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     code: "",
@@ -123,13 +123,11 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
   const updateMutation = useMutation({
     mutationFn: async (data: CouponUpdate) => {
       if (!coupon?.id) throw new Error("Coupon ID is required");
-      if (!tenant?.id) throw new Error("No tenant");
 
       const { error } = await supabase
         .from("coupon_codes")
         .update(data)
-        .eq("id", coupon.id)
-        .eq("tenant_id", tenant.id);
+        .eq("id", coupon.id);
 
       if (error) throw error;
     },
@@ -158,11 +156,6 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
       return;
     }
 
-    if (!tenant?.id) {
-      toast.error("No tenant context");
-      return;
-    }
-
     const isEditing = !!coupon;
 
     const couponData: CouponInsert | CouponUpdate = {
@@ -186,10 +179,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     if (isEditing) {
       await updateMutation.mutateAsync(couponData);
     } else {
-      await createMutation.mutateAsync({
-        ...couponData,
-        tenant_id: tenant.id,
-      } as Database['public']['Tables']['coupon_codes']['Insert']);
+      await createMutation.mutateAsync(couponData as Database['public']['Tables']['coupon_codes']['Insert']);
     }
   };
 

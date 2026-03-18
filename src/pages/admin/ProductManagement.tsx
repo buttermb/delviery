@@ -76,13 +76,14 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
 import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
-import type { ResponsiveColumn } from "@/components/shared/ResponsiveTable";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import { ProductHoverCard } from "@/components/admin/products/ProductHoverCard";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
+  // Add fields that might be missing from generated types or are dynamic
+  
   exclude_from_discounts?: boolean;
   minimum_price?: number;
   version?: number;
@@ -142,6 +143,7 @@ export default function ProductManagement() {
   const {
     items: products,
     optimisticIds,
+    addOptimistic: _addOptimistic,
     updateOptimistic,
     deleteOptimistic,
     setItems: setProducts,
@@ -938,7 +940,7 @@ export default function ProductManagement() {
     setBulkPriceEditorOpen(true);
   };
 
-  const handleBulkPriceUpdate = async () => {
+  const handleBulkPriceUpdate = async (_updates: unknown) => {
     // Component handles the DB update; we refresh and invalidate caches
     await loadProducts();
     invalidateProductCaches({
@@ -1094,7 +1096,7 @@ export default function ProductManagement() {
   };
 
   // --- Table Columns Definition ---
-  const columns: ResponsiveColumn<Product>[] = [
+  const columns: any[] = [
     {
       header: (
         <Checkbox
@@ -1450,15 +1452,18 @@ export default function ProductManagement() {
       {/* Filter Presets */}
       <div className="flex items-center gap-1.5">
         {filterPresets.map(preset => (
-          <Button
+          <button
             key={preset.id}
-            variant={activePreset === preset.id ? "default" : "secondary"}
-            size="sm"
             onClick={() => handlePresetClick(preset.id)}
-            className="rounded-full px-3 py-1 text-xs font-medium h-auto"
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              activePreset === preset.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
           >
             {preset.label}
-          </Button>
+          </button>
         ))}
       </div>
 
@@ -1475,7 +1480,6 @@ export default function ProductManagement() {
                 setScannerOpen(true);
               }}
               className="min-h-[40px]"
-              aria-label="Scan barcode"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Scan
@@ -1484,7 +1488,6 @@ export default function ProductManagement() {
               variant="outline"
               onClick={startBatchScan}
               className="min-h-[40px]"
-              aria-label="Batch scan barcodes"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Batch
@@ -1517,7 +1520,7 @@ export default function ProductManagement() {
               />
             )}
             {canEdit('products') && (
-              <Button onClick={() => navigateTenant("/admin/generate-barcodes")} className="min-h-[40px] hidden sm:inline-flex" variant="outline" aria-label="Generate barcodes">
+              <Button onClick={() => navigateTenant("/admin/generate-barcodes")} className="min-h-[40px] hidden sm:inline-flex" variant="outline">
                 <Barcode className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Barcodes</span>
               </Button>
@@ -1589,7 +1592,6 @@ export default function ProductManagement() {
                 pressed={viewMode === "grid"}
                 onPressedChange={() => setViewMode("grid")}
                 className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
-                aria-label="Grid view"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
@@ -1597,7 +1599,6 @@ export default function ProductManagement() {
                 pressed={viewMode === "list"}
                 onPressedChange={() => setViewMode("list")}
                 className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
-                aria-label="List view"
               >
                 <List className="h-4 w-4" />
               </Toggle>

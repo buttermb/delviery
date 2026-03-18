@@ -32,24 +32,15 @@ import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
 
 interface OrderItem {
-  name?: string;
   product_name?: string;
   quantity?: number;
   price?: number;
   price_per_unit?: number;
-  weight?: string | number;
   [key: string]: unknown;
 }
 
 interface OrderData {
   items?: OrderItem[];
-  [key: string]: unknown;
-}
-
-interface WhitelistEntry {
-  customer_name?: string;
-  customer_phone?: string;
-  customer_email?: string;
   [key: string]: unknown;
 }
 
@@ -59,12 +50,6 @@ interface Order {
   created_at: string;
   total_amount?: number | string | null;
   order_data?: OrderData | string | null;
-  contact_phone?: string | null;
-  whitelist?: WhitelistEntry | null;
-  delivery_method?: string | null;
-  special_instructions?: string | null;
-  menu?: { name: string } | null;
-  updated_at?: string | null;
   [key: string]: unknown;
 }
 
@@ -114,7 +99,7 @@ export const OrderDetailsDialog = ({
         }
       }
 
-      toast.success(`Order status changed to ${newStatus}`);
+      toast.success("Order status changed to ${newStatus}");
 
       onUpdate();
       onOpenChange(false);
@@ -217,17 +202,17 @@ export const OrderDetailsDialog = ({
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">
-                    {order.whitelist?.customer_name || 'Not provided'}
+                    {String((order.whitelist as Record<string, unknown> | null)?.customer_name || 'Not provided')}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{order.whitelist?.customer_phone || order.contact_phone || 'Not provided'}</span>
+                  <span>{String((order.whitelist as Record<string, unknown> | null)?.customer_phone || order.contact_phone || 'Not provided')}</span>
                 </div>
-                {order.whitelist?.customer_email && (
+                {(order.whitelist as Record<string, unknown> | null)?.customer_email && (
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{order.whitelist.customer_email}</span>
+                    <span>{String((order.whitelist as Record<string, unknown> | null).customer_email)}</span>
                   </div>
                 )}
               </div>
@@ -247,34 +232,28 @@ export const OrderDetailsDialog = ({
                     No items in this order
                   </div>
                 ) : (
-                  orderItems.map((item: OrderItem) => {
-                    const displayName = item.name || item.product_name || 'Unknown';
-                    const unitPrice = parseFloat(String(item.price || item.price_per_unit || 0));
-                    const qty = Number(item.quantity) || 0;
-                    return (
-                      <div key={`${displayName}-${qty}`} className="border rounded-lg p-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium">{displayName}</div>
-                            {item.weight && (
-                              <div className="text-sm text-muted-foreground">
-                                Weight: {String(item.weight)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold">
-                              ${(unitPrice * qty).toFixed(2)}
-                            </div>
+                  orderItems.map((item: OrderItem, idx: number) => (
+                    <div key={`${String(item.product_name || (item as Record<string, unknown>).name || idx)}-${idx}`} className="border rounded-lg p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium">{String((item as Record<string, unknown>).name || (item as Record<string, unknown>).product_name || '')}</div>
+                          {(item as Record<string, unknown>).weight && (
                             <div className="text-sm text-muted-foreground">
-                              {qty} x ${unitPrice.toFixed(2)}
+                              Weight: {String((item as Record<string, unknown>).weight)}
                             </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">
+                            ${((parseFloat(String((item as Record<string, unknown>).price || (item as Record<string, unknown>).price_per_unit || 0))) * (Number((item as Record<string, unknown>).quantity) || 0)).toFixed(2)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {Number((item as Record<string, unknown>).quantity) || 0} x ${parseFloat(String((item as Record<string, unknown>).price || (item as Record<string, unknown>).price_per_unit || 0)).toFixed(2)}
                           </div>
                         </div>
                       </div>
-                    );
-                  })
-
+                    </div>
+                  ))
                 )}
               </div>
             </div>
@@ -335,7 +314,7 @@ export const OrderDetailsDialog = ({
               <div className="text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Menu:</span>
-                  <span className="font-medium">{order.menu?.name || 'Unknown'}</span>
+                  <span className="font-medium">{String((order.menu as Record<string, unknown> | null)?.name || 'Unknown')}</span>
                 </div>
               </div>
             </div>

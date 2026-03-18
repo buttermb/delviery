@@ -34,7 +34,6 @@ import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { queryKeys } from '@/lib/queryKeys';
-import { humanizeError } from '@/lib/humanizeError';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -60,28 +59,12 @@ export default function PricingPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<PricingTier | null>(null);
-
-  const initialFormData = {
+  const [formData, setFormData] = useState({
     product_id: '',
     min_quantity: '',
     price_per_lb: '',
     bulk_discount_percent: '',
-  };
-  const [formData, setFormData] = useState(initialFormData);
-
-  const resetDialog = () => {
-    setIsDialogOpen(false);
-    setEditingTier(null);
-    setFormData(initialFormData);
-  };
-
-  const handleDialogOpenChange = (open: boolean) => {
-    if (!open) {
-      resetDialog();
-    } else {
-      setIsDialogOpen(true);
-    }
-  };
+  });
 
   const { data: pricingTiers, isLoading } = useQuery({
     queryKey: queryKeys.pricingTiers.byTenant(tenantId),
@@ -197,7 +180,6 @@ export default function PricingPage() {
           <Button
             variant="ghost"
             size="sm"
-            aria-label={`Edit pricing for ${original.products?.name ?? 'product'}`}
             onClick={() => {
               setEditingTier(original);
               setFormData({
@@ -239,24 +221,22 @@ export default function PricingPage() {
     },
     onSuccess: () => {
       toast.success("Pricing updated successfully");
-      resetDialog();
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTiers.byTenant(tenantId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTiers.products(tenantId) });
+      setIsDialogOpen(false);
+      setEditingTier(null);
+      setFormData({
+        product_id: '',
+        min_quantity: '',
+        price_per_lb: '',
+        bulk_discount_percent: '',
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTiers.byTenant() });
     },
     onError: (error) => {
-      toast.error("Failed to update pricing", { description: humanizeError(error) });
+      handleError(error, { component: 'PricingPage', toastTitle: 'Failed to update pricing' });
     }
   });
 
   const handleSave = () => {
-    if (!formData.product_id) {
-      toast.error("Please select a product");
-      return;
-    }
-    if (!formData.price_per_lb || parseFloat(formData.price_per_lb) < 0) {
-      toast.error("Please enter a valid price");
-      return;
-    }
     updatePricing.mutate(formData);
   };
 
@@ -269,7 +249,7 @@ export default function PricingPage() {
             Manage pricing tiers, bulk discounts, and special deals for your products
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -329,7 +309,7 @@ export default function PricingPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={resetDialog}>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
               <SaveButton

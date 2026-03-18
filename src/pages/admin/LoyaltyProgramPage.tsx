@@ -20,8 +20,6 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -73,6 +71,13 @@ interface CustomerLoyaltyPoints {
 
 interface LoyaltyRewardRedemption {
   points_spent: number;
+}
+
+interface _LoyaltyStats {
+  total_members: number;
+  points_issued: number;
+  points_redeemed: number;
+  active_rewards: number;
 }
 
 export default function LoyaltyProgramPage() {
@@ -168,6 +173,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteTierMutation = useMutation({
     mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.from("loyalty_tiers").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
@@ -186,6 +192,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteRewardMutation = useMutation({
     mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.from("loyalty_rewards").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
@@ -231,7 +238,7 @@ export default function LoyaltyProgramPage() {
   };
 
   // Fetch loyalty config
-  const { data: config, isLoading: isLoadingConfig } = useQuery({
+  const { data: config } = useQuery({
     queryKey: queryKeys.loyaltyProgram.config(tenant?.id),
     queryFn: async (): Promise<LoyaltyConfig | null> => {
       const { data, error } = await supabase
@@ -251,7 +258,7 @@ export default function LoyaltyProgramPage() {
   });
 
   // Fetch loyalty tiers
-  const { data: tiers, isLoading: isLoadingTiers } = useQuery({
+  const { data: tiers } = useQuery({
     queryKey: queryKeys.loyaltyProgram.tiers(tenant?.id),
     queryFn: async (): Promise<LoyaltyTier[]> => {
       const { data, error } = await supabase
@@ -271,7 +278,7 @@ export default function LoyaltyProgramPage() {
   });
 
   // Fetch loyalty rewards
-  const { data: rewards, isLoading: isLoadingRewards } = useQuery<LoyaltyReward[]>({
+  const { data: rewards } = useQuery<LoyaltyReward[]>({
     queryKey: queryKeys.loyaltyProgram.rewards(tenant?.id),
     queryFn: async () => {
       const { data, error } = await supabase
@@ -291,7 +298,7 @@ export default function LoyaltyProgramPage() {
   });
 
   // Fetch loyalty stats
-  const { data: stats, isLoading: isLoadingStats } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: queryKeys.loyaltyProgram.stats(tenant?.id),
     queryFn: async () => {
       try {
@@ -332,53 +339,6 @@ export default function LoyaltyProgramPage() {
     retry: 2,
   });
 
-  const isLoading = isLoadingConfig || isLoadingStats;
-
-  if (isLoading && !config && !stats) {
-    return (
-      <div className="space-y-4 p-4 sm:p-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-10 w-44" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={`stat-skeleton-${i}`}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-4 rounded" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16 mb-1" />
-                <Skeleton className="h-3 w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Skeleton className="h-10 w-full" />
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={`config-skeleton-${i}`}>
-                  <Skeleton className="h-4 w-32 mb-1" />
-                  <Skeleton className="h-8 w-16" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4 p-4 sm:p-4">
       {/* Header */}
@@ -392,7 +352,7 @@ export default function LoyaltyProgramPage() {
             Reward customers and drive repeat purchases
           </p>
         </div>
-        <Button type="button" className="bg-emerald-500 hover:bg-emerald-600" onClick={handleOpenConfig}>
+        <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={handleOpenConfig}>
           <Settings className="h-4 w-4 mr-2" />
           Configure Program
         </Button>
@@ -517,41 +477,12 @@ export default function LoyaltyProgramPage() {
                 {tiers?.length ?? 0} tier(s) configured
               </p>
             </div>
-            <Button type="button" onClick={() => handleOpenTier()}>
+            <Button onClick={() => handleOpenTier()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Tier
             </Button>
           </div>
 
-          {isLoadingTiers ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Card key={`tier-skeleton-${i}`}>
-                  <CardHeader>
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4 mt-2" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : !tiers?.length ? (
-            <EnhancedEmptyState
-              icon={Trophy}
-              title="No tiers configured"
-              description="Create loyalty tiers to reward your best customers with multiplied points and exclusive benefits."
-              primaryAction={{
-                label: "Add Tier",
-                onClick: () => handleOpenTier(),
-                icon: Plus,
-              }}
-              compact
-              designSystem="tenant-admin"
-            />
-          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {tiers?.map((tier) => (
               <Card key={tier.id} className="relative overflow-hidden">
@@ -569,14 +500,12 @@ export default function LoyaltyProgramPage() {
                       </Badge>
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" aria-label={`Edit ${tier.name} tier`} onClick={() => handleOpenTier(tier)}>
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenTier(tier)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        type="button"
                         variant="ghost"
                         size="sm"
-                        aria-label={`Delete ${tier.name} tier`}
                         onClick={() => {
                           confirm({
                             title: 'Delete Tier?',
@@ -608,8 +537,8 @@ export default function LoyaltyProgramPage() {
                   <div className="text-sm">
                     <div className="font-medium mb-2">Benefits:</div>
                     <ul className="space-y-1">
-                      {tier.benefits?.map((benefit: string) => (
-                        <li key={`${tier.id}-${benefit}`} className="flex items-center gap-2 text-muted-foreground">
+                      {tier.benefits?.map((benefit: string, i: number) => (
+                        <li key={i} className="flex items-center gap-2 text-muted-foreground">
                           <TrendingUp className="h-3 w-3 text-emerald-500" />
                           {benefit}
                         </li>
@@ -620,7 +549,6 @@ export default function LoyaltyProgramPage() {
               </Card>
             ))}
           </div>
-          )}
         </TabsContent>
 
         {/* Rewards Tab */}
@@ -632,41 +560,12 @@ export default function LoyaltyProgramPage() {
                 {rewards?.length ?? 0} reward(s) available
               </p>
             </div>
-            <Button type="button" onClick={() => handleOpenReward()}>
+            <Button onClick={() => handleOpenReward()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Reward
             </Button>
           </div>
 
-          {isLoadingRewards ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={`reward-skeleton-${i}`}>
-                  <CardHeader>
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/2 mt-2" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : !rewards?.length ? (
-            <EnhancedEmptyState
-              icon={Gift}
-              title="No rewards available"
-              description="Create rewards that customers can redeem with their loyalty points."
-              primaryAction={{
-                label: "Add Reward",
-                onClick: () => handleOpenReward(),
-                icon: Plus,
-              }}
-              compact
-              designSystem="tenant-admin"
-            />
-          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {rewards?.map((reward) => (
               <Card key={reward.id}>
@@ -677,14 +576,12 @@ export default function LoyaltyProgramPage() {
                       <Badge variant={reward.is_active ? "default" : "secondary"}>
                         {reward.is_active ? "Active" : "Inactive"}
                       </Badge>
-                      <Button variant="ghost" size="sm" aria-label={`Edit ${reward.reward_name} reward`} onClick={() => handleOpenReward(reward)}>
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenReward(reward)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        type="button"
                         variant="ghost"
                         size="sm"
-                        aria-label={`Delete ${reward.reward_name} reward`}
                         onClick={() => {
                           confirm({
                             title: 'Delete Reward?',
@@ -725,7 +622,7 @@ export default function LoyaltyProgramPage() {
                         {reward.reward_type?.replace("_", " ")}
                       </Badge>
                     </div>
-                    {(reward.redemption_count ?? 0) > 0 && (
+                    {reward.redemption_count > 0 && (
                       <div className="text-xs text-muted-foreground">
                         Redeemed {reward.redemption_count} time(s)
                       </div>
@@ -735,7 +632,6 @@ export default function LoyaltyProgramPage() {
               </Card>
             ))}
           </div>
-          )}
         </TabsContent>
       </Tabs>
 
@@ -782,8 +678,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
-            <Button type="button" disabled={updateConfigMutation.isPending} onClick={() => updateConfigMutation.mutate(configForm)}>
+            <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
+            <Button disabled={updateConfigMutation.isPending} onClick={() => updateConfigMutation.mutate(configForm)}>
               {updateConfigMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
@@ -842,8 +738,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
-            <Button type="button" disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>
+            <Button variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
+            <Button disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>
               {upsertTierMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Tier
             </Button>
@@ -906,8 +802,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
-            <Button type="button" disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
+            <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
+            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
               {upsertRewardMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Reward
             </Button>
@@ -925,6 +821,6 @@ export default function LoyaltyProgramPage() {
         onConfirm={dialogState.onConfirm}
         isLoading={dialogState.isLoading}
       />
-    </div>
+    </div >
   );
 }

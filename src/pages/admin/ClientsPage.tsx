@@ -27,7 +27,15 @@ import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { ExportButton } from '@/components/ui/ExportButton';
-import type { CRMClient } from '@/types/crm';
+
+interface Client {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    open_balance: number;
+    status: string;
+}
 
 interface ClientFilters {
     q: string;
@@ -125,8 +133,6 @@ export default function ClientsPage() {
 
     // Prefetch client detail on hover
     const handlePrefetchClient = useCallback((clientId: string) => {
-        if (!tenant?.id) return;
-        const accountId = tenant.id;
         queryClient.prefetchQuery({
             queryKey: queryKeys.crm.clients.detail(clientId),
             queryFn: async () => {
@@ -134,7 +140,6 @@ export default function ClientsPage() {
                     .from('crm_clients')
                     .select('*')
                     .eq('id', clientId)
-                    .eq('account_id', accountId)
                     .maybeSingle();
 
                 if (error) {
@@ -146,7 +151,7 @@ export default function ClientsPage() {
             staleTime: 30_000,
             retry: 2,
         });
-    }, [queryClient, tenant?.id]);
+    }, [queryClient]);
 
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
     const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
@@ -227,7 +232,7 @@ export default function ClientsPage() {
         setBulkDeleteOpen(true);
     };
 
-    const columns: ResponsiveColumn<CRMClient>[] = [
+    const columns: ResponsiveColumn<Client>[] = [
         {
             header: (
                 <Checkbox
@@ -235,7 +240,7 @@ export default function ClientsPage() {
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                 />
-            ),
+            ) as unknown as string,
             className: "w-[50px]",
             cell: (client) => (
                 <Checkbox
@@ -294,9 +299,19 @@ export default function ClientsPage() {
                 </Badge>
             )
         },
+        {
+            header: 'Actions',
+            cell: () => (
+                <div className="flex justify-end">
+                    <Button variant="ghost" size="sm">
+                        View Details
+                    </Button>
+                </div>
+            )
+        }
     ];
 
-    const renderMobileCard = (client: CRMClient) => (
+    const renderMobileCard = (client: Client) => (
         <div className="space-y-3">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
@@ -357,8 +372,11 @@ export default function ClientsPage() {
                             name: c.name,
                             email: c.email ?? '',
                             phone: c.phone ?? '',
-                            open_balance: formatCurrency(c.open_balance),
+                            type: '', // Not available in current data model
+                            tags: '', // Not available in current data model
                             created: new Date(c.created_at).toLocaleDateString(),
+                            total_orders: '', // Not available in current data model
+                            total_spent: '', // Not available in current data model
                             status: c.status,
                         }))}
                         filename="clients-export"
@@ -366,8 +384,11 @@ export default function ClientsPage() {
                             { key: "name", label: "Name" },
                             { key: "email", label: "Email" },
                             { key: "phone", label: "Phone" },
-                            { key: "open_balance", label: "Open Balance" },
+                            { key: "type", label: "Type" },
+                            { key: "tags", label: "Tags" },
                             { key: "created", label: "Created" },
+                            { key: "total_orders", label: "Total Orders" },
+                            { key: "total_spent", label: "Total Spent" },
                             { key: "status", label: "Status" },
                         ]}
                     />

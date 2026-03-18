@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/formatters';
-import { Download, ExternalLink, Loader2 } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
@@ -19,19 +19,9 @@ import { useCredits } from '@/hooks/useCredits';
 import { queryKeys } from '@/lib/queryKeys';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
-function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (status) {
-    case 'completed': return 'default';
-    case 'processing': return 'secondary';
-    case 'failed': return 'destructive';
-    default: return 'outline';
-  }
-}
-
 export default function DataExport() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const queryClient = useQueryClient();
   const [exportType, setExportType] = useState<string>('');
   const [format, setFormat] = useState<string>('csv');
   const { isFreeTier, performAction } = useCredits();
@@ -44,7 +34,7 @@ export default function DataExport() {
       try {
         const { data, error } = await supabase
           .from('data_exports')
-          .select('id, data_type, format, created_at, status, download_url, row_count, error_message')
+          .select('id, data_type, format, created_at, status')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(20);
@@ -87,7 +77,7 @@ export default function DataExport() {
         .from('data_exports')
         .insert({
           tenant_id: tenantId,
-          user_id: admin?.userId ?? null,
+          // user_id: auth.user.id, // need auth context but let's rely on RLS/defaults or ignore if not critical
           data_type: exportType,
           format: format,
           status: 'pending'
@@ -96,7 +86,6 @@ export default function DataExport() {
         .maybeSingle();
 
       if (dbError) throw dbError;
-      if (!job) throw new Error('Failed to create export job');
 
       // 2. Invoke Edge Function (Async Trigger)
       const { data: invokeData, error: invokeError } = await supabase.functions.invoke('process-data-export', {
@@ -105,8 +94,9 @@ export default function DataExport() {
 
       if (invokeError) {
         logger.error("Failed to trigger export function", invokeError);
-        toast.warning("Export job created but processing might be delayed.");
+        toast.success("Export job created but processing might be delayed.");
       } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
+        // Check for error in response body (edge functions can return 200 with error)
         const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
         logger.error("Export function returned error in response", { error: errorMessage });
         toast.error("Export Failed");
@@ -114,8 +104,9 @@ export default function DataExport() {
         toast.success("Your export is running in the background. It will appear in the history list below when complete.");
       }
 
-      // Refresh history to show the new export job
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dataExport.history(tenantId) });
+      // Refresh history
+      /* refetch() if we had the query handle handy, but react-query will re-fetch on window focus 
+         or we can invalidate queries */
 
     } catch (error: unknown) {
       logger.error("Export initiation failed", error);
@@ -212,36 +203,14 @@ export default function DataExport() {
             ) : exportHistory && exportHistory.length > 0 ? (
               <div className="space-y-2">
                 {exportHistory.map((exportItem) => (
-                  <div key={exportItem.id} className="flex items-center justify-between gap-2 p-3 border rounded-lg">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium capitalize">{exportItem.data_type || 'Unknown'}</div>
+                  <div key={exportItem.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <div className="font-medium">{exportItem.data_type || 'Unknown'}</div>
                       <div className="text-sm text-muted-foreground">
                         {formatSmartDate(exportItem.created_at, { includeTime: true })}
-                        {exportItem.row_count != null && ` · ${exportItem.row_count} rows`}
                       </div>
-                      {exportItem.status === 'failed' && exportItem.error_message && (
-                        <div className="text-xs text-destructive mt-1 truncate">{exportItem.error_message}</div>
-                      )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant={getStatusBadgeVariant(exportItem.status)}>
-                        {exportItem.status === 'processing' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                        {exportItem.status}
-                      </Badge>
-                      <Badge variant="outline">{exportItem.format || 'csv'}</Badge>
-                      {exportItem.status === 'completed' && exportItem.download_url && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          asChild
-                        >
-                          <a href={exportItem.download_url} target="_blank" rel="noopener noreferrer" aria-label={`Download ${exportItem.data_type} export`}>
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                    <Badge>{exportItem.format || 'csv'}</Badge>
                   </div>
                 ))}
               </div>

@@ -56,19 +56,6 @@ export interface UseOfflineOrderCreationReturn {
   getOfflineOrderCount: () => number;
 }
 
-/** Convert typed order data to the shape idb.saveOrder expects */
-function toIDBRecord(order: OfflineOrderData): Record<string, unknown> & { id: string; createdAt?: string } {
-  return { ...order } as Record<string, unknown> & { id: string; createdAt?: string };
-}
-
-/** Parse IDB records back to OfflineOrderData, filtering out invalid entries */
-function fromIDBRecords(records: unknown[]): OfflineOrderData[] {
-  return (records as Record<string, unknown>[]).filter(
-    (r): r is Record<string, unknown> & { id: string; tenantId: string; status: string } =>
-      r != null && typeof r.id === 'string' && typeof r.tenantId === 'string' && typeof r.status === 'string'
-  ) as unknown as OfflineOrderData[];
-}
-
 export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreationReturn {
   const [offlineOrders, setOfflineOrders] = useState<OfflineOrderData[]>([]);
   const [isOnline, setIsOnline] = useState(getOnlineStatus());
@@ -79,9 +66,8 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
   const loadOfflineOrders = useCallback(async () => {
     try {
       const allOrders = await idb.getAllOrders();
-      const parsed = fromIDBRecords(allOrders);
-      const filtered = parsed.filter(
-        (order) => order.tenantId === tenantId && order.status !== 'synced'
+      const filtered = (allOrders as unknown as OfflineOrderData[]).filter(
+        (order) => order && order.tenantId === tenantId && order.status !== 'synced'
       );
       setOfflineOrders(filtered);
     } catch (error) {
@@ -135,7 +121,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     };
 
     // Save to IndexedDB
-    await idb.saveOrder(toIDBRecord(order));
+    await idb.saveOrder(order as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
 
     // Update local state
     setOfflineOrders((prev) => [...prev, order]);
@@ -157,8 +143,8 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
   const syncSingleOrder = async (order: OfflineOrderData): Promise<boolean> => {
     try {
       // Update status to syncing
-      const updatedOrder: OfflineOrderData = { ...order, status: 'syncing' };
-      await idb.saveOrder(toIDBRecord(updatedOrder));
+      const updatedOrder = { ...order, status: 'syncing' as const };
+      await idb.saveOrder(updatedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? updatedOrder : o))
       );
@@ -214,7 +200,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         status: 'synced',
         syncedAt: new Date().toISOString(),
       };
-      await idb.saveOrder(toIDBRecord(syncedOrder));
+      await idb.saveOrder(syncedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? syncedOrder : o))
       );
@@ -236,7 +222,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         status: 'failed',
         syncError: errorMsg,
       };
-      await idb.saveOrder(toIDBRecord(failedOrder));
+      await idb.saveOrder(failedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? failedOrder : o))
       );
@@ -249,7 +235,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         {
           ...order,
           idempotencyKey: order.idempotencyKey,
-        } as unknown as Record<string, unknown>,
+        },
         5
       );
 
@@ -310,8 +296,8 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       // Remove from IndexedDB - mark as synced to effectively remove
       const order = offlineOrders.find((o) => o.id === id);
       if (order) {
-        const removedOrder: OfflineOrderData = { ...order, status: 'synced' };
-        await idb.saveOrder(toIDBRecord(removedOrder));
+        const removedOrder = { ...order, status: 'synced' as const };
+        await idb.saveOrder(removedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       }
       setOfflineOrders((prev) => prev.filter((o) => o.id !== id));
       toast.success('Offline order removed');
@@ -336,7 +322,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       status: 'pending_sync',
       syncError: undefined,
     };
-    await idb.saveOrder(toIDBRecord(resetOrder));
+    await idb.saveOrder(resetOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
     setOfflineOrders((prev) =>
       prev.map((o) => (o.id === id ? resetOrder : o))
     );

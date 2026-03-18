@@ -2,7 +2,6 @@ import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import {
   Dialog,
   DialogContent,
@@ -36,24 +35,20 @@ export function QuarantineManager({
   batch,
   onSuccess,
 }: QuarantineManagerProps) {
-  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
 
   const quarantineMutation = useMutation({
     mutationFn: async (data: { status: string; notes?: string }) => {
-      if (!tenant?.id) throw new Error("Tenant ID required");
-
       const { error } = await supabase
         .from("inventory_batches")
         .update(data)
-        .eq("id", batch.id)
-        .eq("tenant_id", tenant.id);
+        .eq("id", batch.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.lists() });
       toast.success("Batch quarantined successfully");
       onSuccess?.();
     },

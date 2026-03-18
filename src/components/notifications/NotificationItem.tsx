@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Bell,
@@ -18,7 +17,6 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useTenantContext } from '@/hooks/useTenantContext';
 
 import type { Notification } from './NotificationCenter';
 
@@ -63,35 +61,21 @@ const NOTIFICATION_COLORS: Record<string, string> = {
   info: 'text-blue-500',
 };
 
-/** Resolve a relative admin path (e.g. "admin/orders/123") to an absolute
- *  path with the tenant slug prefix (e.g. "/acme/admin/orders/123").
- *  Already-absolute paths (starting with /) are returned as-is. */
-function resolveActionUrl(actionUrl: string, tenantSlug: string | null): string {
-  if (actionUrl.startsWith('/')) return actionUrl;
-  return `/${tenantSlug}/${actionUrl}`;
-}
-
 export function NotificationItem({
   notification,
   onMarkAsRead,
   onDelete,
   onClose,
 }: NotificationItemProps) {
-  const navigate = useNavigate();
-  const { tenantSlug } = useTenantContext();
   const icon = NOTIFICATION_ICONS[notification.type] || NOTIFICATION_ICONS.info;
   const iconColor = NOTIFICATION_COLORS[notification.type] || NOTIFICATION_COLORS.info;
-
-  const handleNavigate = (url: string) => {
-    navigate(resolveActionUrl(url, tenantSlug));
-  };
 
   const handleClick = () => {
     if (!notification.read) {
       onMarkAsRead(notification.id);
     }
     if (notification.action_url) {
-      handleNavigate(notification.action_url);
+      window.location.href = notification.action_url;
       onClose();
     }
   };
@@ -141,7 +125,7 @@ export function NotificationItem({
                   className="h-7 px-2"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleNavigate(notification.action_url!);
+                    window.location.href = notification.action_url!;
                     onClose();
                   }}
                 >

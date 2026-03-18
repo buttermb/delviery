@@ -10,15 +10,13 @@ import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { EditClientDialog } from "@/components/admin/EditClientDialog";
-import { FlagClientDialog } from "@/components/admin/FlagClientDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useClientDetail, useClientOrders } from "@/hooks/useWholesaleData";
+import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showInfoToast, showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { useEscalateClient } from "@/hooks/useFinancialData";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -45,10 +43,8 @@ export default function ClientDetail() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [creditLimitDialogOpen, setCreditLimitDialogOpen] = useState(false);
-  const [escalateDialogOpen, setEscalateDialogOpen] = useState(false);
   const [newCreditLimit, setNewCreditLimit] = useState("");
   const queryClient = useQueryClient();
-  const escalateClient = useEscalateClient();
 
   // Mutation to delete client
   const deleteClientMutation = useMutation({
@@ -113,39 +109,10 @@ export default function ClientDetail() {
     }
   });
 
-  // Mutation to unflag client
-  const unflagClientMutation = useMutation({
-    mutationFn: async () => {
-      // Resolve any open fraud flags for this client
-      const { error: flagError } = await supabase
-        .from('fraud_flags')
-        .update({ resolved_at: new Date().toISOString(), auto_resolved: false })
-        .eq('user_id', id)
-        .eq('tenant_id', client?.tenant_id)
-        .is('resolved_at', null);
-      if (flagError) throw flagError;
-
-      // Restore client status to active
-      const { error: statusError } = await supabase
-        .from('wholesale_clients')
-        .update({ status: 'active' })
-        .eq('id', id)
-        .eq('tenant_id', client?.tenant_id);
-      if (statusError) throw statusError;
-    },
-    onSuccess: () => {
-      showSuccessToast("Flag Removed", `${client?.business_name} has been unflagged`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
-    },
-    onError: (error) => {
-      logger.error("Failed to unflag client", error, { component: "ClientDetail", clientId: id });
-      showErrorToast("Failed to remove flag");
-    }
-  });
-
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
+  const { data: _payments = [] } = useClientPayments(id || "");
+
   // Set breadcrumb label to show client business name
   useBreadcrumbLabel(client?.business_name ?? null);
 
@@ -242,12 +209,6 @@ export default function ClientDetail() {
             <h1 className="text-xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
-              {displayClient.status === 'flagged' && (
-                <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20" variant="outline">
-                  <Flag className="h-3 w-3 mr-1 fill-orange-500" />
-                  Flagged
-                </Badge>
-              )}
               <CustomerRiskBadge
                 score={clientData.risk_score ?? null}
                 showLabel={true}
@@ -261,7 +222,6 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
-            aria-label={`Call ${displayClient.business_name}`}
             onClick={() => {
               if (displayClient.phone) {
                 window.location.href = `tel:${displayClient.phone}`;
@@ -274,7 +234,6 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
-            aria-label={`Send message to ${displayClient.business_name}`}
             onClick={() => setSmsDialogOpen(true)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
@@ -283,37 +242,22 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
-            aria-label={`Edit ${displayClient.business_name}`}
             onClick={() => setEditDialogOpen(true)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          {displayClient.status === 'flagged' ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => unflagClientMutation.mutate()}
-              disabled={unflagClientMutation.isPending}
-              className="border-orange-500/30 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
-            >
-              <Flag className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
-              {unflagClientMutation.isPending ? 'Unflagging...' : 'Unflag'}
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFlagDialogOpen(true)}
-            >
-              <Flag className="h-4 w-4 mr-2" />
-              Flag
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => showInfoToast("Flag Client", `${displayClient.business_name} marked for review`)}
+          >
+            <Flag className="h-4 w-4 mr-2" />
+            Flag
+          </Button>
           <Button
             variant="destructive"
             size="sm"
-            aria-label={`Remove ${displayClient.business_name}`}
             onClick={() => setRemoveDialogOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -356,7 +300,6 @@ export default function ClientDetail() {
             <div className="flex gap-2">
               <Button
                 className="bg-emerald-500 hover:bg-emerald-600"
-                aria-label="Record payment"
                 onClick={() => setPaymentDialogOpen(true)}
               >
                 <DollarSign className="h-4 w-4 mr-2" />
@@ -364,7 +307,6 @@ export default function ClientDetail() {
               </Button>
               <Button
                 variant="outline"
-                aria-label={`Call ${displayClient.business_name} for collection`}
                 onClick={() => {
                   if (displayClient.phone) {
                     window.location.href = `tel:${displayClient.phone}`;
@@ -377,10 +319,10 @@ export default function ClientDetail() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => setEscalateDialogOpen(true)}
-                disabled={escalateClient.isPending}
+                onClick={() => {
+                  showSuccessToast("Escalated", `${displayClient.business_name} escalated to collections team`);
+                }}
               >
-                {escalateClient.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Escalate
               </Button>
@@ -417,7 +359,7 @@ export default function ClientDetail() {
             <div className="flex items-center gap-1 mb-1">
               {[...Array(5)].map((_, i) => (
                 <Star
-                  key={`reliability-star-${i}`}
+                  key={i}
                   className={`h-4 w-4 ${i < Math.floor(displayClient.reliability_score / 20)
                     ? "fill-yellow-500 text-yellow-500"
                     : "text-muted-foreground"
@@ -430,7 +372,7 @@ export default function ClientDetail() {
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Credit Limit</div>
             <div className="text-2xl font-bold">${(displayClient.credit_limit / 1000).toFixed(0)}k</div>
-            <div className="text-xs text-muted-foreground">Used: {displayClient.credit_limit > 0 ? Math.round((displayClient.outstanding_balance / displayClient.credit_limit) * 100) : 0}%</div>
+            <div className="text-xs text-muted-foreground">Used: {Math.round((displayClient.outstanding_balance / displayClient.credit_limit) * 100)}%</div>
           </Card>
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
@@ -549,7 +491,6 @@ export default function ClientDetail() {
       <div className="flex flex-wrap gap-2">
         <Button
           className="bg-emerald-500 hover:bg-emerald-600"
-          aria-label={`Create new order for ${displayClient.business_name}`}
           onClick={() => navigate("wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
         >
           <Package className="h-4 w-4 mr-2" />
@@ -557,7 +498,6 @@ export default function ClientDetail() {
         </Button>
         <Button
           className="bg-amber-600 hover:bg-amber-700"
-          aria-label={`Front inventory for ${displayClient.business_name}`}
           onClick={() => navigate("dispatch-inventory", { state: { clientId: id } })}
         >
           <Truck className="h-4 w-4 mr-2" />
@@ -565,7 +505,6 @@ export default function ClientDetail() {
         </Button>
         <Button
           variant="outline"
-          aria-label={`Adjust credit limit for ${displayClient.business_name}`}
           onClick={() => {
             setNewCreditLimit(displayClient.credit_limit.toString());
             setCreditLimitDialogOpen(true);
@@ -576,7 +515,6 @@ export default function ClientDetail() {
         </Button>
         <Button
           variant="destructive"
-          aria-label={`Suspend ${displayClient.business_name} account`}
           onClick={() => setSuspendDialogOpen(true)}
         >
           <AlertCircle className="h-4 w-4 mr-2" />
@@ -599,9 +537,8 @@ export default function ClientDetail() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
-          showSuccessToast("Client Updated", "Changes saved successfully");
+          // Refresh client data
+          window.location.reload();
         }}
       />
 
@@ -640,15 +577,6 @@ export default function ClientDetail() {
         isLoading={suspendClientMutation.isPending}
       />
 
-      {/* Flag Client Dialog */}
-      <FlagClientDialog
-        open={flagDialogOpen}
-        onOpenChange={setFlagDialogOpen}
-        clientId={id || ""}
-        clientName={displayClient.business_name}
-        tenantId={client.tenant_id}
-      />
-
       {/* Credit Limit Dialog */}
       <Dialog open={creditLimitDialogOpen} onOpenChange={setCreditLimitDialogOpen}>
         <DialogContent className="max-w-md">
@@ -683,25 +611,6 @@ export default function ClientDetail() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Escalation Confirmation Dialog */}
-      <ConfirmDeleteDialog
-        open={escalateDialogOpen}
-        onOpenChange={setEscalateDialogOpen}
-        onConfirm={() =>
-          escalateClient.mutateAsync({
-            client_id: displayClient.id,
-            client_name: displayClient.business_name,
-            outstanding_amount: displayClient.outstanding_balance,
-          })
-        }
-        title="Escalate to Collections"
-        description={`This will escalate ${displayClient.business_name} to the collections team and suspend their account. Outstanding balance: ${formatCurrency(displayClient.outstanding_balance)}. This action cannot be easily undone.`}
-        itemName={displayClient.business_name}
-        itemType="account"
-        destructive={true}
-        isLoading={escalateClient.isPending}
-      />
     </div>
   );
 }

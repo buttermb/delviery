@@ -59,6 +59,7 @@ export default function LiveMap() {
   const [allCouriers, setAllCouriers] = useState<CourierLocation[]>([]);
   const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setOrdersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('dark');
   const [showHeatmap, setShowHeatmap] = useState(false);
@@ -67,9 +68,10 @@ export default function LiveMap() {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
-  const showRoutes = true;
+  const [showRoutes] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [showOffline, setShowOffline] = useState(false);
+  useState<'couriers' | 'orders'>('couriers');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -151,7 +153,10 @@ export default function LiveMap() {
 
   // Load active orders with delivery locations
   const loadActiveOrders = useCallback(async () => {
-    if (!tenant?.id) return;
+    if (!tenant?.id) {
+      setOrdersLoading(false);
+      return;
+    }
 
     try {
       // Load orders that are in active delivery states
@@ -171,6 +176,8 @@ export default function LiveMap() {
       setActiveOrders(ordersData ?? []);
     } catch (err) {
       logger.error('Error loading active orders', err, { component: 'LiveMap' });
+    } finally {
+      setOrdersLoading(false);
     }
   }, [tenant?.id]);
 
@@ -1329,16 +1336,20 @@ export default function LiveMap() {
   );
 }
 
-interface CourierListProps {
+// Separate component for courier list (used when map is unavailable)
+function CourierList({
+  couriers,
+  loading,
+  error,
+  onRefresh,
+  stats
+}: {
   couriers: CourierLocation[];
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
   stats: { total: number; online: number; active: number; offline: number };
-}
-
-// Separate component for courier list (used when map is unavailable)
-function CourierList({ couriers, loading, error, onRefresh, stats }: CourierListProps) {
+}) {
   return (
     <Card>
       <CardHeader>

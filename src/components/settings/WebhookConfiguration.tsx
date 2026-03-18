@@ -1,15 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +19,6 @@ import { Webhook, Loader2, Plus, Trash2, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
 import { format } from 'date-fns';
 
@@ -37,7 +34,7 @@ interface WebhookConfig {
 }
 
 const webhookSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  name: z.string().min(1, 'Name is required'),
   url: z.string().url('Must be a valid URL'),
   events: z.array(z.string()).min(1, 'Select at least one event'),
 });
@@ -57,7 +54,8 @@ const AVAILABLE_EVENTS = [
 
 export function WebhookConfiguration() {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
+  const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const form = useForm<WebhookFormValues>({
@@ -69,107 +67,80 @@ export function WebhookConfiguration() {
     },
   });
 
-  const { data: webhooks = [], isLoading } = useQuery({
-    queryKey: queryKeys.webhooks.list(tenant?.id),
-    queryFn: async () => {
-      if (!tenant?.id) return [];
-      const { data, error } = await (supabase as unknown as Record<string, unknown> & typeof supabase)
-        .from('webhooks')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+  useEffect(() => {
+    loadWebhooks();
+  }, [tenant]);
+
+  const loadWebhooks = async () => {
+    if (!tenant?.id) return;
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from('webhooks').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data ?? []) as WebhookConfig[];
-    },
-    enabled: !!tenant?.id,
-    staleTime: 30_000,
-  });
+      setWebhooks(data || []);
+    } catch (error) {
+      logger.error('Error loading webhooks:', error);
+      toast.error('Failed to load webhooks');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const createMutation = useMutation({
-    mutationFn: async (formData: WebhookFormValues) => {
-      if (!tenant?.id) throw new Error('Tenant not found');
+  const handleCreateWebhook = async (data: WebhookFormValues) => {
+    if (!tenant?.id) {
+      toast.error('Tenant not found');
+      return;
+    }
 
-      const secret = `whsec_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+    try {
+      const secret = `whsec_${Math.random().toString(36).substring(2, 15)}`;
 
-      const { error } = await (supabase as unknown as Record<string, unknown> & typeof supabase)
-        .from('webhooks')
-        .insert({
-          tenant_id: tenant.id,
-          name: formData.name,
-          url: formData.url,
-          events: formData.events,
-          secret,
-          is_active: true,
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success('Webhook created successfully');
-      form.reset();
-      setDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.all });
-      logger.info('Webhook created', { tenantId: tenant?.id });
-    },
-    onError: (error: unknown) => {
-      logger.error('Error creating webhook:', error);
-      toast.error('Failed to create webhook');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (webhookId: string) => {
-      if (!tenant?.id) throw new Error('Tenant not found');
-
-      const { error } = await (supabase as unknown as Record<string, unknown> & typeof supabase)
-        .from('webhooks')
-        .delete()
-        .eq('id', webhookId)
-        .eq('tenant_id', tenant.id);
-
-      if (error) throw error;
-    },
-    onSuccess: (_data, webhookId) => {
-      toast.success('Webhook deleted successfully');
-      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.all });
-      logger.info('Webhook deleted', { tenantId: tenant?.id, webhookId });
-    },
-    onError: (error: unknown) => {
-      logger.error('Error deleting webhook:', error);
-      toast.error('Failed to delete webhook');
-    },
-  });
-
-  const testMutation = useMutation({
-    mutationFn: async (webhookId: string) => {
-      const { data, error } = await supabase.functions.invoke('send-webhook', {
-        body: {
-          webhook_id: webhookId,
-          payload: {
-            event_type: 'test',
-            message: 'This is a test webhook event from FloraIQ',
-            timestamp: new Date().toISOString(),
-          },
-        },
+      const { error } = await supabase.from('webhooks').insert({
+        tenant_id: tenant.id,
+        name: data.name,
+        url: data.url,
+        events: data.events,
+        secret,
+        is_active: true,
       });
 
       if (error) throw error;
-      return data as { success: boolean; status: string; response_status: number | null; duration_ms: number };
-    },
-    onSuccess: (data) => {
-      if (data?.success) {
-        toast.success(`Test webhook delivered successfully (${data.duration_ms}ms)`);
-      } else {
-        toast.error(`Test webhook failed: HTTP ${data?.response_status ?? 'unknown'}`);
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.all });
-    },
-    onError: (error: unknown) => {
-      logger.error('Error testing webhook:', error);
-      toast.error('Failed to send test webhook');
-    },
-  });
+
+      toast.success('Webhook created successfully');
+      form.reset();
+      setDialogOpen(false);
+      loadWebhooks();
+      logger.info('Webhook created', { tenantId: tenant.id });
+    } catch (error) {
+      logger.error('Error creating webhook:', error);
+      toast.error('Failed to create webhook');
+    }
+  };
+
+  const handleDeleteWebhook = async (webhookId: string) => {
+    if (!tenant?.id) return;
+
+    try {
+      const { error } = await supabase.from('webhooks').delete().eq('id', webhookId);
+
+      if (error) throw error;
+
+      toast.success('Webhook deleted successfully');
+      loadWebhooks();
+      logger.info('Webhook deleted', { tenantId: tenant.id, webhookId });
+    } catch (error) {
+      logger.error('Error deleting webhook:', error);
+      toast.error('Failed to delete webhook');
+    }
+  };
+
+  const handleTestWebhook = async (webhookId: string) => {
+    toast.info('Sending test webhook...');
+    logger.info('Test webhook triggered', { webhookId });
+    // In real implementation, this would trigger a test event
+  };
 
   return (
     <Card className="p-6">
@@ -189,14 +160,13 @@ export function WebhookConfiguration() {
             <DialogHeader>
               <DialogTitle>Create Webhook</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 py-4">
+            <form onSubmit={form.handleSubmit(handleCreateWebhook)} className="space-y-4 py-4">
               <div>
                 <Label htmlFor="webhook-name">Name</Label>
                 <Input
                   id="webhook-name"
                   {...form.register('name')}
                   placeholder="Production Webhook"
-                  maxLength={100}
                 />
                 {form.formState.errors.name && (
                   <p className="text-sm text-destructive mt-1">
@@ -255,12 +225,8 @@ export function WebhookConfiguration() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                {createMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
+              <Button type="submit" className="w-full">
+                <Plus className="h-4 w-4 mr-2" />
                 Create Webhook
               </Button>
             </form>
@@ -268,26 +234,9 @@ export function WebhookConfiguration() {
         </Dialog>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <div key={i} className="border rounded-lg p-4 space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-64" />
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-8" />
-                  <Skeleton className="h-8 w-8" />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-5 w-24" />
-              </div>
-            </div>
-          ))}
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : webhooks.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
@@ -312,28 +261,16 @@ export function WebhookConfiguration() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => testMutation.mutate(webhook.id)}
-                    disabled={testMutation.isPending}
-                    aria-label={`Test webhook ${webhook.name}`}
+                    onClick={() => handleTestWebhook(webhook.id)}
                   >
-                    {testMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <TestTube className="h-4 w-4" />
-                    )}
+                    <TestTube className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMutation.mutate(webhook.id)}
-                    disabled={deleteMutation.isPending}
-                    aria-label={`Delete webhook ${webhook.name}`}
+                    onClick={() => handleDeleteWebhook(webhook.id)}
                   >
-                    {deleteMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

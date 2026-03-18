@@ -18,10 +18,10 @@ interface Ticket {
 interface TicketDetailProps {
   ticket: Ticket;
   onBack: () => void;
-  onUpdate?: () => void;
+  onUpdate: () => void;
 }
 
-export function TicketDetail({ ticket, onBack }: TicketDetailProps) {
+export function TicketDetail({ ticket, onBack, onUpdate: _onUpdate }: TicketDetailProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":

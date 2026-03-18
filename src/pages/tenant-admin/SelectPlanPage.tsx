@@ -240,7 +240,7 @@ export default function SelectPlanPage() {
     if (isRetry) setRetryPlanId(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+      const { data, error } = await supabase.functions.invoke("start-trial", {
         body: {
           tenant_id: tenant.id,
           plan_id: planId,

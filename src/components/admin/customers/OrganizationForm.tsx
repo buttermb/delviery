@@ -5,7 +5,7 @@
  * Uses React Hook Form with Zod validation.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,8 +21,6 @@ import {
   Save,
   X,
   Loader2,
-  DollarSign,
-  Tag,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -59,14 +57,12 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 
 import {
   ORGANIZATION_TYPE_LABELS,
   ORGANIZATION_STATUS_LABELS,
   type Organization,
 } from '@/types/organization';
-import { usePricingTiers, type PricingTier } from '@/hooks/usePricingTiers';
 
 // ============================================================================
 // Validation Schema
@@ -141,7 +137,6 @@ export function OrganizationForm({
   isSubmitting = false,
 }: OrganizationFormProps) {
   const isEditing = !!organization;
-  const { activeTiers, isLoading: isLoadingTiers } = usePricingTiers();
 
   const form = useForm<OrganizationFormValues>({
     resolver: zodResolver(organizationFormSchema),
@@ -176,13 +171,6 @@ export function OrganizationForm({
       notes: '',
     },
   });
-
-  const watchedTierId = form.watch('pricing_tier_id');
-
-  const selectedTier = useMemo((): PricingTier | undefined => {
-    if (!watchedTierId) return undefined;
-    return activeTiers.find((t) => t.id === watchedTierId);
-  }, [watchedTierId, activeTiers]);
 
   // Reset form when organization changes
   useEffect(() => {
@@ -724,106 +712,42 @@ export function OrganizationForm({
 
               {/* Pricing Tab */}
               <TabsContent value="pricing" className="space-y-4 pt-4">
-                <FormField
-                  control={form.control}
-                  name="pricing_tier_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Tag className="h-4 w-4" />
-                        Pricing Tier
-                      </FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value === 'none' ? '' : value);
-                          // Auto-fill discount when tier is selected
-                          const tier = activeTiers.find((t) => t.id === value);
-                          if (tier) {
-                            form.setValue('discount_percentage', tier.discount_percentage);
-                          }
-                        }}
-                        value={field.value || 'none'}
-                        disabled={isLoadingTiers}
-                      >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="discount_percentage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Percent className="h-4 w-4" />
+                          Discount Percentage
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a pricing tier" />
-                          </SelectTrigger>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={0.1}
+                            placeholder="0"
+                            {...field}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">No tier assigned</SelectItem>
-                          {activeTiers.map((tier) => (
-                            <SelectItem key={tier.id} value={tier.id}>
-                              {tier.name} — {tier.discount_percentage}% off
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Assign a wholesale pricing tier to this organization
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormDescription>
+                          Organization-wide discount applied to all orders
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                {selectedTier && (
-                  <div className="rounded-lg border p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={selectedTier.color}>
-                        {selectedTier.name}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">{selectedTier.description}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <Percent className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Discount</p>
-                          <p className="text-sm font-medium">{selectedTier.discount_percentage}%</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Min. Order</p>
-                          <p className="text-sm font-medium">${selectedTier.min_order_amount.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Separator />
-
-                <FormField
-                  control={form.control}
-                  name="discount_percentage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Percent className="h-4 w-4" />
-                        Custom Discount Override
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          placeholder="0"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {selectedTier
-                          ? 'Override the tier discount with a custom percentage'
-                          : 'Organization-wide discount applied to all orders'}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="rounded-lg border border-dashed p-4 bg-muted/50">
+                  <p className="text-sm text-muted-foreground">
+                    Advanced pricing tier support coming soon. You can set organization-level
+                    discount percentages that will be automatically applied to all orders placed
+                    under this organization.
+                  </p>
+                </div>
               </TabsContent>
             </Tabs>
 

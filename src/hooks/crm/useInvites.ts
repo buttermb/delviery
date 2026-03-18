@@ -2,16 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CRMInvite, InviteFormValues } from '@/types/crm';
 import { toast } from 'sonner';
-import { useAccountIdSafe } from '@/hooks/crm/useAccountId';
+import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
-import { queryKeys } from '@/lib/queryKeys';
+
+export const crmInviteKeys = {
+    all: ['crm-invites'] as const,
+    lists: () => [...crmInviteKeys.all, 'list'] as const,
+    list: (filters: string) => [...crmInviteKeys.lists(), { filters }] as const,
+};
 
 export function useInvites(status?: 'pending' | 'accepted' | 'archived') {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: queryKeys.crm.invites.list(status || 'all'),
+        queryKey: crmInviteKeys.list(status || 'all'),
         queryFn: async () => {
             if (!accountId) {
                 throw new Error('Account ID is required');
@@ -38,7 +43,6 @@ export function useInvites(status?: 'pending' | 'accepted' | 'archived') {
         },
         enabled: !!accountId,
         retry: 2,
-        staleTime: 30_000,
     });
 }
 
@@ -74,7 +78,7 @@ export function useCreateInvite() {
             return data as CRMInvite;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.crm.invites.lists() });
+            queryClient.invalidateQueries({ queryKey: crmInviteKeys.lists() });
             toast.success('Invite created successfully');
         },
         onError: (error: unknown) => {
@@ -109,7 +113,7 @@ export function useArchiveInvite() {
             return data as CRMInvite;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.crm.invites.lists() });
+            queryClient.invalidateQueries({ queryKey: crmInviteKeys.lists() });
             toast.success('Invite archived');
         },
         onError: (error: unknown) => {

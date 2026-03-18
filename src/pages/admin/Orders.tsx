@@ -1063,7 +1063,6 @@ export default function Orders() {
             variant="ghost"
             className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => navigate(`orders/${order.id}`)}
-            aria-label={`View order ${order.order_number || order.id.slice(0, 8)}`}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -1143,7 +1142,7 @@ export default function Orders() {
                 <Button
                   variant="outline"
                   className="min-h-[44px] sm:min-h-[48px] touch-manipulation text-xs sm:text-sm"
-                  onClick={() => navigate('orders/offline-create')}
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
                 >
                   <WifiOff className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Offline Order</span>
@@ -1153,7 +1152,7 @@ export default function Orders() {
                 <Button
                   variant="default"
                   className="min-h-[44px] sm:min-h-[48px] touch-manipulation shadow-lg shadow-primary/20 text-xs sm:text-sm"
-                  onClick={() => navigate('wholesale-orders/new')}
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
                 >
                   <Plus className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">New Order</span>
@@ -1195,19 +1194,18 @@ export default function Orders() {
               {/* Filter Presets */}
               <div className="flex items-center gap-1.5">
                 {filterPresets.map(preset => (
-                  <Button
+                  <button
                     key={preset.id}
-                    type="button"
-                    variant={activePreset === preset.id ? "default" : "secondary"}
-                    size="sm"
                     onClick={() => handlePresetClick(preset.id)}
                     className={cn(
-                      "rounded-full px-3 py-1 h-auto text-xs font-medium",
-                      activePreset !== preset.id && "text-muted-foreground"
+                      "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      activePreset === preset.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
                   >
                     {preset.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
 
@@ -1253,7 +1251,6 @@ export default function Orders() {
                     size="sm"
                     onClick={handleClearFilters}
                     className="h-10 px-2 sm:px-3 text-muted-foreground hover:text-destructive hover:border-destructive/50 text-xs sm:text-sm whitespace-nowrap"
-                    aria-label="Clear all filters"
                   >
                     <X className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">Clear all filters</span>
@@ -1262,7 +1259,7 @@ export default function Orders() {
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10 px-2 sm:px-3" aria-label="Toggle column visibility">
+                    <Button variant="outline" size="sm" className="h-10 px-2 sm:px-3">
                       <Settings2 className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">Columns</span>
                     </Button>
@@ -1313,7 +1310,6 @@ export default function Orders() {
                     <Badge variant="secondary" className="gap-1 pr-1 text-xs">
                       Search: &quot;{searchQuery}&quot;
                       <button
-                        type="button"
                         onClick={() => handleSearchChange('')}
                         className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
                         aria-label="Remove search filter"
@@ -1326,7 +1322,6 @@ export default function Orders() {
                     <Badge variant="secondary" className="gap-1 pr-1 text-xs">
                       Status: {statusFilter.replace('_', ' ')}
                       <button
-                        type="button"
                         onClick={() => handleStatusFilterChange('all')}
                         className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
                         aria-label="Remove status filter"
@@ -1339,7 +1334,6 @@ export default function Orders() {
                     <Badge variant="secondary" className="gap-1 pr-1 text-xs">
                       Date: {dateRange.from ? format(dateRange.from, 'MMM d') : '...'} – {dateRange.to ? format(dateRange.to, 'MMM d') : '...'}
                       <button
-                        type="button"
                         onClick={() => handleDateRangeChange({ from: undefined, to: undefined })}
                         className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
                         aria-label="Remove date filter"
@@ -1778,7 +1772,6 @@ export default function Orders() {
                     variant="outline"
                     className="min-h-[44px] touch-manipulation"
                     onClick={() => handlePrintOrder(selectedOrder)}
-                    aria-label={`Print order ${selectedOrder.order_number || selectedOrder.id.slice(0, 8)}`}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print
@@ -1787,7 +1780,6 @@ export default function Orders() {
                     variant="outline"
                     className="min-h-[44px] touch-manipulation"
                     onClick={() => handleGenerateInvoice(selectedOrder)}
-                    aria-label={`Generate invoice for order ${selectedOrder.order_number || selectedOrder.id.slice(0, 8)}`}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
@@ -1797,14 +1789,10 @@ export default function Orders() {
 
               {/* Main Actions */}
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <Button
-                  className="w-full min-h-[48px] touch-manipulation"
-                  onClick={() => {
-                    setIsDrawerOpen(false);
-                    navigate(`orders/${selectedOrder.id}`);
-                  }}
-                  aria-label={`View full details for order ${selectedOrder.order_number || selectedOrder.id.slice(0, 8)}`}
-                >
+                <Button className="w-full min-h-[48px] touch-manipulation" onClick={() => {
+                  setIsDrawerOpen(false);
+                  navigate(`orders/${selectedOrder.id}`);
+                }}>
                   Full Details
                 </Button>
                 <DrawerClose asChild>

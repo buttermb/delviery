@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * View and manage orders from marketplace buyers
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import {
     ShoppingCart,
@@ -27,12 +26,10 @@ import {
     Truck,
     MoreVertical,
     RefreshCcw,
-    AlertTriangle,
-    Loader2
+    AlertTriangle
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -49,64 +46,14 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { StandardPagination } from '@/components/shared/StandardPagination';
-import { usePagination } from '@/hooks/usePagination';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
-
-function OrdersPageSkeleton() {
-    return (
-        <div className="space-y-4">
-            {/* Header skeleton */}
-            <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                    <Skeleton className="h-7 w-48" />
-                    <Skeleton className="h-4 w-64" />
-                </div>
-                <Skeleton className="h-9 w-24" />
-            </div>
-
-            {/* Stats skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={`stat-skeleton-${i}`}>
-                        <CardContent className="pt-6">
-                            <Skeleton className="h-8 w-16 mb-2" />
-                            <Skeleton className="h-3 w-24" />
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Filter skeleton */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <Skeleton className="h-10 flex-1" />
-                        <Skeleton className="h-10 w-[180px]" />
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Table skeleton */}
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-10 w-64" />
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable rows={6} columns={8} hasActions />
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
 
 export default function OrdersPage() {
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const tenantId = tenant?.id;
-    const tenantSlug = tenant?.slug;
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState('all');
@@ -128,11 +75,10 @@ export default function OrdersPage() {
         },
         enabled: !!tenantId,
         retry: 2,
-        staleTime: 60_000,
     });
 
     // Fetch orders
-    const { data: orders = [], isLoading, isFetching, refetch } = useQuery({
+    const { data: orders = [], isLoading } = useQuery({
         queryKey: queryKeys.marketplaceOrders.byTenant(tenantId, statusFilter, activeTab),
         queryFn: async () => {
             if (!tenantId || !profile?.id) return [];
@@ -169,65 +115,18 @@ export default function OrdersPage() {
         },
         enabled: !!tenantId && !!profile?.id,
         retry: 2,
-        staleTime: 60_000,
     });
 
-    // Realtime subscription for live order updates
-    const stableRefetch = useCallback(() => { refetch(); }, [refetch]);
-
-    useEffect(() => {
-        if (!tenantId) return;
-
-        const channel = supabase
-            .channel(`marketplace-orders-${tenantId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'marketplace_orders',
-                    filter: `seller_tenant_id=eq.${tenantId}`,
-                },
-                () => {
-                    stableRefetch();
-                }
-            )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    logger.debug('Marketplace orders subscription active', {
-                        tenantId,
-                        component: 'OrdersPage',
-                    });
-                }
-            });
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [tenantId, stableRefetch]);
-
-    // Filter orders by search query (with sanitization)
-    const sanitizedSearch = sanitizeSearchInput(searchQuery).toLowerCase();
+    // Filter orders by search query
     const filteredOrders = orders.filter((order) => {
-        if (!sanitizedSearch) return true;
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
         return (
-            order.order_number?.toLowerCase().includes(sanitizedSearch) ||
-            order.customer_name?.toLowerCase().includes(sanitizedSearch) ||
-            order.tracking_number?.toLowerCase().includes(sanitizedSearch)
+            order.order_number?.toLowerCase().includes(query) ||
+            ((order as unknown as Record<string, unknown>).buyer_business_name as string)?.toLowerCase().includes(query) ||
+            order.tracking_number?.toLowerCase().includes(query)
         );
     });
-
-    // Pagination
-    const {
-        paginatedItems,
-        currentPage,
-        totalPages,
-        pageSize,
-        totalItems,
-        pageSizeOptions,
-        goToPage,
-        changePageSize,
-    } = usePagination(filteredOrders, { defaultPageSize: 25 });
 
     // Update order status
     const updateStatusMutation = useMutation({
@@ -359,18 +258,6 @@ export default function OrdersPage() {
             .reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0),
     };
 
-    const hasActiveFilters = searchQuery.trim() !== '' || statusFilter !== 'all' || activeTab !== 'all';
-
-    const clearFilters = () => {
-        setSearchQuery('');
-        setStatusFilter('all');
-        setActiveTab('all');
-    };
-
-    if (isLoading) {
-        return <OrdersPageSkeleton />;
-    }
-
     if (!profile) {
         return (
             <div className="space-y-4">
@@ -382,7 +269,7 @@ export default function OrdersPage() {
                             <p className="text-sm text-neutral-600 mb-4">
                                 You need to create a marketplace profile to receive orders.
                             </p>
-                            <Button onClick={() => navigate(`/${tenantSlug}/admin/marketplace/settings`)}>
+                            <Button onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/settings`)}>
                                 Create Profile
                             </Button>
                         </div>
@@ -398,24 +285,16 @@ export default function OrdersPage() {
                 title="Marketplace Orders"
                 description="Manage orders from your storefront"
                 actions={
-                    <div className="flex items-center gap-2">
-                        {isFetching && !isLoading && (
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                Refreshing...
-                            </span>
-                        )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.byTenant(tenantId, statusFilter, activeTab) })}
-                            data-component="OrdersPage"
-                            data-action="refresh-orders"
-                        >
-                            <RefreshCcw className="h-4 w-4 mr-2" />
-                            Refresh
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.byTenant(tenantId, statusFilter, activeTab) })}
+                        data-component="OrdersPage"
+                        data-action="refresh-orders"
+                    >
+                        <RefreshCcw className="h-4 w-4 mr-2" />
+                        Refresh
+                    </Button>
                 }
             />
 
@@ -464,7 +343,7 @@ export default function OrdersPage() {
                             </div>
                         </div>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Filter orders by status">
+                            <SelectTrigger className="w-full sm:w-[180px]">
                                 <Filter className="h-4 w-4 mr-2" />
                                 <SelectValue placeholder="Filter by status" />
                             </SelectTrigger>
@@ -494,133 +373,119 @@ export default function OrdersPage() {
                     </Tabs>
                 </CardHeader>
                 <CardContent>
-                    {filteredOrders.length === 0 ? (
+                    {isLoading ? (
+                        <div className="text-center py-6">
+                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                        </div>
+                    ) : filteredOrders.length === 0 ? (
                         <div className="text-center py-6">
                             <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <h3 className="text-lg font-semibold mb-2">No Orders Found</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                {hasActiveFilters
-                                    ? 'No orders match your current filters. Try adjusting your search or filters.'
-                                    : "You haven't received any orders yet."}
+                            <p className="text-sm text-muted-foreground">
+                                {searchQuery ? 'Try adjusting your search' : 'You haven\'t received any orders yet'}
                             </p>
-                            {hasActiveFilters && (
-                                <Button variant="outline" size="sm" onClick={clearFilters}>
-                                    Clear Filters
-                                </Button>
-                            )}
                         </div>
                     ) : (
-                        <>
-                            <div className="rounded-lg border overflow-hidden">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Order #</TableHead>
-                                            <TableHead>Customer</TableHead>
-                                            <TableHead>Items</TableHead>
-                                            <TableHead>Total</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Payment</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {paginatedItems.map((order) => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-medium">{order.order_number}</TableCell>
-                                                <TableCell>{order.customer_name || 'Guest'}</TableCell>
-                                                <TableCell>
-                                                    {Array.isArray(order.marketplace_order_items)
-                                                        ? order.marketplace_order_items.length
-                                                        : 0} items
-                                                </TableCell>
-                                                <TableCell>{formatCurrency(Number(order.total_amount) || 0)}</TableCell>
-                                                <TableCell>{getStatusBadge(order.status || 'pending')}</TableCell>
-                                                <TableCell>{getPaymentStatusBadge(order.payment_status || 'pending')}</TableCell>
-                                                <TableCell>{formatSmartDate(order.created_at as string)}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" aria-label={`Actions for order ${order.order_number}`}>
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
+                        <div className="rounded-lg border overflow-hidden">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Order #</TableHead>
+                                        <TableHead>Customer</TableHead>
+                                        <TableHead>Items</TableHead>
+                                        <TableHead>Total</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Payment</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredOrders.map((order) => (
+                                        <TableRow key={order.id}>
+                                            <TableCell className="font-medium">{order.order_number}</TableCell>
+                                            <TableCell>{String((order as unknown as Record<string, unknown>).buyer_business_name || 'Guest')}</TableCell>
+                                            <TableCell>
+                                                {Array.isArray(order.marketplace_order_items)
+                                                    ? order.marketplace_order_items.length
+                                                    : 0} items
+                                            </TableCell>
+                                            <TableCell>{formatCurrency(Number(order.total_amount) || 0)}</TableCell>
+                                            <TableCell>{getStatusBadge(order.status || 'pending')}</TableCell>
+                                            <TableCell>{getPaymentStatusBadge(order.payment_status || 'pending')}</TableCell>
+                                            <TableCell>{formatSmartDate(order.created_at as string)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" aria-label="More options">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem
+                                                            onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/orders/${order.id}`)}
+                                                            disabled={updateStatusMutation.isPending}
+                                                        >
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            View Details
+                                                        </DropdownMenuItem>
+                                                        {order.status === 'pending' && (
+                                                            <>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        if (updateStatusMutation.isPending) return;
+                                                                        updateStatusMutation.mutate({ orderId: order.id, newStatus: 'accepted' });
+                                                                    }}
+                                                                    disabled={updateStatusMutation.isPending}
+                                                                >
+                                                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                                                    Accept Order
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        if (updateStatusMutation.isPending) return;
+                                                                        updateStatusMutation.mutate({ orderId: order.id, newStatus: 'rejected' });
+                                                                    }}
+                                                                    className="text-destructive"
+                                                                    disabled={updateStatusMutation.isPending}
+                                                                >
+                                                                    <XCircle className="h-4 w-4 mr-2" />
+                                                                    Reject Order
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                        {order.status === 'accepted' && (
                                                             <DropdownMenuItem
-                                                                onClick={() => navigate(`/${tenantSlug}/admin/marketplace/orders/${order.id}`)}
+                                                                onClick={() => {
+                                                                    if (updateStatusMutation.isPending) return;
+                                                                    updateStatusMutation.mutate({ orderId: order.id, newStatus: 'processing' });
+                                                                }}
                                                                 disabled={updateStatusMutation.isPending}
                                                             >
-                                                                <Eye className="h-4 w-4 mr-2" />
-                                                                View Details
+                                                                <Package className="h-4 w-4 mr-2" />
+                                                                Start Processing
                                                             </DropdownMenuItem>
-                                                            {order.status === 'pending' && (
-                                                                <>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => {
-                                                                            if (updateStatusMutation.isPending) return;
-                                                                            updateStatusMutation.mutate({ orderId: order.id, newStatus: 'accepted' });
-                                                                        }}
-                                                                        disabled={updateStatusMutation.isPending}
-                                                                    >
-                                                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                                                        Accept Order
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => {
-                                                                            if (updateStatusMutation.isPending) return;
-                                                                            updateStatusMutation.mutate({ orderId: order.id, newStatus: 'rejected' });
-                                                                        }}
-                                                                        className="text-destructive"
-                                                                        disabled={updateStatusMutation.isPending}
-                                                                    >
-                                                                        <XCircle className="h-4 w-4 mr-2" />
-                                                                        Reject Order
-                                                                    </DropdownMenuItem>
-                                                                </>
-                                                            )}
-                                                            {order.status === 'accepted' && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => {
-                                                                        if (updateStatusMutation.isPending) return;
-                                                                        updateStatusMutation.mutate({ orderId: order.id, newStatus: 'processing' });
-                                                                    }}
-                                                                    disabled={updateStatusMutation.isPending}
-                                                                >
-                                                                    <Package className="h-4 w-4 mr-2" />
-                                                                    Start Processing
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            {order.status === 'processing' && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => {
-                                                                        if (updateStatusMutation.isPending) return;
-                                                                        updateStatusMutation.mutate({ orderId: order.id, newStatus: 'shipped' });
-                                                                    }}
-                                                                    disabled={updateStatusMutation.isPending}
-                                                                >
-                                                                    <Truck className="h-4 w-4 mr-2" />
-                                                                    Mark as Shipped
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                            <StandardPagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                pageSize={pageSize}
-                                totalItems={totalItems}
-                                pageSizeOptions={pageSizeOptions}
-                                onPageChange={goToPage}
-                                onPageSizeChange={changePageSize}
-                            />
-                        </>
+                                                        )}
+                                                        {order.status === 'processing' && (
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    if (updateStatusMutation.isPending) return;
+                                                                    updateStatusMutation.mutate({ orderId: order.id, newStatus: 'shipped' });
+                                                                }}
+                                                                disabled={updateStatusMutation.isPending}
+                                                            >
+                                                                <Truck className="h-4 w-4 mr-2" />
+                                                                Mark as Shipped
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

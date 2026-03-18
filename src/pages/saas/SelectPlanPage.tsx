@@ -179,8 +179,8 @@ export default function SelectPlanPage() {
     const idempotencyKey = crypto.randomUUID();
 
     try {
-      // Call create-checkout edge function with billing cycle and skip trial options
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+      // Call start-trial edge function with billing cycle and skip trial options
+      const { data, error } = await supabase.functions.invoke("start-trial", {
         body: {
           tenant_id: tenantId,
           plan_id: planId,

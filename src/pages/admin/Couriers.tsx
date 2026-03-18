@@ -7,11 +7,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { ExportButton } from '@/components/ui/ExportButton';
-import { Users, Star, Eye, Plus, Trash2, Package, MapPin, UserCheck, Clock, Loader2 } from 'lucide-react';
+import { Users, Star, Eye, Plus, Trash2, Package, MapPin, UserCheck, Clock } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
@@ -21,7 +19,6 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 interface Courier {
   id: string;
@@ -48,66 +45,6 @@ function getAvailabilityStatus(courier: Courier): AvailabilityStatus {
   return 'available';
 }
 
-function CouriersPageSkeleton() {
-  return (
-    <div className="w-full max-w-full px-3 sm:px-4 md:px-4 py-3 sm:py-4 md:py-4 space-y-4 md:space-y-4 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-        <div>
-          <Skeleton className="h-7 w-52" />
-          <Skeleton className="h-4 w-64 mt-2" />
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-36" />
-          <Skeleton className="h-10 w-28" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={`stat-skel-${i}`} className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Skeleton className="h-4 w-20 mb-2" />
-                <Skeleton className="h-8 w-12" />
-              </div>
-              <Skeleton className="h-8 w-8 rounded" />
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="p-4 sm:p-6">
-        <Skeleton className="h-10 w-full mb-4" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={`row-skel-${i}`} className="flex items-center gap-4 py-3 border-b last:border-0">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-5 w-20" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-5 w-12" />
-            <Skeleton className="h-5 w-8" />
-            <Skeleton className="h-5 w-12" />
-            <Skeleton className="h-8 w-20" />
-          </div>
-        ))}
-      </Card>
-    </div>
-  );
-}
-
-const EXPORT_COLUMNS = [
-  { key: 'full_name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'vehicle_type', label: 'Vehicle' },
-  { key: 'is_online', label: 'Online' },
-  { key: 'is_active', label: 'Active' },
-  { key: 'age_verified', label: 'Age Verified' },
-  { key: 'rating', label: 'Rating' },
-  { key: 'total_deliveries', label: 'Total Deliveries' },
-  { key: 'commission_rate', label: 'Commission Rate' },
-];
-
 export default function Couriers() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
@@ -118,7 +55,7 @@ export default function Couriers() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courierToDelete, setCourierToDelete] = useState<Courier | null>(null);
 
-  const { data: couriers = [], isLoading, isFetching, refetch } = useQuery({
+  const { data: couriers = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.couriersAdmin.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -133,7 +70,6 @@ export default function Couriers() {
     },
     enabled: !!tenant?.id,
     retry: 2,
-    staleTime: 30_000,
   });
 
   const deleteMutation = useMutation({
@@ -168,16 +104,11 @@ export default function Couriers() {
     }
   };
 
-  const filteredCouriers = useMemo(() => {
-    const sanitized = sanitizeSearchInput(searchQuery);
-    if (!sanitized) return couriers;
-    const lower = sanitized.toLowerCase();
-    return couriers.filter(courier =>
-      courier.full_name?.toLowerCase().includes(lower) ||
-      courier.email?.toLowerCase().includes(lower) ||
-      courier.phone?.includes(sanitized)
-    );
-  }, [couriers, searchQuery]);
+  const filteredCouriers = useMemo(() => couriers.filter(courier =>
+    courier.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    courier.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    courier.phone?.includes(searchQuery)
+  ), [couriers, searchQuery]);
 
   const { avgRating, availableForAssignment } = useMemo(() => {
     const avg = couriers.length > 0
@@ -277,7 +208,6 @@ export default function Couriers() {
           <Button
             size="sm"
             variant="ghost"
-            aria-label={`View ${courier.full_name}`}
             className="min-h-[44px] min-w-[44px]"
             onClick={() => navigate(`/${tenantSlug}/admin/couriers/${courier.id}`)}
           >
@@ -286,7 +216,6 @@ export default function Couriers() {
           <Button
             size="sm"
             variant="ghost"
-            aria-label={`Delete ${courier.full_name}`}
             className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
             onClick={() => handleDelete(courier)}
           >
@@ -296,15 +225,6 @@ export default function Couriers() {
       )
     }
   ];
-
-  if (isLoading && couriers.length === 0) {
-    return (
-      <>
-        <SEOHead title="Couriers Management | Admin" description="Manage delivery couriers" />
-        <CouriersPageSkeleton />
-      </>
-    );
-  }
 
   return (
     <>
@@ -317,22 +237,12 @@ export default function Couriers() {
         <div className="w-full max-w-full px-3 sm:px-4 md:px-4 py-3 sm:py-4 md:py-4 space-y-4 md:space-y-4 overflow-x-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-xl font-bold">
-                Couriers Management
-                {isFetching && !isLoading && (
-                  <Loader2 className="inline-block h-4 w-4 ml-2 animate-spin text-muted-foreground" />
-                )}
-              </h1>
+              <h1 className="text-xl font-bold">Couriers Management</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {availableForAssignment} courier{availableForAssignment !== 1 ? 's' : ''} available for assignment
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <ExportButton
-                data={filteredCouriers as unknown as Record<string, unknown>[]}
-                filename="couriers-export"
-                columns={EXPORT_COLUMNS}
-              />
               <Button
                 variant="outline"
                 onClick={() => navigate(`/${tenantSlug}/admin/fulfillment-hub?tab=pending`)}
@@ -405,7 +315,6 @@ export default function Couriers() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        aria-label={`View ${courier.full_name}`}
                         className="min-h-[44px] min-w-[44px]"
                         onClick={() => navigate(`/${tenantSlug}/admin/couriers/${courier.id}`)}
                       >
@@ -414,7 +323,6 @@ export default function Couriers() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        aria-label={`Delete ${courier.full_name}`}
                         className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
                         onClick={() => handleDelete(courier)}
                       >

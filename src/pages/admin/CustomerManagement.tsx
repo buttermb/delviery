@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Download, Upload, Mail, Lock, Phone, RefreshCw
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -55,7 +55,6 @@ import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
-import { humanizeError } from '@/lib/humanizeError';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -264,7 +263,6 @@ export function CustomerManagement() {
       };
     },
     enabled: !!tenant && !accountLoading,
-    staleTime: 60_000,
     retry: 2,
   });
 
@@ -389,7 +387,7 @@ export function CustomerManagement() {
       }
       logger.error("Failed to delete customer", error, { component: "CustomerManagement" });
       toast.error("Failed to delete customer", {
-        description: humanizeError(error)
+        description: error instanceof Error ? error.message : "An error occurred"
       });
     } finally {
       setIsDeleting(false);
@@ -399,14 +397,6 @@ export function CustomerManagement() {
   };
 
   const handleExport = () => {
-    const escapeCsvField = (value: string | number | null | undefined): string => {
-      const str = String(value ?? '');
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
-
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...displayedCustomers.map(c => [
@@ -418,7 +408,7 @@ export function CustomerManagement() {
         c.loyalty_points,
         c.status
       ])
-    ].map(row => row.map(escapeCsvField).join(',')).join('\n');
+    ].map(row => row.join(',')).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -575,7 +565,7 @@ export function CustomerManagement() {
       cell: (customer) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()} aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>
+            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -897,25 +887,25 @@ export function CustomerManagement() {
           actions={
             <>
               {canEdit('customers') && (
-                <Button aria-label="Add customer" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
+                <Button onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Add Customer</span>
                   <span className="sm:hidden">Add</span>
                 </Button>
               )}
               {canExport('customers') && (
-                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0" aria-label="Export customers">
+                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0">
                   <Download className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Export</span>
                 </Button>
               )}
               {canEdit('customers') && (
-                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)} aria-label="Import customers">
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)}>
                   <Upload className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Import</span>
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0" aria-label="Refresh customer list">
+              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0">
                 <Filter className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
@@ -1022,49 +1012,45 @@ export function CustomerManagement() {
                         if (selectedCustomerForDrawer.phone) window.location.href = `tel:${selectedCustomerForDrawer.phone}`;
                       }} disabled={!selectedCustomerForDrawer.phone}>
                         <Phone className="w-4 h-4 mr-2" />
-                        {selectedCustomerForDrawer.phone ? `Call ${selectedCustomerForDrawer.phone}` : 'No phone on file'}
+                        Call {selectedCustomerForDrawer.phone || 'No Phone'}
                       </Button>
                       <Button className="w-full justify-start" variant="outline" onClick={() => {
                         if (selectedCustomerForDrawer.email) window.location.href = `mailto:${selectedCustomerForDrawer.email}`;
                       }} disabled={!selectedCustomerForDrawer.email}>
                         <Mail className="w-4 h-4 mr-2" />
-                        {selectedCustomerForDrawer.email ? `Email ${selectedCustomerForDrawer.email}` : 'No email on file'}
+                        Email {selectedCustomerForDrawer.email || 'No Email'}
                       </Button>
                     </>
                   )}
                 </div>
 
                 <div className="pt-4 border-t">
-                  {canEdit('orders') && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span tabIndex={0} className="w-full">
-                            <Button
-                              className="w-full mb-2"
-                              disabled={!posEnabled}
-                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
-                            >
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              Create New Order
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        {!posEnabled && (
-                          <TooltipContent>Enable POS in Settings</TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="w-full">
+                          <Button
+                            className="w-full mb-2"
+                            disabled={!posEnabled}
+                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Create New Order
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!posEnabled && (
+                        <TooltipContent>Enable POS in Settings</TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
                     </Button>
-                    {canEdit('customers') && (
-                      <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
-                        Edit Details
-                      </Button>
-                    )}
+                    <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
+                      Edit Details
+                    </Button>
                   </div>
                 </div>
               </div>

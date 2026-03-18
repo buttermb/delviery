@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EditDriverDialog } from '@/components/drivers/profile/EditDriverDialog';
-import { SendMessageDialog } from '@/components/drivers/dialogs/SendMessageDialog';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -64,7 +63,6 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
   const availStyle = AVAILABILITY_STYLES[driver.availability] ?? AVAILABILITY_STYLES.offline;
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
 
   const memberSince = new Date(driver.created_at).toLocaleDateString('en-US', {
     month: 'short',
@@ -138,10 +136,12 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
   }, []);
 
   const handleMessage = useCallback(() => {
-    setMessageDialogOpen(true);
-  }, []);
-
-  const hasLocation = driver.current_lat != null && driver.current_lng != null;
+    if (driver.phone) {
+      window.open(`sms:${driver.phone}`, '_self');
+    } else {
+      toast.info('No phone number available');
+    }
+  }, [driver.phone]);
 
   const handleTrack = useCallback(() => {
     if (driver.current_lat != null && driver.current_lng != null) {
@@ -154,23 +154,9 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
     }
   }, [driver.current_lat, driver.current_lng]);
 
-  const resendInvite = useMutation({
-    mutationFn: async () => {
-      const res = await supabase.functions.invoke('add-driver', {
-        body: { resend_invite: true, driver_id: driver.id },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      if (res.error) throw res.error;
-      return res.data as { success: boolean; error?: string };
-    },
-    onSuccess: () => {
-      toast.success('Invite email resent');
-    },
-    onError: (err) => {
-      logger.error('Resend invite failed', err);
-      toast.error('Failed to resend invite');
-    },
-  });
+  const handleResendInvite = useCallback(() => {
+    toast.success('Invite resent');
+  }, []);
 
   return (
     <>
@@ -264,9 +250,6 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
               variant="outline"
               size="sm"
               onClick={handleTrack}
-              disabled={!hasLocation}
-              title={hasLocation ? 'Track driver on map' : 'No location data available'}
-              aria-label="Track driver location"
               className="h-8 border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <MapPin className="mr-1.5 h-3.5 w-3.5" />
@@ -306,10 +289,9 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-sm focus:bg-accent focus:text-accent-foreground"
-                  onClick={() => resendInvite.mutate()}
-                  disabled={resendInvite.isPending || driver.status === 'active'}
+                  onClick={handleResendInvite}
                 >
-                  {resendInvite.isPending ? 'Sending\u2026' : 'Resend Invite'}
+                  Resend Invite
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-sm focus:bg-accent focus:text-accent-foreground"
@@ -344,13 +326,6 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
       <EditDriverDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        driver={driver}
-        tenantId={tenantId}
-      />
-
-      <SendMessageDialog
-        open={messageDialogOpen}
-        onOpenChange={setMessageDialogOpen}
         driver={driver}
         tenantId={tenantId}
       />

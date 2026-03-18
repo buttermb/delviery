@@ -58,23 +58,6 @@ vi.mock('@/lib/offlineQueue', () => ({
   queueAction: vi.fn(),
 }));
 
-vi.mock('@/contexts/VerificationContext', () => ({
-  useVerification: () => ({
-    isVerified: true,
-    isVerifying: false,
-    verificationError: null,
-    setIsVerified: vi.fn(),
-    setIsVerifying: vi.fn(),
-    setVerificationError: vi.fn(),
-  }),
-}));
-
-vi.mock('@/hooks/useRealtimePOS', () => ({
-  useRealtimeShifts: vi.fn(),
-  useRealtimeCashDrawer: vi.fn(),
-  useRealtimeTransactions: vi.fn(),
-}));
-
 vi.mock('@/hooks/useOfflineQueue', () => ({
   useOfflineQueue: () => ({
     isOnline: true,
@@ -261,47 +244,12 @@ describe('CashRegister Component', () => {
   });
 
   describe('Cart Operations', () => {
-    it('should not show totals section when cart is empty', async () => {
+    it('should show total of $0.00 initially', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
+        expect(screen.getByText('$0.00')).toBeInTheDocument();
       });
-
-      // Totals section only renders when cart has items
-      expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
-    });
-
-    it('should have aria-label on Keyboard shortcuts button', async () => {
-      renderWithProviders(<CashRegister />);
-
-      await waitFor(() => {
-        const shortcutsButton = screen.getByRole('button', { name: /Keyboard shortcuts/i });
-        expect(shortcutsButton).toBeInTheDocument();
-        expect(shortcutsButton).toHaveAttribute('aria-label', 'Keyboard shortcuts');
-      });
-    });
-
-    it('should have aria-label on Pay button', async () => {
-      renderWithProviders(<CashRegister />);
-
-      await waitFor(() => {
-        const payButton = screen.getByRole('button', { name: /Process payment/i });
-        expect(payButton).toBeInTheDocument();
-        expect(payButton).toHaveAttribute('aria-label', 'Process payment');
-      });
-    });
-  });
-
-  describe('Cart Operations', () => {
-    it('should not show totals breakdown when cart is empty', async () => {
-      renderWithProviders(<CashRegister />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
-      });
-      // Total breakdown only appears when cart has items
-      expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
     });
 
     it('should not show clear cart button when cart is empty', async () => {
@@ -314,16 +262,14 @@ describe('CashRegister Component', () => {
   });
 
   describe('Payment Processing', () => {
-    it('should disable Pay button when cart is empty', async () => {
+    it('should disable Process Payment button when cart is empty', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        // Match the Pay button specifically (contains DollarSign icon + "Pay" text + kbd hints)
-        const payButtons = screen.getAllByRole('button').filter(
-          btn => btn.textContent?.includes('Pay') && btn.textContent?.includes('F8')
-        );
-        expect(payButtons).toHaveLength(1);
-        expect(payButtons[0]).toBeDisabled();
+        const paymentButton = screen.getByRole('button', {
+          name: /Process Payment/i,
+        });
+        expect(paymentButton).toBeDisabled();
       });
     });
   });
@@ -363,11 +309,11 @@ describe('CashRegister Component', () => {
   });
 
   describe('Customer Selection', () => {
-    it('should show walk-in customer by default', async () => {
+    it('should show customer selection button', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('Walk-in Customer')).toBeInTheDocument();
+        expect(screen.getByText('Select')).toBeInTheDocument();
       });
     });
   });
@@ -782,22 +728,6 @@ describe('Cart Item Management', () => {
     const newQuantity = Math.min(stockQuantity, quantity + 1);
 
     expect(newQuantity).toBe(5);
-  });
-
-  it('should treat null stock_quantity as 0 for increase button disabled state', () => {
-    const quantity = 1;
-    const stockQuantity: number | null = null;
-    const isDisabled = quantity >= (stockQuantity ?? 0);
-
-    expect(isDisabled).toBe(true);
-  });
-
-  it('should allow increase when stock_quantity is defined and above quantity', () => {
-    const quantity = 2;
-    const stockQuantity: number | null = 5;
-    const isDisabled = quantity >= (stockQuantity ?? 0);
-
-    expect(isDisabled).toBe(false);
   });
 
   it('should calculate item subtotal correctly', () => {

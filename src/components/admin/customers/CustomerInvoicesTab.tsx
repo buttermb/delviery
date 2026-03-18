@@ -5,29 +5,17 @@
  * Shows invoice number, status, amount, due date, and actions.
  */
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
-import { CurrencyInput } from '@/components/ui/currency-input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { useCustomerInvoices } from '@/hooks/useCustomerInvoices';
-import type { CustomerInvoice } from '@/hooks/useCustomerInvoices';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { InvoiceLink } from '@/components/admin/cross-links';
-import { FileText, Calendar, DollarSign, Mail, Eye, Plus, CheckCircle, Loader2 } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Mail, Eye, Plus, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 
 interface CustomerInvoicesTabProps {
   customerId: string;
@@ -68,50 +56,10 @@ function getStatusLabel(status: string | null): string {
   return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
 
-interface PaymentDialogState {
-  invoiceId: string;
-  total: number;
-}
-
 export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInvoicesTabProps) {
   const invoiceHooks = useCustomerInvoices();
   const { data: invoices, isLoading, isError } = invoiceHooks.useInvoicesQuery({ search: customerId });
-  const markAsSent = invoiceHooks.useMarkAsSent();
-  const recordPayment = invoiceHooks.useRecordPayment();
   const { navigateToAdmin } = useTenantNavigation();
-  const [paymentDialog, setPaymentDialog] = useState<PaymentDialogState | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState('');
-
-  const handleSendInvoice = (invoiceId: string) => {
-    markAsSent.mutate(invoiceId);
-  };
-
-  const handleRecordPayment = (invoice: CustomerInvoice) => {
-    setPaymentDialog({ invoiceId: invoice.id, total: invoice.total });
-    setPaymentAmount('');
-  };
-
-  const handleSubmitPayment = () => {
-    if (!paymentDialog) return;
-    const amount = parseFloat(paymentAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error('Please enter a valid payment amount');
-      return;
-    }
-    if (amount > paymentDialog.total) {
-      toast.error('Payment amount cannot exceed invoice total');
-      return;
-    }
-    recordPayment.mutate(
-      { invoiceId: paymentDialog.invoiceId, amount },
-      {
-        onSuccess: () => {
-          setPaymentDialog(null);
-          setPaymentAmount('');
-        },
-      },
-    );
-  };
 
   if (isLoading) {
     return (
@@ -287,22 +235,12 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
                     <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
-                  {invoice.status === 'draft' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSendInvoice(invoice.id)}
-                      disabled={markAsSent.isPending}
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      {markAsSent.isPending ? 'Sending...' : 'Send'}
-                    </Button>
-                  )}
-                  {invoice.status !== 'paid' && invoice.status !== 'cancelled' && invoice.status !== 'draft' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleRecordPayment(invoice)}
-                    >
+                  <Button size="sm" variant="outline">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send
+                  </Button>
+                  {invoice.status?.toLowerCase() !== 'paid' && (
+                    <Button size="sm">
                       <DollarSign className="w-4 h-4 mr-2" />
                       Record Payment
                     </Button>
@@ -313,54 +251,6 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
           )}
         </div>
       </CardContent>
-
-      {/* Record Payment Dialog */}
-      <Dialog open={paymentDialog !== null} onOpenChange={(open) => { if (!open) setPaymentDialog(null); }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Record Payment
-            </DialogTitle>
-            <DialogDescription>
-              Invoice total: {formatCurrency(paymentDialog?.total ?? 0)}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="tab-payment-amount">Payment Amount *</Label>
-              <CurrencyInput
-                id="tab-payment-amount"
-                placeholder="0.00"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setPaymentDialog(null)}
-                disabled={recordPayment.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmitPayment}
-                disabled={recordPayment.isPending}
-              >
-                {recordPayment.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Recording...
-                  </>
-                ) : (
-                  'Record Payment'
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

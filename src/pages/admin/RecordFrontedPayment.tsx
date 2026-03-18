@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,7 @@ import type { PaymentMethod } from '@/lib/services/paymentService';
 import { formatCurrency } from '@/lib/formatters';
 
 export default function RecordFrontedPayment() {
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { id } = useParams<{ id: string }>();
   const { tenant } = useTenantAdminAuth();
@@ -78,7 +79,7 @@ export default function RecordFrontedPayment() {
     }
 
     try {
-      const result = await recordFrontedPayment({
+      const _result = await recordFrontedPayment({
         frontedId: id,
         amount: paymentAmount,
         paymentMethod,
@@ -87,18 +88,12 @@ export default function RecordFrontedPayment() {
         showToast: false // We handle toast manually for custom message
       });
 
-      const statusMsg = result.remaining > 0
-        ? `Remaining: ${formatCurrency(result.remaining)}`
-        : 'Fully paid!';
-      toast.success(
-        `Payment of ${formatCurrency(paymentAmount)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${statusMsg}`
-      );
+      toast.success("Payment of ${formatCurrency(paymentAmount)} recorded${result.clientName ? ");
 
       navigateToAdmin('inventory/fronted');
     } catch (error) {
       logger.error('Error recording payment:', error);
-      const message = error instanceof Error ? error.message : 'Failed to record payment';
-      toast.error(message);
+      toast.error("Error");
     }
   };
 

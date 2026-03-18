@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Send,
   Paperclip,
@@ -51,9 +51,6 @@ import {
 } from '@/components/ui/resizable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { validateChatSession, validateChatMessage } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { cn } from '@/lib/utils';
@@ -149,18 +146,14 @@ const DEFAULT_QUICK_RESPONSES: QuickResponse[] = [
 // Quick Response Categories
 const QUICK_RESPONSE_CATEGORIES = ['All', 'General', 'Orders', 'Delivery', 'Products'];
 
-// Max message length
-const MAX_MESSAGE_LENGTH = 2000;
-
 const AdminLiveChat = function AdminLiveChat() {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
-  const tenantId = tenant?.id;
-
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [quickResponseCategory, setQuickResponseCategory] = useState('All');
@@ -175,58 +168,58 @@ const AdminLiveChat = function AdminLiveChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Fetch sessions via TanStack Query
-  const {
-    data: sessions = [],
-    isLoading,
-  } = useQuery({
-    queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-    queryFn: async () => {
-      if (!tenantId) return [];
-
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .select('id, mode, status, created_at, updated_at, user_id, guest_id, assigned_admin_id, customer_name, customer_email, unread_count, last_message, last_message_at')
-        .eq('status', 'active')
-        .eq('tenant_id', tenantId)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      return (data ?? []).filter(validateChatSession) as ChatSession[];
-    },
-    enabled: !!tenantId,
-    staleTime: 30_000,
-    retry: 2,
-  });
-
   // Filter quick responses by category
   const filteredQuickResponses = quickResponseCategory === 'All'
     ? DEFAULT_QUICK_RESPONSES
     : DEFAULT_QUICK_RESPONSES.filter(qr => qr.category === quickResponseCategory);
 
-  // Filter sessions by sanitized search query
-  const sanitizedSearch = useMemo(() => sanitizeSearchInput(searchQuery), [searchQuery]);
+  // Filter sessions by search query
+  const filteredSessions = sessions.filter(session => {
+    if (!searchQuery) return true;
+    const searchLower = searchQuery.toLowerCase();
+    const customerName = session.customer_name?.toLowerCase() ?? '';
+    const customerEmail = session.customer_email?.toLowerCase() ?? '';
+    const guestId = session.guest_id?.toLowerCase() ?? '';
+    return customerName.includes(searchLower) ||
+           customerEmail.includes(searchLower) ||
+           guestId.includes(searchLower);
+  });
 
-  const filteredSessions = useMemo(() => {
-    if (!sanitizedSearch) return sessions;
-    const searchLower = sanitizedSearch.toLowerCase();
-    return sessions.filter(session => {
-      const customerName = session.customer_name?.toLowerCase() ?? '';
-      const customerEmail = session.customer_email?.toLowerCase() ?? '';
-      const guestId = session.guest_id?.toLowerCase() ?? '';
-      return customerName.includes(searchLower) ||
-             customerEmail.includes(searchLower) ||
-             guestId.includes(searchLower);
-    });
-  }, [sessions, sanitizedSearch]);
+  // Load sessions
+  const loadSessions = useCallback(async () => {
+    if (!tenant?.id) return;
 
-  // Setup realtime subscription for sessions
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('id, mode, status, created_at, updated_at, user_id, guest_id, assigned_admin_id, customer_name, customer_email, unread_count, last_message, last_message_at')
+        .eq('status', 'active')
+        .eq('tenant_id', tenant.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const validSessions = data.filter(validateChatSession);
+        setSessions(validSessions as ChatSession[]);
+      }
+    } catch (error) {
+      logger.error('Error loading chat sessions', error as Error, { component: 'AdminLiveChat' });
+      toast.error("Failed to load chat sessions");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tenant?.id]);
+
+  // Setup realtime subscriptions
   useEffect(() => {
-    if (!tenantId) return;
+    if (!tenant?.id) return;
 
     let sessionsChannel: ReturnType<typeof supabase.channel> | null = null;
     let retryTimeout: NodeJS.Timeout;
+
+    loadSessions();
 
     const setupChannel = () => {
       try {
@@ -243,14 +236,12 @@ const AdminLiveChat = function AdminLiveChat() {
               event: '*',
               schema: 'public',
               table: 'chat_sessions',
-              filter: `tenant_id=eq.${tenantId}`
+              filter: `tenant_id=eq.${tenant.id}`
             },
             (payload) => {
               try {
                 if (payload.new && validateChatSession(payload.new)) {
-                  queryClient.invalidateQueries({
-                    queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-                  });
+                  loadSessions();
                 }
               } catch (error) {
                 logger.error('Error processing chat session update', error as Error, { component: 'AdminLiveChat' });
@@ -281,11 +272,11 @@ const AdminLiveChat = function AdminLiveChat() {
         );
       }
     };
-  }, [tenantId, queryClient]);
+  }, [loadSessions, tenant?.id]);
 
   // Load messages for selected session
   useEffect(() => {
-    if (!selectedSession || !tenantId) {
+    if (!selectedSession) {
       setMessages([]);
       return;
     }
@@ -296,20 +287,6 @@ const AdminLiveChat = function AdminLiveChat() {
 
     const loadMessages = async () => {
       try {
-        // Verify session belongs to this tenant before loading messages
-        const { data: sessionData } = await supabase
-          .from('chat_sessions')
-          .select('id')
-          .eq('id', selectedSession)
-          .eq('tenant_id', tenantId)
-          .maybeSingle();
-
-        if (!sessionData) {
-          logger.warn('Attempted to load messages for session not belonging to tenant', { component: 'AdminLiveChat', sessionId: selectedSession });
-          setMessages([]);
-          return;
-        }
-
         const { data, error } = await supabase
           .from('chat_messages')
           .select('id, sender_type, sender_id, message, created_at, read_at, attachment_url, attachment_type, attachment_name')
@@ -402,8 +379,7 @@ const AdminLiveChat = function AdminLiveChat() {
         );
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSession, tenantId]);
+  }, [selectedSession]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -425,10 +401,10 @@ const AdminLiveChat = function AdminLiveChat() {
         .neq('sender_type', 'admin')
         .is('read_at', null);
 
-      // Invalidate sessions to update unread count
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-      });
+      // Update local session unread count
+      setSessions(prev => prev.map(s =>
+        s.id === sessionId ? { ...s, unread_count: 0 } : s
+      ));
     } catch (error) {
       logger.error('Error marking messages as read', error as Error, { component: 'AdminLiveChat' });
     }
@@ -454,30 +430,33 @@ const AdminLiveChat = function AdminLiveChat() {
 
   // Handle input change with typing indicator
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= MAX_MESSAGE_LENGTH) {
-      setInput(value);
-      broadcastTyping();
-    }
+    setInput(e.target.value);
+    broadcastTyping();
   };
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ messageText, attachment }: { messageText: string; attachment?: { file: File; preview: string } }) => {
+  // Send message
+  const handleSend = async () => {
+    if ((!input.trim() && !attachmentPreview) || !selectedSession || isSending) return;
+
+    setIsSending(true);
+    const messageText = input.trim();
+    setInput('');
+
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
-      if (!selectedSession) throw new Error('No session selected');
 
       let attachmentUrl: string | undefined;
       let attachmentType: string | undefined;
       let attachmentName: string | undefined;
 
       // Upload attachment if present
-      if (attachment) {
-        const file = attachment.file;
+      if (attachmentPreview) {
+        const file = attachmentPreview.file;
         const fileExt = file.name.split('.').pop();
         const fileName = `${selectedSession}/${Date.now()}.${fileExt}`;
 
+        setIsUploading(true);
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat-attachments')
           .upload(fileName, file);
@@ -491,6 +470,9 @@ const AdminLiveChat = function AdminLiveChat() {
         attachmentUrl = urlData.publicUrl;
         attachmentType = file.type.startsWith('image/') ? 'image' : 'file';
         attachmentName = file.name;
+
+        setAttachmentPreview(null);
+        setIsUploading(false);
       }
 
       const { error } = await supabase.from('chat_messages').insert({
@@ -513,35 +495,11 @@ const AdminLiveChat = function AdminLiveChat() {
           last_message_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .eq('id', selectedSession)
-        .eq('tenant_id', tenantId);
-    },
-    onSuccess: () => {
-      setAttachmentPreview(null);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-      });
-    },
-    onError: (error) => {
+        .eq('id', selectedSession);
+
+    } catch (error) {
       logger.error('Error sending message', error as Error, { component: 'AdminLiveChat' });
       toast.error("Failed to send message");
-    },
-  });
-
-  // Send message handler
-  const handleSend = async () => {
-    if ((!input.trim() && !attachmentPreview) || !selectedSession || isSending) return;
-
-    setIsSending(true);
-    const messageText = input.trim();
-    setInput('');
-
-    try {
-      await sendMessageMutation.mutateAsync({
-        messageText,
-        attachment: attachmentPreview ?? undefined,
-      });
-    } catch {
       setInput(messageText); // Restore input on error
     } finally {
       setIsSending(false);
@@ -581,51 +539,40 @@ const AdminLiveChat = function AdminLiveChat() {
     setAttachmentPreview(null);
   };
 
-  // Take over AI chat mutation
-  const takeOverMutation = useMutation({
-    mutationFn: async (sessionId: string) => {
+  // Take over AI chat
+  const takeOver = async (sessionId: string) => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error: updateError } = await supabase
+      await supabase
         .from('chat_sessions')
         .update({
           mode: 'human',
           assigned_admin_id: user.id,
           updated_at: new Date().toISOString()
         })
-        .eq('id', sessionId)
-        .eq('tenant_id', tenantId);
-
-      if (updateError) throw updateError;
+        .eq('id', sessionId);
 
       // Send system message
-      const { error: msgError } = await supabase.from('chat_messages').insert({
+      await supabase.from('chat_messages').insert({
         session_id: sessionId,
         sender_type: 'admin',
         sender_id: user.id,
         message: "A support agent has joined the chat. How can I help you?"
       });
 
-      if (msgError) throw msgError;
-
-      return sessionId;
-    },
-    onSuccess: (sessionId) => {
       setSelectedSession(sessionId);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-      });
-    },
-    onError: (error) => {
+      loadSessions();
+    } catch (error) {
       logger.error('Error taking over chat', error as Error, { component: 'AdminLiveChat' });
       toast.error("Failed to take over chat");
-    },
-  });
+    }
+  };
 
-  // Close session mutation
-  const closeSessionMutation = useMutation({
-    mutationFn: async (sessionId: string) => {
+  // Close chat session
+  const closeSession = async (sessionId: string) => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Send closing message
@@ -636,41 +583,30 @@ const AdminLiveChat = function AdminLiveChat() {
         message: "This chat session has been closed. Thank you for contacting support!"
       });
 
-      const { error } = await supabase
+      await supabase
         .from('chat_sessions')
         .update({
           status: 'closed',
           updated_at: new Date().toISOString()
         })
-        .eq('id', sessionId)
-        .eq('tenant_id', tenantId);
+        .eq('id', sessionId);
 
-      if (error) throw error;
-
-      return sessionId;
-    },
-    onSuccess: (sessionId) => {
       if (selectedSession === sessionId) {
         setSelectedSession(null);
         setMessages([]);
       }
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.sessions.byTenant(tenantId),
-      });
+
+      loadSessions();
       toast.success("The chat session has been closed");
-    },
-    onError: (error) => {
+    } catch (error) {
       logger.error('Error closing chat', error as Error, { component: 'AdminLiveChat' });
       toast.error("Failed to close chat");
-    },
-  });
+    }
+  };
 
   // Insert quick response
   const insertQuickResponse = (response: QuickResponse) => {
-    setInput(prev => {
-      const combined = prev + (prev ? '\n' : '') + response.message;
-      return combined.slice(0, MAX_MESSAGE_LENGTH);
-    });
+    setInput(prev => prev + (prev ? '\n' : '') + response.message);
     setShowQuickResponses(false);
   };
 
@@ -699,14 +635,8 @@ const AdminLiveChat = function AdminLiveChat() {
   };
 
   // Separate sessions by mode
-  const humanSessions = useMemo(
-    () => filteredSessions.filter(s => s.mode === 'human'),
-    [filteredSessions]
-  );
-  const aiSessions = useMemo(
-    () => filteredSessions.filter(s => s.mode === 'ai'),
-    [filteredSessions]
-  );
+  const humanSessions = filteredSessions.filter(s => s.mode === 'human');
+  const aiSessions = filteredSessions.filter(s => s.mode === 'ai');
 
   // Get selected session details
   const currentSession = sessions.find(s => s.id === selectedSession);
@@ -751,7 +681,6 @@ const AdminLiveChat = function AdminLiveChat() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
-                    maxLength={200}
                   />
                 </div>
               </div>
@@ -761,7 +690,7 @@ const AdminLiveChat = function AdminLiveChat() {
                 {isLoading ? (
                   <div className="p-4 space-y-3">
                     {[1, 2, 3].map((i) => (
-                      <div key={`skeleton-${i}`} className="flex items-center gap-3">
+                      <div key={i} className="flex items-center gap-3">
                         <Skeleton className="h-10 w-10 rounded-full" />
                         <div className="flex-1 space-y-2">
                           <Skeleton className="h-4 w-3/4" />
@@ -798,7 +727,7 @@ const AdminLiveChat = function AdminLiveChat() {
                         sessions={filteredSessions}
                         selectedSession={selectedSession}
                         onSelect={setSelectedSession}
-                        onTakeOver={(id) => takeOverMutation.mutate(id)}
+                        onTakeOver={takeOver}
                         getDisplayInfo={getSessionDisplayInfo}
                         formatTime={formatRelativeTime}
                       />
@@ -809,7 +738,7 @@ const AdminLiveChat = function AdminLiveChat() {
                         sessions={humanSessions}
                         selectedSession={selectedSession}
                         onSelect={setSelectedSession}
-                        onTakeOver={(id) => takeOverMutation.mutate(id)}
+                        onTakeOver={takeOver}
                         getDisplayInfo={getSessionDisplayInfo}
                         formatTime={formatRelativeTime}
                       />
@@ -820,7 +749,7 @@ const AdminLiveChat = function AdminLiveChat() {
                         sessions={aiSessions}
                         selectedSession={selectedSession}
                         onSelect={setSelectedSession}
-                        onTakeOver={(id) => takeOverMutation.mutate(id)}
+                        onTakeOver={takeOver}
                         getDisplayInfo={getSessionDisplayInfo}
                         formatTime={formatRelativeTime}
                       />
@@ -875,14 +804,9 @@ const AdminLiveChat = function AdminLiveChat() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => takeOverMutation.mutate(currentSession.id)}
-                        disabled={takeOverMutation.isPending}
+                        onClick={() => takeOver(currentSession.id)}
                       >
-                        {takeOverMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        ) : (
-                          <User className="w-4 h-4 mr-1" />
-                        )}
+                        <User className="w-4 h-4 mr-1" />
                         Take Over
                       </Button>
                     )}
@@ -895,11 +819,8 @@ const AdminLiveChat = function AdminLiveChat() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => closeSessionMutation.mutate(currentSession.id)}
-                          disabled={closeSessionMutation.isPending}
-                        >
-                          {closeSessionMutation.isPending ? 'Closing...' : 'Close Chat'}
+                        <DropdownMenuItem onClick={() => closeSession(currentSession.id)}>
+                          Close Chat
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1050,32 +971,25 @@ const AdminLiveChat = function AdminLiveChat() {
                     </Popover>
 
                     {/* Message Input */}
-                    <div className="flex-1 relative">
-                      <Textarea
-                        value={input}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSend();
-                          }
-                        }}
-                        placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                        aria-label="Type a message"
-                        className="min-h-[44px] max-h-32 resize-none pr-16"
-                        maxLength={MAX_MESSAGE_LENGTH}
-                        disabled={isSending || currentSession.mode === 'ai'}
-                      />
-                      <span className="absolute right-2 bottom-1 text-[10px] text-muted-foreground">
-                        {input.length}/{MAX_MESSAGE_LENGTH}
-                      </span>
-                    </div>
+                    <Textarea
+                      value={input}
+                      onChange={handleInputChange}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                      aria-label="Type a message"
+                      className="flex-1 min-h-[44px] max-h-32 resize-none"
+                      disabled={isSending || currentSession.mode === 'ai'}
+                    />
 
                     {/* Send Button */}
                     <Button
                       onClick={handleSend}
                       disabled={(!input.trim() && !attachmentPreview) || isSending || isUploading || currentSession.mode === 'ai'}
-                      aria-label="Send message"
                     >
                       {isSending || isUploading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1152,7 +1066,6 @@ function SessionList({
               "w-full p-3 text-left hover:bg-muted/50 transition-colors",
               isSelected && "bg-muted"
             )}
-            aria-label={`Chat with ${name}${session.unread_count ? `, ${session.unread_count} unread` : ''}`}
           >
             <div className="flex items-start gap-3">
               <div className="relative">
@@ -1263,7 +1176,7 @@ function MessageBubble({ message, formatTime }: MessageBubbleProps) {
 
           {/* Message text */}
           {message.message && (
-            <p className="text-sm whitespace-pre-wrap break-words">{message.message}</p>
+            <p className="text-sm whitespace-pre-wrap">{message.message}</p>
           )}
         </div>
 

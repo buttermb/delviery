@@ -2,15 +2,6 @@
 - Status timeline handles cancelled state separately
 - Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
 
-## SettingsPage: Fix all TODO items
-- Removed unused `useNavigate` import (only `useTenantNavigation` needed)
-- Added `useCallback` import for memoized payment save handler
-- Imported `PaymentSettingsFormData` type for proper typing
-- Wired `PaymentSettingsForm.onSave` to persist payment settings to `account_settings.integration_settings` (was empty `async () => {}`)
-- Added `shouldDirty: true` to all Switch `onCheckedChange` calls in security form (2FA, password change) and notification form (email, SMS, low stock, overdue, order alerts) so unsaved changes dialog triggers correctly
-- Passed `initialData` to `PaymentSettingsForm` to load existing payment settings from `account_settings.integration_settings.payment`
-- Added 11 unit tests covering tab rendering, form rendering, navigation, embedded mode, and payment save wiring
-
 ## task-207: Create delivery runner mobile view
 - Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
 - Shows assigned deliveries in route order with numbered badges
@@ -496,16 +487,3 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
-
-## StorefrontOrders: Fix all TODO/placeholder items
-- Replaced non-functional Export button placeholder (Download icon only) with real ExportButton component with CSV/Excel/JSON support and 9 configured columns
-- Fixed toast.success("Connection issue, retrying...") → toast.info (retry is informational, not a success)
-- Added sanitizeSearchInput to client-side search filtering
-- Fixed nullable number comparisons: delivery_fee ?? 0, removed discount_amount/tip_amount (not in view)
-- Replaced array index keys in items list with stable composite keys (product_id-quantity)
-- Removed non-existent columns from query select (discount_amount, tip_amount, payment_method not in storefront_orders view)
-- Removed corresponding UI references to discount_amount, tip_amount, payment_method from detail sheet
-- Cleaned up MarketplaceOrder interface to match actual view columns
-- Added aria-label to search input for accessibility
-- Created comprehensive test suite: 22 tests covering rendering, search, status filters, export, empty/no-store states, fulfillment badges, realtime subscription, and order detail sheet
-- TypeScript compilation passes with zero errors

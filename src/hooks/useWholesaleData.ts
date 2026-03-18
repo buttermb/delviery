@@ -293,7 +293,7 @@ export const useWholesaleInventory = (tenantId?: string) => {
         .order("name");
 
       if (error) throw error;
-
+      
       // Map to legacy format for compatibility
       return (data ?? []).map(item => ({
         id: item.id,
@@ -310,8 +310,6 @@ export const useWholesaleInventory = (tenantId?: string) => {
       }));
     },
     enabled: !!tenantId,
-    staleTime: 30_000,
-    gcTime: 300_000,
     retry: 2,
   });
 };

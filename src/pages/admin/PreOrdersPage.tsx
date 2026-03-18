@@ -36,9 +36,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { ConvertPreOrderDialog } from "@/components/crm/ConvertPreOrderDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
-import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PreOrdersPage() {
@@ -46,19 +44,10 @@ export default function PreOrdersPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
-    const [convertOrderId, setConvertOrderId] = useState<string | null>(null);
 
     const { data: preOrders, isLoading } = usePreOrders();
     const mod = useModifierKey();
     const cancelPreOrder = useCancelPreOrder();
-
-    useFormKeyboardShortcuts({
-        onNew: () => navigateToAdmin("crm/pre-orders/new"),
-    });
-
-    const orderToConvert = convertOrderId
-        ? preOrders?.find((o) => o.id === convertOrderId)
-        : null;
 
     const filteredPreOrders = preOrders?.filter((order) => {
         const matchesSearch =
@@ -253,9 +242,7 @@ export default function PreOrdersPage() {
                                             {format(new Date(order.created_at), "MMM d, yyyy")}
                                         </TableCell>
                                         <TableCell>
-                                            {order.expected_date
-                                                ? format(new Date(order.expected_date), "MMM d, yyyy")
-                                                : "-"}
+                                            -
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(order.total)}
@@ -283,7 +270,8 @@ export default function PreOrdersPage() {
                                                         <>
                                                             <DropdownMenuItem onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                setConvertOrderId(order.id);
+                                                                // Trigger convert dialog (will implement later)
+                                                                navigateToAdmin(`crm/pre-orders/${order.id}?action=convert`);
                                                             }}>
                                                                 <ArrowRight className="mr-2 h-4 w-4" />
                                                                 Convert to Invoice
@@ -322,14 +310,6 @@ export default function PreOrdersPage() {
                 itemType={dialogState.itemType}
                 isLoading={dialogState.isLoading}
             />
-
-            {orderToConvert && (
-                <ConvertPreOrderDialog
-                    preOrder={orderToConvert}
-                    open={!!convertOrderId}
-                    onOpenChange={(open) => { if (!open) setConvertOrderId(null); }}
-                />
-            )}
         </div>
     );
 }

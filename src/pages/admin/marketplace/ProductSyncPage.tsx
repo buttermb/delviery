@@ -19,8 +19,7 @@ import {
     ArrowRightLeft,
     AlertCircle,
     Clock,
-    Search,
-    Package
+    Search
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
@@ -29,8 +28,6 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
-import { humanizeError } from "@/lib/humanizeError";
 
 interface ProductSyncStatus {
     id: string; // sync record id
@@ -78,11 +75,10 @@ export default function ProductSyncPage() {
         },
         enabled: !!tenant?.id,
         retry: 2,
-        staleTime: 60_000,
     });
 
     // 2. Fetch Products with Sync Status
-    const { data: products, isLoading: isLoadingProducts, isFetching, refetch } = useQuery({
+    const { data: products, isLoading: isLoadingProducts, refetch } = useQuery({
         queryKey: queryKeys.marketplaceProductSettings.sync(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
@@ -118,9 +114,9 @@ export default function ProductSyncPage() {
         },
         enabled: !!tenant?.id,
         retry: 2,
-        staleTime: 30_000,
     });
 
+    // 3. Sync Mutation
     // 3. Sync Mutation
     const syncMutation = useMutation({
         mutationFn: async (productId: string) => {
@@ -150,9 +146,7 @@ export default function ProductSyncPage() {
                 // Invalidate storefront product caches for instant sync
                 queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
             } else {
-                toast.error("Sync failed", {
-                    description: humanizeError(error, "Could not sync product. Please try again."),
-                });
+                toast.error(`Sync failed: ${(error as Error).message}`);
             }
         }
     });
@@ -198,51 +192,19 @@ export default function ProductSyncPage() {
     };
 
     // Filtering
-    const sanitizedSearch = sanitizeSearchInput(searchQuery).toLowerCase();
     const filteredProducts = products?.filter(product =>
-        product.name.toLowerCase().includes(sanitizedSearch) ||
-        product.category?.toLowerCase().includes(sanitizedSearch)
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (isLoadingStore || isLoadingProducts) {
-        return (
-            <div className="p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                    <div className="space-y-2">
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-72" />
-                    </div>
-                    <div className="flex gap-2">
-                        <Skeleton className="h-10 w-24" />
-                        <Skeleton className="h-10 w-36" />
-                    </div>
-                </div>
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-4 w-64" />
-                        <Skeleton className="h-10 w-64 mt-4" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="rounded-md border">
-                            <div className="p-4 space-y-4">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <div key={`skeleton-row-${i}`} className="flex items-center gap-4">
-                                        <Skeleton className="h-10 w-10 rounded-md" />
-                                        <Skeleton className="h-4 flex-1" />
-                                        <Skeleton className="h-6 w-20" />
-                                        <Skeleton className="h-4 w-16" />
-                                        <Skeleton className="h-6 w-16" />
-                                        <Skeleton className="h-4 w-28" />
-                                        <Skeleton className="h-8 w-16" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+        return <div className="p-4 space-y-4">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-10 w-32" />
             </div>
-        );
+            <Skeleton className="h-[400px] w-full" />
+        </div>;
     }
 
     if (!store) {
@@ -280,15 +242,12 @@ export default function ProductSyncPage() {
                         Synchronize your B2B products to the Marketplace listings.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    {isFetching && !isLoadingProducts && (
-                        <span className="text-xs text-muted-foreground animate-pulse">Refreshing...</span>
-                    )}
-                    <Button variant="outline" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh product sync status">
-                        <RefreshCcw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => refetch()} disabled={isLoadingProducts}>
+                        <RefreshCcw className={`mr-2 h-4 w-4 ${isLoadingProducts ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
-                    <Button onClick={handleBulkSync} aria-label="Sync all unsynced products">
+                    <Button onClick={handleBulkSync}>
                         Sync New Products
                     </Button>
                 </div>
@@ -331,29 +290,8 @@ export default function ProductSyncPage() {
                             <TableBody>
                                 {filteredProducts?.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="h-40 text-center">
-                                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                                <Package className="h-10 w-10 opacity-40" />
-                                                {searchQuery ? (
-                                                    <>
-                                                        <p className="font-medium">No matching products</p>
-                                                        <p className="text-sm">Try a different search term</p>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="mt-2"
-                                                            onClick={() => setSearchQuery("")}
-                                                        >
-                                                            Clear Search
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <p className="font-medium">No products to sync</p>
-                                                        <p className="text-sm">Add products to your inventory first</p>
-                                                    </>
-                                                )}
-                                            </div>
+                                        <TableCell colSpan={7} className="h-24 text-center">
+                                            No products found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -417,7 +355,6 @@ export default function ProductSyncPage() {
                                                         variant={isSynced ? "outline" : "default"}
                                                         onClick={() => handleSync(product.id)}
                                                         disabled={isSyncing}
-                                                        aria-label={`${isSynced ? 'Update' : 'Sync'} ${product.name}`}
                                                     >
                                                         {isSyncing ? (
                                                             <RefreshCcw className="h-4 w-4 animate-spin" />

@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Textarea } from '@/components/ui/textarea';
 import { z } from "zod";
@@ -26,7 +26,7 @@ import { StripeConnectSettings } from '@/components/settings/StripeConnectSettin
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
-import { PaymentSettingsForm, type PaymentSettingsFormData } from '@/components/settings/PaymentSettingsForm';
+import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { FeaturesOverviewPanel } from '@/components/admin/settings/FeaturesOverviewPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { toast } from "sonner";
@@ -81,6 +81,7 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ embedded = false }: SettingsPageProps) {
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -335,33 +336,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     }
   };
 
-  // --- Payment Settings Save ---
-  const onSavePaymentSettings = useCallback(async (data: PaymentSettingsFormData) => {
-    if (!account) return;
-    const existingIntegration = accountSettings
-      ? (accountSettings.integration_settings as Record<string, unknown>) || {}
-      : {};
-    const merged = { ...existingIntegration, payment: data };
-
-    if (accountSettings) {
-      const { error } = await supabase
-        .from('account_settings')
-        .update({ integration_settings: merged })
-        .eq('id', accountSettings.id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase
-        .from('account_settings')
-        .insert({
-          account_id: account.id,
-          integration_settings: merged,
-        });
-      if (error) throw error;
-    }
-
-    await refreshAccount();
-  }, [account, accountSettings, refreshAccount]);
-
   // --- Import Handler ---
   const handleImportSettings = async (settings: ImportedSettings) => {
     if (!account) {
@@ -538,7 +512,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
               </div>
             </div>
             <ShortcutHint keys={[mod, "S"]} label="Save">
-              <Button type="submit" disabled={generalLoading} aria-label="Save general settings">
+              <Button type="submit" disabled={generalLoading}>
                 {generalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 Save General Settings
               </Button>
@@ -546,7 +520,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           </form>
           <div className="pt-4 border-t mt-6">
             <h4 className="text-sm font-medium mb-2">Team Management</h4>
-            <Button variant="outline" onClick={() => navigateToAdmin('team-members')} aria-label="Manage team members">
+            <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
               <Users className="h-4 w-4 mr-2" />
               Manage Team Members
             </Button>
@@ -579,7 +553,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           size="sm"
           onClick={() => navigateToAdmin('dashboard')}
           className="mb-2"
-          aria-label="Back to dashboard"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -593,7 +566,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
             variant="outline"
             onClick={() => setImportDialogOpen(true)}
             disabled={importLoading}
-            aria-label="Import settings from file"
           >
             <Upload className="h-4 w-4 mr-2" />
             Import Settings
@@ -673,7 +645,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   </div>
                   <Switch
                     checked={securityForm.watch("twoFactorEnabled")}
-                    onCheckedChange={(checked) => securityForm.setValue("twoFactorEnabled", checked, { shouldDirty: true })}
+                    onCheckedChange={(checked) => securityForm.setValue("twoFactorEnabled", checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -685,7 +657,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   </div>
                   <Switch
                     checked={securityForm.watch("requirePasswordChange")}
-                    onCheckedChange={(checked) => securityForm.setValue("requirePasswordChange", checked, { shouldDirty: true })}
+                    onCheckedChange={(checked) => securityForm.setValue("requirePasswordChange", checked)}
                   />
                 </div>
                 <div>
@@ -709,7 +681,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   )}
                 </div>
                 <ShortcutHint keys={[mod, "S"]} label="Save">
-                  <Button type="submit" disabled={securityLoading} aria-label="Save security settings">
+                  <Button type="submit" disabled={securityLoading}>
                     {securityLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Security Settings
                   </Button>
@@ -737,7 +709,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   </div>
                   <Switch
                     checked={notificationForm.watch("emailNotifications")}
-                    onCheckedChange={(c) => notificationForm.setValue("emailNotifications", c, { shouldDirty: true })}
+                    onCheckedChange={(c) => notificationForm.setValue("emailNotifications", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -747,7 +719,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   </div>
                   <Switch
                     checked={notificationForm.watch("smsNotifications")}
-                    onCheckedChange={(c) => notificationForm.setValue("smsNotifications", c, { shouldDirty: true })}
+                    onCheckedChange={(c) => notificationForm.setValue("smsNotifications", c)}
                   />
                 </div>
                 <div className="pt-4 border-t space-y-3">
@@ -755,21 +727,21 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                     <Label>Low Stock Alerts</Label>
                     <Switch
                       checked={notificationForm.watch("lowStockAlerts")}
-                      onCheckedChange={(c) => notificationForm.setValue("lowStockAlerts", c, { shouldDirty: true })}
+                      onCheckedChange={(c) => notificationForm.setValue("lowStockAlerts", c)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Overdue Payment Alerts</Label>
                     <Switch
                       checked={notificationForm.watch("overdueAlerts")}
-                      onCheckedChange={(c) => notificationForm.setValue("overdueAlerts", c, { shouldDirty: true })}
+                      onCheckedChange={(c) => notificationForm.setValue("overdueAlerts", c)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Order Alerts</Label>
                     <Switch
                       checked={notificationForm.watch("orderAlerts")}
-                      onCheckedChange={(c) => notificationForm.setValue("orderAlerts", c, { shouldDirty: true })}
+                      onCheckedChange={(c) => notificationForm.setValue("orderAlerts", c)}
                     />
                   </div>
                 </div>
@@ -791,7 +763,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                     <Switch
                       checked={notificationForm.watch("telegram_auto_forward")}
                       onCheckedChange={(c) => notificationForm.setValue("telegram_auto_forward", c, { shouldDirty: true })}
-                      aria-label="Toggle auto-forward orders to Telegram"
                     />
                   </div>
                   {notificationForm.watch("telegram_auto_forward") && (
@@ -824,7 +795,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                           size="sm"
                           disabled={testingSending}
                           onClick={onTestTelegram}
-                          aria-label="Send test Telegram message"
                         >
                           {testingSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                           Send Test Message
@@ -840,7 +810,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                           <Switch
                             checked={notificationForm.watch("show_telegram_on_confirmation")}
                             onCheckedChange={(c) => notificationForm.setValue("show_telegram_on_confirmation", c, { shouldDirty: true })}
-                            aria-label="Toggle Telegram button on confirmation page"
                           />
                         </div>
                         {notificationForm.watch("show_telegram_on_confirmation") && (
@@ -877,7 +846,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                 </div>
 
                 <ShortcutHint keys={[mod, "S"]} label="Save">
-                  <Button type="submit" disabled={notificationLoading} aria-label="Save notification settings">
+                  <Button type="submit" disabled={notificationLoading}>
                     {notificationLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Notification Settings
                   </Button>
@@ -922,7 +891,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                       <h4 className="font-medium">QuickBooks</h4>
                       <p className="text-sm text-muted-foreground">Sync financial data</p>
                     </div>
-                    <Button variant="outline" size="sm" disabled aria-label="Connect QuickBooks (coming soon)">Connect (Coming Soon)</Button>
+                    <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
                   </div>
                 </div>
                 <div className="p-0 border-0">
@@ -934,7 +903,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                       <h4 className="font-medium">Twilio</h4>
                       <p className="text-sm text-muted-foreground">SMS notifications</p>
                     </div>
-                    <Button variant="outline" size="sm" disabled aria-label="Connect Twilio (coming soon)">Connect (Coming Soon)</Button>
+                    <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
                   </div>
                 </div>
               </div>
@@ -973,10 +942,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           {showSkeletons ? (
             <PaymentSettingsSkeleton />
           ) : (
-            <PaymentSettingsForm
-              initialData={(accountSettings?.integration_settings as Record<string, unknown>)?.payment as Partial<PaymentSettingsFormData> | undefined}
-              onSave={onSavePaymentSettings}
-            />
+            <PaymentSettingsForm onSave={async () => { }} />
           )}
         </TabsContent>
 

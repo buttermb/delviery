@@ -57,33 +57,31 @@ export function ZReport({ shiftId }: ZReportProps) {
     refetchInterval: 30000, // Backup polling
   });
 
-  if (isLoading) {
-    return <div className="text-center py-8">Loading Z-Report...</div>;
-  }
+  const handlePrint = () => {
+    window.print();
+    toast.success('Printing Z-Report');
+  };
 
-  if (!shift) {
-    return <div className="text-center py-8">Shift not found</div>;
-  }
+  const handleDownload = () => {
+    if (!shift) return;
 
-  const netSales = shift.total_sales - (shift.refunds_amount ?? 0);
+    const reportContent = generateReportText();
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Z-Report-${shift.shift_number}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-  // Compute refund stats from transactions
-  const refundTransactions = transactions?.filter(
-    (t) => t.payment_status === 'refunded' || t.total_amount < 0
-  ) ?? [];
-  const refundCount = refundTransactions.length;
-  const totalRefunds = shift.refunds_amount ?? 0;
-  const cashRefunds = refundTransactions
-    .filter((t) => t.payment_method === 'cash')
-    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
-  const cardRefunds = refundTransactions
-    .filter((t) => t.payment_method === 'card')
-    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
-  const otherRefunds = refundTransactions
-    .filter((t) => t.payment_method !== 'cash' && t.payment_method !== 'card')
-    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+    toast.success('Report downloaded');
+  };
 
   const generateReportText = () => {
+    if (!shift) return '';
+
     return `
 ========================================
         Z-REPORT (END OF DAY)
@@ -152,25 +150,31 @@ ${i + 1}. ${t.transaction_number}
     `;
   };
 
-  const handlePrint = () => {
-    window.print();
-    toast.success('Printing Z-Report');
-  };
+  if (isLoading) {
+    return <div className="text-center py-8">Loading Z-Report...</div>;
+  }
 
-  const handleDownload = () => {
-    const reportContent = generateReportText();
-    const blob = new Blob([reportContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Z-Report-${shift.shift_number}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  if (!shift) {
+    return <div className="text-center py-8">Shift not found</div>;
+  }
 
-    toast.success('Report downloaded');
-  };
+  const netSales = shift.total_sales - (shift.refunds_amount ?? 0);
+
+  // Compute refund stats from transactions
+  const refundTransactions = transactions?.filter(
+    (t) => t.payment_status === 'refunded' || t.total_amount < 0
+  ) ?? [];
+  const refundCount = refundTransactions.length;
+  const totalRefunds = shift.refunds_amount ?? 0;
+  const cashRefunds = refundTransactions
+    .filter((t) => t.payment_method === 'cash')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+  const cardRefunds = refundTransactions
+    .filter((t) => t.payment_method === 'card')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+  const otherRefunds = refundTransactions
+    .filter((t) => t.payment_method !== 'cash' && t.payment_method !== 'card')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
 
   return (
     <div className="space-y-6 print:p-8">

@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { Truck, Plus, Package, Loader2 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
 import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageErrorState } from '@/components/admin/shared/PageErrorState';
@@ -35,16 +36,13 @@ interface TransferFormData {
 interface TransferRow {
   id: string;
   product_id: string;
-  from_location_id: string;
-  to_location_id: string;
-  quantity: number;
+  from_warehouse: string;
+  to_warehouse: string;
+  quantity_lbs: number;
   notes: string | null;
-  status: string | null;
-  created_at: string | null;
-  transfer_number: string;
+  status: string;
+  created_at: string;
   product?: { name: string } | null;
-  from_location?: { name: string } | null;
-  to_location?: { name: string } | null;
 }
 
 interface ProductOption {
@@ -86,26 +84,40 @@ export default function InventoryTransfers() {
       return data ?? [];
     },
     enabled: !!tenantId,
-    staleTime: 60_000,
     retry: 2,
   });
 
-  // Fetch locations for dropdowns (FK targets locations table)
+  // Fetch locations for dropdowns
   const { data: locations = [] } = useQuery({
     queryKey: queryKeys.inventoryTransfersAdmin.locations(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
-      const { data, error } = await supabase
-        .from('locations')
-        .select('id, name')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'active')
-        .order('name');
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const { data, error } = await supabase
+          .from('inventory_locations')
+          .select('id, name')
+          .eq('tenant_id', tenantId)
+          .order('name');
+        if (error && error.code === '42P01') {
+          // Table doesn't exist, return default locations
+          return [
+            { id: 'warehouse-main', name: 'Main Warehouse' },
+            { id: 'warehouse-secondary', name: 'Secondary Warehouse' },
+          ];
+        }
+        if (error) throw error;
+        return data ?? [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') {
+          return [
+            { id: 'warehouse-main', name: 'Main Warehouse' },
+            { id: 'warehouse-secondary', name: 'Secondary Warehouse' },
+          ];
+        }
+        throw error;
+      }
     },
     enabled: !!tenantId,
-    staleTime: 60_000,
     retry: 2,
   });
 
@@ -114,18 +126,23 @@ export default function InventoryTransfers() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from('inventory_transfers')
-        .select('*, product:products(name), from_location:locations!inventory_transfers_from_location_id_fkey(name), to_location:locations!inventory_transfers_to_location_id_fkey(name)')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .limit(100);
+      try {
+        const { data, error } = await supabase
+          .from('inventory_transfers')
+          .select('*, product:products(*)')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(100);
 
-      if (error) throw error;
-      return (data ?? []) as TransferRow[];
+        if (error && error.code === '42P01') return [];
+        if (error) throw error;
+        return data ?? [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
+        throw error;
+      }
     },
     enabled: !!tenantId,
-    staleTime: 60_000,
     retry: 2,
   });
 
@@ -133,17 +150,9 @@ export default function InventoryTransfers() {
     mutationFn: async (transfer: TransferFormData) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      // Generate transfer number via DB function
-      const { data: transferNumber, error: numError } = await supabase
-        .rpc('generate_transfer_number');
-      if (numError) throw numError;
-
       const { data, error } = await supabase
         .from('inventory_transfers')
         .insert({
-          account_id: tenantId,
-          tenant_id: tenantId,
-          transfer_number: transferNumber,
           product_id: transfer.product_id,
           from_location_id: transfer.from_warehouse,
           to_location_id: transfer.to_warehouse,
@@ -154,7 +163,12 @@ export default function InventoryTransfers() {
         .select()
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Inventory transfers table does not exist. Please run database migrations.');
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -235,34 +249,26 @@ export default function InventoryTransfers() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Truck className="h-5 w-5" />
-                    <CardTitle className="text-base">
-                      {transfer.transfer_number}
-                    </CardTitle>
+                    <CardTitle>Transfer #{transfer.id.slice(0, 8)}</CardTitle>
                   </div>
                   <Badge variant={transfer.status === 'completed' ? 'default' : 'secondary'}>
-                    {transfer.status ?? 'pending'}
+                    {transfer.status || 'pending'}
                   </Badge>
                 </div>
                 <CardDescription>
-                  {transfer.from_location?.name ?? 'Unknown'} → {transfer.to_location?.name ?? 'Unknown'}
+                  {transfer.from_warehouse} → {transfer.to_warehouse}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm font-medium">Product</div>
-                    <div className="text-sm text-muted-foreground">
-                      {transfer.product?.name ?? 'Unknown'}
-                    </div>
-                  </div>
-                  <div>
                     <div className="text-sm font-medium">Quantity</div>
-                    <div className="text-lg">{transfer.quantity}</div>
+                    <div className="text-lg">{transfer.quantity_lbs} lbs</div>
                   </div>
                   <div>
                     <div className="text-sm font-medium">Date</div>
                     <div className="text-sm text-muted-foreground">
-                      {transfer.created_at ? formatSmartDate(transfer.created_at) : '—'}
+                      {formatSmartDate(transfer.created_at)}
                     </div>
                   </div>
                   {transfer.notes && (

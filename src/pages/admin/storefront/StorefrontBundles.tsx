@@ -79,20 +79,207 @@ interface Product {
   image_url: string | null;
 }
 
-interface BundleFormProps {
-  formData: {
-    name: string;
-    description: string;
-    discount_type: 'percentage' | 'fixed';
-    discount_value: number;
-    products: { product_id: string; quantity: number }[];
-    is_active: boolean;
-  };
-  setFormData: React.Dispatch<React.SetStateAction<BundleFormProps['formData']>>;
-  products: Product[];
-}
+export default function StorefrontBundles() {
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
 
-function BundleForm({ formData, setFormData, products }: BundleFormProps) {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bundleToDelete, setBundleToDelete] = useState<string | null>(null);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    discount_type: 'percentage' as 'percentage' | 'fixed',
+    discount_value: 10,
+    products: [] as { product_id: string; quantity: number }[],
+    is_active: true,
+  });
+
+  // Fetch store
+  const { data: store } = useQuery({
+    queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return null;
+      const { data, error } = await supabase
+        .from('marketplace_stores')
+        .select('id, tenant_id, store_name, slug, is_active, is_public, created_at, updated_at')
+        .eq('tenant_id', tenant.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tenant?.id,
+    retry: 2,
+  });
+
+  // Fetch bundles
+  const { data: bundles = [], isLoading: bundlesLoading } = useQuery({
+    queryKey: queryKeys.marketplaceBundles.byStore(store?.id),
+    queryFn: async () => {
+      if (!store?.id) return [];
+      const { data, error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
+        .select('id, name, description, image_url, discount_type, discount_value, products, is_active, start_date, end_date, created_at')
+        .eq('store_id', store.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Bundle[];
+    },
+    enabled: !!store?.id,
+    retry: 2,
+  });
+
+  // Fetch products for selection
+  const { data: products = [] } = useQuery({
+    queryKey: queryKeys.storePages.storeProducts(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, image_url')
+        .eq('tenant_id', tenant.id)
+        .order('name');
+      if (error) throw error;
+      return (data ?? []) as Product[];
+    },
+    enabled: !!tenant?.id,
+    retry: 2,
+  });
+
+  // Create bundle mutation
+  const createBundleMutation = useMutation({
+    mutationFn: async () => {
+      if (!store?.id || !tenant?.id) throw new Error('No store');
+
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
+        .insert({
+          store_id: store.id,
+          tenant_id: tenant.id,
+          name: formData.name,
+          description: formData.description || null,
+          discount_type: formData.discount_type,
+          discount_value: formData.discount_value,
+          products: formData.products,
+          is_active: formData.is_active,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
+      setShowCreateDialog(false);
+      resetForm();
+      toast.success("Bundle created!");
+    },
+    onError: (error) => {
+      logger.error('Failed to create bundle', error, { component: 'StorefrontBundles' });
+      toast.error("Failed to create bundle", { description: humanizeError(error) });
+    },
+  });
+
+  // Update bundle mutation
+  const updateBundleMutation = useMutation({
+    mutationFn: async (bundle: Bundle) => {
+      if (!store?.id) throw new Error('No store');
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
+        .update({
+          name: formData.name,
+          description: formData.description || null,
+          discount_type: formData.discount_type,
+          discount_value: formData.discount_value,
+          products: formData.products,
+          is_active: formData.is_active,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bundle.id)
+        .eq('store_id', store.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
+      setEditingBundle(null);
+      resetForm();
+      toast.success("Bundle updated!");
+    },
+    onError: (error) => {
+      logger.error('Failed to update bundle', error, { component: 'StorefrontBundles' });
+      toast.error("Failed to update bundle", { description: humanizeError(error) });
+    },
+  });
+
+  // Toggle bundle status
+  const toggleBundleMutation = useMutation({
+    mutationFn: async ({ bundleId, isActive }: { bundleId: string; isActive: boolean }) => {
+      if (!store?.id) throw new Error('No store');
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
+        .update({ is_active: isActive, updated_at: new Date().toISOString() })
+        .eq('id', bundleId)
+        .eq('store_id', store.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to toggle bundle status', { error });
+      toast.error("Failed to update bundle", { description: humanizeError(error) });
+    },
+  });
+
+  // Delete bundle
+  const deleteBundleMutation = useMutation({
+    mutationFn: async (bundleId: string) => {
+      if (!store?.id) throw new Error('No store');
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
+        .delete()
+        .eq('id', bundleId)
+        .eq('store_id', store.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
+      toast.success("Bundle deleted");
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to delete bundle', { error });
+      toast.error("Failed to delete bundle", { description: humanizeError(error) });
+    },
+  });
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      discount_type: 'percentage',
+      discount_value: 10,
+      products: [],
+      is_active: true,
+    });
+  };
+
+  // Open edit dialog
+  const openEditDialog = (bundle: Bundle) => {
+    setFormData({
+      name: bundle.name,
+      description: bundle.description ?? '',
+      discount_type: bundle.discount_type,
+      discount_value: bundle.discount_value,
+      products: bundle.products,
+      is_active: bundle.is_active,
+    });
+    setEditingBundle(bundle);
+  };
+
+  // Add product to bundle
   const addProduct = (productId: string) => {
     if (formData.products.some((p) => p.product_id === productId)) return;
     setFormData((prev) => ({
@@ -101,6 +288,7 @@ function BundleForm({ formData, setFormData, products }: BundleFormProps) {
     }));
   };
 
+  // Update product quantity
   const updateProductQuantity = (productId: string, quantity: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -110,6 +298,7 @@ function BundleForm({ formData, setFormData, products }: BundleFormProps) {
     }));
   };
 
+  // Remove product from bundle
   const removeProduct = (productId: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -117,23 +306,41 @@ function BundleForm({ formData, setFormData, products }: BundleFormProps) {
     }));
   };
 
-  const regularPrice = formData.products.reduce((sum, bp) => {
-    const product = products.find((p) => p.id === bp.product_id);
-    return sum + (product?.price ?? 0) * bp.quantity;
-  }, 0);
-
+  // Calculate bundle price
   const calculateBundlePrice = () => {
+    const regularPrice = formData.products.reduce((sum, bp) => {
+      const product = products.find((p) => p.id === bp.product_id);
+      return sum + (product?.price ?? 0) * bp.quantity;
+    }, 0);
+
     if (formData.discount_type === 'percentage') {
       return regularPrice * (1 - formData.discount_value / 100);
     }
     return Math.max(0, regularPrice - formData.discount_value);
   };
 
+  const regularPrice = formData.products.reduce((sum, bp) => {
+    const product = products.find((p) => p.id === bp.product_id);
+    return sum + (product?.price ?? 0) * bp.quantity;
+  }, 0);
+
   const bundlePrice = calculateBundlePrice();
   const savings = regularPrice - bundlePrice;
-  const savingsPercent = regularPrice > 0 ? Math.round((savings / regularPrice) * 100) : 0;
 
-  return (
+  if (bundlesLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <Skeleton className="h-10 w-64 mb-6" />
+        <div className="grid gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const BundleForm = () => (
     <div className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
@@ -296,7 +503,7 @@ function BundleForm({ formData, setFormData, products }: BundleFormProps) {
             <div className="flex items-center justify-between pt-2 border-t">
               <span className="font-medium">Customers Save:</span>
               <Badge variant="secondary" className="bg-green-100 text-green-700">
-                {formatCurrency(savings)} ({savingsPercent}% off)
+                {formatCurrency(savings)} ({Math.round((savings / regularPrice) * 100)}% off)
               </Badge>
             </div>
           </CardContent>
@@ -316,224 +523,6 @@ function BundleForm({ formData, setFormData, products }: BundleFormProps) {
       </div>
     </div>
   );
-}
-
-export default function StorefrontBundles() {
-  const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
-
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [bundleToDelete, setBundleToDelete] = useState<string | null>(null);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    discount_type: 'percentage' as 'percentage' | 'fixed',
-    discount_value: 10,
-    products: [] as { product_id: string; quantity: number }[],
-    is_active: true,
-  });
-
-  // Fetch store
-  const { data: store } = useQuery({
-    queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
-    queryFn: async () => {
-      if (!tenant?.id) return null;
-      const { data, error } = await supabase
-        .from('marketplace_stores')
-        .select('id, tenant_id, store_name, slug, is_active, is_public, created_at, updated_at')
-        .eq('tenant_id', tenant.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!tenant?.id,
-    retry: 2,
-  });
-
-  // Fetch bundles
-  const { data: bundles = [], isLoading: bundlesLoading } = useQuery({
-    queryKey: queryKeys.marketplaceBundles.byStore(store?.id),
-    queryFn: async () => {
-      if (!store?.id || !tenant?.id) return [];
-      const { data, error } = await supabase
-        .from('marketplace_bundles' as 'tenants')
-        .select('id, name, description, image_url, discount_type, discount_value, products, is_active, start_date, end_date, created_at')
-        .eq('store_id', store.id)
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Bundle[];
-    },
-    enabled: !!store?.id && !!tenant?.id,
-    retry: 2,
-  });
-
-  // Fetch products for selection
-  const { data: products = [] } = useQuery({
-    queryKey: queryKeys.storePages.storeProducts(tenant?.id),
-    queryFn: async () => {
-      if (!tenant?.id) return [];
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, price, image_url')
-        .eq('tenant_id', tenant.id)
-        .order('name');
-      if (error) throw error;
-      return (data ?? []) as Product[];
-    },
-    enabled: !!tenant?.id,
-    retry: 2,
-  });
-
-  // Create bundle mutation
-  const createBundleMutation = useMutation({
-    mutationFn: async () => {
-      if (!store?.id || !tenant?.id) throw new Error('No store');
-
-      const { error } = await supabase
-        .from('marketplace_bundles' as 'tenants')
-        .insert({
-          store_id: store.id,
-          tenant_id: tenant.id,
-          name: formData.name,
-          description: formData.description || null,
-          discount_type: formData.discount_type,
-          discount_value: formData.discount_value,
-          products: formData.products,
-          is_active: formData.is_active,
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
-      setShowCreateDialog(false);
-      resetForm();
-      toast.success("Bundle created!");
-    },
-    onError: (error) => {
-      logger.error('Failed to create bundle', error, { component: 'StorefrontBundles' });
-      toast.error("Failed to create bundle", { description: humanizeError(error) });
-    },
-  });
-
-  // Update bundle mutation
-  const updateBundleMutation = useMutation({
-    mutationFn: async (bundle: Bundle) => {
-      if (!store?.id || !tenant?.id) throw new Error('No store');
-      const { error } = await supabase
-        .from('marketplace_bundles' as 'tenants')
-        .update({
-          name: formData.name,
-          description: formData.description || null,
-          discount_type: formData.discount_type,
-          discount_value: formData.discount_value,
-          products: formData.products,
-          is_active: formData.is_active,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', bundle.id)
-        .eq('store_id', store.id)
-        .eq('tenant_id', tenant.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
-      setEditingBundle(null);
-      resetForm();
-      toast.success("Bundle updated!");
-    },
-    onError: (error) => {
-      logger.error('Failed to update bundle', error, { component: 'StorefrontBundles' });
-      toast.error("Failed to update bundle", { description: humanizeError(error) });
-    },
-  });
-
-  // Toggle bundle status
-  const toggleBundleMutation = useMutation({
-    mutationFn: async ({ bundleId, isActive }: { bundleId: string; isActive: boolean }) => {
-      if (!store?.id || !tenant?.id) throw new Error('No store');
-      const { error } = await supabase
-        .from('marketplace_bundles' as 'tenants')
-        .update({ is_active: isActive, updated_at: new Date().toISOString() })
-        .eq('id', bundleId)
-        .eq('store_id', store.id)
-        .eq('tenant_id', tenant.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
-    },
-    onError: (error: Error) => {
-      logger.error('Failed to toggle bundle status', { error });
-      toast.error("Failed to update bundle", { description: humanizeError(error) });
-    },
-  });
-
-  // Delete bundle
-  const deleteBundleMutation = useMutation({
-    mutationFn: async (bundleId: string) => {
-      if (!store?.id || !tenant?.id) throw new Error('No store');
-      const { error } = await supabase
-        .from('marketplace_bundles' as 'tenants')
-        .delete()
-        .eq('id', bundleId)
-        .eq('store_id', store.id)
-        .eq('tenant_id', tenant.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
-      toast.success("Bundle deleted");
-    },
-    onError: (error: Error) => {
-      logger.error('Failed to delete bundle', { error });
-      toast.error("Failed to delete bundle", { description: humanizeError(error) });
-    },
-  });
-
-  // Reset form
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      discount_type: 'percentage',
-      discount_value: 10,
-      products: [],
-      is_active: true,
-    });
-  };
-
-  // Open edit dialog
-  const openEditDialog = (bundle: Bundle) => {
-    setFormData({
-      name: bundle.name,
-      description: bundle.description ?? '',
-      discount_type: bundle.discount_type,
-      discount_value: bundle.discount_value,
-      products: bundle.products,
-      is_active: bundle.is_active,
-    });
-    setEditingBundle(bundle);
-  };
-
-  if (bundlesLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <Skeleton className="h-10 w-64 mb-6" />
-        <div className="grid gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24" />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -545,13 +534,7 @@ export default function StorefrontBundles() {
             Create bundles to offer discounts on multiple products
           </p>
         </div>
-        <Dialog
-          open={showCreateDialog}
-          onOpenChange={(open) => {
-            setShowCreateDialog(open);
-            if (open) resetForm();
-          }}
-        >
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -565,7 +548,7 @@ export default function StorefrontBundles() {
                 Combine products with a discount to increase sales
               </DialogDescription>
             </DialogHeader>
-            <BundleForm formData={formData} setFormData={setFormData} products={products} />
+            <BundleForm />
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                 Cancel
@@ -633,7 +616,7 @@ export default function StorefrontBundles() {
                     <Badge>
                       {bundle.discount_type === 'percentage'
                         ? `${bundle.discount_value}% off`
-                        : `${formatCurrency(bundle.discount_value)} off`}
+                        : `$${bundle.discount_value} off`}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -685,7 +668,7 @@ export default function StorefrontBundles() {
             <DialogTitle>Edit Bundle</DialogTitle>
             <DialogDescription>Update bundle settings and products</DialogDescription>
           </DialogHeader>
-          <BundleForm formData={formData} setFormData={setFormData} products={products} />
+          <BundleForm />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingBundle(null)}>
               Cancel

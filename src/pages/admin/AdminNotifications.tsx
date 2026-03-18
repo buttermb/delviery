@@ -9,10 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Send, Mail, MessageSquare, Loader2 } from "lucide-react";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 const AdminNotifications = () => {
-  const { tenant } = useTenantAdminAuth();
   const [smsLoading, setSmsLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
 
@@ -30,14 +28,9 @@ const AdminNotifications = () => {
 
   // Phone validation helper
   const isValidPhone = (phone: string): boolean => {
+    // Must start with + and have 10-15 digits
     const phoneRegex = /^\+[1-9]\d{9,14}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
-  };
-
-  // Email validation helper
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
   };
 
   const handleTestSms = async () => {
@@ -125,31 +118,8 @@ const AdminNotifications = () => {
   };
 
   const handleTestEmail = async () => {
-    if (!emailData.to) {
-      toast.error("Recipient required", {
-        description: "Please enter a recipient email address"
-      });
-      return;
-    }
-
-    if (!isValidEmail(emailData.to)) {
-      toast.error("Invalid email format", {
-        description: "Please enter a valid email address"
-      });
-      return;
-    }
-
-    if (!emailData.subject) {
-      toast.error("Subject required", {
-        description: "Please enter an email subject line"
-      });
-      return;
-    }
-
-    if (!emailData.html && !emailData.text) {
-      toast.error("Content required", {
-        description: "Please enter HTML or plain text content"
-      });
+    if (!emailData.to || !emailData.subject || (!emailData.html && !emailData.text)) {
+      toast.error("Email, subject, and content are required");
       return;
     }
 
@@ -161,8 +131,8 @@ const AdminNotifications = () => {
           subject: emailData.subject,
           html: emailData.html,
           text: emailData.text,
-          fromEmail: 'noreply@floraiq.com',
-          fromName: tenant?.business_name || 'FloraIQ',
+          fromEmail: 'noreply@example.com',
+          fromName: 'Delivery Service',
           metadata: {
             test: true,
             timestamp: new Date().toISOString()
@@ -185,27 +155,11 @@ const AdminNotifications = () => {
       // Clear form
       setEmailData({ to: "", subject: "", html: "", text: "" });
     } catch (error: unknown) {
+      logger.error("Email send error", error, { component: 'AdminNotifications' });
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-
-      let userMessage = errorMessage;
-      let title = "Failed to send email";
-
-      if (errorMessage.toLowerCase().includes('invalid') && errorMessage.toLowerCase().includes('email')) {
-        userMessage = "The email address is not valid. Check the format and try again.";
-        title = "Invalid Email Address";
-      } else if (errorMessage.toLowerCase().includes('api') || errorMessage.toLowerCase().includes('klaviyo')) {
-        userMessage = "Klaviyo API error. Check API configuration in settings.";
-        title = "API Configuration Error";
-      } else if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
-        userMessage = "Email quota exceeded. Upgrade your Klaviyo plan or wait until quota resets.";
-        title = "Quota Exceeded";
-      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')) {
-        userMessage = "Network error. Check your connection and try again.";
-        title = "Connection Error";
-      }
-
-      logger.error("Email send error", error, { component: 'AdminNotifications', to: emailData.to });
-      toast.error(title, { description: userMessage });
+      toast.error("Failed to send email", {
+        description: errorMessage
+      });
     } finally {
       setEmailLoading(false);
     }
@@ -263,12 +217,11 @@ const AdminNotifications = () => {
                   id="message"
                   placeholder="Your test message here..."
                   rows={5}
-                  maxLength={1600}
                   value={smsData.message}
                   onChange={(e) => setSmsData({ ...smsData, message: e.target.value })}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {smsData.message.length}/1600 characters{smsData.message.length > 160 ? ` (${Math.ceil(smsData.message.length / 160)} SMS segments)` : ''}
+                  {smsData.message.length} characters
                 </p>
               </div>
 
