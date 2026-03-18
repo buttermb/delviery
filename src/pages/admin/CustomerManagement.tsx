@@ -55,6 +55,7 @@ import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { humanizeError } from '@/lib/humanizeError';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -263,6 +264,7 @@ export function CustomerManagement() {
       };
     },
     enabled: !!tenant && !accountLoading,
+    staleTime: 60_000,
     retry: 2,
   });
 
@@ -387,7 +389,7 @@ export function CustomerManagement() {
       }
       logger.error("Failed to delete customer", error, { component: "CustomerManagement" });
       toast.error("Failed to delete customer", {
-        description: error instanceof Error ? error.message : "An error occurred"
+        description: humanizeError(error)
       });
     } finally {
       setIsDeleting(false);
@@ -397,6 +399,14 @@ export function CustomerManagement() {
   };
 
   const handleExport = () => {
+    const escapeCsvField = (value: string | number | null | undefined): string => {
+      const str = String(value ?? '');
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...displayedCustomers.map(c => [
@@ -408,7 +418,7 @@ export function CustomerManagement() {
         c.loyalty_points,
         c.status
       ])
-    ].map(row => row.join(',')).join('\n');
+    ].map(row => row.map(escapeCsvField).join(',')).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -565,7 +575,7 @@ export function CustomerManagement() {
       cell: (customer) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()} aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -894,18 +904,18 @@ export function CustomerManagement() {
                 </Button>
               )}
               {canExport('customers') && (
-                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0">
+                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0" aria-label="Export customers">
                   <Download className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Export</span>
                 </Button>
               )}
               {canEdit('customers') && (
-                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)}>
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)} aria-label="Import customers">
                   <Upload className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Import</span>
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0">
+              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0" aria-label="Refresh customer list">
                 <Filter className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
