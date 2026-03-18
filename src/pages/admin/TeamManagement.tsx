@@ -736,15 +736,8 @@ export default function TeamManagement() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={inviteMutation.isPending}>
-                  {inviteMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    'Send Invitation'
-                  )}
+                <Button type="submit" loading={inviteMutation.isPending}>
+                  Send Invitation
                 </Button>
               </div>
             </form>
