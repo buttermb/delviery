@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +36,9 @@ import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { FileText, Loader2, Minus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/hooks/useTenantAdminAuth";
+import { queryKeys } from "@/lib/queryKeys";
 
 const creditNoteSchema = z.object({
   credit_amount: z.number().min(0.01, "Amount must be greater than 0"),
@@ -79,7 +83,8 @@ export function InvoiceCreditNoteSystem({
   creditNotes = [],
   onSuccess,
 }: InvoiceCreditNoteSystemProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const totalCreditIssued = creditNotes.reduce((sum, note) => sum + note.credit_amount, 0);
@@ -94,26 +99,48 @@ export function InvoiceCreditNoteSystem({
     },
   });
 
-  const onSubmit = async (data: CreditNoteFormData) => {
-    if (data.credit_amount > invoiceAmount) {
-      toast.error("Credit amount cannot exceed invoice amount");
-      return;
-    }
+  const createCreditNoteMutation = useMutation({
+    mutationFn: async (data: CreditNoteFormData) => {
+      if (!tenant?.id) throw new Error("No tenant");
+      if (data.credit_amount > invoiceAmount) {
+        throw new Error("Credit amount cannot exceed invoice amount");
+      }
 
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_credit_notes table
+      const creditNoteNumber = `CN-${invoiceNumber}-${format(new Date(), "yyyyMMdd")}`;
+
+      const { error } = await supabase
+        .from("invoice_credit_notes")
+        .insert({
+          tenant_id: tenant.id,
+          invoice_id: invoiceId,
+          credit_note_number: creditNoteNumber,
+          amount: data.credit_amount,
+          reason: data.reason,
+          notes: data.notes || null,
+          issued_date: data.issue_date,
+        });
+
+      if (error) throw error;
+
       logger.info("Creating credit note", { invoiceId, data });
-      toast.success(`Credit note created for ${formatCurrency(data.credit_amount)}`);
+      return { creditNoteNumber, creditAmount: data.credit_amount };
+    },
+    onSuccess: ({ creditAmount }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.detail(invoiceId) });
+      toast.success(`Credit note created for ${formatCurrency(creditAmount)}`);
       form.reset();
       setShowCreateForm(false);
       onSuccess?.();
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       logger.error("Failed to create credit note", { error });
-      toast.error("Failed to create credit note");
-    } finally {
-      setIsSubmitting(false);
-    }
+      toast.error("Failed to create credit note", { description: error.message });
+    },
+  });
+
+  const onSubmit = (data: CreditNoteFormData) => {
+    createCreditNoteMutation.mutate(data);
   };
 
   const getReasonLabel = (reason: string) => {
@@ -143,7 +170,6 @@ export function InvoiceCreditNoteSystem({
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-emerald-600" />
             Credit Notes - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -303,8 +329,8 @@ export function InvoiceCreditNoteSystem({
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button type="submit" disabled={createCreditNoteMutation.isPending}>
+                        {createCreditNoteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Issue Credit Note
                       </Button>
                     </div>

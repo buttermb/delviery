@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { notifyDeliveryAlert } from '@/components/notifications/notificationHelpers';
 
 interface DeliveryExceptionHandlerProps {
   deliveryId: string;
@@ -32,7 +33,7 @@ interface DeliveryExceptionHandlerProps {
 type ExceptionType = 'wrong_address' | 'no_answer' | 'refused' | 'damaged' | 'other';
 
 export function DeliveryExceptionHandler({ deliveryId, orderId }: DeliveryExceptionHandlerProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [exceptionType, setExceptionType] = useState<ExceptionType | ''>('');
   const [notes, setNotes] = useState('');
@@ -62,7 +63,19 @@ export function DeliveryExceptionHandler({ deliveryId, orderId }: DeliveryExcept
 
       if (orderError) throw orderError;
 
-      // TODO: Send admin alert notification
+      // Send admin alert notification
+      if (admin?.userId) {
+        await notifyDeliveryAlert(
+          tenant.id,
+          admin.userId,
+          deliveryId,
+          deliveryId,
+          'exception',
+          `Delivery exception: ${exceptionType} - ${notes}`
+        ).catch((err) => {
+          logger.warn('Failed to send delivery exception notification', { error: err });
+        });
+      }
       logger.info('Delivery exception reported', { deliveryId, exceptionType, notes });
     },
     onSuccess: () => {

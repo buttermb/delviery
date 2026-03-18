@@ -36,6 +36,10 @@ import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { DollarSign, Loader2, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/hooks/useTenantAdminAuth";
+import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const paymentSchema = z.object({
   amount: z.number().min(0.01, "Amount must be greater than 0"),
@@ -80,7 +84,8 @@ export function InvoicePartialPaymentTracker({
   payments = [],
   onSuccess,
 }: InvoicePartialPaymentTrackerProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [showAddPayment, setShowAddPayment] = useState(false);
 
   const remainingAmount = totalAmount - paidAmount;
@@ -96,21 +101,41 @@ export function InvoicePartialPaymentTracker({
     },
   });
 
-  const onSubmit = async (data: PaymentFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Wire to Supabase invoice_payments table
+  const recordPaymentMutation = useMutation({
+    mutationFn: async (data: PaymentFormData) => {
+      if (!tenant?.id) throw new Error("No tenant");
+
+      const { error } = await supabase
+        .from("invoice_payments")
+        .insert({
+          tenant_id: tenant.id,
+          invoice_id: invoiceId,
+          amount: data.amount,
+          payment_method: data.payment_method,
+          payment_date: data.payment_date,
+          notes: data.notes || null,
+        });
+
+      if (error) throw error;
+
       logger.info("Recording partial payment", { invoiceId, data });
+    },
+    onSuccess: (_result, data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.detail(invoiceId) });
       toast.success(`Payment of ${formatCurrency(data.amount)} recorded`);
       form.reset();
       setShowAddPayment(false);
       onSuccess?.();
-    } catch (error) {
+    },
+    onError: (error: unknown) => {
       logger.error("Failed to record payment", { error });
       toast.error("Failed to record payment");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: PaymentFormData) => {
+    recordPaymentMutation.mutate(data);
   };
 
   return (
@@ -120,7 +145,6 @@ export function InvoicePartialPaymentTracker({
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-emerald-600" />
             Payment Tracking - Invoice #{invoiceNumber}
-            <Badge variant="outline" className="text-muted-foreground">Coming Soon</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -290,8 +314,8 @@ export function InvoicePartialPaymentTracker({
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button type="submit" disabled={recordPaymentMutation.isPending}>
+                        {recordPaymentMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Record Payment
                       </Button>
                     </div>
