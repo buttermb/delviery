@@ -29,7 +29,6 @@ import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
 import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
 import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
-import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -578,9 +577,6 @@ export default function ShopLayout() {
 
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
-
-          {/* Global Age Gate */}
-          <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
         </div>
       </ShopContext.Provider>
     );
@@ -824,9 +820,6 @@ export default function ShopLayout() {
 
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
-
-        {/* Global Age Gate */}
-        <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
       </div>
     </ShopContext.Provider>
   );
