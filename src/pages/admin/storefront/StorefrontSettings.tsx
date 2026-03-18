@@ -435,14 +435,19 @@ export default function StorefrontSettings() {
   if (!store) {
     return (
       <div className="container mx-auto p-4">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No store found. Please create a store first.</p>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Store className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">No Store Yet</h2>
+            <p className="text-muted-foreground text-center max-w-sm mb-6">
+              Create your online store first, then come back here to configure branding, delivery, payments, and more.
+            </p>
             <Button
-              className="mt-4"
               onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
             >
-              Go to Dashboard
+              Create Your Store
             </Button>
           </CardContent>
         </Card>
