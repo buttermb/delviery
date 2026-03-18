@@ -10,6 +10,7 @@ import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { EditClientDialog } from "@/components/admin/EditClientDialog";
+import { FlagClientDialog } from "@/components/admin/FlagClientDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
@@ -43,6 +44,7 @@ export default function ClientDetail() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [creditLimitDialogOpen, setCreditLimitDialogOpen] = useState(false);
+  const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [newCreditLimit, setNewCreditLimit] = useState("");
   const queryClient = useQueryClient();
 
@@ -106,6 +108,37 @@ export default function ClientDetail() {
     onError: (error) => {
       logger.error("Failed to update credit limit", error, { component: "ClientDetail", clientId: id });
       showErrorToast("Failed to update credit limit");
+    }
+  });
+
+  // Mutation to unflag client
+  const unflagClientMutation = useMutation({
+    mutationFn: async () => {
+      // Resolve any open fraud flags for this client
+      const { error: flagError } = await supabase
+        .from('fraud_flags')
+        .update({ resolved_at: new Date().toISOString(), auto_resolved: false })
+        .eq('user_id', id)
+        .eq('tenant_id', client?.tenant_id)
+        .is('resolved_at', null);
+      if (flagError) throw flagError;
+
+      // Restore client status to active
+      const { error: statusError } = await supabase
+        .from('wholesale_clients')
+        .update({ status: 'active' })
+        .eq('id', id)
+        .eq('tenant_id', client?.tenant_id);
+      if (statusError) throw statusError;
+    },
+    onSuccess: () => {
+      showSuccessToast("Flag Removed", `${client?.business_name} has been unflagged`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+    },
+    onError: (error) => {
+      logger.error("Failed to unflag client", error, { component: "ClientDetail", clientId: id });
+      showErrorToast("Failed to remove flag");
     }
   });
 
@@ -209,6 +242,12 @@ export default function ClientDetail() {
             <h1 className="text-xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
+              {displayClient.status === 'flagged' && (
+                <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20" variant="outline">
+                  <Flag className="h-3 w-3 mr-1 fill-orange-500" />
+                  Flagged
+                </Badge>
+              )}
               <CustomerRiskBadge
                 score={clientData.risk_score ?? null}
                 showLabel={true}
@@ -247,14 +286,27 @@ export default function ClientDetail() {
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => showInfoToast("Flag Client", `${displayClient.business_name} marked for review`)}
-          >
-            <Flag className="h-4 w-4 mr-2" />
-            Flag
-          </Button>
+          {displayClient.status === 'flagged' ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => unflagClientMutation.mutate()}
+              disabled={unflagClientMutation.isPending}
+              className="border-orange-500/30 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+            >
+              <Flag className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
+              {unflagClientMutation.isPending ? 'Unflagging...' : 'Unflag'}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFlagDialogOpen(true)}
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              Flag
+            </Button>
+          )}
           <Button
             variant="destructive"
             size="sm"
@@ -575,6 +627,15 @@ export default function ClientDetail() {
         description={`Are you sure you want to suspend ${displayClient.business_name}'s account?`}
         destructive={true}
         isLoading={suspendClientMutation.isPending}
+      />
+
+      {/* Flag Client Dialog */}
+      <FlagClientDialog
+        open={flagDialogOpen}
+        onOpenChange={setFlagDialogOpen}
+        clientId={id || ""}
+        clientName={displayClient.business_name}
+        tenantId={client.tenant_id}
       />
 
       {/* Credit Limit Dialog */}
