@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,28 +31,41 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, Plus, Search, Trash2 } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/skeleton";
+import { AlertCircle, Loader2, Mail, Plus, Search, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useInvites, useCreateInvite, useArchiveInvite } from "@/hooks/crm/useInvites";
-import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { logger } from "@/lib/logger";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
-    client_id: z.string().optional(), // Optional if we want to link to existing client immediately
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+function getStatusBadge(status: string) {
+    switch (status) {
+        case "accepted":
+            return <Badge className="bg-green-500">Accepted</Badge>;
+        case "pending":
+            return <Badge className="bg-yellow-500">Pending</Badge>;
+        case "expired":
+            return <Badge variant="destructive">Expired</Badge>;
+        default:
+            return <Badge variant="outline">{status}</Badge>;
+    }
+}
 
 export default function InvitesPage() {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
-    const { data: invites, isLoading } = useInvites();
+    const { data: invites, isLoading, isError, error, refetch, isFetching } = useInvites();
     const createInvite = useCreateInvite();
     const archiveInvite = useArchiveInvite();
 
@@ -64,58 +77,52 @@ export default function InvitesPage() {
         },
     });
 
-    const onSubmit = async (values: FormValues) => {
+    const onSubmit = useCallback(async (values: FormValues) => {
         try {
             await createInvite.mutateAsync({
                 name: values.name,
                 email: values.email,
                 phone: undefined,
             });
-            toast.success(`Invite sent to ${values.email}`);
             setIsCreateDialogOpen(false);
             form.reset();
-        } catch (error: unknown) {
-            logger.error("Failed to send invite", error, { component: "InvitesPage", email: values.email });
-            toast.error("Failed to send invite. Please try again.");
+        } catch (err: unknown) {
+            // Hook handles toast and logging
+            logger.error("Failed to send invite", err, { component: "InvitesPage", email: values.email });
         }
-    };
+    }, [createInvite, form]);
 
-    const handleArchive = (id: string, email: string) => {
+    const handleArchive = useCallback((id: string, email: string | null) => {
         confirm({
             title: 'Archive Invite',
-            description: `Are you sure you want to archive the invite for ${email}? They will no longer be able to use this invitation.`,
+            description: `Are you sure you want to archive the invite for ${email ?? 'this client'}? They will no longer be able to use this invitation.`,
             itemType: 'invite',
             onConfirm: async () => {
                 setLoading(true);
                 try {
                     await archiveInvite.mutateAsync(id);
                     closeDialog();
-                } catch (error: unknown) {
-                    logger.error("Failed to revoke invite", error, { component: "InvitesPage", inviteId: id, email });
-                    toast.error("Failed to revoke invite. Please try again.");
+                } catch (err: unknown) {
+                    // Hook handles toast and logging
+                    logger.error("Failed to revoke invite", err, { component: "InvitesPage", inviteId: id, email });
                 } finally {
                     setLoading(false);
                 }
             },
         });
-    };
+    }, [archiveInvite, confirm, closeDialog, setLoading]);
 
-    const filteredInvites = invites?.filter((invite) =>
-        invite.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const sanitizedSearch = sanitizeSearchInput(searchTerm);
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "accepted":
-                return <Badge className="bg-green-500">Accepted</Badge>;
-            case "pending":
-                return <Badge className="bg-yellow-500">Pending</Badge>;
-            case "expired":
-                return <Badge variant="destructive">Expired</Badge>;
-            default:
-                return <Badge variant="outline">{status}</Badge>;
-        }
-    };
+    const filteredInvites = useMemo(() => {
+        if (!invites) return [];
+        if (!sanitizedSearch) return invites;
+        const term = sanitizedSearch.toLowerCase();
+        return invites.filter((invite) =>
+            invite.name.toLowerCase().includes(term) ||
+            (invite.email?.toLowerCase().includes(term) ?? false)
+        );
+    }, [invites, sanitizedSearch]);
 
     return (
         <div className="space-y-4 p-4 pb-16 max-w-6xl mx-auto">
@@ -184,12 +191,17 @@ export default function InvitesPage() {
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle>Invites</CardTitle>
+                        <div className="flex items-center gap-2">
+                            <CardTitle>Invites</CardTitle>
+                            {isFetching && !isLoading && (
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                        </div>
                         <div className="relative w-64">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                aria-label="Search by email"
-                                placeholder="Search by email..."
+                                aria-label="Search invites by name or email"
+                                placeholder="Search by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-8"
@@ -199,12 +211,20 @@ export default function InvitesPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="flex justify-center py-8">
-                            <Loader2 className="h-6 w-6 animate-spin" />
+                        <SkeletonTable rows={5} columns={5} hasActions />
+                    ) : isError ? (
+                        <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+                            <AlertCircle className="h-8 w-8 text-destructive" />
+                            <p>Failed to load invites{error?.message ? `: ${error.message}` : '.'}</p>
+                            <Button variant="outline" size="sm" onClick={() => refetch()}>
+                                Retry
+                            </Button>
                         </div>
-                    ) : filteredInvites?.length === 0 ? (
+                    ) : filteredInvites.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                            No invites found.
+                            {sanitizedSearch
+                                ? `No invites matching "${sanitizedSearch}".`
+                                : "No invites yet. Send your first invite to get started."}
                         </div>
                     ) : (
                         <Table>
@@ -218,10 +238,10 @@ export default function InvitesPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredInvites?.map((invite) => (
+                                {filteredInvites.map((invite) => (
                                     <TableRow key={invite.id}>
                                         <TableCell className="font-medium">{invite.name}</TableCell>
-                                        <TableCell>{invite.email}</TableCell>
+                                        <TableCell>{invite.email ?? "—"}</TableCell>
                                         <TableCell>{getStatusBadge(invite.status)}</TableCell>
                                         <TableCell>{format(new Date(invite.created_at), "MMM d, yyyy")}</TableCell>
                                         <TableCell className="text-right">
@@ -231,7 +251,7 @@ export default function InvitesPage() {
                                                     size="icon"
                                                     onClick={() => handleArchive(invite.id, invite.email)}
                                                     title="Revoke Invite"
-                                                    aria-label="Revoke invite"
+                                                    aria-label={`Revoke invite for ${invite.name}`}
                                                 >
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>

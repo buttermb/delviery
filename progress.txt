@@ -487,3 +487,23 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## InvitesPage: Fix all TODO items
+- **useInvites.ts**: Replaced local `crmInviteKeys` with centralized `queryKeys.crm.invites` from `@/lib/queryKeys`
+- **useInvites.ts**: Changed relative import `./useAccountId` to `@/hooks/crm/useAccountId` (@ alias)
+- **useInvites.ts**: Added `staleTime: 30_000` to useInvites query
+- **InvitesPage.tsx**: Removed unused `client_id` field from Zod form schema
+- **InvitesPage.tsx**: Removed double-toast on create/archive (hooks handle toasts; page no longer calls toast)
+- **InvitesPage.tsx**: Added search sanitization via `sanitizeSearchInput` from `@/lib/sanitizeSearch`
+- **InvitesPage.tsx**: Search now filters by name AND email (was email-only)
+- **InvitesPage.tsx**: Replaced Loader2 spinner with `SkeletonTable` for loading state
+- **InvitesPage.tsx**: Added error state with retry button and `AlertCircle` icon
+- **InvitesPage.tsx**: Added background refetch indicator (spinner next to title when isFetching && !isLoading)
+- **InvitesPage.tsx**: Improved empty state: distinguishes "no invites yet" from "no search results"
+- **InvitesPage.tsx**: Memoized filtered invites with `useMemo`, stabilized callbacks with `useCallback`
+- **InvitesPage.tsx**: Improved aria-label: revoke button now says "Revoke invite for {name}"
+- **InvitesPage.tsx**: Search placeholder updated to "Search by name or email..."
+- **InvitesPage.tsx**: Null-safe email display (shows em dash for null emails)
+- **InvitesPage.tsx**: Extracted `getStatusBadge` as a standalone function (no longer recreated per render)
+- Created comprehensive test suite (21 tests) covering rendering, loading, error, empty states, search filtering, form validation, archive confirmation, and null email handling
+- TypeScript compilation passes with zero errors
