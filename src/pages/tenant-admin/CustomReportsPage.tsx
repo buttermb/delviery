@@ -12,13 +12,17 @@ import { Plus, Play, Calendar, Mail, Trash2, FileText } from 'lucide-react';
 import { REPORT_TYPES } from '@/lib/constants/reportFields';
 import { humanizeError } from '@/lib/humanizeError';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 
 export default function CustomReportsPage() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const [showBuilder, setShowBuilder] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: reports, isLoading } = useQuery({
     queryKey: queryKeys.customReports.byTenant(tenantId),
@@ -40,18 +44,23 @@ export default function CustomReportsPage() {
 
   const deleteReportMutation = useMutation({
     mutationFn: async (reportId: string) => {
+      if (!tenantId) throw new Error('Tenant ID required');
       const { error } = await supabase
         .from('custom_reports')
         .delete()
-        .eq('id', reportId);
+        .eq('id', reportId)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Report deleted');
+      setDeleteDialogOpen(false);
+      setReportToDelete(null);
     },
     onError: (error: Error) => {
+      logger.error('Failed to delete report', error, { component: 'CustomReportsPage' });
       toast.error('Error', { description: humanizeError(error) });
     },
   });
@@ -80,6 +89,7 @@ export default function CustomReportsPage() {
       toast.success('Report generated', { description: 'Your report is ready to view.' });
     },
     onError: (error: Error) => {
+      logger.error('Failed to run report', error, { component: 'CustomReportsPage' });
       toast.error('Error', { description: humanizeError(error) });
     },
   });
@@ -156,7 +166,11 @@ export default function CustomReportsPage() {
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => deleteReportMutation.mutate(report.id)}
+                    aria-label={`Delete report ${report.name}`}
+                    onClick={() => {
+                      setReportToDelete({ id: report.id, name: report.name });
+                      setDeleteDialogOpen(true);
+                    }}
                     disabled={deleteReportMutation.isPending}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -190,6 +204,19 @@ export default function CustomReportsPage() {
           <ReportBuilder onClose={() => setShowBuilder(false)} />
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={async () => {
+          if (reportToDelete) {
+            await deleteReportMutation.mutateAsync(reportToDelete.id);
+          }
+        }}
+        itemType="report"
+        itemName={reportToDelete?.name}
+        isLoading={deleteReportMutation.isPending}
+      />
     </div>
   );
 }
