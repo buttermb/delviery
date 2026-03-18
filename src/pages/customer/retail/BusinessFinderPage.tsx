@@ -4,16 +4,18 @@ import { logger } from '@/lib/logger';
  * Customers can browse and find nearby dispensaries/businesses
  */
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import type { DayHours, DeliveryHours } from '@/types/delivery-zone';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { toast as _toast } from 'sonner';
 import {
   Store,
   Search,
@@ -32,10 +34,28 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
-import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { SEOHead } from '@/components/SEOHead';
 import { queryKeys } from '@/lib/queryKeys';
+
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+
+/** Check if a business is currently open based on its hours config */
+function isCurrentlyOpen(businessHours: DeliveryHours | null | undefined): boolean {
+  if (!businessHours) return false;
+  const now = new Date();
+  const dayName = DAY_NAMES[now.getDay()];
+  const today = businessHours[dayName] as DayHours | undefined;
+  if (!today?.enabled) return false;
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [openH, openM] = today.open.split(':').map(Number);
+  const [closeH, closeM] = today.close.split(':').map(Number);
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+
+  return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+}
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -46,7 +66,7 @@ export default function BusinessFinderPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<string>('all');
   const [deliveryFilter, setDeliveryFilter] = useState<string>('all');
-  const [mode, setMode] = useReactState<CustomerMode>('retail');
+  const [mode, setMode] = useState<CustomerMode>('retail');
 
   // Load saved mode preference
   useEffect(() => {
@@ -60,7 +80,7 @@ export default function BusinessFinderPage() {
     }
   }, [setMode]);
 
-  // Fetch active businesses/tenants
+  // Fetch active businesses/tenants with metadata for business hours
   const { data: businesses = [], isLoading } = useQuery({
     queryKey: queryKeys.retailBusinesses.list(stateFilter, deliveryFilter),
     queryFn: async () => {
@@ -73,6 +93,7 @@ export default function BusinessFinderPage() {
           state,
           city,
           subscription_status,
+          metadata,
           white_label (
             logo,
             primary_color
@@ -82,8 +103,8 @@ export default function BusinessFinderPage() {
         .order('business_name');
 
       // Filter by state if selected
-      const { data, error } = await (stateFilter !== 'all' 
-        ? query.eq('state', stateFilter) 
+      const { data, error } = await (stateFilter !== 'all'
+        ? query.eq('state', stateFilter)
         : query);
 
       if (error) {
@@ -91,24 +112,54 @@ export default function BusinessFinderPage() {
         throw error;
       }
 
-      // Filter by delivery availability (if needed)
-      // This would require checking delivery settings or orders table
-      // For now, we'll show all active businesses
-
       return data ?? [];
     },
     retry: 2,
   });
 
-  // Filter businesses by search query
+  // Fetch tenant IDs that have at least one active delivery zone
+  const tenantIds = businesses.map((b) => b.id);
+  const { data: deliveryTenantIds = [] } = useQuery({
+    queryKey: [...queryKeys.retailBusinesses.list(stateFilter, deliveryFilter), 'delivery-zones'],
+    queryFn: async () => {
+      if (tenantIds.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from('delivery_zones')
+        .select('tenant_id')
+        .in('tenant_id', tenantIds)
+        .eq('is_active', true);
+
+      if (error) {
+        logger.error('Failed to fetch delivery zones', error, { component: 'BusinessFinderPage' });
+        return [];
+      }
+
+      // Deduplicate tenant IDs
+      return [...new Set((data ?? []).map((d) => d.tenant_id))];
+    },
+    enabled: tenantIds.length > 0,
+  });
+
+  const deliveryTenantSet = useMemo(() => new Set(deliveryTenantIds), [deliveryTenantIds]);
+
+  // Filter businesses by search query and delivery filter
   const filteredBusinesses = businesses.filter((business) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      business.business_name?.toLowerCase().includes(query) ||
-      business.city?.toLowerCase().includes(query) ||
-      business.state?.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        business.business_name?.toLowerCase().includes(q) ||
+        business.city?.toLowerCase().includes(q) ||
+        business.state?.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
+    }
+
+    // Delivery filter
+    if (deliveryFilter === 'delivery' && !deliveryTenantSet.has(business.id)) return false;
+    if (deliveryFilter === 'pickup' && deliveryTenantSet.has(business.id)) return false;
+
+    return true;
   });
 
   // Get US states for filter
@@ -238,16 +289,27 @@ export default function BusinessFinderPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Features */}
+                  {/* Status Badges */}
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      <Truck className="h-3 w-3 mr-1" />
-                      Delivery
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Open Now
-                    </Badge>
+                    {deliveryTenantSet.has(business.id) && (
+                      <Badge variant="outline" className="text-xs text-blue-700 border-blue-200 bg-blue-50">
+                        <Truck className="h-3 w-3 mr-1" />
+                        Delivery
+                      </Badge>
+                    )}
+                    {isCurrentlyOpen(
+                      (business.metadata as Record<string, unknown> | null)?.business_hours as DeliveryHours | undefined
+                    ) ? (
+                      <Badge variant="outline" className="text-xs text-green-700 border-green-200 bg-green-50">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Open Now
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Closed
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Actions */}
