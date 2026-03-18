@@ -751,8 +751,8 @@ export const queryKeys = {
   // Collections
   collections: {
     all: ['collections'] as const,
-    mode: (tenantId?: string) => ['collection-mode', tenantId] as const,
-    activities: (clientId: string) => ['collection-activities', clientId] as const,
+    mode: (tenantId?: string) => [...queryKeys.collections.all, 'mode', { tenantId }] as const,
+    activities: (clientId?: string | null) => [...queryKeys.collections.all, 'activities', { clientId }] as const,
   },
 
   // Tags
