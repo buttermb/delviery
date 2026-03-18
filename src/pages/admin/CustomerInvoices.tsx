@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, Loader2 } from 'lucide-react';
 import { InfiniteScrollTrigger } from '@/components/shared/InfiniteScrollTrigger';
@@ -28,15 +29,10 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { displayName, displayValue } from '@/lib/formatters';
+import { useCustomerInvoices } from '@/hooks/useCustomerInvoices';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 const PAGE_SIZE = 25;
-
-interface _LineItem {
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
 
 interface Customer {
   id: string;
@@ -55,8 +51,17 @@ interface Invoice {
   created_at: string;
 }
 
+interface PaymentDialogState {
+  invoiceId: string;
+  total: number;
+}
+
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
+  const invoiceHooks = useCustomerInvoices();
+  const markAsSent = invoiceHooks.useMarkAsSent();
+  const recordPayment = invoiceHooks.useRecordPayment();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +71,8 @@ export default function CustomerInvoices() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [allInvoices, setAllInvoices] = useState<Invoice[]>([]); // Store all invoices when using client-side pagination
+  const [paymentDialog, setPaymentDialog] = useState<PaymentDialogState | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
   const [lineItems, setLineItems] = useState([
     { id: crypto.randomUUID(), description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
@@ -404,6 +411,46 @@ export default function CustomerInvoices() {
     }
   };
 
+  const handleSendInvoice = (invoiceId: string) => {
+    markAsSent.mutate(invoiceId, {
+      onSuccess: () => {
+        loadInvoices(1, false);
+      },
+    });
+  };
+
+  const handleViewPdf = (invoiceId: string) => {
+    navigateToAdmin(`invoices/${invoiceId}`);
+  };
+
+  const handleRecordPayment = (invoice: Invoice) => {
+    setPaymentDialog({ invoiceId: invoice.id, total: invoice.total });
+    setPaymentAmount('');
+  };
+
+  const handleSubmitPayment = () => {
+    if (!paymentDialog) return;
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid payment amount');
+      return;
+    }
+    if (amount > paymentDialog.total) {
+      toast.error('Payment amount cannot exceed invoice total');
+      return;
+    }
+    recordPayment.mutate(
+      { invoiceId: paymentDialog.invoiceId, amount },
+      {
+        onSuccess: () => {
+          setPaymentDialog(null);
+          setPaymentAmount('');
+          loadInvoices(1, false);
+        },
+      },
+    );
+  };
+
   if (accountLoading || loading) {
     return <EnhancedLoadingState variant="spinner" message="Loading invoices..." />;
   }
@@ -668,16 +715,30 @@ export default function CustomerInvoices() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Invoice
-                </Button>
-                <Button size="sm" variant="outline">
+                {invoice.status === 'draft' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSendInvoice(invoice.id)}
+                    disabled={markAsSent.isPending}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    {markAsSent.isPending ? 'Sending...' : 'Send Invoice'}
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleViewPdf(invoice.id)}
+                >
                   <FileText className="w-4 h-4 mr-2" />
-                  View PDF
+                  View Invoice
                 </Button>
-                {invoice.status === 'unpaid' && (
-                  <Button size="sm">
+                {(invoice.status === 'unpaid' || invoice.status === 'sent') && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleRecordPayment(invoice)}
+                  >
                     <DollarSign className="w-4 h-4 mr-2" />
                     Record Payment
                   </Button>
@@ -706,6 +767,54 @@ export default function CustomerInvoices() {
           }}
         />
       )}
+
+      {/* Record Payment Dialog */}
+      <Dialog open={paymentDialog !== null} onOpenChange={(open) => { if (!open) setPaymentDialog(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Record Payment
+            </DialogTitle>
+            <DialogDescription>
+              Invoice total: ${paymentDialog?.total.toFixed(2) ?? '0.00'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="payment-amount">Payment Amount *</Label>
+              <CurrencyInput
+                id="payment-amount"
+                placeholder="0.00"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setPaymentDialog(null)}
+                disabled={recordPayment.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitPayment}
+                disabled={recordPayment.isPending}
+              >
+                {recordPayment.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Recording...
+                  </>
+                ) : (
+                  'Record Payment'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
