@@ -72,9 +72,9 @@ async function sendViaKlaviyo(
   return { success: true, messageId: result.messageId };
 }
 
-serve(async (req) => {
+serve(withZenProtection(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: extendedCorsHeaders });
   }
 
   try {
@@ -152,9 +152,9 @@ serve(async (req) => {
 
         // Record success in email_logs
         await supabase.from('email_logs').insert({
-          tenant_id: email.tenant_id,
-          template: email.template,
-          recipient: email.recipient,
+          tenant_id: record.tenant_id,
+          template: record.template,
+          recipient: record.recipient,
           status: 'sent',
           provider_message_id: result.messageId || null,
           metadata: {
@@ -251,4 +251,64 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
-});
+}));
+
+// -------------------------------------------------------
+// Email sending via Klaviyo (or dev log fallback)
+// -------------------------------------------------------
+
+interface FailedEmailRecord {
+  id: string;
+  tenant_id: string;
+  template: string;
+  recipient: string;
+  email_data: Record<string, unknown>;
+  retry_count: number;
+  max_retries: number;
+}
+
+async function sendEmail(
+  supabaseUrl: string,
+  supabaseServiceKey: string,
+  record: FailedEmailRecord,
+): Promise<void> {
+  const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
+
+  const emailData = record.email_data ?? {};
+  const subject = (emailData.subject as string) || `[Retry] ${record.template}`;
+  const html = (emailData.html as string) || '';
+  const text = (emailData.text as string) || '';
+  const fromEmail = (emailData.from_email as string) || Deno.env.get('FROM_EMAIL') || 'noreply@example.com';
+  const fromName = (emailData.from_name as string) || 'FloraIQ';
+
+  if (!klaviyoApiKey) {
+    // Development fallback: log instead of sending
+    logger.info('Klaviyo not configured — skipping send (dev mode)', {
+      recipient: record.recipient,
+      template: record.template,
+    });
+    return;
+  }
+
+  // Delegate to the send-klaviyo-email edge function (single responsibility)
+  const response = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      to: record.recipient,
+      subject,
+      html,
+      text,
+      fromEmail,
+      fromName,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Klaviyo send failed (${response.status}): ${errorBody}`);
+  }
+}
