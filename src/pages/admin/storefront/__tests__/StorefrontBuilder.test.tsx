@@ -111,6 +111,7 @@ vi.mock('@/components/shop/sections/CustomHTMLSection', () => ({
 // Mock dnd-kit
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DragOverlay: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   closestCenter: vi.fn(),
   KeyboardSensor: vi.fn(),
   PointerSensor: vi.fn(),

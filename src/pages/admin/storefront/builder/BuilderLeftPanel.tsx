@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Plus, FileText, GripVertical } from 'lucide-react';
+import { FileText, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -107,6 +107,7 @@ export function BuilderLeftPanel({
                                             key={key}
                                             type="button"
                                             onClick={() => onAddSection(key)}
+                                            aria-label={`Add ${label}`}
                                             className="flex items-start gap-2 rounded-md border border-border px-2.5 py-2 text-left hover:bg-accent/50 transition-colors"
                                         >
                                             <Icon className="w-4 h-4 shrink-0 mt-0.5 text-muted-foreground" />
@@ -262,6 +263,8 @@ export function BuilderLeftPanel({
                                     <Card
                                         key={key}
                                         className="cursor-pointer hover:border-primary transition-colors"
+                                        role="button"
+                                        aria-label={`Apply ${template.name} template`}
                                         onClick={() => onApplyTemplate(key as TemplateKey)}
                                     >
                                         <CardContent className="p-4">
@@ -273,8 +276,8 @@ export function BuilderLeftPanel({
                                                 <FileText className="w-4 h-4 text-muted-foreground" />
                                             </div>
                                             <div className="flex gap-1 mt-2 flex-wrap">
-                                                {template.sections.map((s, i) => (
-                                                    <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
+                                                {template.sections.map((s) => (
+                                                    <span key={s} className="text-xs bg-muted px-2 py-0.5 rounded">
                                                         {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
                                                     </span>
                                                 ))}
