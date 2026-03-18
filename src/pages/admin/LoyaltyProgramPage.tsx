@@ -392,7 +392,7 @@ export default function LoyaltyProgramPage() {
             Reward customers and drive repeat purchases
           </p>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={handleOpenConfig}>
+        <Button type="button" className="bg-emerald-500 hover:bg-emerald-600" onClick={handleOpenConfig}>
           <Settings className="h-4 w-4 mr-2" />
           Configure Program
         </Button>
@@ -517,7 +517,7 @@ export default function LoyaltyProgramPage() {
                 {tiers?.length ?? 0} tier(s) configured
               </p>
             </div>
-            <Button onClick={() => handleOpenTier()}>
+            <Button type="button" onClick={() => handleOpenTier()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Tier
             </Button>
@@ -573,6 +573,7 @@ export default function LoyaltyProgramPage() {
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         aria-label={`Delete ${tier.name} tier`}
@@ -631,7 +632,7 @@ export default function LoyaltyProgramPage() {
                 {rewards?.length ?? 0} reward(s) available
               </p>
             </div>
-            <Button onClick={() => handleOpenReward()}>
+            <Button type="button" onClick={() => handleOpenReward()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Reward
             </Button>
@@ -680,6 +681,7 @@ export default function LoyaltyProgramPage() {
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         aria-label={`Delete ${reward.reward_name} reward`}
@@ -780,8 +782,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
-            <Button disabled={updateConfigMutation.isPending} onClick={() => updateConfigMutation.mutate(configForm)}>
+            <Button type="button" variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
+            <Button type="button" disabled={updateConfigMutation.isPending} onClick={() => updateConfigMutation.mutate(configForm)}>
               {updateConfigMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
@@ -840,8 +842,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
-            <Button disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>
+            <Button type="button" variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
+            <Button type="button" disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>
               {upsertTierMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Tier
             </Button>
@@ -904,8 +906,8 @@ export default function LoyaltyProgramPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
-            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
+            <Button type="button" variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
+            <Button type="button" disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
               {upsertRewardMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Reward
             </Button>
