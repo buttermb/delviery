@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
+import { WholesaleListingDetailDialog } from '@/components/wholesale/WholesaleListingDetailDialog';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { queryKeys } from '@/lib/queryKeys';
@@ -92,6 +93,8 @@ export default function WholesaleMarketplacePage() {
     },
     retry: 2,
   });
+
+  const [detailListing, setDetailListing] = useState<typeof listings[number] | null>(null);
 
   // Filter listings by search query
   const filteredListings = listings.filter((listing) => {
@@ -347,13 +350,7 @@ export default function WholesaleMarketplacePage() {
                       <Button
                         variant="outline"
                         className="flex-1"
-                        onClick={() => {
-                          // Navigate to listing detail page (if exists) or show details in modal
-                          // For now, just show a toast with listing info
-                          toast.success(listing.product_name, {
-                            description: listing.description?.substring(0, 100) + '...',
-                          });
-                        }}
+                        onClick={() => setDetailListing(listing)}
                       >
                         View Details
                       </Button>
@@ -373,6 +370,20 @@ export default function WholesaleMarketplacePage() {
           </div>
         )}
       </div>
+
+      {/* Listing detail dialog */}
+      {detailListing && (
+        <WholesaleListingDetailDialog
+          listing={detailListing}
+          open={!!detailListing}
+          onClose={() => setDetailListing(null)}
+          onAddToCart={() => {
+            handleAddToCart(detailListing);
+            setDetailListing(null);
+          }}
+          isAddingToCart={addToCartMutation.isPending}
+        />
+      )}
     </div>
   );
 }
