@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,15 @@ import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { z } from 'zod';
 import {
     ArrowLeft,
     ArrowRight,
     Trash2,
     ShoppingCart,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
@@ -25,13 +28,27 @@ import { Vendor } from '@/hooks/useVendors';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
 
+const NOTES_MAX_LENGTH = 2000;
+
+const poSubmitSchema = z.object({
+    vendor: z.object({ id: z.string().uuid(), name: z.string() }).passthrough(),
+    items: z.array(z.object({
+        id: z.string().uuid(),
+        name: z.string(),
+        qty: z.number().int().min(1, 'Quantity must be at least 1'),
+        unitCost: z.number().min(0, 'Unit cost cannot be negative'),
+        originalCost: z.number(),
+    })).min(1, 'Add at least one item'),
+    expectedDeliveryDate: z.string(),
+    notes: z.string().max(NOTES_MAX_LENGTH).optional().default(''),
+});
+
 interface OrderProduct {
     id: string;
     name: string;
     qty: number;
     unitCost: number;
-    expectedCost: number; // For display
-    originalCost: number; // Original cost_per_unit from product for price change tracking
+    originalCost: number;
 }
 
 interface POData {
@@ -46,8 +63,7 @@ export default function NewPurchaseOrder() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
 
-    // Products for PO (All products, regardless of stock)
-    const { data: allProducts = [] } = useQuery({
+    const { data: allProducts = [], isLoading: isLoadingProducts } = useQuery({
         queryKey: queryKeys.productsForPO.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
@@ -68,6 +84,7 @@ export default function NewPurchaseOrder() {
         },
         enabled: !!tenant?.id,
         retry: 2,
+        staleTime: 60_000,
     });
 
     const [step, setStep] = useState(1);
@@ -77,14 +94,12 @@ export default function NewPurchaseOrder() {
         expectedDeliveryDate: '',
         notes: '',
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [productSearch, setProductSearch] = useState('');
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-    // Step navigation
     const handleNext = () => setStep(prev => prev + 1);
     const handleBack = () => setStep(prev => prev - 1);
 
-    // Item management
     const handleAddItem = (product: { id: string; name: string; cost_per_unit: number }) => {
         setPoData(prev => {
             if (prev.items.find(i => i.id === product.id)) {
@@ -104,13 +119,12 @@ export default function NewPurchaseOrder() {
                         name: product.name,
                         qty: 1,
                         unitCost: product.cost_per_unit,
-                        expectedCost: product.cost_per_unit,
                         originalCost: product.cost_per_unit
                     }
                 ]
             };
         });
-        setProductSearch(''); // Reset search after adding
+        setProductSearch('');
     };
 
     const handleUpdateItem = (id: string, updates: Partial<OrderProduct>) => {
@@ -127,38 +141,34 @@ export default function NewPurchaseOrder() {
         }));
     };
 
-    // Calculations
     const totalAmount = useMemo(() => {
         return poData.items.reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
     }, [poData.items]);
 
-    // Submit Handler
-    const handleSubmit = async () => {
-        if (!poData.vendor || poData.items.length === 0 || !tenant?.id) return;
+    const createPOMutation = useMutation({
+        mutationFn: async (data: z.infer<typeof poSubmitSchema>) => {
+            if (!tenant?.id) throw new Error('No tenant context');
 
-        setIsSubmitting(true);
-        try {
-            // 1. Create Purchase Order
             const poNumber = `PO-${format(new Date(), 'yyMMdd')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
             const { data: po, error: poError } = await supabase
                 .from('purchase_orders')
                 .insert({
                     tenant_id: tenant.id,
-                    vendor_id: poData.vendor.id,
+                    vendor_id: data.vendor.id,
                     po_number: poNumber,
                     status: 'ordered',
-                    total: totalAmount,
-                    expected_delivery_date: poData.expectedDeliveryDate || null,
-                    notes: poData.notes || null
+                    total: data.items.reduce((sum, item) => sum + (item.qty * item.unitCost), 0),
+                    expected_delivery_date: data.expectedDeliveryDate || null,
+                    notes: data.notes || null
                 })
                 .select()
                 .maybeSingle();
 
             if (poError) throw poError;
+            if (!po) throw new Error('Failed to create purchase order record');
 
-            // 2. Create Items
-            const orderItems = poData.items.map(item => ({
+            const orderItems = data.items.map(item => ({
                 purchase_order_id: po.id,
                 product_id: item.id,
                 product_name: item.name || 'Unknown Product',
@@ -173,14 +183,12 @@ export default function NewPurchaseOrder() {
 
             if (itemsError) throw itemsError;
 
-            // 3. Log vendor price changes for items with different costs
-            for (const item of poData.items) {
+            for (const item of data.items) {
                 if (item.unitCost !== item.originalCost) {
-                    // Call the RPC to log vendor price change
                     await supabase.rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
-                        p_vendor_id: poData.vendor.id,
+                        p_vendor_id: data.vendor.id,
                         p_cost_old: item.originalCost,
                         p_cost_new: item.unitCost,
                         p_changed_by: null,
@@ -188,7 +196,6 @@ export default function NewPurchaseOrder() {
                         p_source: 'purchase_order'
                     });
 
-                    // Also update the product's cost_per_unit to reflect the new vendor cost
                     await supabase
                         .from('products')
                         .update({ cost_per_unit: item.unitCost })
@@ -197,23 +204,40 @@ export default function NewPurchaseOrder() {
                 }
             }
 
-            toast.success("Purchase Order created successfully");
+            return po;
+        },
+        onSuccess: () => {
+            toast.success('Purchase Order created successfully');
             queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.all });
-            navigateToAdmin('wholesale-orders'); // Back to main list
-
-        } catch (error: unknown) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+            navigateToAdmin('wholesale-orders');
+        },
+        onError: (error: unknown) => {
             logger.error('Failed to create PO', error);
             toast.error(humanizeError(error, 'Failed to create purchase order'));
-        } finally {
-            setIsSubmitting(false);
+        },
+    });
+
+    const handleSubmit = () => {
+        setValidationErrors([]);
+
+        const result = poSubmitSchema.safeParse(poData);
+        if (!result.success) {
+            const errors = result.error.issues.map(i => i.message);
+            setValidationErrors(errors);
+            toast.error(errors[0]);
+            return;
         }
+
+        createPOMutation.mutate(result.data);
     };
 
+    const sanitizedSearch = sanitizeSearchInput(productSearch);
     const filteredProducts = useMemo(() => {
-        if (!productSearch) return [];
-        const q = productSearch.toLowerCase();
+        if (!sanitizedSearch) return [];
+        const q = sanitizedSearch.toLowerCase();
         return allProducts.filter(p => p.name.toLowerCase().includes(q));
-    }, [allProducts, productSearch]);
+    }, [allProducts, sanitizedSearch]);
 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-4 space-y-4">
@@ -227,7 +251,6 @@ export default function NewPurchaseOrder() {
                     <p className="text-muted-foreground">Create a restocking order for a vendor</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                    {/* Steps Indicator */}
                     <div className="flex items-center gap-2 text-sm font-medium">
                         <span className={step >= 1 ? 'text-primary' : 'text-muted-foreground'}>1. Vendor</span>
                         <div className="w-4 h-px bg-border" />
@@ -271,19 +294,34 @@ export default function NewPurchaseOrder() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         aria-label="Search products to add"
-                                        placeholder="Search products to add..."
+                                        placeholder={isLoadingProducts ? 'Loading products...' : 'Search products to add...'}
                                         value={productSearch}
                                         onChange={e => setProductSearch(e.target.value)}
                                         className="pl-10"
+                                        maxLength={200}
+                                        disabled={isLoadingProducts}
                                     />
                                     {/* Search Results Dropdown */}
                                     {filteredProducts.length > 0 && (
-                                        <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-md max-h-60 overflow-y-auto">
+                                        <div
+                                            role="listbox"
+                                            aria-label="Product search results"
+                                            className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-md max-h-60 overflow-y-auto"
+                                        >
                                             {filteredProducts.map(p => (
                                                 <div
                                                     key={p.id}
+                                                    role="option"
+                                                    aria-selected={false}
+                                                    tabIndex={0}
                                                     className="p-2 hover:bg-accent cursor-pointer flex justify-between items-center"
                                                     onClick={() => handleAddItem(p)}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            handleAddItem(p);
+                                                        }
+                                                    }}
                                                 >
                                                     <span>{p.name}</span>
                                                     <span className="text-muted-foreground text-sm">{formatCurrency(p.cost_per_unit ?? 0)}</span>
@@ -292,6 +330,15 @@ export default function NewPurchaseOrder() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Validation Errors */}
+                                {validationErrors.length > 0 && (
+                                    <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
+                                        {validationErrors.map((err) => (
+                                            <p key={err}>{err}</p>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Items List */}
                                 <div className="space-y-3">
@@ -306,11 +353,11 @@ export default function NewPurchaseOrder() {
                                                     {item.name}
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Label className="sr-only">Qty</Label>
                                                     <Input
                                                         type="number"
+                                                        aria-label={`Quantity for ${item.name}`}
                                                         value={item.qty}
-                                                        onChange={e => handleUpdateItem(item.id, { qty: parseInt(e.target.value) || 0 })}
+                                                        onChange={e => handleUpdateItem(item.id, { qty: Math.max(1, parseInt(e.target.value) || 1) })}
                                                         className="w-20"
                                                         min={1}
                                                     />
@@ -318,16 +365,18 @@ export default function NewPurchaseOrder() {
                                                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
                                                         <Input
                                                             type="number"
+                                                            aria-label={`Unit cost for ${item.name}`}
                                                             value={item.unitCost}
-                                                            onChange={e => handleUpdateItem(item.id, { unitCost: parseFloat(e.target.value) || 0 })}
+                                                            onChange={e => handleUpdateItem(item.id, { unitCost: Math.max(0, parseFloat(e.target.value) || 0) })}
                                                             className="w-24 pl-5"
                                                             step="0.01"
+                                                            min={0}
                                                         />
                                                     </div>
                                                     <div className="w-24 text-right font-semibold">
                                                         {formatCurrency(item.qty * item.unitCost)}
                                                     </div>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)} aria-label="Remove item">
+                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)} aria-label={`Remove ${item.name}`}>
                                                         <Trash2 className="h-4 w-4 text-destructive" />
                                                     </Button>
                                                 </div>
@@ -341,27 +390,32 @@ export default function NewPurchaseOrder() {
                                 <h3 className="font-semibold">Order Details</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Expected Delivery Date</Label>
+                                        <Label htmlFor="expected-delivery-date">Expected Delivery Date</Label>
                                         <Input
+                                            id="expected-delivery-date"
                                             type="date"
                                             value={poData.expectedDeliveryDate}
                                             onChange={e => setPoData(prev => ({ ...prev, expectedDeliveryDate: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Internal Notes</Label>
+                                        <Label htmlFor="po-notes">Internal Notes</Label>
                                         <Textarea
+                                            id="po-notes"
                                             placeholder="Optional notes for this order..."
                                             value={poData.notes}
                                             onChange={e => setPoData(prev => ({ ...prev, notes: e.target.value }))}
+                                            maxLength={NOTES_MAX_LENGTH}
                                         />
+                                        <p className="text-xs text-muted-foreground text-right">
+                                            {poData.notes.length}/{NOTES_MAX_LENGTH}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex justify-between pt-4">
                                 <Button variant="outline" onClick={handleBack}>Back</Button>
-                                {/* Submit handled in Summary Panel on right for better UX */}
                             </div>
                         </Card>
                     )}
@@ -396,16 +450,21 @@ export default function NewPurchaseOrder() {
 
                         {step === 2 && (
                             <DisabledTooltip
-                                disabled={!isSubmitting && poData.items.length === 0}
+                                disabled={!createPOMutation.isPending && poData.items.length === 0}
                                 reason="Add at least one item to create a purchase order"
                             >
                                 <Button
                                     className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700"
                                     size="lg"
                                     onClick={handleSubmit}
-                                    disabled={isSubmitting || poData.items.length === 0}
+                                    disabled={createPOMutation.isPending || poData.items.length === 0}
                                 >
-                                    {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
+                                    {createPOMutation.isPending ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : 'Create Purchase Order'}
                                 </Button>
                             </DisabledTooltip>
                         )}
