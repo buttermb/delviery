@@ -2,6 +2,15 @@
 - Status timeline handles cancelled state separately
 - Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
 
+## SettingsPage: Fix all TODO items
+- Removed unused `useNavigate` import (only `useTenantNavigation` needed)
+- Added `useCallback` import for memoized payment save handler
+- Imported `PaymentSettingsFormData` type for proper typing
+- Wired `PaymentSettingsForm.onSave` to persist payment settings to `account_settings.integration_settings` (was empty `async () => {}`)
+- Added `shouldDirty: true` to all Switch `onCheckedChange` calls in security form (2FA, password change) and notification form (email, SMS, low stock, overdue, order alerts) so unsaved changes dialog triggers correctly
+- Passed `initialData` to `PaymentSettingsForm` to load existing payment settings from `account_settings.integration_settings.payment`
+- Added 11 unit tests covering tab rendering, form rendering, navigation, embedded mode, and payment save wiring
+
 ## task-207: Create delivery runner mobile view
 - Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
 - Shows assigned deliveries in route order with numbered badges
