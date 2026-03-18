@@ -329,6 +329,19 @@ export default function ShopLayout() {
       setAgeVerified(true);
     }
   }, [store]);
+
+  // Look up the full ThemePreset (must be before early returns to keep hook order stable)
+  const themePreset = store?.theme_config?.theme_id
+    ? getThemeById(store.theme_config.theme_id)
+    : undefined;
+
+  // Load theme-specific Google Fonts (must be before early returns to keep hook order stable)
+  useEffect(() => {
+    if (themePreset) {
+      loadGoogleFonts([themePreset.typography.fonts.heading, themePreset.typography.fonts.body]);
+    }
+  }, [themePreset]);
+
   // Check if store is open
   const isStoreOpen = () => {
     if (!store?.operating_hours) return true;
@@ -471,10 +484,7 @@ export default function ShopLayout() {
     );
   }
 
-  // Look up the full ThemePreset from theme_config.theme_id
-  const themePreset = store.theme_config?.theme_id
-    ? getThemeById(store.theme_config.theme_id)
-    : undefined;
+  // themePreset already computed before early returns (hook order safety)
   const isDarkTheme = themePreset?.darkMode ?? false;
 
   // Apply theme colors — merge store-level vars with full --storefront-* variables from the preset
@@ -489,13 +499,6 @@ export default function ShopLayout() {
       '--storefront-font-body': themePreset.typography.fonts.body,
     } : {}),
   } as React.CSSProperties;
-
-  // Load theme-specific Google Fonts
-  useEffect(() => {
-    if (themePreset) {
-      loadGoogleFonts([themePreset.typography.fonts.heading, themePreset.typography.fonts.body]);
-    }
-  }, [themePreset]);
 
   // Get accent color for theme elements
   const accentColor = themePreset?.colors.accent || store.theme_config?.colors?.accent || store.accent_color || '#10b981';
