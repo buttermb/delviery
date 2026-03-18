@@ -76,14 +76,13 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
 import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
+import type { ResponsiveColumn } from "@/components/shared/ResponsiveTable";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import { ProductHoverCard } from "@/components/admin/products/ProductHoverCard";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
-  // Add fields that might be missing from generated types or are dynamic
-  
   exclude_from_discounts?: boolean;
   minimum_price?: number;
   version?: number;
@@ -143,7 +142,6 @@ export default function ProductManagement() {
   const {
     items: products,
     optimisticIds,
-    addOptimistic: _addOptimistic,
     updateOptimistic,
     deleteOptimistic,
     setItems: setProducts,
@@ -940,7 +938,7 @@ export default function ProductManagement() {
     setBulkPriceEditorOpen(true);
   };
 
-  const handleBulkPriceUpdate = async (_updates: unknown) => {
+  const handleBulkPriceUpdate = async () => {
     // Component handles the DB update; we refresh and invalidate caches
     await loadProducts();
     invalidateProductCaches({
@@ -1096,7 +1094,7 @@ export default function ProductManagement() {
   };
 
   // --- Table Columns Definition ---
-  const columns: any[] = [
+  const columns: ResponsiveColumn<Product>[] = [
     {
       header: (
         <Checkbox

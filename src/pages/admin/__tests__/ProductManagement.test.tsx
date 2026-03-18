@@ -163,6 +163,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOptimisticList } from '@/hooks/useOptimisticUpdate';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const createQueryClient = () => new QueryClient({
   defaultOptions: {
@@ -175,7 +176,9 @@ const createQueryClient = () => new QueryClient({
 const wrapper = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={createQueryClient()}>
     <MemoryRouter initialEntries={['/test-tenant/admin/products']}>
-      {children}
+      <TooltipProvider>
+        {children}
+      </TooltipProvider>
     </MemoryRouter>
   </QueryClientProvider>
 );
