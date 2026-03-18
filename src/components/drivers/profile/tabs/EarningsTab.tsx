@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { exportToCSV, generateExportFilename } from '@/lib/utils/exportUtils';
 import type { ExportColumn } from '@/lib/utils/exportUtils';
 
@@ -134,11 +134,14 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       const tips = rows.reduce((s, r) => s + (r.tip_amount ?? 0), 0);
       const net = gross - fees;
 
-      // Group by day label
+      // Group by day label — weekday names for "This Week", date labels for months
       const dailyMap = new Map<string, number>();
       for (const row of rows) {
         if (!row.created_at) continue;
-        const dayLabel = new Date(row.created_at).toLocaleDateString('en-US', { weekday: 'short' });
+        const d = new Date(row.created_at);
+        const dayLabel = range === 'This Week'
+          ? format(d, 'EEE')       // Mon, Tue, …
+          : format(d, 'MMM d');    // Mar 1, Mar 2, …
         dailyMap.set(dayLabel, (dailyMap.get(dayLabel) ?? 0) + (row.total_earned ?? 0));
       }
 
@@ -147,6 +150,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
       return { gross, fees, net, tips, daily };
     },
     enabled: !!driver.id,
+    staleTime: 60_000,
   });
 
   const updateCommission = useMutation({
