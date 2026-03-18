@@ -414,7 +414,7 @@ export default function CustomerMenuViewPage() {
               <Button
                 size="lg"
                 onClick={() => navigate(`/${tenant?.slug}/shop/cart`)}
-                className="bg-slate-50(var(--customer-primary))] (var(--customer-secondary))] hover:opacity-90 text-white px-8"
+                className="bg-[hsl(var(--customer-primary))] hover:opacity-90 text-white px-8"
               >
                 View Cart & Checkout
                 <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />
