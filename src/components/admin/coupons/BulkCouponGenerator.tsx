@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -46,7 +53,7 @@ export function BulkCouponGenerator({ open, onOpenChange }: BulkCouponGeneratorP
 
   const generateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      if (!tenant?.id) throw new Error("Tenant ID required");
+      if (!tenant?.id) throw new Error("No tenant");
 
       const coupons = [];
       for (let i = 0; i < data.count; i++) {
@@ -59,6 +66,7 @@ export function BulkCouponGenerator({ open, onOpenChange }: BulkCouponGeneratorP
           min_purchase: data.min_purchase ? parseFloat(data.min_purchase) : null,
           status: "active",
           created_by: admin?.id || null,
+          tenant_id: tenant.id,
         });
       }
 
@@ -132,20 +140,23 @@ export function BulkCouponGenerator({ open, onOpenChange }: BulkCouponGeneratorP
 
             <div className="space-y-2">
               <Label htmlFor="discount_type">Discount Type</Label>
-              <select
-                id="discount_type"
+              <Select
                 value={formData.discount_type}
-                onChange={(e) =>
+                onValueChange={(value: typeof formData.discount_type) =>
                   setFormData({
                     ...formData,
-                    discount_type: e.target.value as typeof formData.discount_type,
+                    discount_type: value,
                   })
                 }
-                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed Amount</option>
-              </select>
+                <SelectTrigger className="min-h-[44px] touch-manipulation">
+                  <SelectValue placeholder="Select discount type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">Percentage</SelectItem>
+                  <SelectItem value="fixed">Fixed Amount</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

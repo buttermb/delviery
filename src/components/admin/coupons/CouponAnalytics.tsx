@@ -25,14 +25,20 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
   const { tenant } = useTenantAdminAuth();
 
   const { data: usageStats, isLoading } = useQuery({
-    queryKey: queryKeys.couponAnalyticsData.byTenant(tenant?.id),
+    queryKey: [...queryKeys.couponAnalyticsData.byTenant(tenant?.id), coupons.map(c => c.id)],
     queryFn: async () => {
       if (!tenant?.id) return null;
 
       try {
+        const couponIds = coupons.map(c => c.id);
+        if (couponIds.length === 0) {
+          return { totalRedemptions: 0, totalDiscountGiven: 0, couponStats: [] };
+        }
+
         const { data: usage, error } = await supabase
           .from("coupon_usage")
-          .select("coupon_id, discount_amount");
+          .select("coupon_id, discount_amount")
+          .in("coupon_id", couponIds);
 
         if (error) {
           logger.error('Failed to fetch coupon usage', error, { component: 'CouponAnalytics' });
