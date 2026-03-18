@@ -21,6 +21,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 // Plan-based credit amounts per specification
 // These are the MONTHLY refresh amounts for existing tenants

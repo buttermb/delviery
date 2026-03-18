@@ -72,6 +72,7 @@ export function InvoiceCreditNoteSystem({
   onSuccess,
 }: InvoiceCreditNoteSystemProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: creditNotes = [], isLoading } = useCreditNotesByInvoice(invoiceId);
   const createCreditNote = useCreateCreditNote();

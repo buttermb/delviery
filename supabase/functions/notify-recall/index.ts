@@ -1,6 +1,7 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { validateNotifyRecall } from './validation.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 interface Customer {
   id: string;
