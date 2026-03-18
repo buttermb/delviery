@@ -208,7 +208,7 @@ function CashRegisterContent() {
     enabled: !!tenantId,
     staleTime: 300_000,
   });
-  const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
+  const taxEnabled = true;
 
   // Split payment state
   const [splitPaymentEnabled, setSplitPaymentEnabled] = useState(false);
@@ -1347,13 +1347,13 @@ function CashRegisterContent() {
                         </Button>
                       </DisabledTooltip>
                       <span className="w-6 sm:w-8 text-center text-sm md:text-base">{item.quantity}</span>
-                      <DisabledTooltip disabled={item.quantity >= item.stock_quantity} reason="Maximum stock reached">
+                      <DisabledTooltip disabled={item.quantity >= (item.stock_quantity ?? 0)} reason="Maximum stock reached">
                         <Button
                           size="icon"
                           variant="ghost"
                           className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, 1)}
-                          disabled={item.quantity >= item.stock_quantity}
+                          disabled={item.quantity >= (item.stock_quantity ?? 0)}
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3 md:h-4 md:w-4" />
@@ -1761,7 +1761,7 @@ function CashRegisterContent() {
                 filteredProducts.map(product => (
                   <Card
                     key={product.id}
-                    className={`cursor-pointer hover:border-primary transition-colors ${product.stock_quantity <= 0 ? 'opacity-50' : ''}`}
+                    className={`cursor-pointer hover:border-primary transition-colors ${(product.stock_quantity ?? 0) <= 0 ? 'opacity-50' : ''}`}
                     onClick={() => addToCart(product)}
                   >
                     <CardContent className="p-3">
@@ -1771,7 +1771,7 @@ function CashRegisterContent() {
                         ) : (
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}
-                        {product.stock_quantity <= 0 && (
+                        {(product.stock_quantity ?? 0) <= 0 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="presentation">
                             <Badge variant="destructive">Out of Stock</Badge>
                           </div>
@@ -1783,7 +1783,7 @@ function CashRegisterContent() {
                       )}
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
-                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
+                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity ?? 0}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1985,16 +1985,16 @@ function CashRegisterContent() {
             <Button variant="outline" onClick={() => { setReceiptDialogOpen(false); setLastRefundData(null); }} className="flex-1">
               Close
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                toast.info('Email receipt feature coming soon');
-              }}
-              className="flex-1"
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Email Receipt
-            </Button>
+            <DisabledTooltip disabled reason="Email receipts are not yet available">
+              <Button
+                variant="outline"
+                disabled
+                className="flex-1"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Email Receipt
+              </Button>
+            </DisabledTooltip>
             <Button onClick={handlePrintReceipt} disabled={isPrinting} className="flex-1">
               {isPrinting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

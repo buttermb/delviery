@@ -58,6 +58,23 @@ vi.mock('@/lib/offlineQueue', () => ({
   queueAction: vi.fn(),
 }));
 
+vi.mock('@/contexts/VerificationContext', () => ({
+  useVerification: () => ({
+    isVerified: true,
+    isVerifying: false,
+    verificationError: null,
+    setIsVerified: vi.fn(),
+    setIsVerifying: vi.fn(),
+    setVerificationError: vi.fn(),
+  }),
+}));
+
+vi.mock('@/hooks/useRealtimePOS', () => ({
+  useRealtimeShifts: vi.fn(),
+  useRealtimeCashDrawer: vi.fn(),
+  useRealtimeTransactions: vi.fn(),
+}));
+
 vi.mock('@/hooks/useOfflineQueue', () => ({
   useOfflineQueue: () => ({
     isOnline: true,
@@ -244,12 +261,15 @@ describe('CashRegister Component', () => {
   });
 
   describe('Cart Operations', () => {
-    it('should show total of $0.00 initially', async () => {
+    it('should not show totals section when cart is empty', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('$0.00')).toBeInTheDocument();
+        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
       });
+
+      // Totals section only renders when cart has items
+      expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
     });
 
     it('should not show clear cart button when cart is empty', async () => {
@@ -262,14 +282,16 @@ describe('CashRegister Component', () => {
   });
 
   describe('Payment Processing', () => {
-    it('should disable Process Payment button when cart is empty', async () => {
+    it('should disable Pay button when cart is empty', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        const paymentButton = screen.getByRole('button', {
-          name: /Process Payment/i,
-        });
-        expect(paymentButton).toBeDisabled();
+        // Match the Pay button specifically (contains DollarSign icon + "Pay" text + kbd hints)
+        const payButtons = screen.getAllByRole('button').filter(
+          btn => btn.textContent?.includes('Pay') && btn.textContent?.includes('F8')
+        );
+        expect(payButtons).toHaveLength(1);
+        expect(payButtons[0]).toBeDisabled();
       });
     });
   });
@@ -309,11 +331,11 @@ describe('CashRegister Component', () => {
   });
 
   describe('Customer Selection', () => {
-    it('should show customer selection button', async () => {
+    it('should show walk-in customer by default', async () => {
       renderWithProviders(<CashRegister />);
 
       await waitFor(() => {
-        expect(screen.getByText('Select')).toBeInTheDocument();
+        expect(screen.getByText('Walk-in Customer')).toBeInTheDocument();
       });
     });
   });
