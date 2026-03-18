@@ -98,7 +98,7 @@ export function TicketForm({
   }, [ticket, open, form]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: { subject: string; description: string; priority?: string; category?: string }) => {
+    mutationFn: async (data: { subject: string; description: string; priority?: string; status?: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
@@ -143,7 +143,7 @@ export function TicketForm({
       subject: sanitizeFormInput(values.subject, 200),
       description: sanitizeTextareaInput(values.description, 2000),
       priority: values.priority,
-      category: values.status,
+      status: values.status,
     });
   };
 

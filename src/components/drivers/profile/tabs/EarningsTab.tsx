@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { exportToCSV, generateExportFilename } from '@/lib/utils/exportUtils';
+import type { ExportColumn } from '@/lib/utils/exportUtils';
 
 import type { DriverProfile } from '@/pages/drivers/DriverProfilePage';
 import { supabase } from '@/integrations/supabase/client';
@@ -170,6 +172,44 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
   const earnings = earningsQuery.data;
   const isLoading = earningsQuery.isLoading;
 
+  const handleGenerateReport = useCallback(() => {
+    if (!earnings) {
+      toast.info('No earnings data to export');
+      return;
+    }
+
+    const rows = [
+      {
+        period: range,
+        gross: earnings.gross.toFixed(2),
+        fees: earnings.fees.toFixed(2),
+        net: earnings.net.toFixed(2),
+        tips: earnings.tips.toFixed(2),
+        commission_rate: `${driver.commission_rate ?? 30}%`,
+      },
+      ...earnings.daily.map((d) => ({
+        period: d.day,
+        gross: d.amount.toFixed(2),
+        fees: '',
+        net: '',
+        tips: '',
+        commission_rate: '',
+      })),
+    ];
+
+    const columns: ExportColumn<typeof rows[number]>[] = [
+      { key: 'period', header: 'Period', type: 'string' },
+      { key: 'gross', header: 'Gross ($)', type: 'string' },
+      { key: 'fees', header: 'Fees ($)', type: 'string' },
+      { key: 'net', header: 'Net ($)', type: 'string' },
+      { key: 'tips', header: 'Tips ($)', type: 'string' },
+      { key: 'commission_rate', header: 'Commission Rate', type: 'string' },
+    ];
+
+    exportToCSV(rows, columns, generateExportFilename(`earnings-${driver.full_name.replace(/\s+/g, '-')}`, 'csv'));
+    toast.success('Earnings report exported');
+  }, [earnings, range, driver.full_name, driver.commission_rate]);
+
   return (
     <div className="space-y-4">
       {/* Range toggle */}
@@ -312,7 +352,7 @@ export function EarningsTab({ driver, tenantId }: EarningsTabProps) {
           </p>
           <Button
             size="sm"
-            onClick={() => toast.info('Report generation coming soon')}
+            onClick={handleGenerateReport}
             className="mt-4 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
           >
             Generate Report

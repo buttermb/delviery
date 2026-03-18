@@ -4,12 +4,25 @@
  * Market opportunity assessment and ROI analysis for business expansion
  */
 
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Globe, MapPin, TrendingUp, DollarSign, Users, Calculator, AlertCircle } from 'lucide-react';
+import { formatCurrency } from '@/lib/formatters';
 
 export default function ExpansionAnalysisPage() {
+    const [investment, setInvestment] = useState<number>(0);
+    const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
+    const [monthlyCosts, setMonthlyCosts] = useState<number>(0);
+
+    const roi = useMemo(() => {
+        const monthlyProfit = monthlyRevenue - monthlyCosts;
+        const breakEven = monthlyProfit > 0 ? investment / monthlyProfit : 0;
+        const annualProfit = monthlyProfit * 12;
+        const roiPercent = investment > 0 ? ((annualProfit - investment) / investment) * 100 : 0;
+        return { monthlyProfit, breakEven, roiPercent };
+    }, [investment, monthlyRevenue, monthlyCosts]);
     return (
         <div className="space-y-4">
             {/* Header */}
@@ -38,6 +51,8 @@ export default function ExpansionAnalysisPage() {
                                 <input
                                     type="number"
                                     placeholder="50000"
+                                    value={investment || ''}
+                                    onChange={(e) => setInvestment(Number(e.target.value) || 0)}
                                     className="w-full pl-10 pr-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -50,6 +65,8 @@ export default function ExpansionAnalysisPage() {
                                 <input
                                     type="number"
                                     placeholder="15000"
+                                    value={monthlyRevenue || ''}
+                                    onChange={(e) => setMonthlyRevenue(Number(e.target.value) || 0)}
                                     className="w-full pl-10 pr-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -62,6 +79,8 @@ export default function ExpansionAnalysisPage() {
                                 <input
                                     type="number"
                                     placeholder="8000"
+                                    value={monthlyCosts || ''}
+                                    onChange={(e) => setMonthlyCosts(Number(e.target.value) || 0)}
                                     className="w-full pl-10 pr-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -69,20 +88,32 @@ export default function ExpansionAnalysisPage() {
                     </div>
 
                     <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                        <div className="grid gap-2 md:grid-cols-3">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Monthly Profit</p>
-                                <p className="text-2xl font-bold text-green-600">$7,000</p>
+                        {investment > 0 || monthlyRevenue > 0 || monthlyCosts > 0 ? (
+                            <div className="grid gap-2 md:grid-cols-3">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Monthly Profit</p>
+                                    <p className={`text-2xl font-bold ${roi.monthlyProfit >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                                        {formatCurrency(roi.monthlyProfit)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Break-even Period</p>
+                                    <p className="text-2xl font-bold">
+                                        {roi.breakEven > 0 ? `${roi.breakEven.toFixed(1)} months` : 'N/A'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">12-Month ROI</p>
+                                    <p className={`text-2xl font-bold ${roi.roiPercent >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                        {roi.roiPercent.toFixed(0)}%
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Break-even Period</p>
-                                <p className="text-2xl font-bold">7.1 months</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">12-Month ROI</p>
-                                <p className="text-2xl font-bold text-primary">68%</p>
-                            </div>
-                        </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground text-center py-2">
+                                Enter values above to calculate ROI
+                            </p>
+                        )}
                     </div>
                 </CardContent>
             </Card>

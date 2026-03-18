@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ClientSelector } from "@/components/crm/ClientSelector";
 import {
   Select,
   SelectContent,
@@ -145,10 +146,10 @@ export function AppointmentForm({
                 <FormItem>
                   <FormLabel required>Customer</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Customer ID or email"
-                      className="min-h-[44px] touch-manipulation"
+                    <ClientSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={form.formState.errors.customer_id?.message}
                     />
                   </FormControl>
                   <FormMessage />

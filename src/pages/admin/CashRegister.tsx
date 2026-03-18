@@ -117,8 +117,8 @@ interface ReceiptData {
   customerName: string | null;
 }
 
-// Default tax rate (can be configured per tenant)
-const DEFAULT_TAX_RATE = 0.0825; // 8.25%
+// Fallback tax rate when tenant settings not yet loaded
+const FALLBACK_TAX_RATE = 0.0825;
 
 function CashRegisterContent() {
   const { tenant, tenantSlug } = useTenantAdminAuth();
@@ -188,8 +188,25 @@ function CashRegisterContent() {
   const [discountCode, setDiscountCode] = useState<string>('');
   const [isValidatingCode, setIsValidatingCode] = useState(false);
 
-  // Tax state
-  const [taxRate, _setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
+  // Tax state — loaded from tenant account_settings
+  const { data: taxRate = FALLBACK_TAX_RATE } = useQuery({
+    queryKey: [...queryKeys.accountSettings.byTenant(tenantId), 'tax-rate'],
+    queryFn: async () => {
+      if (!tenantId) return FALLBACK_TAX_RATE;
+      const { data, error } = await supabase
+        .from('account_settings')
+        .select('tax_rate')
+        .eq('account_id', tenantId)
+        .maybeSingle();
+      if (error) {
+        logger.warn('Failed to load tax rate for CashRegister', error, { component: 'CashRegister' });
+        return FALLBACK_TAX_RATE;
+      }
+      return typeof data?.tax_rate === 'number' ? data.tax_rate / 100 : FALLBACK_TAX_RATE;
+    },
+    enabled: !!tenantId,
+    staleTime: 300_000,
+  });
   const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Split payment state

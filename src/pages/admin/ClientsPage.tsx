@@ -3,10 +3,12 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClients } from '@/hooks/crm/useClients';
 import { CreateClientDialog } from '@/components/crm/CreateClientDialog';
 import { Button } from '@/components/ui/button';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Select,
     SelectContent,
@@ -117,6 +119,7 @@ function ClientsPageSkeleton() {
 
 export default function ClientsPage() {
     const { navigateToAdmin } = useTenantNavigation();
+    const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
 
     // Filter state — persisted in URL for back-button & navigation support
@@ -126,6 +129,7 @@ export default function ClientsPage() {
 
     // Bulk selection state
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
     // Prefetch client detail on hover
     const handlePrefetchClient = useCallback((clientId: string) => {
@@ -202,8 +206,30 @@ export default function ClientsPage() {
         });
     };
 
+    const bulkDeleteMutation = useMutation({
+        mutationFn: async (ids: string[]) => {
+            if (!tenant?.id) throw new Error('Tenant required');
+            const { error } = await supabase
+                .from('crm_clients')
+                .delete()
+                .in('id', ids)
+                .eq('account_id', tenant.id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all });
+            toast.success(`Deleted ${selectedIds.size} client${selectedIds.size > 1 ? 's' : ''}`);
+            setSelectedIds(new Set());
+            setBulkDeleteOpen(false);
+        },
+        onError: (error) => {
+            logger.error('Bulk delete failed', { error });
+            toast.error('Failed to delete clients');
+        },
+    });
+
     const handleBulkDelete = () => {
-        toast.info(`Delete ${selectedIds.size} clients - feature coming soon`);
+        setBulkDeleteOpen(true);
     };
 
     const columns: ResponsiveColumn<Client>[] = [
@@ -431,6 +457,14 @@ export default function ClientsPage() {
                         ? { label: "Clear Search", onClick: () => handleSearchChange('') }
                         : { label: "Add Your First Client", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
                 }}
+            />
+
+            <ConfirmDeleteDialog
+                open={bulkDeleteOpen}
+                onOpenChange={setBulkDeleteOpen}
+                onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+                itemType={`${selectedIds.size} client${selectedIds.size > 1 ? 's' : ''}`}
+                isLoading={bulkDeleteMutation.isPending}
             />
         </div>
     );

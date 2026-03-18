@@ -28,6 +28,7 @@ import { validateRouteUUID as _validateRouteUUID } from "@/lib/utils/uuidValidat
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
 
 export default function ShoppingCartPage() {
   const navigate = useNavigate();
@@ -80,6 +81,26 @@ export default function ShoppingCartPage() {
     retry: 2,
   });
 
+  // Load tenant tax rate from account_settings
+  const { data: taxRatePercent = 8.5 } = useQuery({
+    queryKey: [...queryKeys.accountSettings.byTenant(tenantId), 'tax'],
+    queryFn: async () => {
+      if (!tenantId) return 8.5;
+      const { data, error } = await supabase
+        .from('account_settings')
+        .select('tax_rate')
+        .eq('account_id', tenantId)
+        .maybeSingle();
+      if (error) {
+        logger.warn('Failed to load tax rate, using default', error, { component: 'ShoppingCartPage' });
+        return 8.5;
+      }
+      return typeof data?.tax_rate === 'number' ? data.tax_rate : 8.5;
+    },
+    enabled: !!tenantId,
+    staleTime: 300_000,
+  });
+
   // Combine guest cart items with product data
   const guestCartItems = user ? [] : guestCart
     .map(item => {
@@ -116,16 +137,15 @@ export default function ShoppingCartPage() {
       (sum, item) => sum + getItemPrice(item) * item.quantity,
       0
     );
-    const taxRate = 0.085; // 8.5% tax
-    const t = sub * taxRate;
-    const delivery = sub >= 1000 ? 0 : 0; // Free delivery
+    const t = sub * (taxRatePercent / 100);
+    const delivery = 0;
     return {
       subtotal: sub,
       tax: t,
       deliveryFee: delivery,
       total: sub + t + delivery,
     };
-  }, [cartItems, getItemPrice]);
+  }, [cartItems, getItemPrice, taxRatePercent]);
 
   // Update quantity
   const handleUpdateQuantity = (itemId: string, productId: string, selectedWeight: string, quantity: number) => {
@@ -393,7 +413,7 @@ export default function ShoppingCartPage() {
                       <span className="font-medium">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-[hsl(var(--customer-text))]">
-                      <span>Tax (8.5%):</span>
+                      <span>Tax ({taxRatePercent}%):</span>
                       <span className="font-medium">{formatCurrency(tax)}</span>
                     </div>
                     <div className="flex justify-between text-[hsl(var(--customer-text))]">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useCourier } from '@/contexts/CourierContext';
@@ -17,6 +17,8 @@ import {
   Truck,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { exportToCSV, generateExportFilename } from '@/lib/utils/exportUtils';
+import type { ExportColumn } from '@/lib/utils/exportUtils';
 
 export default function CourierEarningsPage() {
   const { courier, role } = useCourier();
@@ -27,6 +29,38 @@ export default function CourierEarningsPage() {
 
   const earnings = data?.earnings ?? [];
   const totals = data?.totals || { commission: 0, tips: 0, bonuses: 0, deliveryFees: 0, total: 0 };
+
+  const handleExport = useCallback(() => {
+    if (earnings.length === 0) {
+      toast.info('No earnings to export');
+      return;
+    }
+
+    const rows = earnings.map((e) => ({
+      date: format(new Date(e.created_at), 'MMM dd, yyyy'),
+      type: e.type === 'courier' ? 'Order' : 'Delivery',
+      order_number: e.order_number ?? '',
+      total_earned: e.total_earned.toFixed(2),
+      commission: e.commission_amount?.toFixed(2) ?? '',
+      tip: e.tip_amount?.toFixed(2) ?? '',
+      bonus: e.bonus_amount?.toFixed(2) ?? '',
+      delivery_fee: e.delivery_fee?.toFixed(2) ?? '',
+    }));
+
+    const columns: ExportColumn<typeof rows[number]>[] = [
+      { key: 'date', header: 'Date', type: 'string' },
+      { key: 'type', header: 'Type', type: 'string' },
+      { key: 'order_number', header: 'Order #', type: 'string' },
+      { key: 'total_earned', header: 'Total ($)', type: 'string' },
+      { key: 'commission', header: 'Commission ($)', type: 'string' },
+      { key: 'tip', header: 'Tip ($)', type: 'string' },
+      { key: 'bonus', header: 'Bonus ($)', type: 'string' },
+      { key: 'delivery_fee', header: 'Delivery Fee ($)', type: 'string' },
+    ];
+
+    exportToCSV(rows, columns, generateExportFilename('my-earnings', 'csv'));
+    toast.success(`Exported ${rows.length} earnings to CSV`);
+  }, [earnings]);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -142,7 +176,7 @@ export default function CourierEarningsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Earnings History</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info('Export coming soon')}>
+              <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
                 <Download className="h-4 w-4" />
                 Export
               </Button>

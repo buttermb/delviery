@@ -403,11 +403,9 @@ export default function OrderTrackingPage() {
               {orderStatus === "delivered" && (
                 <Button
                   className="flex-1 bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
-                  onClick={() => {
-                    toast.info("Reorder functionality coming soon");
-                  }}
+                  onClick={() => navigate(`/${tenant?.slug}/shop`)}
                 >
-                  Reorder
+                  Order Again
                 </Button>
               )}
             </div>

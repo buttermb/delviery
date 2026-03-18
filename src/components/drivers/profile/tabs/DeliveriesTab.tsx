@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { exportToCSV, generateExportFilename } from '@/lib/utils/exportUtils';
+import type { ExportColumn } from '@/lib/utils/exportUtils';
 
 import type { DriverProfile } from '@/pages/drivers/DriverProfilePage';
 import { supabase } from '@/integrations/supabase/client';
@@ -98,6 +100,41 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
   const fromRow = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const toRow = Math.min(page * PAGE_SIZE, totalCount);
 
+  const handleExportCSV = useCallback(() => {
+    if (deliveries.length === 0) {
+      toast.info('No deliveries to export');
+      return;
+    }
+
+    const rows = deliveries.map((row) => {
+      const eventData = (row.event_data ?? {}) as Record<string, unknown>;
+      return {
+        date: new Date(row.created_at).toLocaleDateString(),
+        order_number: (eventData.order_number as string) ?? '',
+        pickup: (eventData.pickup as string) ?? '',
+        dropoff: (eventData.dropoff as string) ?? '',
+        status: 'Completed',
+        duration: (eventData.duration as string) ?? '',
+        tip: eventData.tip ? `$${eventData.tip}` : '',
+        rating: (eventData.rating as string) ?? '',
+      };
+    });
+
+    const columns: ExportColumn<typeof rows[number]>[] = [
+      { key: 'date', header: 'Date', type: 'string' },
+      { key: 'order_number', header: 'Order #', type: 'string' },
+      { key: 'pickup', header: 'Pickup', type: 'string' },
+      { key: 'dropoff', header: 'Dropoff', type: 'string' },
+      { key: 'status', header: 'Status', type: 'string' },
+      { key: 'duration', header: 'Duration', type: 'string' },
+      { key: 'tip', header: 'Tip', type: 'string' },
+      { key: 'rating', header: 'Rating', type: 'string' },
+    ];
+
+    exportToCSV(rows, columns, generateExportFilename(`deliveries-${driver.full_name.replace(/\s+/g, '-')}`, 'csv'));
+    toast.success(`Exported ${rows.length} deliveries to CSV`);
+  }, [deliveries, driver.full_name]);
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -147,7 +184,7 @@ export function DeliveriesTab({ driver, tenantId }: DeliveriesTabProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => toast.info('CSV export coming soon')}
+            onClick={handleExportCSV}
             className="h-9 border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Download className="mr-1.5 h-4 w-4" />

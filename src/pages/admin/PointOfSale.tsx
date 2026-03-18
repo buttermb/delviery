@@ -127,6 +127,26 @@ export default function PointOfSale() {
     retry: 2,
   });
 
+  // Load tenant tax rate from account_settings
+  const { data: taxRatePercent = 8.875 } = useQuery({
+    queryKey: [...queryKeys.accountSettings.byTenant(tenantId), 'tax'],
+    queryFn: async () => {
+      if (!tenantId) return 8.875;
+      const { data, error } = await supabase
+        .from('account_settings')
+        .select('tax_rate')
+        .eq('account_id', tenantId)
+        .maybeSingle();
+      if (error) {
+        logger.warn('Failed to load tax rate, using default', error, { component: 'PointOfSale' });
+        return 8.875;
+      }
+      return typeof data?.tax_rate === 'number' ? data.tax_rate : 8.875;
+    },
+    enabled: !!tenantId,
+    staleTime: 300_000,
+  });
+
   useEffect(() => {
     if (tenantId) {
       loadProducts();
@@ -235,7 +255,7 @@ export default function PointOfSale() {
 
   const calculateTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-    const tax = subtotal * 0.08875; // 8.875% tax
+    const tax = subtotal * (taxRatePercent / 100);
     const discount = selectedCustomer?.customer_type === 'medical' ? subtotal * 0.05 : 0;
     const total = subtotal + tax - discount;
 
@@ -782,7 +802,7 @@ export default function PointOfSale() {
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Tax (8.875%)</span>
+                  <span>Tax ({taxRatePercent}%)</span>
                   <span>{formatCurrency(tax)}</span>
                 </div>
                 {discount > 0 && (

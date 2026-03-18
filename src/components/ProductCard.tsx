@@ -267,9 +267,9 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-orange-500 text-orange-500" />
-              <span className="font-semibold text-foreground">{getNumberValue(product.average_rating, 4.8)}</span>
+              <span className="font-semibold text-foreground">{getNumberValue(product.average_rating, 0).toFixed(1)}</span>
             </div>
-            <span className="text-muted-foreground">({getNumberValue(product.review_count, 127)} reviews)</span>
+            <span className="text-muted-foreground">({getNumberValue(product.review_count, 0)} reviews)</span>
           </div>
 
           {/* Stock + Social Proof Alerts */}

@@ -67,8 +67,10 @@ export function APIKeyManagement() {
 
     setCreating(true);
     try {
-      // Generate a random API key
-      const key = `sk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+      // Generate a cryptographically secure API key
+      const bytes = new Uint8Array(24);
+      crypto.getRandomValues(bytes);
+      const key = `sk_${Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').substring(0, 28)}`;
 
       const { data, error } = await supabase.from('api_keys').insert({
         tenant_id: tenant.id,
