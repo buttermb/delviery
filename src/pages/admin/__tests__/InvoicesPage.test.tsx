@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mock jsPDF before importing the component
 vi.mock('jspdf', () => {
@@ -98,19 +99,19 @@ vi.mock('@/hooks/crm/useInvoices', () => ({
       isLoading: false,
     }),
     useMarkInvoicePaid: vi.fn().mockReturnValue({
-      mutate: vi.fn(),
+      mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     }),
     useMarkInvoiceSent: vi.fn().mockReturnValue({
-      mutate: vi.fn(),
+      mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     }),
     useVoidInvoice: vi.fn().mockReturnValue({
-      mutate: vi.fn(),
+      mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     }),
     useDuplicateInvoice: vi.fn().mockReturnValue({
-      mutate: vi.fn(),
+      mutateAsync: vi.fn().mockResolvedValue({ id: 'new-invoice-id' }),
       isPending: false,
     }),
   }),
@@ -166,9 +167,11 @@ const createQueryClient = () =>
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={createQueryClient()}>
-    <MemoryRouter initialEntries={['/test-tenant/admin/crm/invoices']}>
-      {children}
-    </MemoryRouter>
+    <TooltipProvider>
+      <MemoryRouter initialEntries={['/test-tenant/admin/crm/invoices']}>
+        {children}
+      </MemoryRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
@@ -176,29 +179,29 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 const createUseInvoicesMock = (overrides: {
   data?: CRMInvoice[];
   isLoading?: boolean;
-  markPaidMutate?: ReturnType<typeof vi.fn>;
-  markSentMutate?: ReturnType<typeof vi.fn>;
-  voidMutate?: ReturnType<typeof vi.fn>;
-  duplicateMutate?: ReturnType<typeof vi.fn>;
+  markPaidMutateAsync?: ReturnType<typeof vi.fn>;
+  markSentMutateAsync?: ReturnType<typeof vi.fn>;
+  voidMutateAsync?: ReturnType<typeof vi.fn>;
+  duplicateMutateAsync?: ReturnType<typeof vi.fn>;
 } = {}) => ({
   useInvoicesQuery: vi.fn().mockReturnValue({
     data: overrides.data ?? [],
     isLoading: overrides.isLoading ?? false,
   }),
   useMarkInvoicePaid: vi.fn().mockReturnValue({
-    mutate: overrides.markPaidMutate ?? vi.fn(),
+    mutateAsync: overrides.markPaidMutateAsync ?? vi.fn().mockResolvedValue(undefined),
     isPending: false,
   }),
   useMarkInvoiceSent: vi.fn().mockReturnValue({
-    mutate: overrides.markSentMutate ?? vi.fn(),
+    mutateAsync: overrides.markSentMutateAsync ?? vi.fn().mockResolvedValue(undefined),
     isPending: false,
   }),
   useVoidInvoice: vi.fn().mockReturnValue({
-    mutate: overrides.voidMutate ?? vi.fn(),
+    mutateAsync: overrides.voidMutateAsync ?? vi.fn().mockResolvedValue(undefined),
     isPending: false,
   }),
   useDuplicateInvoice: vi.fn().mockReturnValue({
-    mutate: overrides.duplicateMutate ?? vi.fn(),
+    mutateAsync: overrides.duplicateMutateAsync ?? vi.fn().mockResolvedValue({ id: 'new-invoice-id' }),
     isPending: false,
   }),
 });
@@ -289,28 +292,9 @@ describe('InvoicesPage', () => {
     vi.clearAllMocks();
 
     // Reset useInvoices mock to default
-    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-      useInvoicesQuery: vi.fn().mockReturnValue({
-        data: [],
-        isLoading: false,
-      }),
-      useMarkInvoicePaid: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-      useMarkInvoiceSent: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-      useVoidInvoice: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-      useDuplicateInvoice: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-    });
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock()
+    );
   });
 
   describe('Page Header', () => {
@@ -324,11 +308,10 @@ describe('InvoicesPage', () => {
       expect(screen.getByText('Manage your invoices and track payments.')).toBeInTheDocument();
     });
 
-    it('should render Create Invoice button', () => {
+    it('should render Create Invoice button with aria-label', () => {
       render(<InvoicesPage />, { wrapper });
-      // May be multiple create buttons (in header and empty state)
-      const createButtons = screen.getAllByRole('button', { name: /create invoice/i });
-      expect(createButtons.length).toBeGreaterThan(0);
+      const createButton = screen.getByRole('button', { name: /create new invoice/i });
+      expect(createButton).toBeInTheDocument();
     });
   });
 
@@ -343,9 +326,9 @@ describe('InvoicesPage', () => {
       expect(screen.getByText('Outstanding')).toBeInTheDocument();
     });
 
-    it('should display Overdue card', () => {
+    it('should display Avg. Payment Time card', () => {
       render(<InvoicesPage />, { wrapper });
-      expect(screen.getByText('Overdue')).toBeInTheDocument();
+      expect(screen.getByText('Avg. Payment Time')).toBeInTheDocument();
     });
 
     it('should calculate correct revenue from paid invoices', () => {
@@ -367,7 +350,6 @@ describe('InvoicesPage', () => {
       render(<InvoicesPage />, { wrapper });
 
       // Sent invoices count as outstanding - INV-001 is $110
-      // Updated: stats card now shows "X sent, Y overdue" format
       expect(screen.getByText(/1 sent/)).toBeInTheDocument();
     });
   });
@@ -400,9 +382,10 @@ describe('InvoicesPage', () => {
   });
 
   describe('Filter Dropdown', () => {
-    it('should render filter button', () => {
+    it('should render filter button with aria-label', () => {
       render(<InvoicesPage />, { wrapper });
-      expect(screen.getByRole('button', { name: /filter/i })).toBeInTheDocument();
+      const filterButton = screen.getByRole('button', { name: /filter invoices by status/i });
+      expect(filterButton).toBeInTheDocument();
     });
   });
 
@@ -432,12 +415,12 @@ describe('InvoicesPage', () => {
   });
 
   describe('Mark as Paid', () => {
-    it('should call mutation when marking invoice as paid', async () => {
+    it('should call mutateAsync when marking invoice as paid', async () => {
       const user = userEvent.setup();
-      const mutateFunc = vi.fn();
+      const mutateAsyncFunc = vi.fn().mockResolvedValue(undefined);
 
       (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
-        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutate: mutateFunc })
+        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutateAsync: mutateAsyncFunc })
       );
 
       render(<InvoicesPage />, { wrapper });
@@ -447,24 +430,24 @@ describe('InvoicesPage', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Click Mark as Paid
       const markAsPaidOption = await screen.findByText('Mark as Paid');
       await user.click(markAsPaidOption);
 
-      expect(mutateFunc).toHaveBeenCalledWith('invoice-1', expect.any(Object));
+      await waitFor(() => {
+        expect(mutateAsyncFunc).toHaveBeenCalledWith('invoice-1');
+      });
     });
 
     it('should show success toast on successful mark as paid', async () => {
       const user = userEvent.setup();
-      const mutateFunc = vi.fn().mockImplementation((id, options) => {
-        options.onSuccess();
-      });
+      const mutateAsyncFunc = vi.fn().mockResolvedValue(undefined);
 
       (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
-        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutate: mutateFunc })
+        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutateAsync: mutateAsyncFunc })
       );
 
       render(<InvoicesPage />, { wrapper });
@@ -474,14 +457,16 @@ describe('InvoicesPage', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Click Mark as Paid
       const markAsPaidOption = await screen.findByText('Mark as Paid');
       await user.click(markAsPaidOption);
 
-      expect(toast.success).toHaveBeenCalledWith('Invoice marked as paid');
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Invoice marked as paid');
+      });
     });
   });
 
@@ -500,7 +485,7 @@ describe('InvoicesPage', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       expect(await screen.findByText('Download PDF')).toBeInTheDocument();
@@ -521,7 +506,7 @@ describe('InvoicesPage', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Click Download PDF
@@ -532,14 +517,6 @@ describe('InvoicesPage', () => {
       await waitFor(() => {
         expect(jsPDF).toHaveBeenCalled();
       });
-    });
-
-    // This test verifies the jsPDF mock is called; toast verification is covered
-    // by the handleDownloadPDF implementation which calls toast.success synchronously
-    // after PDF generation. The "should call jsPDF" test above validates PDF generation works.
-    it.skip('should show success toast after PDF generation', async () => {
-      // Note: This test is skipped due to async timing issues with the mock
-      // The actual functionality is tested by the "should call jsPDF" test
     });
   });
 
@@ -558,10 +535,41 @@ describe('InvoicesPage', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       expect(await screen.findByText('Copy Link')).toBeInTheDocument();
+    });
+  });
+
+  describe('Button Accessibility', () => {
+    it('should have aria-labels on action dropdown buttons', () => {
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      const actionButtons = screen.getAllByRole('button', { name: /actions for invoice INV-001/i });
+      expect(actionButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should have aria-labels on sort buttons', () => {
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      expect(screen.getByRole('button', { name: /sort by invoice #/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sort by amount/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sort by status/i })).toBeInTheDocument();
+    });
+
+    it('should have aria-label on filter button', () => {
+      render(<InvoicesPage />, { wrapper });
+
+      expect(screen.getByRole('button', { name: /filter invoices by status/i })).toBeInTheDocument();
     });
   });
 });
@@ -598,7 +606,7 @@ describe('Invoice Statistics Calculation', () => {
 
     render(<InvoicesPage />, { wrapper });
 
-    // Updated format: "X sent, Y overdue"
+    // Format: "X sent, Y overdue"
     expect(screen.getByText(/1 sent/)).toBeInTheDocument();
     expect(screen.getByText(/1 overdue/)).toBeInTheDocument();
   });
@@ -615,7 +623,6 @@ describe('Invoice Statistics Calculation', () => {
 
     render(<InvoicesPage />, { wrapper });
 
-    // Updated format: "X sent, Y overdue"
     expect(screen.getByText(/2 overdue/)).toBeInTheDocument();
   });
 });
@@ -641,7 +648,7 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       expect(await screen.findByText('Mark as Sent')).toBeInTheDocument();
@@ -661,7 +668,7 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Wait for menu to open
@@ -685,7 +692,7 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       expect(await screen.findByText('Duplicate')).toBeInTheDocument();
@@ -693,10 +700,10 @@ describe('New Invoice Actions', () => {
 
     it('should call duplicate mutation when clicked', async () => {
       const user = userEvent.setup();
-      const duplicateMutate = vi.fn();
+      const duplicateMutateAsync = vi.fn().mockResolvedValue({ id: 'new-invoice-id' });
 
       (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
-        createUseInvoicesMock({ data: [mockInvoices[0]], duplicateMutate })
+        createUseInvoicesMock({ data: [mockInvoices[0]], duplicateMutateAsync })
       );
 
       render(<InvoicesPage />, { wrapper });
@@ -706,14 +713,16 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Click Duplicate
       const duplicateOption = await screen.findByText('Duplicate');
       await user.click(duplicateOption);
 
-      expect(duplicateMutate).toHaveBeenCalledWith('invoice-1', expect.any(Object));
+      await waitFor(() => {
+        expect(duplicateMutateAsync).toHaveBeenCalledWith('invoice-1');
+      });
     });
   });
 
@@ -732,7 +741,7 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       expect(await screen.findByText('Void Invoice')).toBeInTheDocument();
@@ -752,12 +761,39 @@ describe('New Invoice Actions', () => {
       });
 
       // Open actions menu
-      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
       await user.click(moreButtons[0]);
 
       // Wait for menu to open
       await screen.findByText('Copy Link');
       expect(screen.queryByText('Void Invoice')).not.toBeInTheDocument();
+    });
+
+    it('should show confirmation dialog when voiding an invoice', async () => {
+      const user = userEvent.setup();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /actions for invoice/i });
+      await user.click(moreButtons[0]);
+
+      // Click Void Invoice
+      const voidOption = await screen.findByText('Void Invoice');
+      await user.click(voidOption);
+
+      // Confirmation dialog should appear
+      await waitFor(() => {
+        expect(screen.getByText(/are you sure you want to void invoice INV-001/i)).toBeInTheDocument();
+      });
     });
   });
 });
