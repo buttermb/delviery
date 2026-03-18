@@ -263,7 +263,13 @@ Configured for:
 
 ## License
 
-Proprietary - All rights reserved.
+**All Rights Reserved.**
+
+FloraIQ is proprietary software wholly owned by its author. No part of this codebase — including but not limited to source code, database schemas, edge functions, UI components, business logic, and documentation — may be copied, modified, distributed, sublicensed, or used in any form without explicit written permission from the owner.
+
+Unauthorized use, reproduction, or distribution of this software is strictly prohibited and may result in legal action.
+
+**For licensing inquiries, partnership opportunities, or permission requests, contact the owner directly.**
 
 ---
 
