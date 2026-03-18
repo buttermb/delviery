@@ -1,12 +1,19 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
+import { createLogger } from '../_shared/logger.ts';
+
+const logger = createLogger('process-payment');
+
+const VALID_CRYPTO_TYPES = ['bitcoin', 'lightning', 'ethereum', 'usdt'] as const;
+type CryptoType = typeof VALID_CRYPTO_TYPES[number];
 
 const paymentSchema = z.object({
   order_id: z.string().uuid(),
   payment_method: z.enum(['cash', 'card', 'crypto']),
   amount: z.number().positive(),
   retry_count: z.number().int().min(0).max(3).default(0),
+  crypto_type: z.enum(VALID_CRYPTO_TYPES).optional(),
 });
 
 serve(
@@ -65,7 +72,15 @@ serve(
 
       // Parse and validate request
       const body = await req.json();
-      const { order_id, payment_method, amount, retry_count } = paymentSchema.parse(body);
+      const { order_id, payment_method, amount, retry_count, crypto_type } = paymentSchema.parse(body);
+
+      // Validate crypto_type is provided when payment_method is crypto
+      if (payment_method === 'crypto' && !crypto_type) {
+        return new Response(
+          JSON.stringify({ error: 'crypto_type is required for crypto payments' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       // Resolve tenant from user's JWT
       const { data: tenantUser, error: tenantUserError } = await supabase
@@ -198,12 +213,73 @@ serve(
           throw stripeError;
         }
       } else if (payment_method === 'crypto') {
-        // Crypto payment (placeholder - integrate with crypto processor)
+        // Crypto payment — peer-to-peer via tenant wallet addresses
+        // Look up tenant's payment settings to get wallet address
+        const { data: paymentSettings, error: settingsError } = await supabase
+          .from('tenant_payment_settings')
+          .select('accept_bitcoin, accept_lightning, accept_ethereum, accept_usdt, bitcoin_address, lightning_address, ethereum_address, usdt_address, crypto_instructions')
+          .eq('tenant_id', tenant_id)
+          .maybeSingle();
+
+        if (settingsError) {
+          logger.error('Failed to fetch payment settings', { tenantId: tenant_id, error: settingsError.message });
+          return new Response(
+            JSON.stringify({ error: 'Failed to load payment configuration' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (!paymentSettings) {
+          return new Response(
+            JSON.stringify({ error: 'Crypto payments are not configured for this merchant' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Map crypto_type to the corresponding accept flag and address field
+        const cryptoConfig: Record<CryptoType, { acceptKey: string; addressKey: string; label: string }> = {
+          bitcoin: { acceptKey: 'accept_bitcoin', addressKey: 'bitcoin_address', label: 'Bitcoin' },
+          lightning: { acceptKey: 'accept_lightning', addressKey: 'lightning_address', label: 'Lightning' },
+          ethereum: { acceptKey: 'accept_ethereum', addressKey: 'ethereum_address', label: 'Ethereum' },
+          usdt: { acceptKey: 'accept_usdt', addressKey: 'usdt_address', label: 'USDT' },
+        };
+
+        const config = cryptoConfig[crypto_type!];
+        const isAccepted = paymentSettings[config.acceptKey as keyof typeof paymentSettings];
+        const walletAddress = paymentSettings[config.addressKey as keyof typeof paymentSettings] as string | null;
+
+        if (!isAccepted) {
+          return new Response(
+            JSON.stringify({ error: `${config.label} payments are not enabled for this merchant` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (!walletAddress) {
+          return new Response(
+            JSON.stringify({ error: `${config.label} wallet address is not configured` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Generate a unique transaction reference for tracking
+        const txRef = `CRYPTO-${crypto_type!.toUpperCase()}-${order_id.substring(0, 8)}-${Date.now().toString(36)}`;
+
+        logger.info('Crypto payment initiated', {
+          tenantId: tenant_id,
+          orderId: order_id,
+          cryptoType: crypto_type,
+          amount,
+        });
+
         paymentResult = {
-          success: false,
+          success: true,
           payment_id: null,
-          transaction_id: null,
-          message: 'Crypto payments not yet implemented',
+          transaction_id: txRef,
+          message: `Send ${config.label} payment to the provided address. Payment will be confirmed manually.`,
+          wallet_address: walletAddress,
+          crypto_type: crypto_type,
+          crypto_instructions: paymentSettings.crypto_instructions,
         };
       }
 
@@ -214,13 +290,16 @@ serve(
         );
       }
 
+      // Crypto and cash payments are pending until manually confirmed
+      const isPendingPayment = payment_method === 'cash' || payment_method === 'crypto';
+
       // Update order payment status
       await supabase
         .from('orders')
         .update({
-          payment_status: payment_method === 'cash' ? 'pending' : 'paid',
+          payment_status: isPendingPayment ? 'pending' : 'paid',
           payment_method: payment_method,
-          payment_transaction_id: paymentResult.transaction_id,
+          payment_transaction_id: paymentResult.transaction_id as string,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order_id);
@@ -231,8 +310,8 @@ serve(
         order_id: order_id,
         amount: amount,
         payment_method: payment_method,
-        payment_status: payment_method === 'cash' ? 'pending' : 'completed',
-        external_payment_reference: paymentResult.transaction_id,
+        payment_status: isPendingPayment ? 'pending' : 'completed',
+        external_payment_reference: paymentResult.transaction_id as string,
         recorded_by: user.id,
         recorded_at: new Date().toISOString(),
       });
@@ -248,6 +327,7 @@ serve(
           payment_method,
           amount,
           transaction_id: paymentResult.transaction_id,
+          ...(payment_method === 'crypto' && { crypto_type }),
         },
         created_at: new Date().toISOString(),
       });
@@ -258,9 +338,14 @@ serve(
           payment: {
             id: paymentResult.payment_id,
             transaction_id: paymentResult.transaction_id,
-            status: payment_method === 'cash' ? 'pending' : 'completed',
+            status: isPendingPayment ? 'pending' : 'completed',
             method: payment_method,
             client_secret: paymentResult.client_secret, // For Stripe
+            ...(payment_method === 'crypto' && {
+              crypto_type: paymentResult.crypto_type,
+              wallet_address: paymentResult.wallet_address,
+              crypto_instructions: paymentResult.crypto_instructions,
+            }),
           },
           message: paymentResult.message,
         }),
@@ -274,7 +359,7 @@ serve(
         }
       );
     } catch (error) {
-      console.error('Payment processing error:', error);
+      logger.error('Payment processing error', { error: error instanceof Error ? error.message : 'Unknown error' });
       return new Response(
         JSON.stringify({
           error: error instanceof Error ? error.message : 'Payment processing failed',
