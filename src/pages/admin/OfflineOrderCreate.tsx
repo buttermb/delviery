@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { z } from 'zod';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -48,6 +50,7 @@ import { db as idb } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 import { queryKeys } from '@/lib/queryKeys';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 interface ProductForOrder {
   id: string;
@@ -55,6 +58,33 @@ interface ProductForOrder {
   price: number;
   sku: string;
   stock?: number;
+}
+
+const offlineOrderFormSchema = z.object({
+  customerName: z.string().min(1, 'Customer name is required').max(100),
+  customerPhone: z.string().max(20).optional().or(z.literal('')),
+  customerEmail: z.string().email('Invalid email').max(254).optional().or(z.literal('')),
+  deliveryAddress: z.string().min(1, 'Delivery address is required').max(500),
+  deliveryNotes: z.string().max(2000).optional().or(z.literal('')),
+  paymentMethod: z.enum(['cash', 'card', 'credit']),
+});
+
+type OfflineOrderFormData = z.infer<typeof offlineOrderFormSchema>;
+
+function ProductsLoadingSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={`product-skeleton-${i}`} className="flex items-center justify-between p-2">
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-4 w-14" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function OfflineOrderCreate() {
@@ -85,6 +115,7 @@ export default function OfflineOrderCreate() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'pending'>('create');
   const [linkedCustomer, setLinkedCustomer] = useState<CustomerMatch | null>(null);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof OfflineOrderFormData, string>>>({});
 
   // Fetch products (from Supabase if online, from IndexedDB if offline)
   const { data: products = [], isLoading: productsLoading } = useQuery({
@@ -149,10 +180,11 @@ export default function OfflineOrderCreate() {
     }
   }
 
-  // Filtered products based on search
+  // Filtered products based on search (sanitized input)
   const filteredProducts = useMemo(() => {
-    if (!productSearch.trim()) return products;
-    const query = productSearch.toLowerCase();
+    const sanitized = sanitizeSearchInput(productSearch);
+    if (!sanitized) return products;
+    const query = sanitized.toLowerCase();
     return products.filter(
       (p) =>
         p.name.toLowerCase().includes(query) ||
@@ -210,30 +242,63 @@ export default function OfflineOrderCreate() {
     setCart((prev) => prev.filter((item) => item.productId !== productId));
   }, []);
 
-  // Form validation
+  // Form validation via Zod
   const isFormValid = useMemo(() => {
-    return (
-      customerName.trim().length > 0 &&
-      deliveryAddress.trim().length > 0 &&
-      cart.length > 0
-    );
-  }, [customerName, deliveryAddress, cart]);
+    const result = offlineOrderFormSchema.safeParse({
+      customerName,
+      customerPhone,
+      customerEmail,
+      deliveryAddress,
+      deliveryNotes,
+      paymentMethod,
+    });
+    return result.success && cart.length > 0;
+  }, [customerName, customerPhone, customerEmail, deliveryAddress, deliveryNotes, paymentMethod, cart]);
 
   // Submit order
   const handleSubmit = async () => {
-    if (!isFormValid || !tenant?.id) return;
+    if (!tenant?.id) return;
 
+    // Validate form with Zod
+    const result = offlineOrderFormSchema.safeParse({
+      customerName,
+      customerPhone,
+      customerEmail,
+      deliveryAddress,
+      deliveryNotes,
+      paymentMethod,
+    });
+
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof OfflineOrderFormData, string>> = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof OfflineOrderFormData;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      }
+      setFormErrors(fieldErrors);
+      return;
+    }
+
+    if (cart.length === 0) {
+      toast.error('Please add at least one product to the cart');
+      return;
+    }
+
+    setFormErrors({});
     setIsSubmitting(true);
     try {
+      const validated = result.data;
       await createOfflineOrder({
         tenantId: tenant.id,
         customerId: linkedCustomer?.id,
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim() || undefined,
-        customerEmail: customerEmail.trim() || undefined,
-        deliveryAddress: deliveryAddress.trim(),
-        deliveryNotes: deliveryNotes.trim() || undefined,
-        paymentMethod,
+        customerName: validated.customerName.trim(),
+        customerPhone: validated.customerPhone?.trim() || undefined,
+        customerEmail: validated.customerEmail?.trim() || undefined,
+        deliveryAddress: validated.deliveryAddress.trim(),
+        deliveryNotes: validated.deliveryNotes?.trim() || undefined,
+        paymentMethod: validated.paymentMethod,
         items: cart,
         subtotal,
         taxAmount,
@@ -250,6 +315,7 @@ export default function OfflineOrderCreate() {
       setPaymentMethod('cash');
       setCart([]);
       setLinkedCustomer(null);
+      setFormErrors({});
 
       if (isOnline) {
         toast.success('Order created and synced');
@@ -385,9 +451,7 @@ export default function OfflineOrderCreate() {
                 </div>
 
                 {productsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
+                  <ProductsLoadingSkeleton />
                 ) : filteredProducts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -409,6 +473,8 @@ export default function OfflineOrderCreate() {
                             inCart && "bg-primary/5"
                           )}
                           onClick={() => addToCart(product)}
+                          role="button"
+                          aria-label={`Add ${product.name} to cart`}
                         >
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium truncate">{product.name}</p>
@@ -444,18 +510,24 @@ export default function OfflineOrderCreate() {
                     <Input
                       id="customerName"
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
+                      onChange={(e) => { setCustomerName(e.target.value); setFormErrors((prev) => ({ ...prev, customerName: undefined })); }}
                       placeholder="Full name"
+                      maxLength={100}
                       className="mt-1"
+                      aria-invalid={!!formErrors.customerName}
                     />
+                    {formErrors.customerName && (
+                      <p className="text-xs text-destructive mt-1">{formErrors.customerName}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="customerPhone" className="text-xs">Phone</Label>
                     <Input
                       id="customerPhone"
                       value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      onChange={(e) => { setCustomerPhone(e.target.value); setFormErrors((prev) => ({ ...prev, customerPhone: undefined })); }}
                       placeholder="(555) 555-5555"
+                      maxLength={20}
                       className="mt-1"
                     />
                   </div>
@@ -465,10 +537,15 @@ export default function OfflineOrderCreate() {
                       id="customerEmail"
                       type="email"
                       value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      onChange={(e) => { setCustomerEmail(e.target.value); setFormErrors((prev) => ({ ...prev, customerEmail: undefined })); }}
                       placeholder="customer@email.com"
+                      maxLength={254}
                       className="mt-1"
+                      aria-invalid={!!formErrors.customerEmail}
                     />
+                    {formErrors.customerEmail && (
+                      <p className="text-xs text-destructive mt-1">{formErrors.customerEmail}</p>
+                    )}
                   </div>
                   <div className="sm:col-span-2">
                     <Label htmlFor="deliveryAddress" className="text-xs">
@@ -477,10 +554,15 @@ export default function OfflineOrderCreate() {
                     <Input
                       id="deliveryAddress"
                       value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      onChange={(e) => { setDeliveryAddress(e.target.value); setFormErrors((prev) => ({ ...prev, deliveryAddress: undefined })); }}
                       placeholder="123 Main St, City, State ZIP"
+                      maxLength={500}
                       className="mt-1"
+                      aria-invalid={!!formErrors.deliveryAddress}
                     />
+                    {formErrors.deliveryAddress && (
+                      <p className="text-xs text-destructive mt-1">{formErrors.deliveryAddress}</p>
+                    )}
                   </div>
                   <div className="sm:col-span-2">
                     <Label htmlFor="deliveryNotes" className="text-xs">Delivery Notes</Label>
@@ -490,8 +572,10 @@ export default function OfflineOrderCreate() {
                       onChange={(e) => setDeliveryNotes(e.target.value)}
                       placeholder="Special instructions..."
                       rows={2}
+                      maxLength={2000}
                       className="mt-1"
                     />
+                    <p className="text-xs text-muted-foreground mt-1 text-right">{deliveryNotes.length}/2000</p>
                   </div>
                   <div>
                     <Label htmlFor="paymentMethod" className="text-xs">Payment Method</Label>
@@ -726,8 +810,8 @@ export default function OfflineOrderCreate() {
                       {/* Order items preview */}
                       <div className="mt-2 pt-2 border-t">
                         <div className="flex flex-wrap gap-1">
-                          {order.items.slice(0, 3).map((item, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
+                          {order.items.slice(0, 3).map((item) => (
+                            <Badge key={item.productId} variant="outline" className="text-xs">
                               {item.productName} x{item.quantity}
                             </Badge>
                           ))}
