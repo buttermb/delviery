@@ -527,10 +527,88 @@ describe('Edge Functions Integration Tests', () => {
       expect(data.payment.client_secret).toBeDefined();
     });
 
-    it('should return crypto not implemented', async () => {
+    it('should process crypto (bitcoin) payment successfully', async () => {
+      const mockResponse = {
+        success: true,
+        payment: {
+          id: null,
+          transaction_id: 'CRYPTO-BITCOIN-550e8400-abc123',
+          status: 'pending',
+          method: 'crypto',
+          crypto_type: 'bitcoin',
+          wallet_address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+          crypto_instructions: 'Send exact amount within 30 minutes',
+        },
+        message: 'Send Bitcoin payment to the provided address. Payment will be confirmed manually.',
+      };
+
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          order_id: '550e8400-e29b-41d4-a716-446655440000',
+          payment_method: 'crypto',
+          crypto_type: 'bitcoin',
+          amount: 150.0,
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(data.success).toBe(true);
+      expect(data.payment.method).toBe('crypto');
+      expect(data.payment.status).toBe('pending');
+      expect(data.payment.crypto_type).toBe('bitcoin');
+      expect(data.payment.wallet_address).toBeDefined();
+      expect(data.payment.transaction_id).toContain('CRYPTO-BITCOIN');
+    });
+
+    it('should process crypto (ethereum) payment successfully', async () => {
+      const mockResponse = {
+        success: true,
+        payment: {
+          id: null,
+          transaction_id: 'CRYPTO-ETHEREUM-550e8400-def456',
+          status: 'pending',
+          method: 'crypto',
+          crypto_type: 'ethereum',
+          wallet_address: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18',
+        },
+        message: 'Send Ethereum payment to the provided address. Payment will be confirmed manually.',
+      };
+
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          order_id: '550e8400-e29b-41d4-a716-446655440000',
+          payment_method: 'crypto',
+          crypto_type: 'ethereum',
+          amount: 75.0,
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(data.success).toBe(true);
+      expect(data.payment.crypto_type).toBe('ethereum');
+      expect(data.payment.wallet_address).toBeDefined();
+    });
+
+    it('should reject crypto payment without crypto_type', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse(
-          { error: 'Crypto payments not yet implemented' },
+          { error: 'crypto_type is required for crypto payments' },
           400
         )
       );
@@ -551,7 +629,63 @@ describe('Edge Functions Integration Tests', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain('not yet implemented');
+      expect(data.error).toContain('crypto_type is required');
+    });
+
+    it('should reject crypto payment when not configured for merchant', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Crypto payments are not configured for this merchant' },
+          400
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          order_id: '550e8400-e29b-41d4-a716-446655440000',
+          payment_method: 'crypto',
+          crypto_type: 'bitcoin',
+          amount: 150.0,
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain('not configured');
+    });
+
+    it('should reject crypto payment when specific type is not enabled', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Lightning payments are not enabled for this merchant' },
+          400
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          order_id: '550e8400-e29b-41d4-a716-446655440000',
+          payment_method: 'crypto',
+          crypto_type: 'lightning',
+          amount: 50.0,
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain('not enabled');
     });
 
     it('should require authentication', async () => {
