@@ -487,3 +487,18 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Deploy customer-auth edge function
+- Fixed critical security issues in supabase/functions/customer-auth/index.ts:
+  - CRITICAL: Removed wildcard corsHeaders import from deps.ts; all responses now use locally-validated origin headers via jsonResponse helper
+  - CRITICAL: Fixed `.eq("status", "active")` → `.eq("is_active", true)` in verify and update-password endpoints (customer_users table uses is_active boolean, not status string)
+  - HIGH: Added tenant_id filter to update-password and verify endpoint customer lookups for defense-in-depth
+  - HIGH: Logout now verifies JWT token ownership before deleting session (prevents arbitrary session deletion)
+  - MEDIUM: Removed PII (email) from success log messages, using customer_user_id instead
+  - MEDIUM: Changed `license_number: businessLicenseNumber || ''` to `|| null` (store null not empty string)
+  - MEDIUM: Generic "Authentication failed" error in catch block instead of leaking error.message
+  - Removed redundant serviceClient Supabase client creation
+- Created comprehensive test suite: src/lib/edge-functions/__tests__/customer-auth.test.ts
+  - 45 tests covering all 7 actions: health, signup, login, verify, logout, update-password, update-profile
+  - Security tests: auth enforcement, tenant isolation, CORS handling, error message safety
+  - All tests pass, TypeScript compilation clean
