@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -61,8 +61,6 @@ export default function PointOfSale() {
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +75,6 @@ export default function PointOfSale() {
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
-  const [_pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -94,7 +91,7 @@ export default function PointOfSale() {
   });
 
   // Load customers via useQuery with loading/error states
-  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: _refetchCustomers } = useQuery({
+  const { data: customers = [], isLoading: customersLoading, isError: customersError } = useQuery({
     queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -147,17 +144,47 @@ export default function PointOfSale() {
     staleTime: 300_000,
   });
 
-  useEffect(() => {
-    if (tenantId) {
-      loadProducts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadProducts is defined below, only run when tenantId changes
-  }, [tenantId]);
+  // Load products via useQuery
+  const { data: products = [], refetch: refetchProducts } = useQuery({
+    queryKey: queryKeys.products.posGrid(tenantId),
+    queryFn: async () => {
+      if (!tenantId) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, category, stock_quantity, thc_percent, image_url')
+        .eq('tenant_id', tenantId)
+        .eq('in_stock', true)
+        .order('name');
 
-  useEffect(() => {
-    filterProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- filterProducts is defined below, runs when search/filter/products change
-  }, [searchQuery, categoryFilter, products]);
+      if (error) throw error;
+
+      return (data ?? []).map((p): Product => ({
+        id: p.id,
+        name: p.name ?? '',
+        price: typeof p.price === 'number' ? p.price : 0,
+        category: p.category || '',
+        stock_quantity: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,
+        thc_percent: typeof p.thc_percent === 'number' ? p.thc_percent : null,
+        image_url: p.image_url || null,
+      }));
+    },
+    enabled: !!tenantId,
+    staleTime: 30_000,
+    retry: 2,
+  });
+
+  // Derived filtered products (no extra state needed)
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+    }
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(p => p.category === categoryFilter);
+    }
+    return filtered;
+  }, [products, searchQuery, categoryFilter]);
 
   // Full screen toggle handler
   useEffect(() => {
@@ -169,53 +196,6 @@ export default function PointOfSale() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isFullScreen]);
-
-  const loadProducts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, price, category, stock_quantity, thc_percent, image_url')
-        .eq('tenant_id', tenantId)
-        .eq('in_stock', true)
-        .order('name');
-
-      if (error) throw error;
-
-      // Map to our Product interface with proper type checking
-      const mappedProducts: Product[] = (data ?? []).map((p) => ({
-        id: p.id,
-        name: p.name ?? '',
-        price: typeof p.price === 'number' ? p.price : 0,
-        category: p.category || null,
-        stock_quantity: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,
-        thc_percent: typeof p.thc_percent === 'number' ? p.thc_percent : null,
-        image_url: p.image_url || null
-      }));
-
-      setProducts(mappedProducts);
-    } catch (error) {
-      logger.error('Error loading products', error);
-      toast.error('Error loading products');
-    }
-  };
-
-  // loadCustomers removed — now uses useQuery above
-
-  const filterProducts = () => {
-    let filtered = products;
-
-    if (searchQuery) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(p => p.category === categoryFilter);
-    }
-
-    setFilteredProducts(filtered);
-  };
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -236,13 +216,16 @@ export default function PointOfSale() {
   };
 
   const updateQuantity = (productId: string, change: number) => {
-    setCart(cart.map(item => {
+    setCart(prev => prev.reduce<CartItem[]>((acc, item) => {
       if (item.id === productId) {
-        const newQuantity = Math.max(1, Math.min(item.stock_quantity, item.quantity + change));
-        return { ...item, quantity: newQuantity, subtotal: newQuantity * item.price };
+        const newQuantity = Math.min(item.stock_quantity, item.quantity + change);
+        if (newQuantity <= 0) return acc; // Remove item from cart
+        acc.push({ ...item, quantity: newQuantity, subtotal: newQuantity * item.price });
+      } else {
+        acc.push(item);
       }
-      return item;
-    }));
+      return acc;
+    }, []));
   };
 
   const clearCart = () => {
@@ -455,7 +438,7 @@ export default function PointOfSale() {
       }
 
       clearCart();
-      loadProducts();
+      refetchProducts();
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
@@ -467,7 +450,6 @@ export default function PointOfSale() {
 
   const handleLoadOrder = (order: PendingOrder) => {
     if (cart.length > 0) {
-      setPendingLoadOrder(order);
       confirm({
         title: 'Clear Current Cart?',
         description: 'Loading this order will clear your current cart. Continue?',
@@ -480,21 +462,32 @@ export default function PointOfSale() {
 
   const executeLoadOrder = async (order: PendingOrder) => {
     try {
-      // Convert items
-      const cartItems = order.items.map(item => ({
-        id: item.product_id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        category: 'flower',
-        stock_quantity: 999, // Placeholder
-        subtotal: Number(item.price) * Number(item.quantity),
-        image_url: null,
-        thc_percent: null
-      }));
+      // Build a lookup map from current products for real stock/category data
+      const productMap = new Map(products.map(p => [p.id, p]));
+
+      // Convert items, using real product data where available
+      const cartItems: CartItem[] = order.items.map(item => {
+        const itemRecord = item as Record<string, unknown>;
+        const productId = String(itemRecord.product_id ?? '');
+        const realProduct = productMap.get(productId);
+        const price = Number(itemRecord.price ?? 0);
+        const quantity = Number(itemRecord.quantity ?? 1);
+
+        return {
+          id: productId,
+          name: String(itemRecord.name ?? realProduct?.name ?? 'Unknown'),
+          price,
+          quantity,
+          category: realProduct?.category ?? '',
+          stock_quantity: realProduct?.stock_quantity ?? 0,
+          subtotal: price * quantity,
+          image_url: realProduct?.image_url ?? null,
+          thc_percent: realProduct?.thc_percent ?? null,
+        };
+      });
 
       await orderFlowManager.transitionOrderStatus(order.id, 'in_pos', tenantId!);
-      setCart(cartItems as CartItem[]);
+      setCart(cartItems);
       if (order.customer_id) {
         const customer = customers.find(c => c.id === order.customer_id);
         if (customer) setSelectedCustomer(customer);
@@ -506,7 +499,6 @@ export default function PointOfSale() {
       logger.error('Error loading order', error);
       toast.error('Failed to load order', { description: humanizeError(error) });
     } finally {
-      setPendingLoadOrder(null);
       closeDialog();
     }
   };
