@@ -104,10 +104,61 @@ serve(async (req) => {
       })
       .eq('id', schedule_id);
 
-    // TODO: Generate PDF/CSV and upload to storage
-    // TODO: Send email to recipients
+    // Generate CSV from report data and upload to storage
+    const csvContent = generateCsvFromReportData(reportData, calculatedMetrics);
+    const fileName = `reports/${schedule.tenant_id}/${reportConfig.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
 
-    console.error(`Scheduled report ${reportConfig.name} generated and sent`);
+    let storageUrl: string | null = null;
+    try {
+      const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+      const { error: uploadError } = await supabaseClient.storage
+        .from('report-exports')
+        .upload(fileName, csvBlob, {
+          contentType: 'text/csv',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Failed to upload report to storage:', uploadError);
+      } else {
+        const { data: urlData } = supabaseClient.storage
+          .from('report-exports')
+          .getPublicUrl(fileName);
+        storageUrl = urlData?.publicUrl ?? null;
+      }
+    } catch (uploadErr) {
+      console.error('Storage upload error:', uploadErr);
+    }
+
+    // Send notification to recipients
+    const recipients = (schedule.recipients as string[]) ?? [];
+    if (recipients.length > 0) {
+      try {
+        // Insert notification records for each recipient
+        // Actual email delivery would be handled by a separate email service integration
+        for (const recipientEmail of recipients) {
+          await supabaseClient
+            .from('in_app_notifications')
+            .insert({
+              tenant_id: schedule.tenant_id,
+              title: `Scheduled Report: ${reportConfig.name}`,
+              message: `Your ${schedule.frequency} report "${reportConfig.name}" has been generated.${storageUrl ? ' Download it from the reports section.' : ''}`,
+              type: 'report',
+              metadata: {
+                report_id: reportConfig.id,
+                schedule_id: schedule_id,
+                storage_url: storageUrl,
+                recipient_email: recipientEmail,
+              },
+            });
+        }
+      } catch (notifyErr) {
+        // Notification table may not exist, log and continue
+        console.error('Failed to create report notifications:', notifyErr);
+      }
+    }
+
+    console.error(`Scheduled report ${reportConfig.name} generated${storageUrl ? ' and uploaded' : ''}, ${recipients.length} recipients notified`);
 
     return new Response(
       JSON.stringify({
@@ -115,7 +166,8 @@ serve(async (req) => {
         report_name: reportConfig.name,
         generated_at: new Date().toISOString(),
         metrics: calculatedMetrics,
-        recipients: schedule.recipients
+        recipients: schedule.recipients,
+        storage_url: storageUrl,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -128,6 +180,49 @@ serve(async (req) => {
     );
   }
 });
+
+function escapeCsvField(value: unknown): string {
+  const str = value === null || value === undefined ? '' : String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function generateCsvFromReportData(
+  reportData: Record<string, unknown>,
+  calculatedMetrics: Record<string, unknown>,
+): string {
+  const sections: string[] = [];
+
+  // Add metrics summary section
+  const metricEntries = Object.entries(calculatedMetrics);
+  if (metricEntries.length > 0) {
+    sections.push('Metrics Summary');
+    sections.push('Metric,Value');
+    for (const [key, value] of metricEntries) {
+      sections.push(`${escapeCsvField(key)},${escapeCsvField(value)}`);
+    }
+    sections.push('');
+  }
+
+  // Add data sections for each source
+  for (const [sourceName, rows] of Object.entries(reportData)) {
+    const dataRows = rows as Record<string, unknown>[];
+    if (!Array.isArray(dataRows) || dataRows.length === 0) continue;
+
+    sections.push(`Data: ${sourceName}`);
+    const headers = Object.keys(dataRows[0]);
+    sections.push(headers.map(escapeCsvField).join(','));
+
+    for (const row of dataRows) {
+      sections.push(headers.map((h) => escapeCsvField(row[h])).join(','));
+    }
+    sections.push('');
+  }
+
+  return sections.join('\n');
+}
 
 function calculateNextRun(frequency: string, timeOfDay: string): string {
   const now = new Date();

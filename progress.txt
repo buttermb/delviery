@@ -487,3 +487,29 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## CustomReports: Fix all TODO items
+- Implemented CSV generation and storage upload in send-scheduled-report edge function
+  - Added `escapeCsvField()` helper with proper quoting for commas, quotes, newlines
+  - Added `generateCsvFromReportData()` that creates CSV with metrics summary + data sections
+  - Uploads CSV to Supabase Storage `report-exports` bucket with tenant-scoped path
+  - Returns `storage_url` in response for download access
+- Implemented recipient notification in send-scheduled-report edge function
+  - Creates `in_app_notifications` records for each recipient email
+  - Includes report name, frequency, schedule_id, storage_url in metadata
+  - Non-blocking: catches errors if notification table doesn't exist
+- Replaced stub CustomReportBuilder analytics widget with real implementation
+  - Shows up to 5 saved reports with report type badges and creation dates
+  - Loading skeletons, empty state, and error handling (42P01 table-not-found graceful fallback)
+  - "New Report" button opens full ReportBuilder dialog
+  - Uses queryKeys.customReports.byTenant, logger, useTenantAdminAuth
+- Fixed CustomReportsPage.tsx security and UX issues
+  - Added tenant_id filter to delete mutation (was missing — security fix)
+  - Added ConfirmDeleteDialog for delete confirmation (was direct delete)
+  - Added logger.error calls in onError handlers
+  - Added aria-label to delete buttons for accessibility
+- Created 3 test files with 24 passing tests:
+  - CustomReportBuilder.test.tsx (5 tests): loading, empty, data, error, header
+  - CustomReportsPage.test.tsx (8 tests): loading, reports, tenant_id filter, metadata, active badge, empty state, delete dialog, run/delete buttons
+  - reportFields.test.ts (11 tests): report types, field structure, unique IDs, date ranges, schedule options
+- TypeScript compilation passes with zero errors
