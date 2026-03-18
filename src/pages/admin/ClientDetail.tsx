@@ -12,7 +12,7 @@ import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { EditClientDialog } from "@/components/admin/EditClientDialog";
 import { FlagClientDialog } from "@/components/admin/FlagClientDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
+import { useClientDetail, useClientOrders } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -146,8 +146,6 @@ export default function ClientDetail() {
 
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
-  const { data: _payments = [] } = useClientPayments(id || "");
-
   // Set breadcrumb label to show client business name
   useBreadcrumbLabel(client?.business_name ?? null);
 
@@ -263,6 +261,7 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
+            aria-label={`Call ${displayClient.business_name}`}
             onClick={() => {
               if (displayClient.phone) {
                 window.location.href = `tel:${displayClient.phone}`;
@@ -275,6 +274,7 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
+            aria-label={`Send message to ${displayClient.business_name}`}
             onClick={() => setSmsDialogOpen(true)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
@@ -283,6 +283,7 @@ export default function ClientDetail() {
           <Button
             variant="outline"
             size="sm"
+            aria-label={`Edit ${displayClient.business_name}`}
             onClick={() => setEditDialogOpen(true)}
           >
             <Edit className="h-4 w-4 mr-2" />
@@ -312,6 +313,7 @@ export default function ClientDetail() {
           <Button
             variant="destructive"
             size="sm"
+            aria-label={`Remove ${displayClient.business_name}`}
             onClick={() => setRemoveDialogOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -354,6 +356,7 @@ export default function ClientDetail() {
             <div className="flex gap-2">
               <Button
                 className="bg-emerald-500 hover:bg-emerald-600"
+                aria-label="Record payment"
                 onClick={() => setPaymentDialogOpen(true)}
               >
                 <DollarSign className="h-4 w-4 mr-2" />
@@ -361,6 +364,7 @@ export default function ClientDetail() {
               </Button>
               <Button
                 variant="outline"
+                aria-label={`Call ${displayClient.business_name} for collection`}
                 onClick={() => {
                   if (displayClient.phone) {
                     window.location.href = `tel:${displayClient.phone}`;
@@ -413,7 +417,7 @@ export default function ClientDetail() {
             <div className="flex items-center gap-1 mb-1">
               {[...Array(5)].map((_, i) => (
                 <Star
-                  key={i}
+                  key={`reliability-star-${i}`}
                   className={`h-4 w-4 ${i < Math.floor(displayClient.reliability_score / 20)
                     ? "fill-yellow-500 text-yellow-500"
                     : "text-muted-foreground"
@@ -426,7 +430,7 @@ export default function ClientDetail() {
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Credit Limit</div>
             <div className="text-2xl font-bold">${(displayClient.credit_limit / 1000).toFixed(0)}k</div>
-            <div className="text-xs text-muted-foreground">Used: {Math.round((displayClient.outstanding_balance / displayClient.credit_limit) * 100)}%</div>
+            <div className="text-xs text-muted-foreground">Used: {displayClient.credit_limit > 0 ? Math.round((displayClient.outstanding_balance / displayClient.credit_limit) * 100) : 0}%</div>
           </Card>
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
@@ -545,6 +549,7 @@ export default function ClientDetail() {
       <div className="flex flex-wrap gap-2">
         <Button
           className="bg-emerald-500 hover:bg-emerald-600"
+          aria-label={`Create new order for ${displayClient.business_name}`}
           onClick={() => navigate("wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
         >
           <Package className="h-4 w-4 mr-2" />
@@ -552,6 +557,7 @@ export default function ClientDetail() {
         </Button>
         <Button
           className="bg-amber-600 hover:bg-amber-700"
+          aria-label={`Front inventory for ${displayClient.business_name}`}
           onClick={() => navigate("dispatch-inventory", { state: { clientId: id } })}
         >
           <Truck className="h-4 w-4 mr-2" />
@@ -559,6 +565,7 @@ export default function ClientDetail() {
         </Button>
         <Button
           variant="outline"
+          aria-label={`Adjust credit limit for ${displayClient.business_name}`}
           onClick={() => {
             setNewCreditLimit(displayClient.credit_limit.toString());
             setCreditLimitDialogOpen(true);
@@ -569,6 +576,7 @@ export default function ClientDetail() {
         </Button>
         <Button
           variant="destructive"
+          aria-label={`Suspend ${displayClient.business_name} account`}
           onClick={() => setSuspendDialogOpen(true)}
         >
           <AlertCircle className="h-4 w-4 mr-2" />
@@ -591,8 +599,9 @@ export default function ClientDetail() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSuccess={() => {
-          // Refresh client data
-          window.location.reload();
+          queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+          showSuccessToast("Client Updated", "Changes saved successfully");
         }}
       />
 

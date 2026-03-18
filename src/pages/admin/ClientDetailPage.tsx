@@ -125,7 +125,7 @@ export default function ClientDetailPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={copyPortalLink}>
+                        <Button variant="outline" aria-label="Copy portal link to clipboard" onClick={copyPortalLink}>
                             <Copy className="mr-2 h-4 w-4" />
                             Copy Portal Link
                         </Button>
@@ -182,7 +182,7 @@ export default function ClientDetailPage() {
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Invoices</CardTitle>
-                                <Button size="sm" onClick={() => navigateToAdmin('crm/invoices/new')}>
+                                <Button size="sm" aria-label="Create invoice for this client" onClick={() => navigateToAdmin('crm/invoices/new')}>
                                     Create Invoice
                                 </Button>
                             </CardHeader>
@@ -237,7 +237,7 @@ export default function ClientDetailPage() {
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Pre-Orders</CardTitle>
-                                <Button size="sm" onClick={() => navigateToAdmin('crm/pre-orders/new')}>
+                                <Button size="sm" aria-label="Create pre-order for this client" onClick={() => navigateToAdmin('crm/pre-orders/new')}>
                                     Create Pre-Order
                                 </Button>
                             </CardHeader>
