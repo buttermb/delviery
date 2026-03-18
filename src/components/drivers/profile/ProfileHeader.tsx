@@ -143,6 +143,8 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
     }
   }, [driver.phone]);
 
+  const hasLocation = driver.current_lat != null && driver.current_lng != null;
+
   const handleTrack = useCallback(() => {
     if (driver.current_lat != null && driver.current_lng != null) {
       window.open(
@@ -250,6 +252,9 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
               variant="outline"
               size="sm"
               onClick={handleTrack}
+              disabled={!hasLocation}
+              title={hasLocation ? 'Track driver on map' : 'No location data available'}
+              aria-label="Track driver location"
               className="h-8 border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <MapPin className="mr-1.5 h-3.5 w-3.5" />
