@@ -3,8 +3,8 @@
  * Creates a Stripe Checkout session in setup mode to save a payment method
  */
 
-import { serve, corsHeaders } from '../_shared/deps.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { withZenProtection } from '../_shared/zen-firewall.ts';
 import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
 import { validateSetupSession } from './validation.ts';
 
@@ -14,7 +14,7 @@ const logStep = (step: string, details?: unknown) => {
     console.error(`[CREATE-SETUP-SESSION] ${step}${detailsStr}`);
 };
 
-serve(async (req) => {
+serve(withZenProtection(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: corsHeaders });
     }
@@ -196,4 +196,4 @@ serve(async (req) => {
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
-});
+}));
