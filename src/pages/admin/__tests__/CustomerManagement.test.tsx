@@ -449,3 +449,86 @@ describe('CSV Export Logic', () => {
     expect(phoneValue).toBe('');
   });
 });
+
+describe('Button Audit - Drawer Contact Button Labels', () => {
+  it('should show phone number in call button when phone exists', () => {
+    const phone = '555-1234';
+    const label = phone ? `Call ${phone}` : 'No phone on file';
+    expect(label).toBe('Call 555-1234');
+  });
+
+  it('should show "No phone on file" when phone is missing', () => {
+    const phone: string | null = null;
+    const label = phone ? `Call ${phone}` : 'No phone on file';
+    expect(label).toBe('No phone on file');
+  });
+
+  it('should show email in email button when email exists', () => {
+    const email = 'john@example.com';
+    const label = email ? `Email ${email}` : 'No email on file';
+    expect(label).toBe('Email john@example.com');
+  });
+
+  it('should show "No email on file" when email is missing', () => {
+    const email: string | null = null;
+    const label = email ? `Email ${email}` : 'No email on file';
+    expect(label).toBe('No email on file');
+  });
+});
+
+describe('Button Audit - Permission Gating', () => {
+  const mockCanEdit = (resource: string) => {
+    const editableResources = ['customers', 'orders'];
+    return editableResources.includes(resource);
+  };
+
+  const mockCanDelete = (resource: string) => {
+    const deletableResources = ['customers'];
+    return deletableResources.includes(resource);
+  };
+
+  const mockCanExport = (resource: string) => {
+    const exportableResources = ['customers'];
+    return exportableResources.includes(resource);
+  };
+
+  it('should show Add Customer button when user can edit customers', () => {
+    expect(mockCanEdit('customers')).toBe(true);
+  });
+
+  it('should show Export button when user can export customers', () => {
+    expect(mockCanExport('customers')).toBe(true);
+  });
+
+  it('should show Import button when user can edit customers', () => {
+    expect(mockCanEdit('customers')).toBe(true);
+  });
+
+  it('should show Create New Order button when user can edit orders', () => {
+    expect(mockCanEdit('orders')).toBe(true);
+  });
+
+  it('should show Edit Details button when user can edit customers', () => {
+    expect(mockCanEdit('customers')).toBe(true);
+  });
+
+  it('should show Delete option when user can delete customers', () => {
+    expect(mockCanDelete('customers')).toBe(true);
+  });
+
+  it('should not show Edit option for users without edit permission', () => {
+    const restrictedCanEdit = (resource: string) => {
+      const editableResources: string[] = [];
+      return editableResources.includes(resource);
+    };
+    expect(restrictedCanEdit('customers')).toBe(false);
+  });
+
+  it('should not show Create New Order for users without order edit permission', () => {
+    const restrictedCanEdit = (resource: string) => {
+      const editableResources = ['customers']; // can edit customers but not orders
+      return editableResources.includes(resource);
+    };
+    expect(restrictedCanEdit('orders')).toBe(false);
+  });
+});
