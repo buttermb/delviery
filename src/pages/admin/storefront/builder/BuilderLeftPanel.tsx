@@ -52,7 +52,7 @@ export function BuilderLeftPanel({
     const currentTab = (activeTab === 'sections') ? 'library' : activeTab;
 
     return (
-        <div className="w-72 bg-background border-r flex flex-col shrink-0 z-10 min-h-0">
+        <div className="w-64 lg:w-72 bg-background border-r flex flex-col shrink-0 z-10 min-h-0 max-w-[288px]">
             <Tabs value={currentTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-4 p-2 h-auto bg-transparent border-b rounded-none shrink-0" style={{ paddingBottom: '0.1rem' }}>
                     <TabsTrigger value="library" className="text-xs py-1.5 px-1">Library</TabsTrigger>

@@ -31,7 +31,7 @@ export function BuilderPropertyEditor({
     const sectionLabel = SECTION_REGISTRY[selectedSection.type as keyof typeof SECTION_REGISTRY]?.label ?? selectedSection.type;
 
     return (
-        <div className="w-80 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+        <div className="w-72 lg:w-80 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200 max-w-[320px]">
             {/* Header */}
             <div className="p-4 border-b flex items-center justify-between shrink-0">
                 <div className="min-w-0">

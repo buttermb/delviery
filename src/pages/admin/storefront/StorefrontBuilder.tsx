@@ -109,8 +109,8 @@ export function StorefrontBuilder({
     
     if (builder.isLoading) {
         return (
-            <div className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
-                style={{ height: isFullScreen ? '100vh' : 'calc(100vh - 56px)' }}>
+            <div className={`flex flex-col bg-muted overflow-hidden max-w-full ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
+                style={{ height: isFullScreen ? '100vh' : 'calc(100vh - 56px)', maxWidth: '100vw' }}>
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
@@ -120,10 +120,10 @@ export function StorefrontBuilder({
 
     return (
         <div
-            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
+            className={`flex flex-col bg-muted overflow-hidden max-w-full ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
             style={{
                 height: isFullScreen ? '100vh' : 'calc(100vh - 56px)',
-                width: isFullScreen ? '100%' : 'calc(100% + 1.5rem)'
+                maxWidth: '100vw',
             }}
         >
             {/* No-store empty state */}
@@ -196,7 +196,7 @@ export function StorefrontBuilder({
                         </div>
                     ) : (
                         /* Advanced Mode */
-                        <div className="flex flex-1 min-h-0 overflow-hidden relative">
+                        <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden relative w-full">
                             {/* Left Panel — hidden on mobile, shown as drawer */}
                             {layout.isMobile ? (
                                 <BuilderMobileDrawer
