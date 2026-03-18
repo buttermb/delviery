@@ -487,3 +487,16 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## StorefrontOrders: Fix all TODO/placeholder items
+- Replaced non-functional Export button placeholder (Download icon only) with real ExportButton component with CSV/Excel/JSON support and 9 configured columns
+- Fixed toast.success("Connection issue, retrying...") → toast.info (retry is informational, not a success)
+- Added sanitizeSearchInput to client-side search filtering
+- Fixed nullable number comparisons: delivery_fee ?? 0, removed discount_amount/tip_amount (not in view)
+- Replaced array index keys in items list with stable composite keys (product_id-quantity)
+- Removed non-existent columns from query select (discount_amount, tip_amount, payment_method not in storefront_orders view)
+- Removed corresponding UI references to discount_amount, tip_amount, payment_method from detail sheet
+- Cleaned up MarketplaceOrder interface to match actual view columns
+- Added aria-label to search input for accessibility
+- Created comprehensive test suite: 22 tests covering rendering, search, status filters, export, empty/no-store states, fulfillment badges, realtime subscription, and order detail sheet
+- TypeScript compilation passes with zero errors

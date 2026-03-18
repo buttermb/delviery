@@ -14,12 +14,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ExportButton } from '@/components/ui/ExportButton';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   Search,
   ShoppingCart,
-  Download,
   RefreshCw,
   Truck,
   Store
@@ -52,6 +52,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 interface MarketplaceOrder {
   id: string;
@@ -73,10 +74,6 @@ interface MarketplaceOrder {
   created_at: string;
   updated_at: string;
   fulfillment_method?: string | null;
-  // Optional fields not present in storefront_orders view
-  discount_amount?: number;
-  tip_amount?: number;
-  payment_method?: string;
 }
 
 const STATUS_OPTIONS = [
@@ -125,7 +122,7 @@ export default function StorefrontOrders() {
 
       let query = supabase
         .from('storefront_orders')
-        .select('id, order_number, status, payment_status, customer_id, customer_name, customer_email, customer_phone, items, subtotal, delivery_fee, total, delivery_address, delivery_notes, tracking_token, store_id, created_at, updated_at, fulfillment_method, discount_amount, tip_amount, payment_method')
+        .select('id, order_number, status, payment_status, customer_id, customer_name, customer_email, customer_phone, items, subtotal, delivery_fee, total, delivery_address, delivery_notes, tracking_token, store_id, created_at, updated_at, fulfillment_method')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 
@@ -141,17 +138,18 @@ export default function StorefrontOrders() {
     retry: 2,
   });
 
-  // Filter orders by search
+  // Filter orders by search (sanitized)
+  const sanitizedSearch = sanitizeSearchInput(searchQuery);
   const filteredOrders = useMemo(() => orders.filter((order) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
+    if (!sanitizedSearch) return true;
+    const query = sanitizedSearch.toLowerCase();
     return (
       order.order_number.toLowerCase().includes(query) ||
       order.customer_name?.toLowerCase().includes(query) ||
       order.customer_email?.toLowerCase().includes(query) ||
       order.customer_phone?.includes(query)
     );
-  }), [orders, searchQuery]);
+  }), [orders, sanitizedSearch]);
 
   // Update order status mutation with retry logic
   const updateStatusMutation = useMutation({
@@ -182,7 +180,7 @@ export default function StorefrontOrders() {
 
         // Retry on network errors
         if (isNetworkError && retryCount < MAX_RETRIES) {
-          toast.success("Connection issue, retrying...");
+          toast.info("Connection issue, retrying...");
           await new Promise(resolve => setTimeout(resolve, 1000));
           return updateStatusMutation.mutateAsync({ orderId, status, retryCount: retryCount + 1 });
         }
@@ -314,10 +312,21 @@ export default function StorefrontOrders() {
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+          <ExportButton
+            data={filteredOrders as unknown as Record<string, unknown>[]}
+            filename="storefront-orders"
+            columns={[
+              { key: 'order_number', label: 'Order #' },
+              { key: 'customer_name', label: 'Customer' },
+              { key: 'customer_email', label: 'Email' },
+              { key: 'customer_phone', label: 'Phone' },
+              { key: 'status', label: 'Status' },
+              { key: 'payment_status', label: 'Payment' },
+              { key: 'fulfillment_method', label: 'Fulfillment' },
+              { key: 'total', label: 'Total' },
+              { key: 'created_at', label: 'Date' },
+            ]}
+          />
         </div>
       </div>
 
@@ -591,8 +600,8 @@ export default function StorefrontOrders() {
                 <div>
                   <h3 className="font-medium mb-3">Items</h3>
                   <div className="space-y-3">
-                    {selectedOrder.items.map((item: Record<string, unknown>, index: number) => (
-                      <div key={index} className="flex justify-between text-sm">
+                    {selectedOrder.items.map((item: Record<string, unknown>) => (
+                      <div key={`${String(item.product_id ?? item.name)}-${String(item.quantity ?? 0)}`} className="flex justify-between text-sm">
                         <div>
                           <p className="font-medium">
                             <ProductLink
@@ -616,22 +625,10 @@ export default function StorefrontOrders() {
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>{formatCurrency(selectedOrder.subtotal)}</span>
                   </div>
-                  {selectedOrder.discount_amount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span>-{formatCurrency(selectedOrder.discount_amount)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Delivery</span>
-                    <span>{selectedOrder.delivery_fee === 0 ? 'FREE' : formatCurrency(selectedOrder.delivery_fee)}</span>
+                    <span>{(selectedOrder.delivery_fee ?? 0) === 0 ? 'FREE' : formatCurrency(selectedOrder.delivery_fee ?? 0)}</span>
                   </div>
-                  {selectedOrder.tip_amount > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tip</span>
-                      <span>{formatCurrency(selectedOrder.tip_amount)}</span>
-                    </div>
-                  )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
@@ -643,8 +640,8 @@ export default function StorefrontOrders() {
                 <div className="p-4 bg-muted rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium capitalize">{selectedOrder.payment_method ?? 'Online'}</p>
-                      <p className="text-xs text-muted-foreground">Payment method</p>
+                      <p className="text-sm font-medium">Payment</p>
+                      <p className="text-xs text-muted-foreground">Status</p>
                     </div>
                     {getPaymentBadge(selectedOrder.payment_status)}
                   </div>
@@ -667,7 +664,3 @@ export default function StorefrontOrders() {
     </div>
   );
 }
-
-
-
-
