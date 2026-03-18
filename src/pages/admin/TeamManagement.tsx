@@ -1,9 +1,11 @@
 import { logger } from '@/lib/logger';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
+import { logAuditEvent } from '@/lib/auditLog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, AlertCircle, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, AlertCircle, UserCheck, UserX, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
@@ -67,12 +69,28 @@ interface Invitation {
   token: string;
 }
 
-interface InviteFormData {
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: 'admin' | 'member' | 'viewer';
-}
+const inviteFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Invalid email format')
+    .max(254, 'Email must be 254 characters or fewer'),
+  first_name: z
+    .string()
+    .max(50, 'First name must be 50 characters or fewer')
+    .optional()
+    .default(''),
+  last_name: z
+    .string()
+    .max(50, 'Last name must be 50 characters or fewer')
+    .optional()
+    .default(''),
+  role: z.enum(['admin', 'member', 'viewer'], {
+    required_error: 'Role is required',
+  }),
+});
+
+type InviteFormData = z.infer<typeof inviteFormSchema>;
 
 const initialFormData: InviteFormData = {
   email: '',
@@ -95,10 +113,10 @@ export default function TeamManagement() {
   const {
     data: teamMembers = [],
     isLoading: loadingMembers,
+    isFetching: isFetchingMembers,
     error: membersError,
     refetch: refetchMembers,
   } = useQuery({
-  retry: 2,
     queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
@@ -146,6 +164,8 @@ export default function TeamManagement() {
       return [ownerData, ...members];
     },
     enabled: !!tenant?.id,
+    retry: 2,
+    staleTime: 60_000,
   });
 
   // Fetch pending invitations
@@ -153,7 +173,6 @@ export default function TeamManagement() {
     data: pendingInvitations = [],
     isLoading: loadingInvitations,
   } = useQuery({
-  retry: 2,
     queryKey: queryKeys.team.invitations(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -171,6 +190,8 @@ export default function TeamManagement() {
       return (data?.invitations ?? []) as Invitation[];
     },
     enabled: !!tenant?.id,
+    retry: 2,
+    staleTime: 60_000,
   });
 
   // Invite mutation
@@ -194,13 +215,19 @@ export default function TeamManagement() {
 
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success('Invitation sent successfully');
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setFormErrors({});
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) });
+      logAuditEvent({
+        action: 'team.invitation_sent',
+        resourceType: 'team_member',
+        tenantId: tenant?.id,
+        changes: { email: variables.email, role: variables.role },
+      });
     },
     onError: (error: Error) => {
       logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
@@ -221,11 +248,18 @@ export default function TeamManagement() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, { userId, newRole }) => {
       toast.success('Role updated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects new permissions without reload
       queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+      logAuditEvent({
+        action: 'team.role_updated',
+        resourceType: 'team_member',
+        resourceId: userId,
+        tenantId: tenant?.id,
+        changes: { newRole },
+      });
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
@@ -246,11 +280,18 @@ export default function TeamManagement() {
 
       if (error) throw error;
     },
-    onSuccess: (_, { newStatus }) => {
+    onSuccess: (_, { userId, newStatus }) => {
       toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects updated access
       queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+      logAuditEvent({
+        action: newStatus === 'suspended' ? 'team.member_suspended' : 'team.member_reactivated',
+        resourceType: 'team_member',
+        resourceId: userId,
+        tenantId: tenant?.id,
+        changes: { newStatus },
+      });
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
@@ -270,14 +311,21 @@ export default function TeamManagement() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
+      return userId;
     },
-    onSuccess: () => {
+    onSuccess: (_data, userId) => {
       toast.success('Team member removed');
       setDeleteDialogOpen(false);
       setMemberToRemove(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects removed access
       queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+      logAuditEvent({
+        action: 'team.member_removed',
+        resourceType: 'team_member',
+        resourceId: userId,
+        tenantId: tenant?.id,
+      });
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
@@ -286,20 +334,20 @@ export default function TeamManagement() {
   });
 
   const validateForm = (): boolean => {
+    const result = inviteFormSchema.safeParse(formData);
+    if (result.success) {
+      setFormErrors({});
+      return true;
+    }
     const errors: Partial<Record<keyof InviteFormData, string>> = {};
-
-    if (!formData.email) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Invalid email format';
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as keyof InviteFormData;
+      if (!errors[field]) {
+        errors[field] = issue.message;
+      }
     }
-
-    if (!formData.role) {
-      errors.role = 'Role is required';
-    }
-
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return false;
   };
 
   const handleInvite = (e: React.FormEvent) => {
@@ -416,11 +464,18 @@ export default function TeamManagement() {
           }
 
           const isUpdating = updateRoleMutation.isPending || updateStatusMutation.isPending || removeMutation.isPending;
+          const memberName = row.full_name || row.email;
 
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-11 w-11 p-0" disabled={isUpdating}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 w-11 p-0"
+                  disabled={isUpdating}
+                  aria-label={`Actions for ${memberName}`}
+                >
                   {isUpdating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -590,6 +645,8 @@ export default function TeamManagement() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="member@company.com"
+                  maxLength={254}
+                  aria-invalid={!!formErrors.email}
                   className={formErrors.email ? 'border-destructive' : ''}
                 />
                 {formErrors.email && (
@@ -605,6 +662,7 @@ export default function TeamManagement() {
                     value={formData.first_name}
                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                     placeholder="John"
+                    maxLength={50}
                   />
                 </div>
                 <div>
@@ -614,6 +672,7 @@ export default function TeamManagement() {
                     value={formData.last_name}
                     onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                     placeholder="Doe"
+                    maxLength={50}
                   />
                 </div>
               </div>
@@ -628,7 +687,10 @@ export default function TeamManagement() {
                     setFormData({ ...formData, role: value })
                   }
                 >
-                  <SelectTrigger className={formErrors.role ? 'border-destructive' : ''}>
+                  <SelectTrigger
+                    aria-invalid={!!formErrors.role}
+                    className={formErrors.role ? 'border-destructive' : ''}
+                  >
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -703,11 +765,17 @@ export default function TeamManagement() {
 
       {/* Team Members */}
       <Card>
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2">
             <Users className="h-4 w-4" />
             Team Members
           </h3>
+          {isFetchingMembers && !loadingMembers && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <RefreshCw className="h-3 w-3 animate-spin" />
+              Refreshing...
+            </span>
+          )}
         </div>
         {loadingMembers ? (
           <div className="p-6 space-y-4">
