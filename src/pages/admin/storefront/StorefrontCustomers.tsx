@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
@@ -24,12 +24,15 @@ import {
   TrendingUp,
   RefreshCw,
   Link2,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { ExportButton } from '@/components/ui/ExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { useMarketplaceCustomerSync } from '@/hooks/useMarketplaceCustomerSync';
+import { logger } from '@/lib/logger';
 import {
   Tooltip,
   TooltipContent,
@@ -66,6 +69,7 @@ interface Customer {
 export default function StorefrontCustomers() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const navigate = useNavigate();
   const tenantId = tenant?.id;
 
   // Table preferences persistence
@@ -101,7 +105,7 @@ export default function StorefrontCustomers() {
   });
 
   // Fetch customers aggregated from orders
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: customers = [], isLoading, isFetching, error: customersError } = useQuery({
     queryKey: queryKeys.storefrontCustomers.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
@@ -113,7 +117,14 @@ export default function StorefrontCustomers() {
         .eq('store_id', store.id)
         .not('customer_email', 'is', null);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Failed to fetch storefront customers', error, {
+          component: 'StorefrontCustomers',
+          storeId: store.id,
+        });
+        throw error;
+      }
+
       const orders = data as unknown as Array<{
         customer_email: string;
         customer_name: string | null;
@@ -122,7 +133,7 @@ export default function StorefrontCustomers() {
         created_at: string;
       }>;
 
-      // Group by email and aggregate
+      // Group by email and aggregate (immutable updates)
       const customerMap = new Map<string, Customer>();
 
       orders?.forEach((order) => {
@@ -131,16 +142,23 @@ export default function StorefrontCustomers() {
 
         const existing = customerMap.get(email);
         if (existing) {
-          existing.total_orders += 1;
-          existing.total_spent += order.total_amount ?? 0;
-          if (new Date(order.created_at) > new Date(existing.last_order)) {
-            existing.last_order = order.created_at;
-            existing.customer_name = order.customer_name ?? existing.customer_name;
-            existing.customer_phone = order.customer_phone ?? existing.customer_phone;
-          }
-          if (new Date(order.created_at) < new Date(existing.first_order)) {
-            existing.first_order = order.created_at;
-          }
+          const orderDate = new Date(order.created_at);
+          const isNewer = orderDate > new Date(existing.last_order);
+          const isOlder = orderDate < new Date(existing.first_order);
+
+          customerMap.set(email, {
+            ...existing,
+            total_orders: existing.total_orders + 1,
+            total_spent: existing.total_spent + (order.total_amount ?? 0),
+            last_order: isNewer ? order.created_at : existing.last_order,
+            first_order: isOlder ? order.created_at : existing.first_order,
+            customer_name: isNewer
+              ? (order.customer_name ?? existing.customer_name)
+              : existing.customer_name,
+            customer_phone: isNewer
+              ? (order.customer_phone ?? existing.customer_phone)
+              : existing.customer_phone,
+          });
         } else {
           customerMap.set(email, {
             customer_email: email,
@@ -158,15 +176,17 @@ export default function StorefrontCustomers() {
     },
     enabled: !!store?.id,
     retry: 2,
+    staleTime: 60_000,
   });
 
   // Filter and sort customers
   const filteredCustomers = useMemo(() => {
     let result = [...customers];
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Search filter with sanitization
+    const sanitizedQuery = sanitizeSearchInput(searchQuery);
+    if (sanitizedQuery) {
+      const query = sanitizedQuery.toLowerCase();
       result = result.filter(
         (c) =>
           c.customer_email?.toLowerCase().includes(query) ||
@@ -223,7 +243,7 @@ export default function StorefrontCustomers() {
             <p className="text-muted-foreground">Please create a store first.</p>
             <Button
               className="mt-4"
-              onClick={() => window.location.href = `/${tenantSlug}/admin/storefront`}
+              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
             >
               Go to Dashboard
             </Button>
@@ -268,12 +288,32 @@ export default function StorefrontCustomers() {
             </Tooltip>
           </TooltipProvider>
           <ExportButton
-            data={filteredCustomers as any}
+            data={filteredCustomers as Record<string, unknown>[]}
             filename="storefront-customers"
             columns={exportColumns}
           />
         </div>
       </div>
+
+      {/* Background refetch indicator */}
+      {isFetching && !isLoading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <RefreshCw className="w-3 h-3 animate-spin" />
+          Refreshing...
+        </div>
+      )}
+
+      {/* Error state */}
+      {customersError && (
+        <Card className="border-destructive">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              <p className="text-sm">Failed to load customers. Please try again.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
