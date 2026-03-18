@@ -1,18 +1,20 @@
 
 
-# Why Git Commits Are Not Appearing
+# GitHub Sync Issue — No GitHub Connection Found
 
-## Finding
+## Problem
 
-Your project does **not** have GitHub connected. Lovable tracks changes internally (version history), but commits only appear on GitHub if you connect a GitHub repository.
+Your GitHub repo (`buttermb/delviery`) has the latest commits, but Lovable has **no GitHub connection configured** for this project. Without a linked GitHub repo, Lovable cannot pull changes from GitHub — it only tracks changes made within Lovable itself.
 
-## How to Fix
+## What to Do
 
-1. Open **Project Settings** (click the project name in the top-left corner)
-2. Go to **GitHub** under "Connectors"
-3. Click **Connect project** and authorize the Lovable GitHub App
-4. Select or create a repository — all your code will be pushed there
-5. From that point on, every change Lovable makes will auto-commit to GitHub
+1. **Connect GitHub** — Go to **Project Settings → GitHub** (under Connectors) and click **Connect project**
+2. Authorize the Lovable GitHub App and select your existing repo `buttermb/delviery`
+3. Once connected, Lovable will sync with GitHub bidirectionally — your 177 merged branches will appear
 
-No code changes are needed. This is purely a settings/integration step.
+**Important caveat:** When connecting an existing repo to a Lovable project that already has code, there may be conflicts. Lovable will attempt to reconcile the two codebases, but you may need to resolve differences manually.
+
+## No Code Changes Needed
+
+This is purely a settings/integration step.
 
