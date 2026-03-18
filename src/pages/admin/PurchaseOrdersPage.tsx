@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { TruncatedText } from '@/components/shared/TruncatedText';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import {
   Search,
   Plus,
@@ -21,11 +25,12 @@ import {
   Edit,
   Trash2,
   Eye,
-  Loader2,
   CheckCircle2,
   XCircle,
   Clock,
   Truck,
+  Send,
+  Package,
 } from "lucide-react";
 import {
   Table,
@@ -44,29 +49,40 @@ import {
 } from "@/components/ui/select";
 import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
-import { Skeleton } from "@/components/ui/skeleton";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from '@/lib/formatters';
-import { TruncatedText } from '@/components/shared/TruncatedText';
-import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-500",
-  submitted: "bg-blue-500",
-  approved: "bg-green-500",
+  sent: "bg-blue-500",
+  confirmed: "bg-green-500",
   received: "bg-emerald-500",
   cancelled: "bg-red-500",
+  submitted: "bg-blue-500",
+  approved: "bg-green-500",
 };
 
 const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   draft: FileText,
+  sent: Send,
+  confirmed: CheckCircle2,
+  received: Package,
+  cancelled: XCircle,
   submitted: Clock,
   approved: CheckCircle2,
-  received: CheckCircle2,
-  cancelled: XCircle,
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  sent: "Sent",
+  confirmed: "Confirmed",
+  received: "Received",
+  cancelled: "Cancelled",
+  submitted: "Sent",
+  approved: "Confirmed",
 };
 
 export default function PurchaseOrdersPage() {
@@ -80,6 +96,7 @@ export default function PurchaseOrdersPage() {
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
+
   const { data: purchaseOrders, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
@@ -108,16 +125,39 @@ export default function PurchaseOrdersPage() {
     retry: 2,
   });
 
+  const { data: vendors } = useQuery({
+    queryKey: queryKeys.vendorsSimple.byTenant(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      const { data, error: vendorsError } = await supabase
+        .from("vendors")
+        .select("id, name")
+        .eq("tenant_id", tenant.id);
+
+      if (vendorsError) {
+        logger.error('Failed to fetch vendors', vendorsError, { component: 'PurchaseOrdersPage' });
+        return [];
+      }
+
+      return data ?? [];
+    },
+    enabled: !!tenant?.id,
+    retry: 2,
+  });
+
+  const vendorMap = useMemo(() => new Map(vendors?.map(v => [v.id, v.name]) ?? []), [vendors]);
+
   const deleteMutation = deletePurchaseOrder;
   const updateStatusMutation = updatePurchaseOrderStatus;
 
-  const filteredPOs = purchaseOrders?.filter((po) => {
+  const filteredPOs = useMemo(() => purchaseOrders?.filter((po) => {
     const matchesSearch =
       po.po_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) ?? [];
+  }) ?? [], [purchaseOrders, searchTerm]);
 
   const handleCreate = () => {
     setEditingPO(null);
@@ -171,9 +211,20 @@ export default function PurchaseOrdersPage() {
     });
   };
 
+  const getVendorName = (vendorId: string) => {
+    return vendorMap.get(vendorId) || "Unknown Vendor";
+  };
+
+  const normalizeStatus = (status: string | null): string => {
+    if (!status) return 'draft';
+    if (status === 'submitted') return 'sent';
+    if (status === 'approved') return 'confirmed';
+    return status;
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-4 p-2 sm:p-4 md:p-4" role="status" aria-label="Loading purchase orders...">
+      <div className="space-y-4 p-2 sm:p-4 md:p-4" role="status" aria-label="Loading purchase orders">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="space-y-2">
             <Skeleton className="h-7 w-44" />
@@ -191,8 +242,8 @@ export default function PurchaseOrdersPage() {
             <Skeleton className="h-4 w-64" />
           </div>
           <div className="px-6 pb-6 space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
+            {Array.from({ length: 5 }, (_, i) => (
+              <Skeleton key={`po-skeleton-${i}`} className="h-16 w-full" />
             ))}
           </div>
         </div>
@@ -260,8 +311,8 @@ export default function PurchaseOrdersPage() {
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="received">Received</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
@@ -279,15 +330,47 @@ export default function PurchaseOrdersPage() {
         </CardHeader>
         <CardContent>
           {filteredPOs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No purchase orders found. Create your first purchase order to get started.
-            </div>
+            <EnhancedEmptyState
+              icon={Package}
+              title={
+                searchTerm
+                  ? "No purchase orders match your search"
+                  : statusFilter !== "all"
+                    ? "No purchase orders found"
+                    : "No purchase orders yet"
+              }
+              description={
+                searchTerm
+                  ? `No results for "${searchTerm}". Try a different search term or clear your search.`
+                  : statusFilter !== "all"
+                    ? "Try adjusting your filters to find purchase orders."
+                    : "Create your first purchase order to start ordering from suppliers."
+              }
+              primaryAction={
+                searchTerm || statusFilter !== "all"
+                  ? {
+                      label: "Clear Filters",
+                      onClick: () => {
+                        setSearchTerm("");
+                        setStatusFilter("all");
+                      },
+                    }
+                  : {
+                      label: "New Purchase Order",
+                      onClick: handleCreate,
+                      icon: Plus,
+                    }
+              }
+              compact
+              designSystem="tenant-admin"
+            />
           ) : (
             <>
               {/* Mobile card view */}
               <div className="md:hidden space-y-3">
                 {filteredPOs.map((po) => {
-                  const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
+                  const displayStatus = normalizeStatus(po.status);
+                  const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
                   return (
                     <div
                       key={po.id}
@@ -300,18 +383,18 @@ export default function PurchaseOrdersPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <TruncatedText text={po.po_number} className="font-semibold text-sm" />
+                          <TruncatedText text={po.po_number ?? ''} className="font-semibold text-sm" />
                         </div>
                         <Badge
                           variant="outline"
-                          className={`${STATUS_COLORS[po.status || "draft"]} text-white border-0 shrink-0`}
+                          className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0 shrink-0`}
                         >
                           <StatusIcon className="h-3 w-3 mr-1" />
-                          {(po.status || "draft").charAt(0).toUpperCase() + (po.status || "draft").slice(1)}
+                          {STATUS_LABELS[displayStatus] || displayStatus}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground truncate">Vendor: {po.vendor_id.substring(0, 8)}...</span>
+                        <span className="text-muted-foreground truncate">{getVendorName(po.vendor_id)}</span>
                         <span className="font-bold">
                           ${Number(po.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
@@ -325,16 +408,16 @@ export default function PurchaseOrdersPage() {
                         <span>{po.created_at ? formatSmartDate(po.created_at) : '-'}</span>
                       </div>
                       <div className="flex items-center justify-end gap-1" role="presentation" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0">
+                        <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0" aria-label={`View ${po.po_number}`}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {po.status === "draft" && (
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(po)} className="h-9 w-9 p-0">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(po)} className="h-9 w-9 p-0" aria-label={`Edit ${po.po_number}`}>
                             <Edit className="h-4 w-4" />
                           </Button>
                         )}
                         {(po.status === "draft" || po.status === "cancelled") && (
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(po)} className="h-9 w-9 p-0 text-destructive hover:text-destructive">
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(po)} className="h-9 w-9 p-0 text-destructive hover:text-destructive" aria-label={`Delete ${po.po_number}`}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         )}
@@ -360,26 +443,27 @@ export default function PurchaseOrdersPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredPOs.map((po) => {
-                      const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
+                      const displayStatus = normalizeStatus(po.status);
+                      const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
                       return (
                         <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-muted-foreground" />
-                              {po.po_number}
+                              <TruncatedText text={po.po_number ?? ''} className="text-sm" maxWidthClass="max-w-[200px]" />
                             </div>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`${STATUS_COLORS[po.status || "draft"]} text-white border-0`}
+                              className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0`}
                             >
                               <StatusIcon className="h-3 w-3 mr-1" />
-                              {(po.status || "draft").charAt(0).toUpperCase() + (po.status || "draft").slice(1)}
+                              {STATUS_LABELS[displayStatus] || displayStatus}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">Vendor ID: {po.vendor_id.substring(0, 8)}...</span>
+                            <TruncatedText text={getVendorName(po.vendor_id)} className="text-sm" maxWidthClass="max-w-[180px]" />
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
@@ -397,7 +481,7 @@ export default function PurchaseOrdersPage() {
                                 {formatSmartDate(po.expected_delivery_date)}
                               </div>
                             ) : (
-                              "-"
+                              <span className="text-muted-foreground">-</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -412,6 +496,7 @@ export default function PurchaseOrdersPage() {
                                 size="sm"
                                 onClick={() => handleView(po)}
                                 className="h-11 w-11 p-0"
+                                aria-label={`View ${po.po_number}`}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -421,6 +506,7 @@ export default function PurchaseOrdersPage() {
                                   size="sm"
                                   onClick={() => handleEdit(po)}
                                   className="h-11 w-11 p-0"
+                                  aria-label={`Edit ${po.po_number}`}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -431,6 +517,7 @@ export default function PurchaseOrdersPage() {
                                   size="sm"
                                   onClick={() => handleDelete(po)}
                                   className="h-11 w-11 p-0 text-destructive hover:text-destructive"
+                                  aria-label={`Delete ${po.po_number}`}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>

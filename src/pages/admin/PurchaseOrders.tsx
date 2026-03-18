@@ -9,10 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { TruncatedText } from '@/components/shared/TruncatedText';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import {
   Search,
   Plus,
@@ -22,7 +25,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  Loader2,
   CheckCircle2,
   XCircle,
   Clock,
@@ -99,7 +101,7 @@ export default function PurchaseOrders() {
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
-  const { data: purchaseOrders, isLoading, error } = useQuery({
+  const { data: purchaseOrders, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -235,17 +237,7 @@ export default function PurchaseOrders() {
   };
 
   if (error) {
-    return (
-      <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              Failed to load purchase orders. Please try again.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <PageErrorState onRetry={() => refetch()} message="Failed to load purchase orders. Please try again." />;
   }
 
   return (
@@ -381,8 +373,10 @@ export default function PurchaseOrders() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3" role="status" aria-label="Loading purchase orders">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Skeleton key={`po-skeleton-${i}`} className="h-16 w-full" />
+              ))}
             </div>
           ) : filteredPOs.length === 0 ? (
             <EnhancedEmptyState
@@ -420,112 +414,172 @@ export default function PurchaseOrders() {
               designSystem="tenant-admin"
             />
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>PO Number</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Vendor</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Expected Delivery</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPOs.map((po) => {
-                    const displayStatus = normalizeStatus(po.status);
-                    const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
-                    return (
-                      <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            {po.po_number}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0`}
-                          >
-                            <StatusIcon className="h-3 w-3 mr-1" />
-                            {STATUS_LABELS[displayStatus] || displayStatus}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">{getVendorName(po.vendor_id) as string}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">-</span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            {Number(po.total ?? 0).toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {po.expected_delivery_date ? (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              {formatSmartDate(po.expected_delivery_date)}
+            <>
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3">
+                {filteredPOs.map((po) => {
+                  const displayStatus = normalizeStatus(po.status);
+                  const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
+                  return (
+                    <div
+                      key={po.id}
+                      className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors space-y-3"
+                      onClick={() => handleView(po)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <TruncatedText text={po.po_number ?? ''} className="font-semibold text-sm" />
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0 shrink-0`}
+                        >
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {STATUS_LABELS[displayStatus] || displayStatus}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground truncate">{getVendorName(po.vendor_id)}</span>
+                        <span className="font-bold">
+                          ${Number(po.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                        <span>
+                          {po.expected_delivery_date
+                            ? `Due: ${formatSmartDate(po.expected_delivery_date)}`
+                            : 'No delivery date'}
+                        </span>
+                        <span>{po.created_at ? formatSmartDate(po.created_at) : '-'}</span>
+                      </div>
+                      <div className="flex items-center justify-end gap-1" role="presentation" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0" aria-label={`View ${po.po_number}`}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {po.status === "draft" && (
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(po)} className="h-9 w-9 p-0" aria-label={`Edit ${po.po_number}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(po.status === "draft" || po.status === "cancelled") && (
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(po)} className="h-9 w-9 p-0 text-destructive hover:text-destructive" aria-label={`Delete ${po.po_number}`}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>PO Number</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Vendor</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Expected Delivery</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPOs.map((po) => {
+                      const displayStatus = normalizeStatus(po.status);
+                      const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
+                      return (
+                        <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <TruncatedText text={po.po_number ?? ''} className="text-sm" maxWidthClass="max-w-[200px]" />
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {po.created_at
-                            ? formatSmartDate(po.created_at)
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleView(po)}
-                              className="h-11 w-11 p-0"
-                              title="View details"
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`${STATUS_COLORS[displayStatus] || 'bg-gray-500'} text-white border-0`}
                             >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {po.status === "draft" && (
+                              <StatusIcon className="h-3 w-3 mr-1" />
+                              {STATUS_LABELS[displayStatus] || displayStatus}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <TruncatedText text={getVendorName(po.vendor_id)} className="text-sm" maxWidthClass="max-w-[180px]" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-muted-foreground" />
+                              {Number(po.total ?? 0).toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {po.expected_delivery_date ? (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                {formatSmartDate(po.expected_delivery_date)}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {po.created_at
+                              ? formatSmartDate(po.created_at)
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2" role="presentation" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEdit(po)}
+                                onClick={() => handleView(po)}
                                 className="h-11 w-11 p-0"
-                                title="Edit"
+                                aria-label={`View ${po.po_number}`}
                               >
-                                <Edit className="h-4 w-4" />
+                                <Eye className="h-4 w-4" />
                               </Button>
-                            )}
-                            {(po.status === "draft" || po.status === "cancelled") && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(po)}
-                                className="h-11 w-11 p-0 text-destructive hover:text-destructive"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                              {po.status === "draft" && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(po)}
+                                  className="h-11 w-11 p-0"
+                                  aria-label={`Edit ${po.po_number}`}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {(po.status === "draft" || po.status === "cancelled") && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDelete(po)}
+                                  className="h-11 w-11 p-0 text-destructive hover:text-destructive"
+                                  aria-label={`Delete ${po.po_number}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
