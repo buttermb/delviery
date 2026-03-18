@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import {
   Truck, Clock, CheckCircle2, XCircle,
-  User, Package
+  User, Package, Eye, ImageOff
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -32,6 +32,8 @@ interface DeliveryRow {
   delivery_scheduled_at: string | null;
   delivery_completed_at: string | null;
   courier_id: string | null;
+  proof_of_delivery_url: string | null;
+  customer_signature_url: string | null;
   couriers: {
     full_name: string;
     phone: string;
@@ -72,6 +74,7 @@ export default function DeliveryManagement() {
     orderNumber: string;
     address: string;
   } | null>(null);
+  const [proofDialogDelivery, setProofDialogDelivery] = useState<Delivery | null>(null);
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
@@ -90,6 +93,8 @@ export default function DeliveryManagement() {
           delivery_scheduled_at,
           delivery_completed_at,
           courier_id,
+          proof_of_delivery_url,
+          customer_signature_url,
           couriers(full_name, phone, vehicle_type)
         `)
         .eq('tenant_id', tenant.id)
@@ -106,8 +111,8 @@ export default function DeliveryManagement() {
         status: d.status,
         scheduled_at: d.delivery_scheduled_at || new Date().toISOString(),
         delivered_at: d.delivery_completed_at,
-        proof_photo_url: null,
-        signature_url: null,
+        proof_photo_url: d.proof_of_delivery_url,
+        signature_url: d.customer_signature_url,
         orders: {
           id: d.id,
           total_amount: d.total_amount ?? 0,
@@ -302,8 +307,12 @@ export default function DeliveryManagement() {
                       couriers.map(courier => (
                         <div
                           key={courier.id}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Assign ${courier.full_name}`}
                           className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
                           onClick={() => assignCourier(d.id, courier.id)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); assignCourier(d.id, courier.id); } }}
                         >
                           <div>
                             <p className="font-medium">{courier.full_name}</p>
@@ -379,8 +388,14 @@ export default function DeliveryManagement() {
     },
     {
       header: 'Actions',
-      cell: () => (
-        <Button size="sm" variant="outline">
+      cell: (d) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setProofDialogDelivery(d)}
+          aria-label={`View proof for order ${d.order_id.slice(0, 8)}`}
+        >
+          <Eye className="w-4 h-4 mr-2" />
           View Proof
         </Button>
       )
@@ -414,10 +429,24 @@ export default function DeliveryManagement() {
       </div>
 
       <div className="pt-2 border-t flex gap-2 justify-end">
-        {/* Reuse action buttons logic roughly or simplify */}
         {type === 'queue' && (
           !d.courier_id ? (
-            <Button size="sm" variant="outline" className="w-full">Assign</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setSelectedDeliveryForFleet({
+                  id: d.id,
+                  orderNumber: d.order_id.slice(0, 8),
+                  address: d.address,
+                });
+                setFleetDialogOpen(true);
+              }}
+            >
+              <Truck className="w-4 h-4 mr-2" />
+              Assign
+            </Button>
           ) : (
             <Button size="sm" className="w-full" onClick={() => updateDeliveryStatus(d.id, 'out_for_delivery')}>Start</Button>
           )
@@ -426,7 +455,15 @@ export default function DeliveryManagement() {
           <Button size="sm" className="w-full" onClick={() => updateDeliveryStatus(d.id, 'delivered')}>Mark Delivered</Button>
         )}
         {type === 'completed' && (
-          <Button size="sm" variant="outline" className="w-full">View Proof</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            onClick={() => setProofDialogDelivery(d)}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            View Proof
+          </Button>
         )}
       </div>
     </div>
@@ -605,6 +642,52 @@ export default function DeliveryManagement() {
           deliveryAddress={selectedDeliveryForFleet.address}
         />
       )}
+
+      {/* Proof of Delivery Dialog */}
+      <Dialog
+        open={!!proofDialogDelivery}
+        onOpenChange={(open) => { if (!open) setProofDialogDelivery(null); }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Proof of Delivery — #{proofDialogDelivery?.order_id.slice(0, 8)}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium mb-2">Delivery Photo</p>
+              {proofDialogDelivery?.proof_photo_url ? (
+                <img
+                  src={proofDialogDelivery.proof_photo_url}
+                  alt="Delivery proof photo"
+                  className="w-full rounded-lg border object-cover max-h-64"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 border rounded-lg bg-muted/50 text-muted-foreground">
+                  <ImageOff className="w-8 h-8 mb-2" />
+                  <p className="text-sm">No photo available</p>
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-2">Customer Signature</p>
+              {proofDialogDelivery?.signature_url ? (
+                <img
+                  src={proofDialogDelivery.signature_url}
+                  alt="Customer signature"
+                  className="w-full rounded-lg border object-contain max-h-32 bg-white"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground italic">No signature captured</p>
+              )}
+            </div>
+            {proofDialogDelivery?.delivered_at && (
+              <p className="text-sm text-muted-foreground">
+                Delivered {formatSmartDate(proofDialogDelivery.delivered_at, { includeTime: true })}
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

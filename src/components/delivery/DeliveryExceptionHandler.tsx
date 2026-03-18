@@ -3,9 +3,9 @@
  * Report exceptions: wrong address, no answer, refused. Track resolution. Admin alerts.
  */
 
-import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Check, X } from 'lucide-react';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/hooks/useTenantAdminAuth';
 import { queryKeys } from '@/lib/queryKeys';
@@ -62,7 +61,22 @@ export function DeliveryExceptionHandler({ deliveryId, orderId }: DeliveryExcept
 
       if (orderError) throw orderError;
 
-      // TODO: Send admin alert notification
+      // Send admin alert notification (broadcast to all admins)
+      const { error: notifError } = await supabase.from('notifications').insert({
+        tenant_id: tenant.id,
+        user_id: null,
+        title: 'Delivery Exception',
+        message: `Exception on delivery ${deliveryId.slice(0, 8)}: ${exceptionType.replace('_', ' ')} — ${notes}`,
+        type: 'warning',
+        entity_type: 'delivery',
+        entity_id: deliveryId,
+        read: false,
+      });
+
+      if (notifError) {
+        logger.warn('Failed to create admin notification for exception', notifError);
+      }
+
       logger.info('Delivery exception reported', { deliveryId, exceptionType, notes });
     },
     onSuccess: () => {
