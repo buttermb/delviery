@@ -28,12 +28,13 @@ import { cn } from "@/lib/utils";
 import { useCreatePreOrder } from "@/hooks/crm/usePreOrders";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
 import { ClientSelector } from "@/components/crm/ClientSelector";
-import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
+import { LineItemsEditor, InventoryValidationResult } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
+import { logger } from "@/lib/logger";
 
 const formSchema = z.object({
     client_id: z.string().min(1, "Client is required"),
@@ -49,6 +50,7 @@ export default function CreatePreOrderPage() {
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [inventoryValidation, setInventoryValidation] = useState<InventoryValidationResult | null>(null);
 
     // useForm must be called before any early returns to satisfy React hooks rules
     const form = useForm<FormValues>({
@@ -103,8 +105,22 @@ export default function CreatePreOrderPage() {
     const total = lineItems.reduce((sum, item) => sum + item.line_total, 0);
 
     const onSubmit = async (values: FormValues) => {
+        if (!tenant?.id) {
+            toast.error("Authentication error", {
+                description: "Tenant context lost. Please refresh the page.",
+            });
+            return;
+        }
+
         if (lineItems.length === 0) {
             toast.error("Please add at least one line item");
+            return;
+        }
+
+        if (inventoryValidation?.hasOutOfStock) {
+            toast.error("Cannot create pre-order", {
+                description: "Some items are out of stock. Please remove them first.",
+            });
             return;
         }
 
@@ -116,22 +132,36 @@ export default function CreatePreOrderPage() {
                 subtotal: total,
                 tax: 0,
                 total,
+                expected_date: values.expected_date?.toISOString() ?? null,
+                notes: values.notes || null,
             });
 
-            // Log activity
-            logActivity.mutate({
-                client_id: values.client_id,
-                activity_type: "pre_order_created",
-                description: `Pre-order #${preOrder.pre_order_number} created`,
-                reference_id: preOrder.id,
-                reference_type: "crm_pre_orders",
-            });
+            // Log activity (fire-and-forget with error logging)
+            logActivity.mutate(
+                {
+                    client_id: values.client_id,
+                    activity_type: "pre_order_created",
+                    description: `Pre-order #${preOrder.pre_order_number} created`,
+                    reference_id: preOrder.id,
+                    reference_type: "crm_pre_orders",
+                },
+                {
+                    onError: (error) => {
+                        logger.error("Activity log failed for pre-order creation", error, {
+                            component: "CreatePreOrderPage",
+                            preOrderId: preOrder.id,
+                        });
+                    },
+                }
+            );
 
             toast.success("Pre-order created successfully");
-            // Use validated tenantSlug (guaranteed to exist at this point)
             navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
-        } catch {
-            // Error handled by hook
+        } catch (error) {
+            logger.error("Pre-order creation failed", error, {
+                component: "CreatePreOrderPage",
+                clientId: values.client_id,
+            });
         }
     };
 
@@ -250,7 +280,11 @@ export default function CreatePreOrderPage() {
                             <CardTitle>Line Items</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <LineItemsEditor items={lineItems} onChange={setLineItems} />
+                            <LineItemsEditor
+                                items={lineItems}
+                                onChange={setLineItems}
+                                onValidationChange={setInventoryValidation}
+                            />
 
                             <div className="mt-6 flex flex-col items-end gap-2 text-sm">
                                 <div className="flex justify-between w-48 pt-2 border-t font-bold text-lg">
@@ -260,6 +294,17 @@ export default function CreatePreOrderPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {inventoryValidation && !inventoryValidation.isValid && (
+                        <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>
+                                {inventoryValidation.hasOutOfStock
+                                    ? "Some items are out of stock. Remove them to proceed."
+                                    : "Some items exceed available stock. Review quantities before submitting."}
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
                     <div className="flex justify-end gap-4">
                         <ShortcutHint keys={["Esc"]} label="Cancel">
