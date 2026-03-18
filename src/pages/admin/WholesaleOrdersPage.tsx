@@ -37,7 +37,6 @@ import {
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useAdminKeyboardShortcuts } from '@/hooks/useAdminKeyboardShortcuts';
-import { useExport } from '@/hooks/useExport';
 import { BulkActions } from '@/components/shared/BulkActions';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
@@ -246,7 +245,6 @@ export default function WholesaleOrdersPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { exportCSV: _exportCSV } = useExport();
 
   // Filter state — persisted in URL for back-button & navigation support
   const [filters, setFilters, clearUrlFilters] = useUrlFilters<WholesaleOrderFilters>(WHOLESALE_FILTER_CONFIG);
@@ -289,7 +287,8 @@ export default function WholesaleOrdersPage() {
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
   const { data: orders = [], isLoading, isFetching, isError, error, refetch } = useQuery({
-    queryKey: queryKeys.orders.list(tenant?.id, { viewMode }),
+    queryKey: queryKeys.wholesaleOrders.list({ tenantId: tenant?.id, viewMode }),
+    staleTime: 60_000,
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -454,8 +453,8 @@ export default function WholesaleOrdersPage() {
       }
 
       toast.success(`Order status updated to ${STATUS_CONFIG[newStatus]?.label || newStatus}`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list(tenant?.id, { viewMode }) });
-      handleRefresh();
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      setLastUpdated(new Date());
     } catch (error) {
       const isNetworkError = error instanceof Error &&
         (error.message.toLowerCase().includes('network') ||
@@ -518,12 +517,11 @@ export default function WholesaleOrdersPage() {
         toast.success(`Updated ${successCount} orders to ${STATUS_CONFIG[status]?.label || status}`);
       }
       
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list(tenant?.id, { viewMode }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleInventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
-      handleRefresh();
+      setLastUpdated(new Date());
       setSelectedOrders([]);
     } catch (error) {
       logger.error('Failed to bulk update orders', error, { component: 'WholesaleOrdersPage' });
@@ -562,7 +560,6 @@ export default function WholesaleOrdersPage() {
         };
       }
     }) as Record<string, string>[], `wholesale-orders-${viewMode}.csv`);
-    // Note: filename parameter would need to be handled at the exportCSV call site
   };
 
   // Columns Configuration
@@ -639,7 +636,7 @@ export default function WholesaleOrdersPage() {
                   onValueChange={(value) => handleStatusUpdate(item.id, value)}
                   disabled={validStatuses.length <= 1}
                 >
-                  <SelectTrigger className="w-32 h-8" title={restrictionMessage || undefined}>
+                  <SelectTrigger className="w-32 h-8" title={restrictionMessage || undefined} aria-label={`Change status for order ${(item as WholesaleOrder).order_number}`}>
                     <Badge variant="outline" className={`${statusConfig.color} gap-1`}>
                       <StatusIcon className="h-3 w-3" />
                       {statusConfig.label}
@@ -739,7 +736,7 @@ export default function WholesaleOrdersPage() {
                   value={item.status}
                   onValueChange={(value) => handleStatusUpdate(item.id, value)}
                 >
-                  <SelectTrigger className="w-32 h-8">
+                  <SelectTrigger className="w-32 h-8" aria-label={`Change status for PO ${(item as PurchaseOrder).po_number}`}>
                     <Badge variant="outline" className={`${statusConfig.color} gap-1`}>
                       <StatusIcon className="h-3 w-3" />
                       {statusConfig.label}
@@ -836,9 +833,7 @@ export default function WholesaleOrdersPage() {
   const handleRowClick = (item: OrderType) => {
     setSelectedOrder(item);
     if (viewMode === 'selling') {
-      const dialog = document.getElementById('edit-wholesale-order-trigger');
-      if (dialog) dialog.click();
-      else setEditDialogOpen(true);
+      setEditDialogOpen(true);
     }
   };
 
@@ -909,12 +904,14 @@ export default function WholesaleOrdersPage() {
             </p>
           </div>
 
-          <div className="bg-muted p-1 rounded-lg flex self-start sm:self-center order-last sm:order-none">
+          <div className="bg-muted p-1 rounded-lg flex self-start sm:self-center order-last sm:order-none" role="tablist" aria-label="Order view mode">
             <Button
               variant={viewMode === 'selling' ? 'default' : 'ghost'}
               onClick={() => handleViewModeChange('selling')}
               size="sm"
               className="w-24"
+              role="tab"
+              aria-selected={viewMode === 'selling'}
             >
               Selling
             </Button>
@@ -923,13 +920,15 @@ export default function WholesaleOrdersPage() {
               onClick={() => handleViewModeChange('buying')}
               size="sm"
               className="w-24"
+              role="tab"
+              aria-selected={viewMode === 'buying'}
             >
               Buying
             </Button>
           </div>
 
           <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} className="gap-2" aria-label="Export orders to CSV">
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Export</span>
             </Button>
@@ -1061,7 +1060,7 @@ export default function WholesaleOrdersPage() {
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t">
             <LastUpdated date={lastUpdated} onRefresh={handleRefresh} />
-            <Button variant="ghost" size="sm" onClick={handleRefresh} className="gap-2">
+            <Button variant="ghost" size="sm" onClick={handleRefresh} className="gap-2" aria-label="Refresh orders">
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
@@ -1131,7 +1130,10 @@ export default function WholesaleOrdersPage() {
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
             order={selectedOrder as WholesaleOrder}
-            onSuccess={handleRefresh}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+              setLastUpdated(new Date());
+            }}
           />
         )}
       </div>
