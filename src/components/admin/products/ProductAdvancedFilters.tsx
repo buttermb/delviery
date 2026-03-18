@@ -77,7 +77,7 @@ export function ProductAdvancedFilters({
   onFiltersChange,
   categories,
   vendors,
-  maxPrice: _maxPrice = 1000,
+  maxPrice = 1000,
   className,
 }: ProductAdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -393,6 +393,7 @@ export function ProductAdvancedFilters({
                   }
                   className="w-24"
                   min={0}
+                  max={maxPrice}
                 />
                 <span className="text-muted-foreground">-</span>
                 <Input
@@ -408,6 +409,7 @@ export function ProductAdvancedFilters({
                   }
                   className="w-24"
                   min={0}
+                  max={maxPrice}
                 />
               </div>
             </div>
@@ -419,6 +421,7 @@ export function ProductAdvancedFilters({
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    aria-label="Select created after date"
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !filters.createdAfter && 'text-muted-foreground'
@@ -450,6 +453,7 @@ export function ProductAdvancedFilters({
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    aria-label="Select created before date"
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !filters.createdBefore && 'text-muted-foreground'
