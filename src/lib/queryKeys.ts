@@ -2895,6 +2895,12 @@ export const queryKeys = {
       ['geocode-address', address] as const,
   },
 
+  // Reverse Geocode (lat/lng → human-readable address)
+  reverseGeocode: {
+    byCoords: (lat?: number, lng?: number) =>
+      ['reverse-geocode', lat, lng] as const,
+  },
+
   // Order Analytics Insights
   orderAnalyticsInsights: {
     byOrder: (tenantId?: string, orderId?: string, customerId?: string) =>
