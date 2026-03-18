@@ -1,5 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { validateCreatePurchaseOrder, type CreatePurchaseOrderInput } from './validation.ts';
+import { validateCreatePurchaseOrder } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,78 +23,117 @@ serve(async (req) => {
     }
 
     const rawBody = await req.json();
-    const { tenant_id, supplier_id, items, delivery_date, notes }: CreatePurchaseOrderInput = validateCreatePurchaseOrder(rawBody);
 
-    // Verify tenant ownership
+    // Validate input — return 400 on schema errors
+    let input;
+    try {
+      input = validateCreatePurchaseOrder(rawBody);
+    } catch (validationError) {
+      const message = validationError instanceof Error ? validationError.message : 'Invalid request body';
+      return new Response(
+        JSON.stringify({ error: message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const {
+      supplier_id,
+      items,
+      notes,
+      status: requestedStatus,
+    } = input;
+
+    // Normalize delivery date: accept both field names from different frontend callers
+    const deliveryDate = input.expected_delivery_date || input.delivery_date;
+
+    // Resolve tenant_id: prefer auth-based lookup, fall back to body if provided
     const { data: tenantUser } = await supabaseClient
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!tenantUser?.tenant_id || tenantUser.tenant_id !== tenant_id) {
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'Not authorized for any tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const tenantId = tenantUser.tenant_id;
+
+    // If tenant_id was provided in body, verify it matches
+    if (input.tenant_id && input.tenant_id !== tenantId) {
       return new Response(
         JSON.stringify({ error: 'Not authorized for this tenant' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get supplier info
-    const { data: supplier } = await supabaseClient
-      .from('suppliers')
-      .select('*')
+    // Get vendor info (table is "vendors", not "suppliers")
+    const { data: vendor } = await supabaseClient
+      .from('vendors')
+      .select('id, name, minimum_order_amount')
       .eq('id', supplier_id)
-      .eq('tenant_id', tenant_id)
-      .single();
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
 
-    if (!supplier) {
+    if (!vendor) {
       return new Response(
-        JSON.stringify({ error: 'Supplier not found' }),
+        JSON.stringify({ error: 'Vendor not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Calculate order total
-    let totalAmount = 0;
+    // Look up product names and wholesale prices for items that need them
     const processedItems = [];
+    let subtotal = 0;
 
     for (const item of items) {
       const { data: product } = await supabaseClient
         .from('products')
-        .select('wholesale_price_per_lb')
+        .select('name, wholesale_price_per_lb, cost_per_unit')
         .eq('id', item.product_id)
-        .eq('tenant_id', tenant_id)
-        .single();
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
 
-      const itemTotal = item.quantity_lbs * (product?.wholesale_price_per_lb || item.price_per_lb);
-      totalAmount += itemTotal;
+      // Resolve unit cost: prefer explicit value, fall back to DB wholesale/cost
+      const unitCost = item.unit_cost
+        ?? item.price_per_lb
+        ?? product?.wholesale_price_per_lb
+        ?? product?.cost_per_unit
+        ?? 0;
+
+      const productName = item.product_name || product?.name || 'Unknown Product';
+      const quantity = Math.ceil(item.quantity_lbs);
+      const totalCost = item.quantity_lbs * unitCost;
+      subtotal += totalCost;
 
       processedItems.push({
         product_id: item.product_id,
-        product_name: item.product_name,
-        quantity_lbs: item.quantity_lbs,
-        quantity_units: item.quantity_units || 0,
-        price_per_lb: product?.wholesale_price_per_lb || item.price_per_lb,
-        subtotal: itemTotal
+        product_name: productName,
+        quantity,
+        unit_cost: unitCost,
+        total_cost: totalCost,
       });
     }
 
     // Check minimum order amount
-    if (supplier.minimum_order_amount && totalAmount < supplier.minimum_order_amount) {
+    if (vendor.minimum_order_amount && subtotal < vendor.minimum_order_amount) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Order total below minimum',
-          minimum: supplier.minimum_order_amount,
-          current: totalAmount
+          minimum: vendor.minimum_order_amount,
+          current: subtotal,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create purchase order with retry on PO number collision
+    // Create purchase order with retry on PO number collision.
     // The DB trigger generates po_number via generate_po_number() which uses
     // random hex suffix. The column has a UNIQUE constraint, so concurrent
-    // inserts could collide. Retry up to 3 times with a fresh generated number.
+    // inserts could collide. Retry up to 3 times.
     const MAX_PO_RETRIES = 3;
     let po: Record<string, unknown> | null = null;
 
@@ -102,12 +141,14 @@ serve(async (req) => {
       const { data: poData, error: poError } = await supabaseClient
         .from('purchase_orders')
         .insert({
-          tenant_id,
-          supplier_id,
-          total_amount: totalAmount,
-          expected_delivery_date: delivery_date,
-          notes,
-          status: 'pending'
+          tenant_id: tenantId,
+          vendor_id: supplier_id,
+          subtotal,
+          total: subtotal,
+          expected_delivery_date: deliveryDate || null,
+          notes: notes || null,
+          status: requestedStatus || 'pending',
+          created_by: user.id,
         })
         .select()
         .single();
@@ -122,7 +163,6 @@ serve(async (req) => {
       if (!isUniqueViolation || attempt === MAX_PO_RETRIES - 1) {
         throw poError;
       }
-      // Brief pause before retry to allow clock/random state to change
       await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
     }
 
@@ -131,7 +171,7 @@ serve(async (req) => {
     // Create PO items
     const poItems = processedItems.map(item => ({
       ...item,
-      purchase_order_id: po.id
+      purchase_order_id: po!.id as string,
     }));
 
     const { error: itemsError } = await supabaseClient
@@ -144,15 +184,23 @@ serve(async (req) => {
       throw itemsError;
     }
 
-    // TODO: Generate PDF and upload to storage
-    // TODO: Send email to supplier
-
+    // Return response in the shape the frontend expects:
+    // { purchase_order: { id, po_number, vendor_id, total, items } }
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
+        purchase_order: {
+          id: po.id,
+          po_number: po.po_number,
+          vendor_id: supplier_id,
+          total: subtotal,
+          status: po.status,
+          items: processedItems,
+        },
+        // Keep flat fields for backward compat
         purchase_order_id: po.id,
         po_number: po.po_number,
-        total_amount: totalAmount
+        total_amount: subtotal,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
