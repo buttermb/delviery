@@ -119,7 +119,7 @@ export default function DispatchInventory() {
       const error = result.error;
 
       if (error || !product) {
-        toast.error("No product found with barcode: ${barcode}");
+        toast.error(`No product found with barcode: ${barcode}`);
         return;
       }
 
@@ -149,7 +149,7 @@ export default function DispatchInventory() {
         ]);
       }
 
-      toast.success("${product.name} added to dispatch");
+      toast.success(`${product.name} added to dispatch`);
     } catch (error) {
       logger.error('Error scanning product:', error);
       toast.error("Failed to scan product");
@@ -255,7 +255,7 @@ export default function DispatchInventory() {
         }
 
         // RPC succeeded
-        const _result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
+        const rpcData = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
 
         // Create scan records for audit trail
         for (const product of scannedProducts) {
@@ -268,7 +268,7 @@ export default function DispatchInventory() {
           });
         }
 
-        toast.success("${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: ${formatCurrency(result.total_expected_revenue)}");
+        toast.success(`${calculateTotals().totalUnits} units dispatched to ${rpcData.client_name}. Expected revenue: ${formatCurrency(rpcData.total_expected_revenue)}`);
 
         navigateToAdmin('inventory/fronted');
       } catch (error) {
@@ -370,7 +370,7 @@ export default function DispatchInventory() {
         .eq('tenant_id', tenant.id);
     }
 
-    toast.success("${calculateTotals().totalUnits} units dispatched to ${selectedClient.business_name}");
+    toast.success(`${calculateTotals().totalUnits} units dispatched to ${selectedClient.business_name}`);
 
     navigateToAdmin('inventory/fronted');
   };
