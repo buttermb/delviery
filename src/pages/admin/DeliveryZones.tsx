@@ -52,7 +52,7 @@ import {
   Clock,
   DollarSign,
   Loader2,
-  Map,
+  Map as MapIcon,
   Settings,
   AlertCircle,
 } from 'lucide-react';
@@ -95,7 +95,7 @@ const DEFAULT_CENTER: L.LatLngTuple = [39.8283, -98.5795]; // Center of USA
 const DEFAULT_ZOOM = 4;
 
 export default function DeliveryZones() {
-  const { tenantId: _tenantId, hasPermission, isReady } = useTenantContext();
+  const { hasPermission, isReady } = useTenantContext();
   const {
     zones,
     isLoading,
@@ -114,7 +114,7 @@ export default function DeliveryZones() {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
   const drawControlRef = useRef<L.Control.Draw | null>(null);
-  const zoneLayersRef = useRef<Map<string, L.Polygon> | null>(null);
+  const zoneLayersRef = useRef<Map<string, L.Polygon>>(new Map());
 
   // UI state
   const [isMapReady, setIsMapReady] = useState(false);
@@ -448,7 +448,7 @@ export default function DeliveryZones() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
               <h1 className="text-xl font-bold flex items-center gap-2">
-                <Map className="h-7 w-7" />
+                <MapIcon className="h-7 w-7" />
                 Delivery Zones
                 <FieldHelp tooltip={fieldHelpTexts.deliveryZonePolygon.tooltip} size="md" />
               </h1>
@@ -520,7 +520,7 @@ export default function DeliveryZones() {
                   </div>
                 ) : zones.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Map className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <MapIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                     <p className="text-sm text-muted-foreground">No zones configured</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Draw a polygon on the map to create your first zone
@@ -593,6 +593,7 @@ export default function DeliveryZones() {
                               size="sm"
                               variant="ghost"
                               className="h-7 text-xs text-destructive hover:text-destructive"
+                              aria-label={`Delete zone ${zone.name}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setZoneToDelete(zone);
