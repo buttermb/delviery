@@ -154,9 +154,23 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
     }
   }, [driver.current_lat, driver.current_lng]);
 
-  const handleResendInvite = useCallback(() => {
-    toast.success('Invite resent');
-  }, []);
+  const resendInvite = useMutation({
+    mutationFn: async () => {
+      const res = await supabase.functions.invoke('add-driver', {
+        body: { resend_invite: true, driver_id: driver.id },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (res.error) throw res.error;
+      return res.data as { success: boolean; error?: string };
+    },
+    onSuccess: () => {
+      toast.success('Invite email resent');
+    },
+    onError: (err) => {
+      logger.error('Resend invite failed', err);
+      toast.error('Failed to resend invite');
+    },
+  });
 
   return (
     <>
@@ -289,9 +303,10 @@ export function ProfileHeader({ driver, tenantId }: ProfileHeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-sm focus:bg-accent focus:text-accent-foreground"
-                  onClick={handleResendInvite}
+                  onClick={() => resendInvite.mutate()}
+                  disabled={resendInvite.isPending || driver.status === 'active'}
                 >
-                  Resend Invite
+                  {resendInvite.isPending ? 'Sending\u2026' : 'Resend Invite'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-sm focus:bg-accent focus:text-accent-foreground"
