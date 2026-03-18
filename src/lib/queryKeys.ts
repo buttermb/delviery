@@ -2248,12 +2248,6 @@ export const queryKeys = {
       ['storefront-settings', tenantId] as const,
   },
 
-  // Vendor Orders (useVendorOrders hook)
-  vendorOrdersHook: {
-    list: (tenantId?: string, options?: Record<string, unknown>) =>
-      ['vendors', 'list', tenantId, options] as const,
-  },
-
   // Unified Orders
   unifiedOrders: {
     all: ['unified-orders'] as const,
