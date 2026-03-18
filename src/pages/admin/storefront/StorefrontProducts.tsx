@@ -3,7 +3,7 @@
  * Manage product visibility and pricing for the online store
  */
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +26,8 @@ import {
   Save,
   ArrowUp,
   ArrowDown,
-  Loader2
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
@@ -54,7 +55,6 @@ interface Product {
   price: number;
   image_url: string | null;
   in_stock: boolean;
-  status: string;
   menu_visibility: boolean;
 }
 
@@ -62,8 +62,7 @@ interface ProductSetting {
   id: string;
   product_id: string;
   is_visible: boolean;
-  display_price: number | null;
-  sale_price?: number | null;
+  custom_price: number | null;
   display_order: number;
 }
 
@@ -95,10 +94,11 @@ export default function StorefrontProducts() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 60_000,
   });
 
   // Fetch all products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: queryKeys.tenantProducts.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -113,10 +113,11 @@ export default function StorefrontProducts() {
     },
     enabled: !!tenantId,
     retry: 2,
+    staleTime: 60_000,
   });
 
   // Fetch product settings
-  const { data: productSettings = [], isLoading: settingsLoading } = useQuery({
+  const { data: productSettings = [], isLoading: settingsLoading, refetch: refetchSettings } = useQuery({
     queryKey: queryKeys.marketplaceProductSettingsByStore.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
@@ -130,7 +131,40 @@ export default function StorefrontProducts() {
     },
     enabled: !!store?.id,
     retry: 2,
+    staleTime: 30_000,
   });
+
+  // Realtime subscription for product settings changes
+  useEffect(() => {
+    if (!store?.id) return;
+
+    const channel = supabase
+      .channel(`storefront-products-${store.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'marketplace_product_settings',
+          filter: `store_id=eq.${store.id}`,
+        },
+        () => {
+          refetchSettings();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Storefront products subscription active', {
+            storeId: store.id,
+            component: 'StorefrontProducts',
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [store?.id, refetchSettings]);
 
   // Create settings map for quick lookup
   const settingsMap = useMemo(() => {
@@ -170,6 +204,8 @@ export default function StorefrontProducts() {
     });
   }, [products, searchQuery, categoryFilter, visibilityFilter, settingsMap]);
 
+  const hasActiveFilters = searchQuery !== '' || categoryFilter !== 'all' || visibilityFilter !== 'all';
+
   // Toggle visibility mutation
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ productId, isVisible }: { productId: string; isVisible: boolean }) => {
@@ -197,12 +233,11 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
-      // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },
     onError: (error) => {
       logger.error('Failed to toggle visibility', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update product visibility.", { description: humanizeError(error) });
+      toast.error('Failed to update product visibility.', { description: humanizeError(error) });
     },
   });
 
@@ -234,13 +269,12 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
-      // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
-      toast.success("Price updated!");
+      toast.success('Price updated!');
     },
     onError: (error) => {
       logger.error('Failed to update price', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update price.", { description: humanizeError(error) });
+      toast.error('Failed to update price.', { description: humanizeError(error) });
     },
   });
 
@@ -279,18 +313,19 @@ export default function StorefrontProducts() {
           );
         if (error) throw error;
       }
+
+      return isVisible;
     },
-    onSuccess: (_, _isVisible) => {
+    onSuccess: (isVisible) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
-      // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       const count = selectedProducts.size;
       setSelectedProducts(new Set());
-      toast.success(`${count} ${count === 1 ? 'product' : 'products'} ${_isVisible ? 'shown' : 'hidden'}`);
+      toast.success(`${count} ${count === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`);
     },
     onError: (error: Error) => {
-      logger.error('Failed to update product visibility', { error });
-      toast.error("Failed to update visibility", { description: humanizeError(error) });
+      logger.error('Failed to update product visibility', error, { component: 'StorefrontProducts' });
+      toast.error('Failed to update visibility', { description: humanizeError(error) });
     },
   });
 
@@ -316,7 +351,7 @@ export default function StorefrontProducts() {
     setEditingPrices((prev) => ({ ...prev, [productId]: value }));
   };
 
-  const handlePriceSave = (productId: string, _originalPrice: number) => {
+  const handlePriceSave = (productId: string) => {
     const newPrice = editingPrices[productId];
     if (newPrice === undefined) return;
 
@@ -362,12 +397,11 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
-      // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },
     onError: (error) => {
       logger.error('Failed to update order', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update display order.", { description: humanizeError(error) });
+      toast.error('Failed to update display order.', { description: humanizeError(error) });
     },
   });
 
@@ -377,6 +411,17 @@ export default function StorefrontProducts() {
 
   const handleMoveDown = (productId: string, currentOrder: number) => {
     updateOrderMutation.mutate({ productId, newOrder: currentOrder + 1 });
+  };
+
+  const handleRefresh = () => {
+    refetchProducts();
+    refetchSettings();
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('all');
+    setVisibilityFilter('all');
   };
 
   const isLoading = productsLoading || settingsLoading;
@@ -404,22 +449,28 @@ export default function StorefrontProducts() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Catalog Management</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Catalog Management</h1>
           <p className="text-muted-foreground">
             {visibleCount} of {products.length} products visible in store
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.open(`/shop/${tenantSlug}`, '_blank', 'noopener,noreferrer')}
-          className="gap-2"
-        >
-          <Eye className="w-4 h-4" />
-          Preview Store
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`/shop/${tenantSlug}`, '_blank', 'noopener,noreferrer')}
+            className="gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            <span className="hidden sm:inline">Preview Store</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filters and Actions */}
@@ -438,7 +489,7 @@ export default function StorefrontProducts() {
             </div>
 
             <Select value={categoryFilter} onValueChange={(v) => startFilterTransition(() => setCategoryFilter(v))}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -452,7 +503,7 @@ export default function StorefrontProducts() {
             </Select>
 
             <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-full md:w-[150px]">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
@@ -464,7 +515,7 @@ export default function StorefrontProducts() {
           </div>
 
           {selectedProducts.size > 0 && (
-            <div className="mt-4 flex items-center gap-2 p-3 bg-muted rounded-lg">
+            <div className="mt-4 flex items-center gap-2 p-3 bg-muted rounded-lg flex-wrap">
               <span className="text-sm font-medium">{selectedProducts.size} selected</span>
               <Button
                 size="sm"
@@ -496,9 +547,9 @@ export default function StorefrontProducts() {
         </CardContent>
       </Card>
 
-      {/* Products Table */}
+      {/* Products */}
       <Card>
-        <CardContent className={cn("p-0 transition-opacity", isFilterPending && "opacity-60")}>
+        <CardContent className={cn('p-0 transition-opacity', isFilterPending && 'opacity-60')}>
           {isLoading ? (
             <div className="p-6 space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -508,133 +559,65 @@ export default function StorefrontProducts() {
           ) : filteredProducts.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No products found</p>
-              {products.length === 0 && (
-                <p className="text-sm mt-2">Add products in your inventory first</p>
+              {products.length === 0 ? (
+                <>
+                  <p>No products yet</p>
+                  <p className="text-sm mt-2">Add products in your inventory first</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => navigate(`/${tenantSlug}/admin/products`)}
+                  >
+                    Go to Products
+                  </Button>
+                </>
+              ) : hasActiveFilters ? (
+                <>
+                  <p>No products match your filters</p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                </>
+              ) : (
+                <p>No products found</p>
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead className="w-16">Order</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Original Price</TableHead>
-                  <TableHead>Store Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Visible</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3 p-4">
                 {filteredProducts.map((product) => {
                   const setting = settingsMap.get(product.id);
                   const isVisible = setting?.is_visible ?? false;
-                  const displayPrice = setting?.display_price;
-                  const isEditing = editingPrices[product.id] !== undefined;
+                  const customPrice = setting?.custom_price;
 
                   return (
-                    <TableRow key={product.id}>
-                      <TableCell>
+                    <div key={product.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-3">
                         <Checkbox
                           checked={selectedProducts.has(product.id)}
                           onCheckedChange={() => toggleSelect(product.id)}
+                          aria-label={`Select ${product.name}`}
                         />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-11 w-11 sm:h-6 sm:w-6"
-                            onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
-                            disabled={updateOrderMutation.isPending}
-                            title="Move up"
-                            aria-label="Move up"
-                          >
-                            <ArrowUp className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-11 w-11 sm:h-6 sm:w-6"
-                            onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
-                            disabled={updateOrderMutation.isPending}
-                            title="Move down"
-                            aria-label="Move down"
-                          >
-                            <ArrowDown className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {product.image_url ? (
-                            <img
-                              src={product.image_url}
-                              alt={product.name}
-                              className="w-10 h-10 rounded object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                              <Package className="w-5 h-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <span className="font-medium">{product.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{product.category || 'Uncategorized'}</Badge>
-                      </TableCell>
-                      <TableCell>{formatCurrency(product.price)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={isEditing ? editingPrices[product.id] : (displayPrice ?? '')}
-                            onChange={(e) => handlePriceChange(product.id, e.target.value)}
-                            placeholder={formatCurrency(product.price)}
-                            aria-label={`Store price for ${product.name}`}
-                            className="w-24 h-8"
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-12 h-12 rounded object-cover flex-shrink-0"
+                            loading="lazy"
                           />
-                          {isEditing && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handlePriceSave(product.id, product.price)}
-                            >
-                              <Save className="w-3 h-3" />
-                            </Button>
-                          )}
+                        ) : (
+                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                            <Package className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{product.name}</p>
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {product.category || 'Uncategorized'}
+                          </Badge>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {product.in_stock ? (
-                            <Badge variant="outline" className="bg-green-500/10 text-green-700">
-                              In Stock
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-red-500/10 text-red-700">
-                              Out of Stock
-                            </Badge>
-                          )}
-                          {!product.menu_visibility && (
-                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700">
-                              Hidden in Catalog
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
                         <Switch
                           checked={isVisible}
                           onCheckedChange={(checked) =>
@@ -644,21 +627,182 @@ export default function StorefrontProducts() {
                             })
                           }
                           disabled={toggleVisibilityMutation.isPending}
+                          aria-label={`Toggle visibility for ${product.name}`}
                         />
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Price:</span>
+                          <span>{formatCurrency(product.price)}</span>
+                          {customPrice != null && (
+                            <Badge variant="secondary" className="text-xs">
+                              Store: {formatCurrency(customPrice)}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          {product.in_stock ? (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-700 text-xs">
+                              In Stock
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-red-500/10 text-red-700 text-xs">
+                              Out of Stock
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Select all products"
+                        />
+                      </TableHead>
+                      <TableHead className="w-16">Order</TableHead>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Original Price</TableHead>
+                      <TableHead>Store Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-center">Visible</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.map((product) => {
+                      const setting = settingsMap.get(product.id);
+                      const isVisible = setting?.is_visible ?? false;
+                      const customPrice = setting?.custom_price;
+                      const isEditing = editingPrices[product.id] !== undefined;
+
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedProducts.has(product.id)}
+                              onCheckedChange={() => toggleSelect(product.id)}
+                              aria-label={`Select ${product.name}`}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
+                                disabled={updateOrderMutation.isPending}
+                                aria-label={`Move ${product.name} up`}
+                              >
+                                <ArrowUp className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
+                                disabled={updateOrderMutation.isPending}
+                                aria-label={`Move ${product.name} down`}
+                              >
+                                <ArrowDown className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {product.image_url ? (
+                                <img
+                                  src={product.image_url}
+                                  alt={product.name}
+                                  className="w-10 h-10 rounded object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                  <Package className="w-5 h-5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <span className="font-medium">{product.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{product.category || 'Uncategorized'}</Badge>
+                          </TableCell>
+                          <TableCell>{formatCurrency(product.price)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={isEditing ? editingPrices[product.id] : (customPrice ?? '')}
+                                onChange={(e) => handlePriceChange(product.id, e.target.value)}
+                                placeholder={formatCurrency(product.price)}
+                                aria-label={`Store price for ${product.name}`}
+                                className="w-24 h-8"
+                              />
+                              {isEditing && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handlePriceSave(product.id)}
+                                  aria-label={`Save price for ${product.name}`}
+                                >
+                                  <Save className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {product.in_stock ? (
+                                <Badge variant="outline" className="bg-green-500/10 text-green-700">
+                                  In Stock
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-red-500/10 text-red-700">
+                                  Out of Stock
+                                </Badge>
+                              )}
+                              {!product.menu_visibility && (
+                                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700">
+                                  Hidden in Catalog
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Switch
+                              checked={isVisible}
+                              onCheckedChange={(checked) =>
+                                toggleVisibilityMutation.mutate({
+                                  productId: product.id,
+                                  isVisible: checked,
+                                })
+                              }
+                              disabled={toggleVisibilityMutation.isPending}
+                              aria-label={`Toggle visibility for ${product.name}`}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
-    </div >
+    </div>
   );
 }
-
-
-
-
-
