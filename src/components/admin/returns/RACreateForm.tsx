@@ -335,8 +335,12 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Additional notes about this return"
                 rows={3}
+                maxLength={1000}
                 className="min-h-[44px] touch-manipulation"
               />
+              <span className="text-xs text-muted-foreground text-right block">
+                {formData.notes.length}/1000
+              </span>
             </div>
           </div>
 
@@ -387,7 +391,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
             {items.length > 0 && (
               <div className="border rounded-lg divide-y">
                 {items.map((item, index) => (
-                  <div key={index} className="p-3 flex justify-between items-center">
+                  <div key={`${item.product_name}-${item.quantity}-${item.unit_price}-${index}`} className="p-3 flex justify-between items-center">
                     <div>
                       <div className="font-medium">{item.product_name}</div>
                       <div className="text-sm text-muted-foreground">

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   Search,
@@ -42,8 +43,8 @@ import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from '@/lib/formatters';
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { humanizeError } from '@/lib/humanizeError';
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
@@ -96,14 +97,14 @@ export default function ReturnsManagementPage() {
   const [selectedRA, setSelectedRA] = useState<ReturnAuthorization | null>(null);
   const [editingRA, setEditingRA] = useState<ReturnAuthorization | null>(null);
 
-  // For now, we'll use a mock query since the returns table may not exist
-  // In production, this would query the actual returns table
   const { data: returns, isLoading } = useQuery({
-    queryKey: queryKeys.returns.list({ status: statusFilter }),
+    queryKey: queryKeys.returns.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
-      let query = supabase
-        .from("return_authorizations" as 'tenants') // Supabase type limitation
+      if (!tenant?.id) return [];
+      let query = (supabase as unknown as Record<string, unknown> & { from: (table: string) => ReturnType<typeof supabase.from> })
+        .from("return_authorizations")
         .select('id, ra_number, order_id, order_number, customer_id, customer_name, status, reason, return_method, total_amount, refund_amount, restocking_fee, notes, created_at, updated_at, received_at, processed_at')
+        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
@@ -113,7 +114,6 @@ export default function ReturnsManagementPage() {
       const { data, error } = await query;
 
       if (error) {
-        // Table doesn't exist - this is expected if returns module isn't enabled
         if (error.code === 'PGRST205' || error.code === '42P01') {
           logger.info('Returns table not configured', { component: 'ReturnsManagementPage' });
           return [];
@@ -124,14 +124,16 @@ export default function ReturnsManagementPage() {
 
       return (data ?? []) as unknown as ReturnAuthorization[];
     },
+    enabled: !!tenant?.id,
     retry: 2,
+    staleTime: 60_000,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async ({ id, raNumber }: { id: string; raNumber: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await supabase
-        .from("returns")
+      const { error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => ReturnType<typeof supabase.from> })
+        .from("return_authorizations")
         .delete()
         .eq("id", id)
         .eq("tenant_id", tenant.id);
@@ -163,15 +165,16 @@ export default function ReturnsManagementPage() {
     },
   });
 
-  const filteredReturns = useMemo(() => returns?.filter((ra) => {
-    const matchesSearch =
-      ra.ra_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ra.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ra.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ra.notes?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesSearch;
-  }) ?? [], [returns, searchTerm]);
+  const filteredReturns = useMemo(() => {
+    const sanitized = sanitizeSearchInput(searchTerm).toLowerCase();
+    if (!sanitized) return returns ?? [];
+    return returns?.filter((ra) =>
+      ra.ra_number?.toLowerCase().includes(sanitized) ||
+      ra.order_number?.toLowerCase().includes(sanitized) ||
+      ra.customer_name?.toLowerCase().includes(sanitized) ||
+      ra.notes?.toLowerCase().includes(sanitized)
+    ) ?? [];
+  }, [returns, searchTerm]);
 
   const handleCreate = () => {
     setEditingRA(null);
@@ -283,7 +286,21 @@ export default function ReturnsManagementPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <EnhancedLoadingState variant="spinner" message="Loading returns..." className="py-8" />
+            <div className="space-y-3 py-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={`skeleton-row-${i}`} className="flex items-center gap-4 px-2">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-32 flex-1" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              ))}
+            </div>
           ) : filteredReturns.length === 0 ? (
             returns && returns.length === 0 && searchTerm === "" && statusFilter === "all" ? (
               <EnhancedEmptyState
@@ -363,6 +380,7 @@ export default function ReturnsManagementPage() {
                               size="sm"
                               onClick={() => handleView(ra)}
                               className="h-11 w-11 p-0"
+                              aria-label={`View return ${ra.ra_number}`}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -372,6 +390,7 @@ export default function ReturnsManagementPage() {
                                 size="sm"
                                 onClick={() => handleEdit(ra)}
                                 className="h-11 w-11 p-0"
+                                aria-label={`Edit return ${ra.ra_number}`}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -382,6 +401,7 @@ export default function ReturnsManagementPage() {
                                 size="sm"
                                 onClick={() => handleDelete(ra)}
                                 className="h-11 w-11 p-0 text-destructive hover:text-destructive"
+                                aria-label={`Delete return ${ra.ra_number}`}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
