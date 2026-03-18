@@ -187,12 +187,14 @@ interface StorefrontBuilderProps {
     isFullScreen?: boolean;
     onRequestClose?: () => void;
     onDirtyChange?: (isDirty: boolean) => void;
+    onRegisterSave?: (saveFn: () => Promise<void>) => void;
 }
 
 export function StorefrontBuilder({
     isFullScreen = false,
     onRequestClose,
     onDirtyChange,
+    onRegisterSave,
 }: StorefrontBuilderProps) {
     const { tenant } = useTenantAdminAuth();
     const { navigateToAdmin } = useTenantNavigation();
@@ -229,9 +231,9 @@ export function StorefrontBuilder({
     const [previewZoom, setPreviewZoom] = useState(0.85);
 
     // Mode switch warning dialog
-    const [, setShowModeSwitchWarning] = useState(false);
-    const [, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
-    const [, setAdvancedCustomizations] = useState<string[]>([]);
+    const [showModeSwitchWarning, setShowModeSwitchWarning] = useState(false);
+    const [pendingModeSwitch, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
+    const [advancedCustomizations, setAdvancedCustomizations] = useState<string[]>([]);
 
     // Store Creation Dialog State
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -387,8 +389,27 @@ export function StorefrontBuilder({
         }
 
         setBuilderMode(targetMode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- saveToHistory is defined below; no circular deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- saveToHistory dependency omitted to avoid circular reference
     }, [builderMode, layoutConfig, easyModeBuilder]);
+
+    // Confirm mode switch (discards advanced customizations)
+    const confirmModeSwitch = useCallback(() => {
+        if (pendingModeSwitch) {
+            setBuilderMode(pendingModeSwitch);
+            toast.success('Switched to Simple Mode', {
+                description: 'Advanced customizations have been reset.',
+            });
+        }
+        setShowModeSwitchWarning(false);
+        setPendingModeSwitch(null);
+        setAdvancedCustomizations([]);
+    }, [pendingModeSwitch]);
+
+    const cancelModeSwitch = useCallback(() => {
+        setShowModeSwitchWarning(false);
+        setPendingModeSwitch(null);
+        setAdvancedCustomizations([]);
+    }, []);
 
     // Save to history
     const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
@@ -668,6 +689,13 @@ export function StorefrontBuilder({
             logger.error('Failed to publish storefront', err);
         }
     });
+
+    // Register save handler with parent for exit-save delegation
+    useEffect(() => {
+        if (onRegisterSave) {
+            onRegisterSave(() => saveDraftMutation.mutateAsync());
+        }
+    }, [onRegisterSave, saveDraftMutation.mutateAsync]);
 
     const addSection = (type: keyof typeof SECTION_TYPES) => {
         const newSection: SectionConfig = {
@@ -1414,6 +1442,31 @@ export function StorefrontBuilder({
                 description="Are you sure you want to delete this section? This action cannot be undone."
                 itemType="section"
             />
+
+            {/* Mode Switch Warning Dialog */}
+            <Dialog open={showModeSwitchWarning} onOpenChange={(open) => { if (!open) cancelModeSwitch(); }}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Switch to Simple Mode?</DialogTitle>
+                        <DialogDescription>
+                            Your storefront has advanced customizations that will be lost when switching to Simple Mode:
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                        {advancedCustomizations.map((item) => (
+                            <li key={item}>{item}</li>
+                        ))}
+                    </ul>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={cancelModeSwitch}>
+                            Keep Advanced
+                        </Button>
+                        <Button variant="destructive" onClick={confirmModeSwitch}>
+                            Switch Anyway
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal
