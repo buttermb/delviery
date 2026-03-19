@@ -353,44 +353,51 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarContent>
 
         {/* Useful Footer with Quick Links */}
-        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1 bg-sidebar">
-          <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0.5">
+        <SidebarFooter className="p-3 border-t group-data-[collapsible=icon]:p-2 bg-sidebar/50 backdrop-blur-sm space-y-3">
+          {/* Settings & Help segmented row */}
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50 shadow-sm group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:shadow-none">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
+              className="flex-1 h-7 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm transition-all group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0"
               onClick={handleNavigateToSettings}
               title="Settings"
             >
-              <Settings className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
+              <Settings className="h-3.5 w-3.5 mr-1.5 group-data-[collapsible=icon]:mr-0" />
               <span className="group-data-[collapsible=icon]:hidden">Settings</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
+              className="flex-1 h-7 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm transition-all group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0"
               onClick={handleNavigateToHelp}
               title="Help"
             >
-              <HelpCircle className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
-              <span className="group-data-[collapsible=icon]:hidden">Help</span>
+              <HelpCircle className="h-3.5 w-3.5 mr-1.5 group-data-[collapsible=icon]:mr-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Support</span>
             </Button>
           </div>
-          {/* Features count — desktop only, useless on mobile */}
-          <button
-            onClick={handleNavigateToFeatures}
-            className="hidden md:flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
-          >
-            <Settings2 className="h-3 w-3" />
-            <span>
-              {Object.values(flags).filter(Boolean).length} features enabled
-              {' · '}
-              <span className="underline underline-offset-2">Manage</span>
-            </span>
-          </button>
-          {/* Keyboard shortcuts — desktop only, no keyboard on mobile */}
-          <div className="hidden md:block text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:!hidden">
-            <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
+
+          <div className="space-y-2 group-data-[collapsible=icon]:hidden">
+            {/* Features count */}
+            <button
+              onClick={handleNavigateToFeatures}
+              className="flex items-center justify-between w-full px-2 py-1.5 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/80 hover:text-foreground transition-colors rounded-md hover:bg-accent/50"
+            >
+              <div className="flex items-center gap-1.5">
+                <Settings2 className="h-3.5 w-3.5 text-primary/70" />
+                <span>Features</span>
+              </div>
+              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold">
+                {Object.values(flags).filter(Boolean).length} ACTIVE
+              </span>
+            </button>
+
+            {/* Keyboard shortcuts */}
+            <div className="flex items-center justify-around text-[10px] text-muted-foreground/60 w-full">
+              <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/50 shadow-sm font-mono text-[9px] text-foreground/80">⌘B</kbd> Toggle</span>
+              <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/50 shadow-sm font-mono text-[9px] text-foreground/80">⌘K</kbd> Search</span>
+            </div>
           </div>
         </SidebarFooter>
       </Sidebar>
