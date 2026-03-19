@@ -96,7 +96,7 @@ const AdminLayout = () => {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const isOrdersSurface = location.pathname.includes('/orders') || location.pathname.includes('/storefront');
-  const isOpsSurface = location.pathname.includes('/fulfillment') || location.pathname.includes('/delivery');
+
 
   // Enable real-time cross-panel data synchronization
   useRealtimeSync({
@@ -204,40 +204,40 @@ const AdminLayout = () => {
               <div className="print:hidden">
                 <AccountSwitcher />
               </div>
-              <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200 print:hidden">
+              <header className="glass-floating h-16 sm:h-16 flex items-center px-4 sm:px-8 gap-3 sm:gap-6 flex-shrink-0 pt-safe safe-area-top transition-all duration-200 print:hidden relative z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm">
                 {/* Sidebar trigger - 48px minimum touch target */}
-                <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-10 -ml-1 sm:ml-0 flex items-center justify-center" />
+                <SidebarTrigger className="h-10 w-10 min-h-[40px] min-w-[40px] rounded-lg border border-border/50 bg-background/50 hover:bg-muted/80 touch-manipulation active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/40 z-10 -ml-2 sm:ml-0 flex items-center justify-center text-muted-foreground shadow-sm" />
 
                 {/* Breadcrumbs - hidden on mobile */}
-                <div className="hidden md:flex overflow-x-auto scrollbar-hide mr-4">
+                <div className="hidden md:flex overflow-x-auto scrollbar-hide mr-2">
                   <Breadcrumbs />
                 </div>
 
                 {/* Mobile page title - show current page on mobile */}
-                <div className="md:hidden flex-1 min-w-0">
-                  <span className="font-semibold text-sm truncate block">
+                <div className="md:hidden flex-1 min-w-0 pl-1">
+                  <span className="font-semibold text-[15px] truncate block opacity-90">
                     {getCurrentPageLabel()}
                   </span>
                 </div>
 
                 {/* Search Trigger Bar (Desktop) */}
                 <div className="hidden md:flex flex-1 max-w-md ml-auto mr-2">
-                  <div
+                  <button
                     onClick={() => setOpen(true)}
-                    className="relative w-full cursor-pointer group"
+                    className="relative w-full group overflow-hidden rounded-full border border-input/60 bg-muted/30 hover:bg-muted/60 transition-all duration-300 shadow-sm hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                   >
-                    <div className="flex items-center h-9 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm shadow-sm transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-                      <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Type <kbd className="font-mono text-xs">/</kbd> to search...</span>
-                      <kbd className="pointer-events-none absolute right-2 top-[50%] -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
-                        <span className="text-xs">⌘</span>K
+                    <div className="flex items-center h-[38px] w-full px-4 py-1">
+                      <Search className="mr-2 h-[15px] w-[15px] text-muted-foreground/70 group-hover:text-primary transition-colors" />
+                      <span className="text-[13px] text-muted-foreground/80 group-hover:text-foreground transition-colors font-medium">Type <kbd className="font-mono text-[11px] opacity-60 mx-1">/</kbd> to search...</span>
+                      <kbd className="pointer-events-none absolute right-[5px] top-[50%] -translate-y-[50%] hidden h-[26px] select-none items-center gap-[2px] rounded-full border border-border/60 bg-background/80 shadow-sm px-[8px] font-mono text-[10px] font-semibold text-muted-foreground transition-all group-hover:bg-background group-hover:text-foreground group-hover:border-border sm:flex">
+                        <span className="text-[10px] opacity-70">⌘</span>K
                       </kbd>
                     </div>
-                  </div>
+                  </button>
                 </div>
 
                 {/* Header Actions */}
-                <div className="flex items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-3 ml-auto flex-shrink-0">
 
                   {/* Credit Balance Display */}
                   <div className="hidden sm:block">

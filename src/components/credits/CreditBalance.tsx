@@ -1,7 +1,7 @@
 import { useCredits } from "@/contexts/CreditContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Coins, Plus, TrendingDown, Calendar } from "lucide-react";
+import { Coins, TrendingDown, Calendar } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -64,11 +64,11 @@ export function CreditBalance({
 
   // Color logic based on warning thresholds: 2000, 1000, 500, 100
   const getColorClass = (amount: number) => {
-    if (amount > 2000) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-    if (amount > 1000) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    if (amount > 500) return "text-amber-600 bg-amber-50 border-amber-200";
-    if (amount > 100) return "text-orange-600 bg-orange-50 border-orange-200";
-    return "text-red-600 bg-red-50 border-red-200 animate-pulse";
+    if (amount > 2000) return "text-emerald-600 bg-emerald-500/10";
+    if (amount > 1000) return "text-yellow-600 bg-yellow-500/10";
+    if (amount > 500) return "text-amber-600 bg-amber-500/10";
+    if (amount > 100) return "text-orange-600 bg-orange-500/10";
+    return "text-red-600 bg-red-500/10 animate-pulse";
   };
 
   const tooltipContent = (
@@ -123,17 +123,17 @@ export function CreditBalance({
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-1 p-0.5 rounded-full border bg-background shadow-xs hover:shadow-sm transition-all duration-300", className)}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors cursor-pointer",
+              "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold transition-all cursor-pointer opacity-90 hover:opacity-100",
               getColorClass(credits)
             )}
             onClick={() => setIsPurchaseModalOpen(true)}
           >
-            <Coins className="w-4 h-4" />
+            <Coins className="w-[14px] h-[14px]" />
             {showLabel && <span>{credits.toLocaleString()}</span>}
           </div>
         </TooltipTrigger>
@@ -143,13 +143,11 @@ export function CreditBalance({
       </Tooltip>
       <Button
         size="sm"
-        variant="outline"
-        className="h-8 w-8 rounded-full p-0"
-        title="Buy Credits"
+        variant="ghost"
+        className="h-7 px-2.5 rounded-full text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors mr-0.5"
         onClick={() => setIsPurchaseModalOpen(true)}
       >
-        <Plus className="w-4 h-4" />
-        <span className="sr-only">Buy Credits</span>
+        Buy Credits
       </Button>
     </div>
   );
