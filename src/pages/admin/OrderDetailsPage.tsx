@@ -247,8 +247,8 @@ export function OrderDetailsPage() {
     queryFn: async (): Promise<OrderDetails | null> => {
       if (!tenant?.id || !orderId) return null;
 
-      // First try unified_orders
-      const { data: unifiedOrder } = await supabase
+      // First try unified_orders (with joins)
+      const { data: unifiedOrder, error: unifiedError } = await supabase
         .from('unified_orders')
         .select(`
           *,
@@ -259,6 +259,69 @@ export function OrderDetailsPage() {
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
         .maybeSingle();
+
+      // If join failed, retry unified_orders without relational joins
+      if (unifiedError && !unifiedOrder) {
+        logger.warn('unified_orders join query failed, retrying without joins', { error: unifiedError.message, orderId });
+        const { data: plainOrder } = await supabase
+          .from('unified_orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (plainOrder) {
+          // Fetch items separately
+          const { data: items } = await supabase
+            .from('unified_order_items')
+            .select('*')
+            .eq('order_id', orderId);
+
+          return {
+            id: plainOrder.id,
+            order_number: plainOrder.order_number,
+            status: plainOrder.status,
+            payment_status: plainOrder.payment_status || 'unpaid',
+            total_amount: plainOrder.total_amount ?? 0,
+            subtotal: plainOrder.subtotal ?? 0,
+            tax_amount: plainOrder.tax_amount ?? 0,
+            discount_amount: plainOrder.discount_amount ?? 0,
+            delivery_method: (plainOrder as Record<string, unknown>).delivery_method as string | null,
+            delivery_address: plainOrder.delivery_address,
+            delivery_notes: plainOrder.delivery_notes,
+            delivery_fee: 0,
+            order_source: plainOrder.source || 'admin',
+            source_menu_id: (plainOrder as Record<string, unknown>).source_menu_id as string | null,
+            source_session_id: (plainOrder as Record<string, unknown>).source_session_id as string | null,
+            created_at: plainOrder.created_at,
+            updated_at: plainOrder.updated_at,
+            confirmed_at: (plainOrder as Record<string, unknown>).confirmed_at as string | null,
+            shipped_at: (plainOrder as Record<string, unknown>).shipped_at as string | null,
+            delivered_at: (plainOrder as Record<string, unknown>).delivered_at as string | null,
+            cancelled_at: plainOrder.cancelled_at,
+            cancellation_reason: plainOrder.cancellation_reason,
+            notes: (plainOrder as Record<string, unknown>).notes as string | null,
+            tracking_token: null,
+            courier_id: plainOrder.courier_id,
+            user_id: null,
+            customer_id: plainOrder.customer_id,
+            wholesale_client_id: plainOrder.wholesale_client_id,
+            metadata: (plainOrder as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
+            customer: null,
+            courier: null,
+            order_items: (items ?? []).map((item: Record<string, unknown>) => ({
+              id: item.id as string,
+              product_id: item.product_id as string,
+              product_name: item.product_name as string,
+              quantity: item.quantity as number,
+              unit_price: item.unit_price as number,
+              total_price: item.total_price as number,
+              variant: null,
+              image_url: null,
+            })),
+          };
+        }
+      }
 
       if (unifiedOrder) {
         // Map unified_orders to expected format
@@ -319,6 +382,44 @@ export function OrderDetailsPage() {
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
         .maybeSingle();
+
+      // If join failed, retry orders without relational joins
+      if (fetchError && !data) {
+        logger.warn('orders join query failed, retrying without joins', { error: fetchError.message, orderId });
+        const { data: plainData, error: plainError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (plainError) {
+          logger.error('Failed to fetch order details', plainError, { component: 'OrderDetailsPage', orderId });
+          throw plainError;
+        }
+
+        if (!plainData) return null;
+
+        // Fetch order_items separately
+        const { data: orderItems } = await supabase
+          .from('order_items')
+          .select('*')
+          .eq('order_id', orderId);
+
+        return {
+          ...plainData,
+          delivery_method: (plainData as Record<string, unknown>).delivery_method as string | null ?? null,
+          order_source: (plainData as Record<string, unknown>).order_source as string | null ?? 'admin',
+          source_menu_id: (plainData as Record<string, unknown>).source_menu_id as string | null ?? null,
+          source_session_id: (plainData as Record<string, unknown>).source_session_id as string | null ?? null,
+          tax_amount: (plainData as Record<string, unknown>).tax_amount as number ?? 0,
+          updated_at: (plainData as Record<string, unknown>).updated_at as string ?? plainData.created_at,
+          metadata: (plainData as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
+          customer: null,
+          courier: null,
+          order_items: orderItems ?? [],
+        } as unknown as OrderDetails;
+      }
 
       if (fetchError) {
         logger.error('Failed to fetch order details', fetchError, { component: 'OrderDetailsPage', orderId });
