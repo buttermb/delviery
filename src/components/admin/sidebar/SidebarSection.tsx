@@ -110,10 +110,10 @@ export function SidebarSection({
         onOpenChange={handleToggle}
         disabled={section.pinned}
       >
-        <CollapsibleTrigger asChild>
-          <SidebarGroupLabel
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger
             className={cn(
-              "flex items-center justify-between cursor-pointer transition-all min-h-[40px] px-3 py-2 rounded-md mb-1 border border-transparent",
+              "flex items-center justify-between cursor-pointer transition-all min-h-[40px] px-3 py-2 rounded-md mb-1 border border-transparent w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
               isOpen 
                 ? "bg-accent/30 text-primary font-semibold border-primary/10 shadow-sm" 
                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -129,8 +129,8 @@ export function SidebarSection({
                 )}
               </div>
             )}
-          </SidebarGroupLabel>
-        </CollapsibleTrigger>
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
         <CollapsibleContent>
           <SidebarGroupContent className="mt-1">
             <SidebarMenu>
