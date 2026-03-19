@@ -1,4 +1,4 @@
-import React, { useMemo, memo, useCallback } from "react";
+import React, { useMemo, memo, useCallback, MouseEvent } from "react";
 import {
     Table,
     TableBody,
@@ -52,6 +52,13 @@ interface KeyboardRowProps {
     ref: (el: HTMLTableRowElement | null) => void;
 }
 
+/** Check if a click target is an interactive element that should NOT trigger row click */
+function isInteractiveElement(target: EventTarget | null): boolean {
+    const el = target as HTMLElement | null;
+    if (!el) return false;
+    return !!el.closest('button, a, input, select, textarea, [role="menuitem"], [role="option"], [data-radix-collection-item]');
+}
+
 /** Memoized table row to prevent re-renders when parent updates */
 const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item,
@@ -77,7 +84,11 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
             aria-rowindex={keyboardProps?.["aria-rowindex"]}
             onKeyDown={keyboardProps?.onKeyDown}
             onFocus={keyboardProps?.onFocus}
-            onClick={() => onRowClick && onRowClick(item)}
+            onClick={(e: MouseEvent) => {
+                if (onRowClick && !isInteractiveElement(e.target)) {
+                    onRowClick(item);
+                }
+            }}
             onMouseEnter={() => onRowHover && onRowHover(item)}
             className={cn(
                 onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors",
@@ -204,7 +215,11 @@ export function ResponsiveTable<T>({
                     {data.map((item) => (
                         <div
                             key={keyExtractor(item)}
-                            onClick={() => onRowClick && onRowClick(item)}
+                            onClick={(e) => {
+                                if (onRowClick && !isInteractiveElement(e.target)) {
+                                    onRowClick(item);
+                                }
+                            }}
                             onMouseEnter={() => onRowHover && onRowHover(item)}
                             className={cn(
                                 "bg-card text-card-foreground rounded-lg border shadow-sm p-4",

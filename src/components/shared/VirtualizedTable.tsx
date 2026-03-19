@@ -57,6 +57,13 @@ function renderCellValue(cellContent: React.ReactNode): React.ReactNode {
   return '-';
 }
 
+/** Check if a click target is an interactive element that should NOT trigger row click */
+function isInteractiveElement(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return !!el.closest('button, a, input, select, textarea, [role="menuitem"], [role="option"], [data-radix-collection-item]');
+}
+
 /** Memoized row component to prevent unnecessary re-renders */
 const VirtualizedRow = memo(function VirtualizedRow({
   index,
@@ -74,7 +81,11 @@ const VirtualizedRow = memo(function VirtualizedRow({
         'flex border-b hover:bg-muted/50 transition-colors items-center bg-card text-card-foreground border-border',
         onRowClick && 'cursor-pointer'
       )}
-      onClick={() => onRowClick?.(row, index)}
+      onClick={(e) => {
+        if (onRowClick && !isInteractiveElement(e.target)) {
+          onRowClick(row, index);
+        }
+      }}
     >
       {columns.map((column, colIndex) => {
         const cellContent = column.cell
