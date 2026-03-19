@@ -645,7 +645,7 @@ export default function WholesaleOrdersPage() {
                       {statusConfig.label}
                     </Badge>
                   </SelectTrigger>
-                  <SelectContent className="bg-popover border shadow-md z-50">
+                  <SelectContent className="bg-popover border shadow-md">
                     {validStatuses.map(([key, config]) => (
                       <SelectItem key={key} value={key} disabled={key === item.status}>
                         <div className="flex items-center gap-2">

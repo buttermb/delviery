@@ -206,7 +206,7 @@ const AdminLayout = () => {
               </div>
               <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200 print:hidden">
                 {/* Sidebar trigger - 48px minimum touch target */}
-                <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-dropdown -ml-1 sm:ml-0 flex items-center justify-center" />
+                <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-10 -ml-1 sm:ml-0 flex items-center justify-center" />
 
                 {/* Breadcrumbs - hidden on mobile */}
                 <div className="hidden md:flex overflow-x-auto scrollbar-hide mr-4">

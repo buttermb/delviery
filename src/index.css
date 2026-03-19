@@ -161,12 +161,14 @@
     --customer-text: 222 47% 11%;
     --customer-text-light: 215 20% 65%;
 
-    /* Z-Index Scale */
+    /* Z-Index Scale — dropdown above modal because Radix portals
+       Select/DropdownMenu to <body>; inside a Dialog they must
+       sit above the dialog overlay + content. */
     --z-base: 0;
-    --z-dropdown: 50;
     --z-sticky: 100;
     --z-overlay: 150;
     --z-modal: 200;
+    --z-dropdown: 250;
     --z-toast: 300;
     --z-tooltip: 400;
     --z-max: 9999;
@@ -267,12 +269,14 @@
     --customer-text: 0 0% 100%;
     --customer-text-light: 215 20% 75%;
 
-    /* Z-Index Scale */
+    /* Z-Index Scale — dropdown above modal because Radix portals
+       Select/DropdownMenu to <body>; inside a Dialog they must
+       sit above the dialog overlay + content. */
     --z-base: 0;
-    --z-dropdown: 50;
     --z-sticky: 100;
     --z-overlay: 150;
     --z-modal: 200;
+    --z-dropdown: 250;
     --z-toast: 300;
     --z-tooltip: 400;
     --z-max: 9999;

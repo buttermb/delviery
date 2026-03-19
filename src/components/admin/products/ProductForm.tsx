@@ -284,7 +284,7 @@ export function ProductForm({
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
-                                    <SelectContent className="z-50">
+                                    <SelectContent>
                                         <SelectItem value="flower">Flower</SelectItem>
                                         <SelectItem value="edibles">Edibles</SelectItem>
                                         <SelectItem value="vapes">Vapes</SelectItem>
@@ -334,7 +334,7 @@ export function ProductForm({
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select type (optional)" />
                                     </SelectTrigger>
-                                    <SelectContent className="z-50">
+                                    <SelectContent>
                                         <SelectItem value="indica">Indica</SelectItem>
                                         <SelectItem value="sativa">Sativa</SelectItem>
                                         <SelectItem value="hybrid">Hybrid</SelectItem>
