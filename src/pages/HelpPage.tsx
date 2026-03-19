@@ -174,11 +174,12 @@ export default function HelpPage() {
               </div>
 
               <div className="pb-4">
-                <h4 className="font-semibold mb-2">How is the 2% commission calculated?</h4>
+                <h4 className="font-semibold mb-2">How does the credit system work?</h4>
                 <p className="text-sm text-muted-foreground">
-                  We charge a 2% platform fee on each completed order placed through customer menus.
-                  This fee is automatically calculated and shown in your billing statements. You can
-                  view your commission transactions in the Billing section.
+                  Free plans receive 500 credits per month that auto-refill. Each action uses credits
+                  (e.g., receiving an order = 75 credits, creating a menu = 100 credits). Paid plans
+                  include unlimited usage with no credit limits. You can view your credit balance and
+                  usage in the Billing section.
                 </p>
               </div>
             </div>

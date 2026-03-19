@@ -42,7 +42,7 @@ export const faqs: FAQ[] = [
     id: 'gen-002',
     category: 'general',
     question: 'What payment methods do you accept?',
-    answer: 'We accept credit cards (Visa, Mastercard, Amex), ACH transfers, and Bitcoin (coming soon). Payment terms can be customized per customer in their profile settings.',
+    answer: 'We accept credit cards (Visa, Mastercard, Amex) and ACH transfers. Payment terms can be customized per customer in their profile settings.',
     tags: ['payments', 'billing'],
     related: ['bill-001', 'gen-001'],
     popular: true,
@@ -78,7 +78,7 @@ export const faqs: FAQ[] = [
     id: 'gen-006',
     category: 'general',
     question: 'What are the system requirements?',
-    answer: 'BigMike Wholesale is a web-based application that works on any modern browser (Chrome, Firefox, Safari, Edge). Minimum requirements: 4GB RAM, stable internet connection (5+ Mbps recommended). Mobile apps require iOS 14+ or Android 8+.',
+    answer: 'FloraIQ is a web-based application that works on any modern browser (Chrome, Firefox, Safari, Edge). Minimum requirements: 4GB RAM, stable internet connection (5+ Mbps recommended). On mobile, install FloraIQ as a Progressive Web App (PWA) from your browser — no app store required.',
     tags: ['requirements', 'technical'],
     difficulty: 'beginner'
   },
@@ -86,7 +86,7 @@ export const faqs: FAQ[] = [
     id: 'gen-007',
     category: 'general',
     question: 'How do I get support?',
-    answer: 'We offer multiple support channels: Live chat (24/7), email support (support@bigmike.com), phone support (business hours), and our comprehensive knowledge base. Premium plans include priority support with dedicated account managers.',
+    answer: 'We offer multiple support channels: Live chat (business hours), email support (support@floraiq.com), and our comprehensive knowledge base. Premium plans include priority support with dedicated account managers.',
     tags: ['support', 'help'],
     related: ['gen-008'],
     popular: true,
@@ -96,7 +96,7 @@ export const faqs: FAQ[] = [
     id: 'gen-008',
     category: 'general',
     question: 'What is your typical response time?',
-    answer: 'Live chat: < 2 minutes, Email: < 4 hours (business days), Phone: immediate. Premium and Enterprise plans receive priority support with guaranteed response times (< 1 hour for critical issues).',
+    answer: 'Live chat: < 2 minutes (business hours), Email: < 4 hours (business days). Premium and Enterprise plans receive priority support with guaranteed response times (< 1 hour for critical issues).',
     tags: ['support', 'response-time'],
     related: ['gen-007'],
     difficulty: 'beginner'
@@ -290,7 +290,7 @@ export const faqs: FAQ[] = [
     id: 'rep-003',
     category: 'reports',
     question: 'How do I create custom reports?',
-    answer: 'Use the Report Builder (Reports → Custom) to create tailored reports. Drag and drop fields, apply filters, group data, and add calculations. Save templates for reuse. Advanced users can write custom SQL queries (Enterprise plan).',
+    answer: 'Use the Report Builder (Reports → Custom) to create tailored reports. Drag and drop fields, apply filters, group data, and add calculations. Save templates for reuse.',
     tags: ['reports', 'custom', 'builder'],
     difficulty: 'advanced'
   },
@@ -322,7 +322,7 @@ export const faqs: FAQ[] = [
     id: 'rep-007',
     category: 'reports',
     question: 'Do you offer business intelligence (BI) integration?',
-    answer: 'Yes! Connect to Tableau, Power BI, Looker, or other BI tools via our API or data warehouse sync. Export your data to your own database for advanced analytics. Enterprise plans include pre-built BI dashboards.',
+    answer: 'You can export your data via our API for use in external analytics tools. Export reports to CSV, PDF, or Excel for import into your preferred BI platform. Enterprise plans include additional data export capabilities.',
     tags: ['reports', 'bi', 'integration'],
     difficulty: 'advanced'
   },
@@ -332,7 +332,7 @@ export const faqs: FAQ[] = [
     id: 'bill-001',
     category: 'billing',
     question: 'How does billing work?',
-    answer: 'Billing is monthly or annual based on your plan. You can upgrade, downgrade, or cancel anytime. Changes take effect at the next billing cycle. We prorate charges when you upgrade mid-cycle. All major credit cards and ACH payments accepted.',
+    answer: 'FloraIQ uses a credit-based model for the Free plan (500 credits/month) and flat-rate subscriptions for paid plans. Paid plans can be billed monthly or annually. You can upgrade, downgrade, or cancel anytime. Changes take effect at the next billing cycle. All major credit cards and ACH payments accepted.',
     tags: ['billing', 'subscription'],
     popular: true,
     difficulty: 'beginner'
@@ -358,7 +358,7 @@ export const faqs: FAQ[] = [
     id: 'bill-004',
     category: 'billing',
     question: 'What are the plan limits?',
-    answer: 'Starter: 100 orders/month, 1 user, 500 products. Professional: 1,000 orders/month, 5 users, unlimited products. Premium: 10,000 orders/month, 25 users, all features. Enterprise: Unlimited everything with custom pricing. See pricing page for details.',
+    answer: 'Free: 500 credits/month, 50 customers, 100 products, 1 location. Starter ($79/mo): Unlimited usage, 50 customers, 100 products, 2 locations, 3 team members. Professional ($150/mo): 500 customers, 1,000 products, 5 locations, 15 team members. Enterprise ($499/mo): Unlimited everything. See pricing page for details.',
     tags: ['billing', 'plans', 'limits'],
     popular: true,
     difficulty: 'beginner'
@@ -367,7 +367,7 @@ export const faqs: FAQ[] = [
     id: 'bill-005',
     category: 'billing',
     question: 'Do you offer discounts for annual plans?',
-    answer: 'Yes! Save 20% with annual billing. Nonprofits get an additional 10% discount. We also offer volume discounts for multi-location businesses. Contact sales for enterprise pricing and custom packages.',
+    answer: 'Yes! Save approximately 17% with annual billing (e.g., Starter is $790/year vs $948 monthly). We also offer volume discounts for multi-location businesses. Contact sales for enterprise pricing and custom packages.',
     tags: ['billing', 'discounts', 'annual'],
     difficulty: 'beginner'
   },
@@ -375,7 +375,7 @@ export const faqs: FAQ[] = [
     id: 'bill-006',
     category: 'billing',
     question: 'What happens if I exceed my plan limits?',
-    answer: 'You\'ll receive a notification when you reach 80% of your limit. Overage charges apply at $0.10 per order over your limit. Or, upgrade to a higher plan anytime to avoid overages. The system never stops working - no service interruption.',
+    answer: 'On the Free plan, you\'ll receive a notification when your monthly credits are running low. You can purchase additional credit packs at any time. All paid plans include unlimited usage — no credits to worry about. Upgrading is the most cost-effective option for active businesses.',
     tags: ['billing', 'limits', 'overages'],
     difficulty: 'intermediate'
   },
@@ -496,8 +496,8 @@ export const faqs: FAQ[] = [
     id: 'int-004',
     category: 'integration',
     question: 'Can I integrate with my accounting software?',
-    answer: 'Yes! We have native integrations with QuickBooks, Xero, Sage, and NetSuite. Sync customers, products, orders, and invoices automatically. We also support custom integrations via API. Most accounting syncs run every 15 minutes.',
-    tags: ['integration', 'accounting', 'quickbooks'],
+    answer: 'You can connect FloraIQ to your accounting software using our API and webhooks. Build custom integrations to sync customers, products, orders, and invoices. Visit Settings → Integrations to configure webhook endpoints and API access for your accounting workflow.',
+    tags: ['integration', 'accounting', 'api'],
     popular: true,
     difficulty: 'intermediate'
   },
@@ -505,7 +505,7 @@ export const faqs: FAQ[] = [
     id: 'int-005',
     category: 'integration',
     question: 'Do you support SSO/SAML?',
-    answer: 'Yes! Enterprise plans include Single Sign-On (SSO) via SAML 2.0. We support Okta, Azure AD, Google Workspace, OneLogin, and other identity providers. SSO can be required for all users or optional. JIT (Just-in-Time) provisioning available.',
+    answer: 'SSO via SAML 2.0 is on our roadmap for Enterprise plans. Contact our team to discuss your identity provider requirements and timeline.',
     tags: ['integration', 'sso', 'saml', 'enterprise'],
     difficulty: 'advanced'
   },
@@ -513,8 +513,8 @@ export const faqs: FAQ[] = [
     id: 'int-006',
     category: 'integration',
     question: 'How do I connect to third-party services?',
-    answer: 'Use Zapier or Make (formerly Integromat) to connect with 5,000+ apps without coding. We also have native integrations with Shopify, WooCommerce, Mailchimp, Twilio, and more. Custom integrations can be built using our API and webhooks.',
-    tags: ['integration', 'zapier', 'third-party'],
+    answer: 'Build custom integrations using our API and webhooks. Configure webhook endpoints in Settings → Integrations to receive real-time events. Our API supports RESTful endpoints with JSON responses, making it straightforward to connect with any third-party service.',
+    tags: ['integration', 'api', 'third-party'],
     difficulty: 'intermediate'
   },
 
@@ -523,7 +523,7 @@ export const faqs: FAQ[] = [
     id: 'mob-001',
     category: 'mobile',
     question: 'Is there a mobile app?',
-    answer: 'Yes! Download the BigMike Wholesale app for iOS (App Store) and Android (Google Play). The mobile app includes order management, inventory scanning, delivery tracking, customer management, and offline mode. Free with all plans.',
+    answer: 'Yes! FloraIQ is available as a Progressive Web App (PWA). Install it directly from your browser on any device — no app store needed. The PWA includes order management, inventory scanning, delivery tracking, customer management, and offline mode. Free with all plans.',
     tags: ['mobile', 'app'],
     popular: true,
     difficulty: 'beginner'
@@ -532,7 +532,7 @@ export const faqs: FAQ[] = [
     id: 'mob-002',
     category: 'mobile',
     question: 'What features are available on mobile?',
-    answer: 'Full order management, barcode scanning, signature capture, GPS delivery tracking, customer lookup, inventory checks, photo uploads, offline mode, and push notifications. Drivers have a specialized delivery interface optimized for route completion.',
+    answer: 'The FloraIQ PWA supports full order management, barcode scanning, GPS delivery tracking, customer lookup, inventory checks, photo uploads, offline mode, and push notifications. Drivers have a specialized delivery interface optimized for route completion.',
     tags: ['mobile', 'features'],
     difficulty: 'beginner'
   },
@@ -540,7 +540,7 @@ export const faqs: FAQ[] = [
     id: 'mob-003',
     category: 'mobile',
     question: 'Can I use the app offline?',
-    answer: 'Yes! The mobile app works offline for viewing orders, scanning inventory, and capturing signatures. Data syncs automatically when you reconnect. Perfect for warehouses with poor connectivity or drivers in rural areas.',
+    answer: 'Yes! The FloraIQ PWA works offline for viewing orders, scanning inventory, and capturing key data. Data syncs automatically when you reconnect. Perfect for warehouses with poor connectivity or drivers in rural areas.',
     tags: ['mobile', 'offline'],
     popular: true,
     difficulty: 'beginner'
@@ -549,7 +549,7 @@ export const faqs: FAQ[] = [
     id: 'mob-004',
     category: 'mobile',
     question: 'How do I enable push notifications?',
-    answer: 'Go to mobile app Settings → Notifications to configure push alerts for new orders, low inventory, delivery updates, and customer messages. You can customize notification sounds and quiet hours. Notifications sync with web app settings.',
+    answer: 'When you install the FloraIQ PWA, your browser will prompt you to allow notifications. Once enabled, you\'ll receive push alerts for new orders, low inventory, delivery updates, and customer messages. Notification preferences can be managed in your account settings.',
     tags: ['mobile', 'notifications', 'push'],
     difficulty: 'beginner'
   },
@@ -557,7 +557,7 @@ export const faqs: FAQ[] = [
     id: 'mob-005',
     category: 'mobile',
     question: 'Can drivers use their own devices?',
-    answer: 'Yes! Drivers can download the app on their personal iOS or Android devices. You control access via user accounts. The app uses minimal battery and data (<100MB/day). You can also provide company devices with the app pre-installed.',
+    answer: 'Yes! Drivers can install the FloraIQ PWA on their personal devices from any modern browser. You control access via user accounts and role-based permissions. The PWA uses minimal battery and data.',
     tags: ['mobile', 'drivers', 'byod'],
     difficulty: 'beginner'
   },
@@ -567,7 +567,7 @@ export const faqs: FAQ[] = [
     id: 'train-001',
     category: 'training',
     question: 'What training resources are available?',
-    answer: 'We provide video tutorials (50+ videos), interactive walkthroughs, written documentation, webinars (weekly), and a searchable knowledge base. Premium plans include live onboarding sessions. Enterprise plans get custom training programs.',
+    answer: 'We provide a growing library of video tutorials, interactive walkthroughs, written documentation, and a searchable knowledge base. Premium plans include live onboarding sessions. Enterprise plans get custom training programs.',
     tags: ['training', 'resources'],
     popular: true,
     difficulty: 'beginner'
@@ -593,7 +593,7 @@ export const faqs: FAQ[] = [
     id: 'train-004',
     category: 'training',
     question: 'Can I get certified?',
-    answer: 'Yes! We offer BigMike Certified User and BigMike Certified Administrator programs. Complete online courses and pass exams to earn certificates. Certification includes badges for your resume/LinkedIn and access to exclusive community forums.',
+    answer: 'Yes! We offer FloraIQ Certified User and FloraIQ Certified Administrator programs. Complete online courses to earn certificates. Certification includes badges for your resume/LinkedIn and access to exclusive community forums.',
     tags: ['training', 'certification'],
     difficulty: 'intermediate'
   },
@@ -609,7 +609,7 @@ export const faqs: FAQ[] = [
     id: 'train-006',
     category: 'training',
     question: 'How do I train new employees?',
-    answer: 'Use our built-in training mode where new users can practice in a sandbox environment without affecting live data. Assign role-specific training modules, track completion, and test knowledge with quizzes. Training materials are always free and up-to-date.',
+    answer: 'Share our video tutorials and written documentation with new team members. Assign role-specific access so they can learn the features relevant to their job. Training materials are always free and up-to-date.',
     tags: ['training', 'employees', 'sandbox'],
     difficulty: 'intermediate'
   },
@@ -755,7 +755,7 @@ export const faqs: FAQ[] = [
     id: 'comp-004',
     category: 'compliance',
     question: 'What are your terms of service?',
-    answer: 'Our Terms of Service outline the legal agreement between BigMike and users. Key points: We own the software, you own your data, we\'re not liable for business losses, disputes resolved by arbitration. Read full terms at bigmike.com/terms. Updated quarterly.',
+    answer: 'Our Terms of Service outline the legal agreement between FloraIQ and users. Key points: We own the software, you own your data, we\'re not liable for business losses, disputes resolved by arbitration. Read full terms at floraiq.com/terms. Updated quarterly.',
     tags: ['compliance', 'legal', 'terms'],
     difficulty: 'beginner'
   },
@@ -771,7 +771,7 @@ export const faqs: FAQ[] = [
     id: 'comp-006',
     category: 'compliance',
     question: 'What is your SLA guarantee?',
-    answer: '99.9% uptime SLA for Premium and Enterprise plans. If we fall below 99.9% in a month, you receive service credits: 99.0-99.9% = 10% credit, 95.0-99.0% = 25% credit, <95% = 50% credit. Excludes scheduled maintenance. Monitor status at status.bigmike.com.',
+    answer: '99.9% uptime SLA for Professional and Enterprise plans. If we fall below 99.9% in a month, you receive service credits: 99.0-99.9% = 10% credit, 95.0-99.0% = 25% credit, <95% = 50% credit. Excludes scheduled maintenance. Monitor status at status.floraiq.com.',
     tags: ['compliance', 'sla', 'uptime'],
     popular: true,
     difficulty: 'intermediate'
