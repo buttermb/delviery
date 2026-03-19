@@ -47,10 +47,10 @@ serve(async (req: Request) => {
       );
     }
 
-    // Verify the user exists as a tenant admin
+    // Verify the user exists as a tenant user
     const { data: adminUser } = await supabaseAdmin
-      .from('tenant_admins')
-      .select('id, name, email')
+      .from('tenant_users')
+      .select('id, full_name, email')
       .eq('tenant_id', tenant.id)
       .eq('email', email.toLowerCase())
       .maybeSingle();
@@ -83,11 +83,11 @@ serve(async (req: Request) => {
           .insert({
             tenant_id: tenant.id,
             type: 'account_unlock_request',
-            title: `Account Unlock Request - ${adminUser.name || email}`,
-            message: `User ${adminUser.name || email} (${email}) has requested their account to be unlocked for ${tenant.business_name}. Their account was locked due to too many failed login attempts.`,
+            title: `Account Unlock Request - ${adminUser.full_name || email}`,
+            message: `User ${adminUser.full_name || email} (${email}) has requested their account to be unlocked for ${tenant.business_name}. Their account was locked due to too many failed login attempts.`,
             metadata: {
               requested_email: email,
-              requested_name: adminUser.name,
+              requested_name: adminUser.full_name,
               tenant_slug: tenantSlug,
               requested_at: new Date().toISOString(),
             },
