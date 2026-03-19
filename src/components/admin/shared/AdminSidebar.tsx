@@ -141,7 +141,7 @@ const navigationSections: NavSection[] = [
     id: 'deliveries',
     label: 'Deliveries',
     items: [
-      { id: 'deliveries', label: 'Delivery Management', icon: Truck, href: '/admin/delivery-management', badgeKey: 'pendingDeliveries' },
+      { id: 'deliveries', label: 'Delivery Management', icon: Truck, href: '/admin/fulfillment-hub', badgeKey: 'pendingDeliveries' },
     ],
   },
   {
