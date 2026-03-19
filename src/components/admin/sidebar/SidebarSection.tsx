@@ -35,7 +35,14 @@ export function SidebarSection({
   const { toggleCollapsedSection, preferences, searchQuery } = useSidebar();
   const { canAccess } = useFeatureAccess();
   const { isEnabled: isFeatureFlagEnabled } = useTenantFeatureToggles();
-  const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
+  // Check if any item in this section is active
+  const hasActiveItem = useMemo(() => {
+    return section.items.some((item) => isActive(item.path));
+  }, [section.items, isActive]);
+
+  const [isOpen, setIsOpen] = useState(
+    hasActiveItem || section.pinned || (!section.collapsed && section.defaultExpanded)
+  );
 
   // Filter items based on feature flags and search query
   const filteredItems = useMemo(() => {
@@ -46,11 +53,6 @@ export function SidebarSection({
     if (!searchQuery.trim()) return flagFiltered;
     return flagFiltered.filter((item) => matchesSearchQuery(item.name, searchQuery));
   }, [section.items, searchQuery, isFeatureFlagEnabled]);
-
-  // Check if any item in this section is active
-  const hasActiveItem = useMemo(() => {
-    return section.items.some((item) => isActive(item.path));
-  }, [section.items, isActive]);
 
   // Resolve active states: when multiple items match (e.g., "/admin/orders" and
   // "/admin/orders?tab=wholesale"), only highlight the most specific match
@@ -68,10 +70,10 @@ export function SidebarSection({
 
   // Auto-expand section when it contains the active route
   useEffect(() => {
-    if (hasActiveItem && !isOpen) {
+    if (hasActiveItem) {
       setIsOpen(true);
     }
-  }, [hasActiveItem, isOpen]);
+  }, [hasActiveItem]);
 
   // Sync with preferences
   useEffect(() => {
@@ -89,11 +91,10 @@ export function SidebarSection({
     }
   }, [preferences?.collapsedSections, section.section, section.pinned, hasActiveItem]);
 
-  const handleToggle = () => {
+  const handleToggle = (open: boolean) => {
     if (section.pinned) return; // Don't allow collapsing pinned sections
 
-    const newState = !isOpen;
-    setIsOpen(newState);
+    setIsOpen(open);
     toggleCollapsedSection(section.section);
   };
 
