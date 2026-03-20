@@ -314,20 +314,17 @@ export function InventorySyncIndicator({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           className={cn(
-            'gap-2 h-8 px-3 rounded-full bg-background hover:bg-muted/50 transition-all shadow-sm font-medium text-xs border-border/50 text-muted-foreground',
-            (connectionStatus as string) === 'error' && 'text-red-500 border-red-200 bg-red-50',
-            syncStatus === 'lagging' && 'text-amber-500 border-amber-200 bg-amber-50',
+            'gap-1.5 h-8 px-2',
+            (connectionStatus as string) === 'error' && 'text-red-500',
+            syncStatus === 'lagging' && 'text-amber-500',
             className
           )}
         >
-          <div className="relative flex items-center justify-center">
-             {statusConfig.icon}
-             {syncStatus === 'syncing' && <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-20 animate-ping"></span>}
-          </div>
-          <span className="hidden sm:inline">{statusConfig.label}</span>
+          {statusConfig.icon}
+          <span className="hidden sm:inline text-xs">{statusConfig.label}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72" align="end">

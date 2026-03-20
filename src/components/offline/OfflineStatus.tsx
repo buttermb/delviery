@@ -88,9 +88,9 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
 
     if (!hasIssues) {
         return (
-            <div className={cn('flex items-center gap-2 h-8 px-3 rounded-full bg-background hover:bg-muted/50 transition-all shadow-sm border border-border/50 text-green-600 font-medium cursor-default', className)}>
-                <Wifi className="h-[14px] w-[14px]" />
-                <span className="text-xs hidden sm:inline">Online</span>
+            <div className={cn('flex items-center gap-1.5 text-green-500', className)}>
+                <Wifi className="h-4 w-4" />
+                <span className="text-xs">Online</span>
             </div>
         );
     }
@@ -99,7 +99,7 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
         <Sheet>
             <SheetTrigger asChild>
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     aria-label={
                         !isOnline
@@ -111,26 +111,24 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
                             : 'Sync status: online'
                     }
                     className={cn(
-                        'gap-2 h-8 px-3 rounded-full bg-background hover:bg-muted/50 transition-all shadow-sm font-medium text-xs border-border/50 text-muted-foreground',
-                        !isOnline && 'text-red-600 border-red-200 bg-red-50',
-                        isOnline && pendingCount > 0 && 'text-amber-600 border-amber-200 bg-amber-50',
-                        isOnline && failedCount > 0 && 'text-orange-600 border-orange-200 bg-orange-50',
+                        'flex items-center gap-1.5',
+                        !isOnline && 'text-red-500',
+                        isOnline && pendingCount > 0 && 'text-yellow-500',
+                        isOnline && failedCount > 0 && 'text-orange-500',
                         className
                     )}
                 >
                     {!isOnline ? (
-                        <WifiOff className="h-[14px] w-[14px]" />
+                        <WifiOff className="h-4 w-4" />
                     ) : pendingCount > 0 ? (
-                        <RefreshCw className="h-[14px] w-[14px] animate-spin" />
+                        <RefreshCw className="h-4 w-4 animate-spin" />
                     ) : (
-                        <AlertCircle className="h-[14px] w-[14px]" />
+                        <AlertCircle className="h-4 w-4" />
                     )}
-                    {(pendingCount > 0 || failedCount > 0) ? (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-4 flex items-center justify-center rounded-full">
+                    {(pendingCount > 0 || failedCount > 0) && (
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
                             {pendingCount + failedCount}
                         </Badge>
-                    ) : (
-                        <span className="hidden sm:inline">Issues</span>
                     )}
                 </Button>
             </SheetTrigger>

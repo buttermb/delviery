@@ -29,6 +29,7 @@ import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
 import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
 import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
+import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -328,19 +329,6 @@ export default function ShopLayout() {
       setAgeVerified(true);
     }
   }, [store]);
-
-  // Look up the full ThemePreset (must be before early returns to keep hook order stable)
-  const themePreset = store?.theme_config?.theme_id
-    ? getThemeById(store.theme_config.theme_id)
-    : undefined;
-
-  // Load theme-specific Google Fonts (must be before early returns to keep hook order stable)
-  useEffect(() => {
-    if (themePreset) {
-      loadGoogleFonts([themePreset.typography.fonts.heading, themePreset.typography.fonts.body]);
-    }
-  }, [themePreset]);
-
   // Check if store is open
   const isStoreOpen = () => {
     if (!store?.operating_hours) return true;
@@ -483,7 +471,10 @@ export default function ShopLayout() {
     );
   }
 
-  // themePreset already computed before early returns (hook order safety)
+  // Look up the full ThemePreset from theme_config.theme_id
+  const themePreset = store.theme_config?.theme_id
+    ? getThemeById(store.theme_config.theme_id)
+    : undefined;
   const isDarkTheme = themePreset?.darkMode ?? false;
 
   // Apply theme colors — merge store-level vars with full --storefront-* variables from the preset
@@ -498,6 +489,13 @@ export default function ShopLayout() {
       '--storefront-font-body': themePreset.typography.fonts.body,
     } : {}),
   } as React.CSSProperties;
+
+  // Load theme-specific Google Fonts
+  useEffect(() => {
+    if (themePreset) {
+      loadGoogleFonts([themePreset.typography.fonts.heading, themePreset.typography.fonts.body]);
+    }
+  }, [themePreset]);
 
   // Get accent color for theme elements
   const accentColor = themePreset?.colors.accent || store.theme_config?.colors?.accent || store.accent_color || '#10b981';
@@ -577,6 +575,9 @@ export default function ShopLayout() {
 
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
+
+          {/* Global Age Gate */}
+          <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
         </div>
       </ShopContext.Provider>
     );
@@ -820,6 +821,9 @@ export default function ShopLayout() {
 
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
+
+        {/* Global Age Gate */}
+        <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
       </div>
     </ShopContext.Provider>
   );

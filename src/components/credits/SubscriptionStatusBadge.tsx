@@ -84,7 +84,7 @@ export function SubscriptionStatusBadge({
       return {
         label: `${currentTier} Trial`,
         icon: Clock,
-        color: 'bg-blue-500/10 text-blue-600 border-blue-200',
+        color: 'bg-blue-100 text-blue-800',
         tooltip: 'Trial period - unlimited access',
         priority: 'trial',
       };
@@ -94,7 +94,7 @@ export function SubscriptionStatusBadge({
       return {
         label: currentTier || 'Pro',
         icon: Crown,
-        color: 'bg-gradient-to-r from-purple-500/10 to-indigo-500/10 text-indigo-700 border-indigo-200 shadow-sm',
+        color: 'bg-purple-100 text-purple-800',
         tooltip: 'Unlimited access - no credit limits',
         priority: 'premium',
       };
@@ -182,25 +182,25 @@ export function SubscriptionStatusBadge({
           <Badge
             variant="outline"
             className={cn(
-              'gap-1.5 cursor-help px-2.5 py-1 rounded-full font-semibold border transition-all hover:shadow-md',
+              'gap-1.5 cursor-help',
               status.color,
               className
             )}
           >
-            <Icon className="h-[14px] w-[14px]" />
-            <span className="tracking-wide uppercase text-[10px]">{status.label}</span>
+            <Icon className="h-3.5 w-3.5" />
+            <span>{status.label}</span>
             {isFreeTier && showBalance && (
               <>
-                <span className="opacity-40">•</span>
-                <span className="tabular-nums font-bold"><CreditBalanceAnimation value={balance} /></span>
+                <span className="opacity-50">•</span>
+                <span className="tabular-nums font-medium"><CreditBalanceAnimation value={balance} /></span>
               </>
             )}
             {!isFreeTier && (
               <>
-                <span className="opacity-40">•</span>
-                <span className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+                <span className="opacity-50">•</span>
+                <span className="flex items-center gap-0.5">
                   <Sparkles className="h-3 w-3" />
-                  <span>Unlimited</span>
+                  <span className="text-xs">Unlimited</span>
                 </span>
               </>
             )}

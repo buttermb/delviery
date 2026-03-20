@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, Settings2, ChevronDown, User, HelpCircle, RefreshCw, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
+import { LogOut, Settings, Settings2, ChevronDown, User, HelpCircle, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
@@ -189,17 +189,17 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         <SidebarHeader className="p-0 border-b group-data-[collapsible=icon]:p-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/80 transition-all duration-200 group cursor-pointer group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center">
-                <div className="w-9 h-9 rounded-md bg-gradient-to-br from-primary/90 to-primary flex items-center justify-center text-primary-foreground font-bold text-base flex-shrink-0 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
+              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center">
+                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0 group-hover:scale-105 transition-transform group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 gap-1 group-data-[collapsible=icon]:hidden text-left">
-                  <span className="font-semibold text-sm truncate leading-none text-foreground/90 group-hover:text-foreground transition-colors">{tenant?.slug || "Tenant Admin"}</span>
-                  <div className="flex items-center">
+                <div className="flex flex-col min-w-0 flex-1 gap-0 group-data-[collapsible=icon]:hidden">
+                  <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+                  <div className="flex items-center gap-1.5">
                     <CreditBalance variant="badge" showLabel={false} />
                   </div>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground/70 group-hover:text-foreground transition-colors flex-shrink-0 group-data-[collapsible=icon]:hidden" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0 group-data-[collapsible=icon]:hidden" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -229,52 +229,57 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarHeader>
 
         {/* Unified Search & Quick Actions Bar — hidden when collapsed */}
-        <div className="px-3 py-3 border-b space-y-3 group-data-[collapsible=icon]:hidden">
-          {/* Unified Search / Command Palette */}
-          <div className="relative group/search">
-            <SidebarSearch
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search or Commands..."
-            />
-            {!searchQuery && (
-              <button 
-                onClick={() => useCommandPaletteStore.getState().setOpen(true)}
-                className="absolute right-1 top-1 bottom-1 px-1.5 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 rounded transition-all cursor-pointer"
-                title="Open Command Palette"
-              >
-                <kbd className="pointer-events-none select-none font-mono text-[10px] font-medium tracking-wider">⌘K</kbd>
-              </button>
-            )}
-          </div>
+        <div className="px-3 py-2 border-b space-y-2 group-data-[collapsible=icon]:hidden">
+          {/* Menu Filter Search */}
+          <SidebarSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Filter menu..."
+          />
 
-          {/* Quick Actions */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50 shadow-sm">
+          {/* Command Palette Trigger - only show when not filtering */}
+          {!searchQuery && (
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-7 text-[11px] font-medium gap-1.5 hover:bg-background hover:shadow-sm px-2 text-muted-foreground hover:text-foreground transition-all"
+              className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs"
+              onClick={() => useCommandPaletteStore.getState().setOpen(true)}
+            >
+              <Search className="mr-2 h-3.5 w-3.5" />
+              <span className="flex-1 text-left">Commands & Search...</span>
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                ⌘K
+              </kbd>
+            </Button>
+          )}
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
               onClick={handleNavigateToNewOrder}
             >
-              <Plus className="h-3 w-3 text-primary/70" />
+              <Plus className="h-3.5 w-3.5" />
               Order
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-7 text-[11px] font-medium gap-1.5 hover:bg-background hover:shadow-sm px-2 text-muted-foreground hover:text-foreground transition-all"
+              className="flex-1 h-8 text-xs gap-1.5"
               onClick={handleNavigateToNewProduct}
             >
-              <Package className="h-3 w-3 text-primary/70" />
+              <Package className="h-3.5 w-3.5" />
               Product
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-7 text-[11px] font-medium gap-1.5 hover:bg-background hover:shadow-sm px-2 text-muted-foreground hover:text-foreground transition-all"
+              className="flex-1 h-8 text-xs gap-1.5"
               onClick={handleNavigateToPOS}
             >
-              <ShoppingCart className="h-3 w-3 text-primary/70" />
+              <ShoppingCart className="h-3.5 w-3.5" />
               POS
             </Button>
           </div>
@@ -353,51 +358,44 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarContent>
 
         {/* Useful Footer with Quick Links */}
-        <SidebarFooter className="p-3 border-t group-data-[collapsible=icon]:p-2 bg-sidebar/50 backdrop-blur-sm space-y-3">
-          {/* Settings & Help segmented row */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50 shadow-sm group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:shadow-none">
+        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1 bg-sidebar">
+          <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0.5">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-7 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm transition-all group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToSettings}
               title="Settings"
             >
-              <Settings className="h-3.5 w-3.5 mr-1.5 group-data-[collapsible=icon]:mr-0" />
+              <Settings className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
               <span className="group-data-[collapsible=icon]:hidden">Settings</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-7 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm transition-all group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToHelp}
               title="Help"
             >
-              <HelpCircle className="h-3.5 w-3.5 mr-1.5 group-data-[collapsible=icon]:mr-0" />
-              <span className="group-data-[collapsible=icon]:hidden">Support</span>
+              <HelpCircle className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Help</span>
             </Button>
           </div>
-
-          <div className="space-y-2 group-data-[collapsible=icon]:hidden">
-            {/* Features count */}
-            <button
-              onClick={handleNavigateToFeatures}
-              className="flex items-center justify-between w-full px-2 py-1.5 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/80 hover:text-foreground transition-colors rounded-md hover:bg-accent/50"
-            >
-              <div className="flex items-center gap-1.5">
-                <Settings2 className="h-3.5 w-3.5 text-primary/70" />
-                <span>Features</span>
-              </div>
-              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold">
-                {Object.values(flags).filter(Boolean).length} ACTIVE
-              </span>
-            </button>
-
-            {/* Keyboard shortcuts */}
-            <div className="flex items-center justify-around text-[10px] text-muted-foreground/60 w-full">
-              <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/50 shadow-sm font-mono text-[9px] text-foreground/80">⌘B</kbd> Toggle</span>
-              <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/50 shadow-sm font-mono text-[9px] text-foreground/80">⌘K</kbd> Search</span>
-            </div>
+          {/* Features count — desktop only, useless on mobile */}
+          <button
+            onClick={handleNavigateToFeatures}
+            className="hidden md:flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
+          >
+            <Settings2 className="h-3 w-3" />
+            <span>
+              {Object.values(flags).filter(Boolean).length} features enabled
+              {' · '}
+              <span className="underline underline-offset-2">Manage</span>
+            </span>
+          </button>
+          {/* Keyboard shortcuts — desktop only, no keyboard on mobile */}
+          <div className="hidden md:block text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:!hidden">
+            <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
           </div>
         </SidebarFooter>
       </Sidebar>

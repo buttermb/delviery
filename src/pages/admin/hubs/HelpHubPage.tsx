@@ -113,8 +113,8 @@ const faqs = [
         answer: 'Your data is preserved when your trial ends. Upgrade to a paid plan to continue using the platform.',
     },
     {
-        question: 'How does the credit system work?',
-        answer: 'Free plans get 500 credits/month that auto-refill. Each action uses credits (e.g., order = 75, menu = 100). Paid plans include unlimited usage. View your balance in Billing.',
+        question: 'How is the platform fee calculated?',
+        answer: 'We charge a small platform fee on completed orders. View your transactions in the Billing section.',
     },
 ];
 

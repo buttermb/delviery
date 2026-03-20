@@ -35,14 +35,7 @@ export function SidebarSection({
   const { toggleCollapsedSection, preferences, searchQuery } = useSidebar();
   const { canAccess } = useFeatureAccess();
   const { isEnabled: isFeatureFlagEnabled } = useTenantFeatureToggles();
-  // Check if any item in this section is active
-  const hasActiveItem = useMemo(() => {
-    return section.items.some((item) => isActive(item.path));
-  }, [section.items, isActive]);
-
-  const [isOpen, setIsOpen] = useState(
-    hasActiveItem || section.pinned || (!section.collapsed && section.defaultExpanded)
-  );
+  const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
 
   // Filter items based on feature flags and search query
   const filteredItems = useMemo(() => {
@@ -53,6 +46,11 @@ export function SidebarSection({
     if (!searchQuery.trim()) return flagFiltered;
     return flagFiltered.filter((item) => matchesSearchQuery(item.name, searchQuery));
   }, [section.items, searchQuery, isFeatureFlagEnabled]);
+
+  // Check if any item in this section is active
+  const hasActiveItem = useMemo(() => {
+    return section.items.some((item) => isActive(item.path));
+  }, [section.items, isActive]);
 
   // Resolve active states: when multiple items match (e.g., "/admin/orders" and
   // "/admin/orders?tab=wholesale"), only highlight the most specific match
@@ -70,10 +68,10 @@ export function SidebarSection({
 
   // Auto-expand section when it contains the active route
   useEffect(() => {
-    if (hasActiveItem) {
+    if (hasActiveItem && !isOpen) {
       setIsOpen(true);
     }
-  }, [hasActiveItem]);
+  }, [hasActiveItem, isOpen]);
 
   // Sync with preferences
   useEffect(() => {
@@ -91,10 +89,11 @@ export function SidebarSection({
     }
   }, [preferences?.collapsedSections, section.section, section.pinned, hasActiveItem]);
 
-  const handleToggle = (open: boolean) => {
+  const handleToggle = () => {
     if (section.pinned) return; // Don't allow collapsing pinned sections
 
-    setIsOpen(open);
+    const newState = !isOpen;
+    setIsOpen(newState);
     toggleCollapsedSection(section.section);
   };
 
@@ -110,27 +109,25 @@ export function SidebarSection({
         onOpenChange={handleToggle}
         disabled={section.pinned}
       >
-        <SidebarGroupLabel asChild>
-          <CollapsibleTrigger
+        <CollapsibleTrigger asChild>
+          <SidebarGroupLabel
             className={cn(
-              "flex items-center justify-between cursor-pointer transition-all min-h-[40px] px-3 py-2 rounded-md mb-1 border border-transparent w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-              isOpen 
-                ? "bg-accent/30 text-primary font-semibold border-primary/10 shadow-sm" 
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              "flex items-center justify-between cursor-pointer hover:bg-accent/50 px-3 py-2 rounded-md min-h-[40px] transition-all",
+              isOpen && "border-l-2 border-primary/50"
             )}
           >
-            <span className="text-[11px] uppercase tracking-wider font-bold">{section.section}</span>
+            <span className="text-sm font-semibold text-muted-foreground group-hover:text-foreground capitalize">{section.section}</span>
             {!section.pinned && (
               <div className="flex items-center">
                 {isOpen ? (
-                  <ChevronDown className="h-3.5 w-3.5 opacity-80" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
             )}
-          </CollapsibleTrigger>
-        </SidebarGroupLabel>
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarGroupContent className="mt-1">
             <SidebarMenu>
