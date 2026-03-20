@@ -474,13 +474,13 @@ export default function BillingSettings() {
   const PLANS = [
     {
       id: 'starter' as SubscriptionTier,
-      name: 'Basic',
+      name: 'Starter',
       priceMonthly: TIER_PRICES.starter,
       priceYearly: 790,
       icon: Zap,
       color: 'text-green-600',
       borderColor: 'border-green-500/50',
-      features: ['50 customers', '3 menus', '100 products', '28 core features'],
+      features: ['50 customers', '3 menus', '100 products', '20 core features'],
     },
     {
       id: 'professional' as SubscriptionTier,
@@ -714,11 +714,9 @@ export default function BillingSettings() {
                   Next billing: {formatSmartDate(nextBillingDate)}
                 </p>
               )}
-              {tenant?.mrr && (
-                <p className="text-sm text-muted-foreground">
-                  Current MRR: {formatCurrency(tenant.mrr as number)}
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                Current MRR: {formatCurrency(TIER_PRICES[currentSubscriptionTier])}
+              </p>
             </div>
             <div className="flex flex-col gap-2">
               <Button
@@ -924,7 +922,7 @@ export default function BillingSettings() {
                 </div>
                 <div className="grid grid-cols-4 gap-4 px-4 py-3 bg-muted/30 text-sm font-medium border-t">
                   <div>Feature</div>
-                  <div className="text-center">Basic</div>
+                  <div className="text-center">Starter</div>
                   <div className="text-center">Professional</div>
                   <div className="text-center">Enterprise</div>
                 </div>

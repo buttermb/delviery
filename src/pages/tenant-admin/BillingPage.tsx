@@ -624,7 +624,7 @@ export default function TenantAdminBillingPage() {
                       {plan?.display_name || (tenant?.subscription_plan as string)?.toUpperCase() || "No Plan"}
                     </span>
                     <Badge variant="outline">
-                      {formatCurrency((tenant?.mrr as number) ?? 0)}/month
+                      {formatCurrency(TIER_PRICES[businessTierToSubscriptionTier(currentTier)])}/month
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
@@ -638,7 +638,7 @@ export default function TenantAdminBillingPage() {
                   {/* Platform Fee Notice */}
                   <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-purple-900 dark:text-purple-100">
-                      💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant?.mrr as number) ?? 0) * 0.02)}/month (2% of subscription)
+                      💎 <strong>Platform Fee:</strong> {formatCurrency(TIER_PRICES[businessTierToSubscriptionTier(currentTier)] * 0.02)}/month (2% of subscription)
                     </p>
                     <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
                       This fee covers platform hosting, maintenance, and support
@@ -816,7 +816,7 @@ export default function TenantAdminBillingPage() {
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span>12 core features</span>
+                        <span>20 core features</span>
                       </li>
                     </ul>
                   </div>
