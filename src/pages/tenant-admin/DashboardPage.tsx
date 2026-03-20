@@ -172,10 +172,11 @@ export default function TenantAdminDashboardPage() {
     }
   }, [searchParams, creditBalance, setSearchParams]);
 
-  // Check if user came from signup
+  // Check if user came from signup (via location.state OR ?welcome=true URL param on refresh)
   useEffect(() => {
     const state = location.state as { fromSignup?: boolean; showWelcome?: boolean } | null;
-    if ((state?.fromSignup || state?.showWelcome) && !welcomeTriggeredRef.current) {
+    const hasWelcomeParam = searchParams.get('welcome') === 'true';
+    if ((state?.fromSignup || state?.showWelcome || hasWelcomeParam) && !welcomeTriggeredRef.current) {
       welcomeTriggeredRef.current = true;
 
       // Clear navigation state immediately to prevent re-trigger on remount
@@ -191,7 +192,7 @@ export default function TenantAdminDashboardPage() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [location.state]);
+  }, [location.state, searchParams]);
 
   // Auto-show Quick Start for empty accounts
   useEffect(() => {
