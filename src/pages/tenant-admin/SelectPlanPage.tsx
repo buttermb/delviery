@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Crown, Sparkles, Shield, Clock, Zap, Coins, ArrowRight } from "lucide-react";
+import { Check, Loader2, Crown, Sparkles, Shield, Clock, Zap, Coins, ArrowRight, ArrowLeft } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
@@ -145,6 +145,7 @@ export default function SelectPlanPage() {
 
   // Check if plan is an upgrade
   const isUpgrade = (plan: Plan): boolean => {
+    if (isFreeTier) return true; // All paid plans are upgrades from free
     const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
     const currentOrder = tierOrder[currentTier] ?? 0;
     const planOrder = tierOrder[plan.name.toLowerCase()] ?? 0;
@@ -157,8 +158,12 @@ export default function SelectPlanPage() {
     const price = billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
     const period = billingCycle === 'yearly' ? '/yr' : '/mo';
 
-    if (planTier === currentTier) {
+    if (!isFreeTier && planTier === currentTier) {
       return 'Current Plan';
+    }
+
+    if (isFreeTier) {
+      return skipTrial ? `Subscribe Now - $${price}${period}` : 'Start 14-Day Free Trial';
     }
 
     if (isTrial) {
@@ -369,7 +374,17 @@ export default function SelectPlanPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
+      {/* Back to Dashboard */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(`/${tenant?.slug}/admin/dashboard`)}
+        className="absolute top-4 left-4"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Dashboard
+      </Button>
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
