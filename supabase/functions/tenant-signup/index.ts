@@ -310,6 +310,33 @@ serve(async (req) => {
     const tenant = atomicResult.tenant;
     const tenantUser = atomicResult.tenant_user;
 
+    // Grant initial free credits and set free tier status (server-side with service_role)
+    // This MUST happen server-side because the frontend has no authenticated session yet.
+    try {
+      const { error: tierError } = await supabase
+        .from('tenants')
+        .update({ is_free_tier: true, credits_enabled: true })
+        .eq('id', tenant.id);
+
+      if (tierError) {
+        console.error('[SIGNUP] Failed to set free tier status', tierError);
+      } else {
+        console.error('[SIGNUP] Free tier status set', { tenantId: tenant.id });
+      }
+
+      const { error: creditError } = await supabase.rpc('grant_free_credits', {
+        p_tenant_id: tenant.id,
+      });
+
+      if (creditError) {
+        console.error('[SIGNUP] Failed to grant initial credits', creditError);
+      } else {
+        console.error('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
+      }
+    } catch (creditErr) {
+      console.error('[SIGNUP] Credit granting error (non-blocking)', creditErr);
+    }
+
     // Generate JWT tokens for auto-login using secure HMAC-SHA256 signing
     const accessToken = await signJWT(
       {
@@ -373,8 +400,12 @@ serve(async (req) => {
           role: tenantUser.role,
           tenant_id: tenantUser.tenant_id,
         },
-        // Tokens are set via httpOnly cookies only — never exposed in response body
-        // Signal whether auto-login succeeded so frontend knows if redirect to login is needed
+        // Include Supabase Auth session so frontend can establish an authenticated client
+        // (needed for RPC calls, realtime subscriptions, etc.)
+        session: signInData?.session ? {
+          access_token: signInData.session.access_token,
+          refresh_token: signInData.session.refresh_token,
+        } : null,
         auto_login_ready: !!signInData?.session,
         auto_login_failed: !signInData?.session,
       }),

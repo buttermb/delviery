@@ -327,37 +327,47 @@ export default function SignUpPage() {
         hasSession: !!result.session
       });
 
-      // Establish Supabase session if tokens were returned
+      // Establish Supabase Auth session for authenticated RPC calls (credit granting, etc.)
+      // Strategy 1: Use session tokens if the edge function returned them
+      // Strategy 2: Fall back to signInWithPassword (works even if edge function doesn't return tokens)
+      let sessionEstablished = false;
+
       if (result.session?.access_token && result.session?.refresh_token) {
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: result.session.access_token,
           refresh_token: result.session.refresh_token,
         });
-
-        if (sessionError) {
-          logger.error('[SIGNUP] Failed to set Supabase session', sessionError);
-          logger.error('Account created but login failed. Please try logging in manually.', null, { component: 'SignUpPage' });
+        if (!sessionError) {
+          sessionEstablished = true;
+          logger.info('[SIGNUP] Supabase session established via tokens');
         } else {
-          logger.info('[SIGNUP] Supabase session established');
+          logger.warn('[SIGNUP] setSession failed, will try signInWithPassword', sessionError);
+        }
+      }
 
-          // Verify session is actually active before proceeding (prevents race condition)
-          let retries = 5;
-          let sessionConfirmed = false;
-          while (retries > 0 && !sessionConfirmed) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              sessionConfirmed = true;
-              logger.info('[SIGNUP] Session confirmed active after verification');
-            } else {
-              retries--;
-              logger.debug(`[SIGNUP] Session not ready yet, retrying... (${retries} left)`);
-              await new Promise(resolve => setTimeout(resolve, 400));
-            }
-          }
+      if (!sessionEstablished) {
+        // Fallback: sign in directly — the edge function already created and confirmed the user
+        logger.info('[SIGNUP] Establishing session via signInWithPassword');
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+        if (!signInError) {
+          sessionEstablished = true;
+          logger.info('[SIGNUP] Supabase session established via signInWithPassword');
+        } else {
+          logger.error('[SIGNUP] signInWithPassword failed', signInError);
+        }
+      }
 
-          if (!sessionConfirmed) {
-            logger.warn('[SIGNUP] Session not confirmed after retries, continuing anyway');
-          }
+      if (sessionEstablished) {
+        // Verify session is active before making authenticated calls
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          logger.info('[SIGNUP] Session confirmed active');
+        } else {
+          logger.warn('[SIGNUP] Session not confirmed after establishment');
+          sessionEstablished = false;
         }
       }
 
@@ -369,35 +379,36 @@ export default function SignUpPage() {
         logger.error('[SIGNUP] Failed to save lastTenantSlug', error);
       }
 
-      // Auto-assign free tier BEFORE storing to auth context (prevents stale data in localStorage)
-      logger.info('[SIGNUP] Auto-assigning free tier');
+      // Auto-assign free tier and grant credits
+      // These require an authenticated session (RLS enforced)
+      if (sessionEstablished) {
+        logger.info('[SIGNUP] Granting free tier + credits (authenticated)');
 
-      // Update tenant to free tier — must complete before handleSignupSuccess
-      const { error: updateError } = await supabase
-        .from('tenants')
-        .update({
-          is_free_tier: true,
-          credits_enabled: true,
-        })
-        .eq('id', tenant.id);
+        const { error: updateError } = await supabase
+          .from('tenants')
+          .update({
+            is_free_tier: true,
+            credits_enabled: true,
+          })
+          .eq('id', tenant.id);
 
-      if (updateError) {
-        logger.error('[SIGNUP] Failed to set free tier status', updateError);
-        toast.error('Account created but free tier activation failed. Please contact support.');
-        // Continue — account exists, credits can be granted manually
-      }
+        if (updateError) {
+          logger.error('[SIGNUP] Failed to set free tier status', updateError);
+          // Non-fatal: edge function may have already set this
+        }
 
-      // Grant initial credits — must complete before dashboard shows
-      const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
-        p_tenant_id: tenant.id
-      } as never);
+        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
+          p_tenant_id: tenant.id
+        } as never);
 
-      if (creditError) {
-        logger.error('[SIGNUP] Failed to grant initial credits', creditError);
-        toast.error('Account created but credits could not be granted. Please contact support.');
-        // Continue — account exists, credits can be granted manually
+        if (creditError) {
+          logger.error('[SIGNUP] Failed to grant initial credits', creditError);
+          toast.error('Account created but credits could not be granted. Please contact support.');
+        } else {
+          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
+        }
       } else {
-        logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
+        logger.warn('[SIGNUP] No authenticated session — credits must be granted by edge function or manually');
       }
 
       // Patch tenant object so handleSignupSuccess stores correct state
