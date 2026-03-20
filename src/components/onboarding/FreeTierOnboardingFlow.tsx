@@ -173,12 +173,12 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                 className
             )}>
                 {/* Header */}
-                <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-white p-6 pb-8">
+                <div className="relative bg-white dark:bg-slate-950 border-b border-border/40 p-6 pb-8">
                     {/* Close button */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/10"
+                        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         onClick={handleSkip}
                         aria-label="Close onboarding"
                     >
@@ -186,9 +186,9 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                     </Button>
 
                     {/* Background decoration */}
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
-                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-60" />
+                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl opacity-60" />
                     </div>
 
                     {/* Content */}
@@ -210,7 +210,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                                 key={`title-${currentConfig.id}`}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-xl font-bold"
+                                className="text-xl font-bold text-foreground"
                             >
                                 {currentConfig.title}
                             </motion.h2>
@@ -219,7 +219,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 0.8 }}
                                 transition={{ delay: 0.1 }}
-                                className="text-sm text-white/70"
+                                className="text-sm text-muted-foreground"
                             >
                                 {currentConfig.subtitle}
                             </motion.p>
@@ -227,7 +227,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                     </div>
 
                     {/* Progress bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
                         <motion.div
                             className="h-full bg-gradient-to-r from-primary to-purple-500"
                             initial={{ width: 0 }}

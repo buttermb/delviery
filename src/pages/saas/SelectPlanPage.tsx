@@ -287,13 +287,13 @@ export default function SelectPlanPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
+      <div className="min-h-dvh bg-slate-50/50 py-12 px-4 relative selection:bg-primary/20">
         {/* Back Button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4"
+          className="absolute top-4 left-4 hover:bg-white/50"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -318,14 +318,14 @@ export default function SelectPlanPage() {
 
           {/* Billing Cycle Toggle */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg">
+            <div className="inline-flex items-center gap-1 p-1 bg-slate-200/50 rounded-lg shadow-inner">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={cn(
                   "px-6 py-2.5 rounded-md font-medium transition-all text-sm",
                   billingCycle === 'monthly'
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-slate-900 shadow-sm ring-1 ring-black/5"
+                    : "text-slate-500 hover:text-slate-900"
                 )}
               >
                 Monthly
@@ -335,8 +335,8 @@ export default function SelectPlanPage() {
                 className={cn(
                   "px-6 py-2.5 rounded-md font-medium transition-all text-sm flex items-center gap-2",
                   billingCycle === 'yearly'
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-slate-900 shadow-sm ring-1 ring-black/5"
+                    : "text-slate-500 hover:text-slate-900"
                 )}
               >
                 Yearly
@@ -367,7 +367,7 @@ export default function SelectPlanPage() {
           {/* Plan Cards */}
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             {/* Free Tier Card */}
-            <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01] border-dashed">
+            <Card className="relative overflow-hidden transition-all duration-300 bg-white border-dashed shadow-sm hover:shadow-md hover:scale-[1.01] border-border/60">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-primary/10">
@@ -454,10 +454,10 @@ export default function SelectPlanPage() {
                 <Card
                   key={plan.id}
                   className={cn(
-                    "relative overflow-hidden transition-all duration-300",
+                    "relative overflow-hidden transition-all duration-300 bg-white",
                     plan.popular
                       ? "border-primary shadow-xl scale-[1.02] ring-2 ring-primary/20"
-                      : "hover:shadow-lg hover:scale-[1.01]"
+                      : "shadow-sm hover:shadow-md hover:scale-[1.01] border-border/60"
                   )}
                 >
                   {plan.popular && (
