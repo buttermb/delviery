@@ -293,16 +293,18 @@ export default function SignUpPage() {
         errorMessage: error?.message
       });
 
-      if (error) {
-        logger.error('[SIGNUP] Edge function error', error);
-        throw new Error(error.message || 'Failed to create account');
-      }
-
-      // Check for error in response body (some edge functions return 200 with error)
+      // Supabase client puts the actual error body in `data` for non-2xx responses,
+      // while `error.message` is always the generic "Edge Function returned a non-2xx status code".
+      // Check `data` first to extract the real error message.
       if (result && typeof result === 'object' && 'error' in result && result.error) {
         logger.error('[SIGNUP] Error in response body', result);
         const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to create account';
         throw new Error(errorMessage);
+      }
+
+      if (error) {
+        logger.error('[SIGNUP] Edge function error', error);
+        throw new Error(error.message || 'Failed to create account');
       }
 
       if (!result || !result.success) {
