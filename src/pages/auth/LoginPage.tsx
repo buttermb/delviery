@@ -117,7 +117,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-background p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-slate-50/50 p-4 selection:bg-primary/20">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -146,7 +146,7 @@ export function LoginPage() {
         )}
 
         {/* Login Form */}
-        <div className="bg-card rounded-lg border border-border shadow-sm p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-border/40 shadow-lg p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

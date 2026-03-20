@@ -112,17 +112,17 @@ export function SidebarSection({
         <CollapsibleTrigger asChild>
           <SidebarGroupLabel
             className={cn(
-              "flex items-center justify-between cursor-pointer hover:bg-accent/50 px-3 py-2 rounded-md min-h-[40px] transition-all",
-              isOpen && "border-l-2 border-primary/50"
+              "flex items-center justify-between cursor-pointer hover:bg-primary/5 px-3 py-2 rounded-lg min-h-[40px] transition-all duration-200",
+              isOpen && "border-l-2 border-primary bg-primary/5"
             )}
           >
-            <span className="text-sm font-semibold text-muted-foreground group-hover:text-foreground capitalize">{section.section}</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{section.section}</span>
             {!section.pinned && (
               <div className="flex items-center">
                 {isOpen ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/70" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/70" />
                 )}
               </div>
             )}

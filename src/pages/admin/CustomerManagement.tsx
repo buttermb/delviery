@@ -462,15 +462,15 @@ export function CustomerManagement() {
   const atRiskCount = statsData?.atRisk ?? 0;
 
   const getCustomerStatus = (customer: Customer) => {
-    if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
+    if (!customer.last_purchase_at) return <Badge variant="outline" className="rounded-full shadow-sm">New</Badge>;
 
     const daysSince = Math.floor(
       (Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    if (daysSince > 60) return <Badge variant="destructive">At Risk</Badge>;
-    if (daysSince <= 7) return <Badge className="bg-green-600">Active</Badge>;
-    return <Badge variant="secondary">Regular</Badge>;
+    if (daysSince > 60) return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-200 rounded-full shadow-sm font-semibold">At Risk</Badge>;
+    if (daysSince <= 7) return <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-200 rounded-full shadow-sm font-semibold">Active</Badge>;
+    return <Badge variant="secondary" className="rounded-full shadow-sm">Regular</Badge>;
   };
 
   const customerColumns = useMemo<ResponsiveColumn<Customer>[]>(() => [

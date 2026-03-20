@@ -186,15 +186,15 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     <>
       <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible}>
         {/* Streamlined Header with Integrated Credits */}
-        <SidebarHeader className="p-0 border-b group-data-[collapsible=icon]:p-0">
+        <SidebarHeader className="p-0 border-b border-border/40 group-data-[collapsible=icon]:p-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center">
-                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0 group-hover:scale-105 transition-transform group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
+              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/60 transition-all duration-200 group cursor-pointer group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-sm ring-1 ring-primary/20 group-hover:scale-105 group-hover:shadow-md transition-all duration-200 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 gap-0 group-data-[collapsible=icon]:hidden">
-                  <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+                <div className="flex flex-col min-w-0 flex-1 gap-0.5 group-data-[collapsible=icon]:hidden">
+                  <span className="font-semibold text-sm truncate tracking-tight">{tenant?.slug || "Tenant Admin"}</span>
                   <div className="flex items-center gap-1.5">
                     <CreditBalance variant="badge" showLabel={false} />
                   </div>
@@ -202,7 +202,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0 group-data-[collapsible=icon]:hidden" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuContent align="start" className="w-56 shadow-lg border-border/60">
               <DropdownMenuItem onClick={handleNavigateToDashboard}>
                 <LayoutDashboard className="h-4 w-4 mr-2" />
                 Dashboard
@@ -229,7 +229,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarHeader>
 
         {/* Unified Search & Quick Actions Bar — hidden when collapsed */}
-        <div className="px-3 py-2 border-b space-y-2 group-data-[collapsible=icon]:hidden">
+        <div className="px-3 py-2.5 border-b border-border/40 space-y-2 group-data-[collapsible=icon]:hidden">
           {/* Menu Filter Search */}
           <SidebarSearch
             value={searchQuery}
@@ -242,23 +242,23 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs"
+              className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs rounded-lg bg-muted/50 border border-border/40 shadow-sm hover:bg-muted/80 hover:shadow transition-all duration-200"
               onClick={() => useCommandPaletteStore.getState().setOpen(true)}
             >
               <Search className="mr-2 h-3.5 w-3.5" />
               <span className="flex-1 text-left">Commands & Search...</span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded-md border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                 ⌘K
               </kbd>
             </Button>
           )}
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs gap-1.5"
+              className="flex-1 h-8 text-xs gap-1.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-foreground transition-all duration-200"
               onClick={handleNavigateToNewOrder}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -267,7 +267,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs gap-1.5"
+              className="flex-1 h-8 text-xs gap-1.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-foreground transition-all duration-200"
               onClick={handleNavigateToNewProduct}
             >
               <Package className="h-3.5 w-3.5" />
@@ -276,7 +276,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs gap-1.5"
+              className="flex-1 h-8 text-xs gap-1.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-foreground transition-all duration-200"
               onClick={handleNavigateToPOS}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
@@ -358,12 +358,12 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarContent>
 
         {/* Useful Footer with Quick Links */}
-        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1 bg-sidebar">
+        <SidebarFooter className="p-2 border-t border-border/40 group-data-[collapsible=icon]:p-1 bg-muted/30">
           <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0.5">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent/60 transition-all duration-200 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToSettings}
               title="Settings"
             >
@@ -373,7 +373,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent/60 transition-all duration-200 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToHelp}
               title="Help"
             >
@@ -381,10 +381,10 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <span className="group-data-[collapsible=icon]:hidden">Help</span>
             </Button>
           </div>
-          {/* Features count — desktop only, useless on mobile */}
+          {/* Features count — desktop only */}
           <button
             onClick={handleNavigateToFeatures}
-            className="hidden md:flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
+            className="hidden md:flex items-center gap-1.5 w-full px-2 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-all duration-200 rounded-lg hover:bg-accent/60 group-data-[collapsible=icon]:hidden"
           >
             <Settings2 className="h-3 w-3" />
             <span>
@@ -393,9 +393,9 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <span className="underline underline-offset-2">Manage</span>
             </span>
           </button>
-          {/* Keyboard shortcuts — desktop only, no keyboard on mobile */}
-          <div className="hidden md:block text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:!hidden">
-            <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
+          {/* Keyboard shortcuts — desktop only */}
+          <div className="hidden md:block text-[10px] text-muted-foreground/50 text-center mt-1 group-data-[collapsible=icon]:!hidden">
+            <kbd className="px-1.5 py-0.5 rounded-md bg-muted font-mono text-[10px] shadow-sm">⌘B</kbd> toggle • <kbd className="px-1.5 py-0.5 rounded-md bg-muted font-mono text-[10px] shadow-sm">⌘K</kbd> search
           </div>
         </SidebarFooter>
       </Sidebar>

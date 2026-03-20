@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import {
   LineChart,
   Line,
@@ -89,7 +90,7 @@ function KpiCard({ title, value, icon, description, variant = 'default', trend, 
 
   return (
     <Link to={href} className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
-      <Card className="h-full transition-all hover:shadow-md hover:border-primary/30 group-hover:scale-[1.01] active:scale-[0.99]">
+      <Card className="h-full transition-all duration-300 bg-white border-border/60 shadow-sm hover:shadow-md hover:border-primary/30 group-hover:scale-[1.01] active:scale-[0.99]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
           <div className={variantClasses[variant]}>
@@ -97,7 +98,14 @@ function KpiCard({ title, value, icon, description, variant = 'default', trend, 
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{value}</div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="text-2xl font-bold"
+          >
+            {value}
+          </motion.div>
           {trend && trend.value !== 0 ? (
             <div className="flex items-center gap-1 mt-1">
               {trend.value > 0 ? (
@@ -121,7 +129,7 @@ function KpiCard({ title, value, icon, description, variant = 'default', trend, 
 
 function KpiCardSkeleton() {
   return (
-    <Card>
+    <Card className="h-full bg-white shadow-sm border-border/60">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-5 w-5 rounded" />
@@ -168,7 +176,7 @@ function QuickActionsGrid({ tenantSlug }: { tenantSlug: string }) {
           role="button"
           aria-label={action.description}
         >
-          <Card className="h-full transition-all hover:shadow-md hover:border-primary/30 group-hover:scale-[1.02] active:scale-[0.98]">
+          <Card className="h-full transition-all duration-300 bg-white border-border/60 shadow-sm hover:shadow-md hover:border-primary/30 group-hover:scale-[1.02] active:scale-[0.98]">
             <CardContent className="p-4 flex flex-col items-center text-center gap-2">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
                 {action.icon}
@@ -210,7 +218,7 @@ function ActivityFeed({ tenantSlug }: { tenantSlug: string }) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full bg-white shadow-sm border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Recent Activity</CardTitle>
         </CardHeader>
@@ -231,7 +239,7 @@ function ActivityFeed({ tenantSlug }: { tenantSlug: string }) {
   }
 
   return (
-    <Card>
+    <Card className="h-full bg-white shadow-sm border-border/60">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -281,7 +289,7 @@ function RevenueLineChart() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full bg-white shadow-sm border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Revenue (Last 7 Days)</CardTitle>
         </CardHeader>
@@ -293,7 +301,7 @@ function RevenueLineChart() {
   }
 
   return (
-    <Card>
+    <Card className="h-full bg-white shadow-sm border-border/60">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-green-600" />
@@ -334,7 +342,7 @@ function OrdersDonutChart() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full bg-white shadow-sm border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Orders by Status</CardTitle>
         </CardHeader>
@@ -348,7 +356,7 @@ function OrdersDonutChart() {
   const totalOrders = (data ?? []).reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <Card>
+    <Card className="h-full bg-white shadow-sm border-border/60">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <Receipt className="h-4 w-4 text-blue-600" />
@@ -406,7 +414,7 @@ function TopProductsBarChart() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full bg-white shadow-sm border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Top Products (This Week)</CardTitle>
         </CardHeader>
@@ -418,7 +426,7 @@ function TopProductsBarChart() {
   }
 
   return (
-    <Card>
+    <Card className="h-full bg-white shadow-sm border-border/60">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <Package className="h-4 w-4 text-purple-600" />
@@ -513,7 +521,7 @@ export function DashboardHubPage() {
   const lastUpdated = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 sm:p-6 space-y-6 min-h-dvh bg-slate-50/50 selection:bg-primary/20">
       <HubBreadcrumbs hubName="dashboard-hub" hubHref="dashboard-hub" />
 
       {/* Header */}

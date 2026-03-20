@@ -129,12 +129,12 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           to={`/${tenantSlug}${item.path}`}
           onClick={handleClick}
           className={cn(
-            "flex items-center gap-3 w-full",
+            "flex items-center gap-3 w-full transition-all duration-200",
             item.hot && "font-semibold",
-            isActive && "font-bold"
+            isActive && "font-semibold"
           )}
         >
-          {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
+          {IconComponent && <IconComponent className={cn("h-4.5 w-4.5 flex-shrink-0", isActive && "text-primary")} />}
           <span className="flex-1 truncate text-sm">{item.name}</span>
 
           {/* Priority: live count badge > static badge > hot > favorite */}
@@ -145,11 +145,11 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
               pulse={liveBadge.pulse}
             />
           ) : item.badge ? (
-            <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs flex-shrink-0">
+            <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs flex-shrink-0 rounded-full">
               {item.badge}
             </Badge>
           ) : item.hot ? (
-            <span className="flex-shrink-0 text-orange-500 font-bold text-xs">HOT</span>
+            <span className="flex-shrink-0 text-orange-600 font-bold text-[10px] bg-orange-500/10 px-1.5 py-0.5 rounded-full">HOT</span>
           ) : isFavorite ? (
             <Star
               className="h-4 w-4 flex-shrink-0 text-warning fill-warning"

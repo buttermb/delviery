@@ -229,12 +229,12 @@ export function ResponsiveTable<T>({
                         getRowId={(row: T, _index: number) => keyExtractor(row)}
                     />
                 ) : (
-                    <div className="rounded-md border bg-card text-card-foreground border-border">
+                    <div className="rounded-lg border bg-white shadow-sm border-border/60 overflow-hidden">
                         <Table containerClassName="max-h-[600px]" {...tableProps}>
-                            <TableHeader>
+                            <TableHeader className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-border/40">
                                 <TableRow>
                                     {columns.map((col, index) => (
-                                        <TableHead key={index} className={col.className}>
+                                        <TableHead key={index} className={cn("text-xs font-semibold uppercase tracking-wider text-muted-foreground", col.className)}>
                                             {col.header}
                                         </TableHead>
                                     ))}
