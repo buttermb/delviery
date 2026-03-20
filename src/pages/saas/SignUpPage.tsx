@@ -293,18 +293,26 @@ export default function SignUpPage() {
         errorMessage: error?.message
       });
 
-      // Supabase client puts the actual error body in `data` for non-2xx responses,
-      // while `error.message` is always the generic "Edge Function returned a non-2xx status code".
-      // Check `data` first to extract the real error message.
-      if (result && typeof result === 'object' && 'error' in result && result.error) {
-        logger.error('[SIGNUP] Error in response body', result);
-        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to create account';
-        throw new Error(errorMessage);
-      }
-
+      // In @supabase/functions-js v2.97, non-2xx responses return:
+      //   data = null, error.message = generic "Edge Function returned a non-2xx status code"
+      //   error.context = raw Response object (body not yet consumed)
+      // We must read error.context.json() to get the actual error message.
       if (error) {
-        logger.error('[SIGNUP] Edge function error', error);
-        throw new Error(error.message || 'Failed to create account');
+        logger.error('[SIGNUP] Edge function error', { message: error.message, name: error.name });
+        let errorMessage = 'Failed to create account';
+        try {
+          const ctx = (error as any).context;
+          if (ctx && typeof ctx.json === 'function') {
+            const errorBody = await ctx.json();
+            logger.error('[SIGNUP] Error response body', errorBody);
+            if (errorBody?.error && typeof errorBody.error === 'string') {
+              errorMessage = errorBody.error;
+            }
+          }
+        } catch (parseErr) {
+          logger.warn('[SIGNUP] Could not parse error response', parseErr);
+        }
+        throw new Error(errorMessage);
       }
 
       if (!result || !result.success) {
