@@ -210,7 +210,7 @@ function SubscriptionStatusCard({
 }) {
   const navigate = useNavigate();
   const isActive = tenant.subscription_status === 'active' || tenant.subscription_status === 'trial';
-  const isFreeTier = tenant.is_free_tier !== false;
+  const isFreeTier = tenant.is_free_tier === true;
 
   return (
     <Card>

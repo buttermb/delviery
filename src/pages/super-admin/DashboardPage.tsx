@@ -120,16 +120,18 @@ export default function SuperAdminDashboardPage() {
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
-        .select('subscription_plan, subscription_status, mrr, created_at, last_activity_at');
+        .select('subscription_plan, subscription_status, mrr, created_at, last_activity_at, is_free_tier');
 
       if (!tenants) return null;
 
-      const active = tenants.filter((t) => t.subscription_status === 'active');
+      const active = tenants.filter((t) => t.subscription_status === 'active' && !t.is_free_tier);
       const trials = tenants.filter(
         (t) => t.subscription_status === 'trial' || t.subscription_status === 'trialing'
       );
 
-      const mrr = tenants.reduce((sum, t) => sum + (Number(t.mrr) || 0), 0);
+      const mrr = tenants
+        .filter((t) => !t.is_free_tier)
+        .reduce((sum, t) => sum + (Number(t.mrr) || 0), 0);
       const arr = mrr * 12;
       const commission = mrr * 0.02;
 
@@ -238,8 +240,9 @@ export default function SuperAdminDashboardPage() {
           const tenantCreated = new Date(tenant.created_at ?? 0);
           const tenantMonth = new Date(tenantCreated.getFullYear(), tenantCreated.getMonth(), 1);
 
-          // Only count if tenant existed in this month and was active
-          if (tenantMonth <= month && tenant.subscription_status === 'active') {
+          // Only count if tenant existed in this month, is active, and is NOT free tier
+          const isTenantActive = tenant.subscription_status === 'active' && !tenant.is_free_tier;
+          if (tenantMonth <= month && isTenantActive) {
             const mrr = Number(tenant.mrr) || planPrices[tenant.subscription_plan?.toLowerCase() || SUBSCRIPTION_PLANS.STARTER] || 0;
             monthlyRevenue[monthKey] += mrr;
           }

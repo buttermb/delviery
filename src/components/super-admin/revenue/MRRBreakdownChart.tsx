@@ -29,7 +29,7 @@ export function MRRBreakdownChart() {
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')
-        .select('id, created_at, subscription_plan, mrr, subscription_status')
+        .select('id, created_at, subscription_plan, mrr, subscription_status, is_free_tier')
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -60,7 +60,7 @@ export function MRRBreakdownChart() {
         // Calculate MRR for each tenant active at this point
         tenants?.forEach((tenant) => {
           const created = new Date(tenant.created_at);
-          const isActive = tenant.subscription_status === 'active';
+          const isActive = tenant.subscription_status === 'active' && !tenant.is_free_tier;
 
           if (created <= month && isActive) {
             const planPrice = planPrices[tenant.subscription_plan as string] || tenant.mrr || 0;
