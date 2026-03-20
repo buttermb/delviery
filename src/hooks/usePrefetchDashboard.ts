@@ -120,7 +120,7 @@ export function usePrefetchDashboard() {
           queryFn: async () => {
             const { data: tenant } = await supabase
               .from('tenants')
-              .select('usage, limits')
+              .select('usage, limits, is_free_tier, credits_enabled')
               .eq('id', tenantId)
               .maybeSingle();
 

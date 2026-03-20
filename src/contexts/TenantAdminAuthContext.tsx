@@ -335,6 +335,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           });
 
           try {
+            // Fresh signup guard: trust localStorage over stale DB during initial load
+            const isFreshSignup = sessionStorage.getItem('fresh_signup') === 'true';
+
             // Fetch admin and tenant data using user ID from session
             const { data: adminData } = await supabase
               .from('tenant_users')
@@ -351,11 +354,30 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             });
 
             if (adminData) {
-              const { data: tenantData } = await supabase
-                .from('tenants')
-                .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
-                .eq('id', adminData.tenant_id)
-                .maybeSingle();
+              // If fresh signup, trust localStorage tenant (has correct is_free_tier)
+              // to avoid stale DB data overwriting the patched tenant from SignUpPage
+              let tenantData: Record<string, unknown> | null = null;
+              if (isFreshSignup) {
+                const cachedTenant = safeStorage.getItem(TENANT_KEY);
+                if (cachedTenant) {
+                  try {
+                    tenantData = JSON.parse(cachedTenant);
+                    logger.info('[AUTH] Fresh signup: using cached tenant data to avoid stale DB overwrite');
+                  } catch {
+                    tenantData = null;
+                  }
+                }
+                sessionStorage.removeItem('fresh_signup');
+              }
+
+              if (!tenantData) {
+                const { data: dbTenantData } = await supabase
+                  .from('tenants')
+                  .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
+                  .eq('id', adminData.tenant_id)
+                  .maybeSingle();
+                tenantData = dbTenantData;
+              }
 
               logger.debug('[AUTH_DEBUG] Tenant lookup', {
                 found: !!tenantData,
@@ -789,11 +811,31 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             return;
           }
 
-          const { data: tenantData } = await supabase
-            .from('tenants')
-            .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
-            .eq('id', adminData.tenant_id)
-            .maybeSingle();
+          // Fresh signup guard (same as initializeAuth): trust localStorage over stale DB
+          const isFreshSignupReinit = sessionStorage.getItem('fresh_signup') === 'true';
+          let tenantData: Record<string, unknown> | null = null;
+
+          if (isFreshSignupReinit) {
+            const cachedTenant = safeStorage.getItem(TENANT_KEY);
+            if (cachedTenant) {
+              try {
+                tenantData = JSON.parse(cachedTenant);
+                logger.info('[AUTH] Fresh signup (re-init): using cached tenant data');
+              } catch {
+                tenantData = null;
+              }
+            }
+            sessionStorage.removeItem('fresh_signup');
+          }
+
+          if (!tenantData) {
+            const { data: dbTenantData } = await supabase
+              .from('tenants')
+              .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
+              .eq('id', adminData.tenant_id)
+              .maybeSingle();
+            tenantData = dbTenantData;
+          }
 
           if (!tenantData) {
             setLoading(false);

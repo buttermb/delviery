@@ -467,6 +467,9 @@ export default function SignUpPage() {
 
       await Promise.race([prefetchPromise, timeoutPromise]);
 
+      // Flag fresh signup so auth context trusts localStorage over stale DB data
+      sessionStorage.setItem('fresh_signup', 'true');
+
       // Navigate based on selected plan
       if (selectedPlan !== 'free') {
         // For paid plans, go to select-plan page with plan pre-selected

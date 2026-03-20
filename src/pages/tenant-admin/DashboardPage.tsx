@@ -12,7 +12,7 @@
  * - Trial/credit banners, email verification, onboarding, welcome modals
  */
 
-import { lazy, Suspense, useCallback, useState, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -134,6 +134,10 @@ export default function TenantAdminDashboardPage() {
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Guards for modal timing
+  const welcomeTriggeredRef = useRef(false);
+  const welcomeClosedAtRef = useRef(0);
+
   // Credit system
   const { balance: creditBalance } = useCredits();
 
@@ -171,18 +175,23 @@ export default function TenantAdminDashboardPage() {
   // Check if user came from signup
   useEffect(() => {
     const state = location.state as { fromSignup?: boolean; showWelcome?: boolean } | null;
-    if (state?.fromSignup || state?.showWelcome) {
+    if ((state?.fromSignup || state?.showWelcome) && !welcomeTriggeredRef.current) {
+      welcomeTriggeredRef.current = true;
+
+      // Clear navigation state immediately to prevent re-trigger on remount
+      try {
+        window.history.replaceState({}, document.title);
+      } catch (err) {
+        logger.error('Failed to clear history state', err, { component: 'DashboardPage' });
+      }
+
+      // Show modal after short delay for smooth transition
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
-        try {
-          window.history.replaceState({}, document.title);
-        } catch (err) {
-          logger.error('Failed to clear history state', err, { component: 'DashboardPage' });
-        }
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [location.pathname]);
+  }, [location.state]);
 
   // Auto-show Quick Start for empty accounts
   useEffect(() => {
@@ -202,7 +211,14 @@ export default function TenantAdminDashboardPage() {
 
         const onboardingCompleted = localStorage.getItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenant.id}`);
         if (isEmpty && !onboardingCompleted && !showWelcomeModal) {
-          quickStartTimer = setTimeout(() => setShowQuickStart(true), 3000);
+          quickStartTimer = setTimeout(() => {
+            // Don't show if WelcomeModal was triggered but hasn't been closed yet
+            if (welcomeTriggeredRef.current && welcomeClosedAtRef.current === 0) return;
+            // Don't show QuickStart if WelcomeModal was closed within the last 5 seconds
+            const timeSinceWelcomeClosed = Date.now() - welcomeClosedAtRef.current;
+            if (timeSinceWelcomeClosed < 5000) return;
+            setShowQuickStart(true);
+          }, 3000);
         }
       } catch (err) {
         logger.error('Error checking if account is empty', err, { component: 'DashboardPage' });
@@ -457,7 +473,10 @@ export default function TenantAdminDashboardPage() {
       {/* Modals */}
       <WelcomeModal
         open={showWelcomeModal}
-        onClose={() => setShowWelcomeModal(false)}
+        onClose={() => {
+          setShowWelcomeModal(false);
+          welcomeClosedAtRef.current = Date.now();
+        }}
       />
       <TrialWelcomeModal
         tenantSlug={tenant?.slug}

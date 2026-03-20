@@ -250,10 +250,14 @@ export function useCredits(): UseCreditsReturn {
   const hasActiveStatus = tenant?.subscription_status === 'active';
   const creditsDisabled = (tenant as { credits_enabled?: boolean })?.credits_enabled === false;
   
-  // Determine isFreeTier: use subscription data if available, else fallback to tenant context
-  const isFreeTier = creditData 
-    ? subscription.isFreeTier 
-    : !(creditsDisabled || isPaidPlan || hasActiveStatus);
+  // Determine isFreeTier: use subscription data if available, else trust explicit tenant flag, else fallback
+  const isFreeTier = creditData
+    ? subscription.isFreeTier
+    : tenant?.is_free_tier === true
+      ? true
+      : tenant?.is_free_tier === false
+        ? false
+        : !(creditsDisabled || isPaidPlan || hasActiveStatus);
 
   // Legacy backward-compat values
   const lifetimeEarned = lifetimeStats.earned;

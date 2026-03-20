@@ -25,7 +25,7 @@ interface WelcomeModalProps {
 
 export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { tenant } = useTenantAdminAuth();
   const { startTutorial } = useTutorialContext();
   const { balance, isFreeTier } = useCredits();
@@ -47,16 +47,26 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
     }
   }, [tenant?.id, onClose, isFromSignup]);
 
+  // Clean up ?welcome=true from URL so it doesn't persist and suppress FreeTierOnboardingFlow
+  const cleanupWelcomeParam = () => {
+    if (searchParams.has('welcome')) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('welcome');
+      setSearchParams(newParams, { replace: true });
+    }
+  };
+
   const handleGetStarted = () => {
     if (tenant?.id) {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
     }
+    cleanupWelcomeParam();
     onClose();
-    
-    // Navigate to welcome/setup page
+
+    // Navigate to welcome/setup page (replace: true removes ?welcome=true from history)
     if (tenant?.slug) {
-      navigate(`/${tenant.slug}/admin/welcome`);
+      navigate(`/${tenant.slug}/admin/welcome`, { replace: true });
     }
   };
 
@@ -65,8 +75,9 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
     }
+    cleanupWelcomeParam();
     onClose();
-    
+
     // Start dashboard tutorial
     startTutorial('dashboard-tour', true);
   };
@@ -76,6 +87,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
     }
+    cleanupWelcomeParam();
     onClose();
   };
 
@@ -84,7 +96,16 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) {
+        // Handles overlay click / Escape key — same cleanup as explicit handlers
+        if (tenant?.id) {
+          sessionStorage.setItem(`welcome_seen_${tenant.id}`, 'true');
+        }
+        cleanupWelcomeParam();
+        onClose();
+      }
+    }}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <div className="flex items-center justify-between">
