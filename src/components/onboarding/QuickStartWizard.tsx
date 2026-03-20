@@ -16,16 +16,23 @@ interface QuickStartWizardProps {
   onComplete: () => void;
 }
 
-export function QuickStartWizard({ open, onOpenChange, onComplete: _onComplete }: QuickStartWizardProps) {
+export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartWizardProps) {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
+  const handleSkip = () => {
+    onComplete();
+    onOpenChange(false);
+  };
+
   const handleAddProducts = () => {
+    onComplete();
     onOpenChange(false);
     navigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
   };
 
   const handleAddClients = () => {
+    onComplete();
     onOpenChange(false);
     navigate(`/${tenantSlug}/admin/big-plug-clients`);
   };
@@ -94,7 +101,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete: _onComplete }
         <DialogFooter className="gap-2">
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleSkip}
           >
             Skip for Now
           </Button>

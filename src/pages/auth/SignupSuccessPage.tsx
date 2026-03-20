@@ -79,6 +79,7 @@ export function SignupSuccessPage() {
           if (userType === 'super_admin') {
             navigate('/super-admin/dashboard', { replace: true });
           } else if (tenantSlug) {
+            sessionStorage.setItem('fresh_signup', 'true');
             navigate(`/${tenantSlug}/admin/dashboard?welcome=true`, { replace: true });
           } else {
             navigate('/saas/login', { replace: true });
@@ -103,6 +104,7 @@ export function SignupSuccessPage() {
         });
         const tenantSlug = session.user.user_metadata?.tenant_slug;
         if (tenantSlug) {
+          sessionStorage.setItem('fresh_signup', 'true');
           navigate(`/${tenantSlug}/admin/dashboard?welcome=true`, { replace: true });
         } else {
           navigate('/saas/login', { replace: true });

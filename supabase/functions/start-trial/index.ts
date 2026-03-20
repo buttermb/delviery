@@ -154,7 +154,7 @@ serve(async (req) => {
 
     // Build checkout session options
     const origin = req.headers.get("origin") || 'https://app.floraiq.com';
-    const successParams = skip_trial ? 'success=true' : 'success=true&trial=true&welcome=true';
+    const successParams = skip_trial ? 'success=true' : 'success=true&trial=true';
     const successUrl = `${origin}/${tenant.slug}/admin/dashboard?${successParams}`;
     const cancelUrl = `${origin}/select-plan?tenant_id=${tenant.id}&canceled=true`;
 
