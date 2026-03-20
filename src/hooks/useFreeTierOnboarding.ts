@@ -9,6 +9,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCredits } from '@/hooks/useCredits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
@@ -77,6 +78,7 @@ const initialState: FreeTierOnboardingState = {
 export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
     const { isFreeTier } = useCredits();
     const { tenant, isAuthenticated } = useTenantAdminAuth();
+    const [searchParams] = useSearchParams();
 
     const [state, setState] = useState<FreeTierOnboardingState>(initialState);
     const [isOpen, setIsOpen] = useState(false);
@@ -106,6 +108,11 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         }
     }, [storageKey]);
 
+    // Suppress auto-open when ?welcome=true is in URL — WelcomeModal handles the greeting
+    const hasWelcomeParam = searchParams.get('welcome') === 'true';
+    const welcomeSeenKey = tenant?.id ? `welcome_seen_${tenant.id}` : null;
+    const welcomeJustSeen = welcomeSeenKey ? sessionStorage.getItem(welcomeSeenKey) === 'true' : false;
+
     // Determine if onboarding should show
     const shouldShow = Boolean(
         isAuthenticated &&
@@ -113,6 +120,8 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         tenant &&
         !state.isComplete &&
         !state.isSkipped &&
+        !hasWelcomeParam &&
+        !welcomeJustSeen &&
         // Only show for relatively new tenants (created in last 7 days)
         tenant.created_at &&
         new Date(tenant.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)

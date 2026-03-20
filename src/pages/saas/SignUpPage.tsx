@@ -331,7 +331,7 @@ export default function SignUpPage() {
           logger.info('[SIGNUP] Supabase session established');
 
           // Verify session is actually active before proceeding (prevents race condition)
-          let retries = 3;
+          let retries = 5;
           let sessionConfirmed = false;
           while (retries > 0 && !sessionConfirmed) {
             const { data: { session } } = await supabase.auth.getSession();
@@ -341,7 +341,7 @@ export default function SignUpPage() {
             } else {
               retries--;
               logger.debug(`[SIGNUP] Session not ready yet, retrying... (${retries} left)`);
-              await new Promise(resolve => setTimeout(resolve, 200));
+              await new Promise(resolve => setTimeout(resolve, 400));
             }
           }
 
@@ -359,14 +359,55 @@ export default function SignUpPage() {
         logger.error('[SIGNUP] Failed to save lastTenantSlug', error);
       }
 
-      // Update auth context (handles localStorage and state)
+      // Auto-assign free tier BEFORE storing to auth context (prevents stale data in localStorage)
+      try {
+        logger.info('[SIGNUP] Auto-assigning free tier');
+
+        // Update tenant to free tier — must complete before handleSignupSuccess
+        const { error: updateError } = await supabase
+          .from('tenants')
+          .update({
+            is_free_tier: true,
+            credits_enabled: true,
+          })
+          .eq('id', tenant.id);
+
+        if (updateError) {
+          logger.warn('[SIGNUP] Failed to set free tier status', updateError);
+        }
+
+        // Grant initial credits — must complete before dashboard shows
+        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
+          p_tenant_id: tenant.id
+        } as never);
+
+        if (creditError) {
+          logger.warn('[SIGNUP] Failed to grant initial credits', creditError);
+        } else {
+          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
+        }
+      } catch (freeTierError) {
+        logger.warn('[SIGNUP] Free tier assignment failed, continuing anyway', freeTierError);
+      }
+
+      // Patch tenant object so handleSignupSuccess stores correct state
+      const patchedResult = {
+        ...result,
+        tenant: {
+          ...result.tenant,
+          is_free_tier: true,
+          credits_enabled: true,
+        },
+      };
+
+      // Update auth context (handles localStorage and state) — now with correct free tier data
       if (handleSignupSuccess) {
-        await handleSignupSuccess(result);
+        await handleSignupSuccess(patchedResult);
       } else {
         // Fallback: Store non-sensitive user and tenant data
         try {
-          localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(result.user));
-          localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(result.tenant));
+          localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(patchedResult.user));
+          localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(patchedResult.tenant));
         } catch (error) {
           logger.error('Failed to store auth data in localStorage', error);
           // Continue anyway as tokens are in httpOnly cookies
@@ -393,37 +434,6 @@ export default function SignUpPage() {
         }
       } catch {
         // Silently fail analytics
-      }
-
-      // Auto-assign free tier for new signups (credit-based model)
-      try {
-        logger.info('[SIGNUP] Auto-assigning free tier');
-
-        // Update tenant to free tier
-        const { error: updateError } = await supabase
-          .from('tenants')
-          .update({
-            is_free_tier: true,
-            credits_enabled: true,
-          })
-          .eq('id', tenant.id);
-
-        if (updateError) {
-          logger.warn('[SIGNUP] Failed to set free tier status', updateError);
-        }
-
-        // Grant initial credits via RPC
-        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
-          p_tenant_id: tenant.id
-        } as never);
-
-        if (creditError) {
-          logger.warn('[SIGNUP] Failed to grant initial credits', creditError);
-        } else {
-          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
-        }
-      } catch (freeTierError) {
-        logger.warn('[SIGNUP] Free tier assignment failed, continuing anyway', freeTierError);
       }
 
       // Record device fingerprint for anti-abuse tracking

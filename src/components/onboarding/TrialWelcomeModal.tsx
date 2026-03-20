@@ -40,9 +40,9 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
   const [open, setOpen] = useState(false);
   const { tenant } = useTenantAdminAuth();
 
-  const isWelcome = searchParams.get("welcome") === "true";
   const isTrial = searchParams.get("trial") === "true";
   const isSuccess = searchParams.get("success") === "true";
+  const tenantId = tenant?.id;
 
   // Calculate trial days remaining
   const trialEndsAt = tenant?.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
@@ -59,9 +59,16 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
     enterprise: 'Enterprise'
   };
 
-  // Show modal if welcome=true or success=true in URL
+  // Show modal only for actual trial redirects (success=true&trial=true)
+  // The ?welcome=true param is handled by WelcomeModal, not this component
   useEffect(() => {
-    if (isWelcome || (isSuccess && isTrial)) {
+    if (isSuccess && isTrial) {
+      // Check localStorage seen-guard to prevent re-trigger on browser back navigation
+      const seenKey = tenantId ? `trial_welcome_seen_${tenantId}` : null;
+      if (seenKey && localStorage.getItem(seenKey)) {
+        return;
+      }
+
       setOpen(true);
 
       // Trigger confetti on open
@@ -80,10 +87,18 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isWelcome, isSuccess, isTrial]);
+  }, [isSuccess, isTrial, tenantId]);
 
   const handleClose = () => {
     setOpen(false);
+    // Mark as seen so it won't re-trigger on browser back navigation
+    if (tenantId) {
+      try {
+        localStorage.setItem(`trial_welcome_seen_${tenantId}`, 'true');
+      } catch {
+        // Ignore localStorage errors
+      }
+    }
     // Remove URL params
     searchParams.delete("welcome");
     searchParams.delete("trial");
@@ -122,7 +137,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
     },
   ];
 
-  if (!isWelcome && !(isSuccess && isTrial)) return null;
+  if (!(isSuccess && isTrial)) return null;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>

@@ -136,6 +136,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
         prevStep,
         complete,
         skip,
+        dismiss,
         isFirstStep,
         isLastStep,
         progressPercent,
@@ -166,7 +167,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
     if (!isOpen) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && skip()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && dismiss()}>
             <DialogContent className={cn(
                 'sm:max-w-[600px] p-0 overflow-hidden gap-0 border-0',
                 className
