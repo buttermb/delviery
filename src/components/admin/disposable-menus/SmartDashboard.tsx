@@ -291,8 +291,6 @@ export function SmartDashboard() {
               >
                 <Download className="h-4 w-4" />
               </Button>
-              <PanicModeButton />
-
               {/* Generate Menu Page Button */}
               <Button
                 variant="outline"
@@ -518,6 +516,11 @@ export function SmartDashboard() {
       >
         <Plus className="h-6 w-6" />
       </Button>
+
+      {/* Panic Mode - Fixed position, always visible */}
+      <div className="fixed bottom-20 left-4 z-50 sm:bottom-6 sm:right-6 sm:left-auto">
+        <PanicModeButton />
+      </div>
 
       {/* Menu Creation Wizard */}
       <MenuCreationWizard open={wizardOpen} onOpenChange={setWizardOpen} />
