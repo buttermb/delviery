@@ -1,13 +1,13 @@
 /**
- * Setup Wizard Step 3: Set Delivery Zones and Fees
- * Add delivery zones with names, zip codes, and fee amounts
+ * Setup Wizard Step 3: Smart Delivery Zones & Fees
+ * Features: ZIP chip input with geocoding, zone presets, auto-fill, graceful degradation
  */
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MapPin, Plus, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
+import { MapPin, Plus, Loader2, CheckCircle2, Trash2, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,11 +21,21 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { ZipCodeInput } from '@/components/onboarding/setup-wizard/ZipCodeInput';
+import { ZonePresets } from '@/components/onboarding/setup-wizard/ZonePresets';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import {
+  calculateDistance,
+  suggestDeliveryFee,
+  generateZoneName,
+} from '@/lib/deliveryZoneHelpers';
+
+import type { ZipChip, ZonePreset } from '@/types/setup-wizard';
 
 const deliveryZoneSchema = z.object({
   name: z.string().min(2, 'Zone name is required'),
@@ -40,9 +50,16 @@ const deliveryZoneSchema = z.object({
 type DeliveryZoneFormData = z.infer<typeof deliveryZoneSchema>;
 
 interface AddedZone {
+  id: string;
   name: string;
   delivery_fee: number;
   zip_codes: string[];
+}
+
+interface BusinessLocation {
+  address: string;
+  lat: number;
+  lng: number;
 }
 
 interface DeliveryZonesStepProps {
@@ -56,6 +73,13 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [zoneToDelete, setZoneToDelete] = useState<number | null>(null);
 
+  // Smart features state
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || null;
+  const hasSmartFeatures = !!mapboxToken;
+  const [businessLocation, setBusinessLocation] = useState<BusinessLocation | null>(null);
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [zipChips, setZipChips] = useState<ZipChip[]>([]);
+
   const form = useForm<DeliveryZoneFormData>({
     resolver: zodResolver(deliveryZoneSchema),
     defaultValues: {
@@ -66,16 +90,71 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
     },
   });
 
+  // Auto-fill zone name when ZIP chips change
+  useEffect(() => {
+    if (!hasSmartFeatures || zipChips.length === 0) return;
+    const validChips = zipChips.filter((c) => c.status === 'valid');
+    if (validChips.length === 0) return;
+
+    const name = generateZoneName(zipChips);
+    if (name) {
+      form.setValue('name', name, { shouldValidate: true });
+    }
+  }, [zipChips, hasSmartFeatures, form]);
+
+  // Auto-suggest fee when ZIP chips change + business location available
+  useEffect(() => {
+    if (!businessLocation || zipChips.length === 0) return;
+    const validChips = zipChips.filter((c) => c.status === 'valid' && c.lat !== 0);
+    if (validChips.length === 0) return;
+
+    const avgDistance =
+      validChips.reduce(
+        (sum, chip) =>
+          sum + calculateDistance(businessLocation.lat, businessLocation.lng, chip.lat, chip.lng),
+        0
+      ) / validChips.length;
+
+    const fee = suggestDeliveryFee(avgDistance);
+    form.setValue('delivery_fee', fee.toString(), { shouldValidate: true });
+  }, [zipChips, businessLocation, form]);
+
+  const handleSelectAddress = useCallback(
+    (address: string, lat: number, lng: number) => {
+      setBusinessLocation({ address, lat, lng });
+    },
+    []
+  );
+
+  const handleSelectPreset = useCallback(
+    (preset: ZonePreset) => {
+      form.setValue('name', preset.label, { shouldValidate: true });
+      form.setValue('delivery_fee', preset.suggestedFee.toString(), { shouldValidate: true });
+      setZipChips([]);
+    },
+    [form]
+  );
+
+  const handleZipChipsChange = useCallback((chips: ZipChip[]) => {
+    setZipChips(chips);
+  }, []);
+
   const onSubmitZone = async (data: DeliveryZoneFormData) => {
     if (!tenant?.id) return;
     setIsSubmitting(true);
 
     try {
-      const zipCodes = data.zip_codes
-        ? data.zip_codes.split(',').map((z) => z.trim()).filter(Boolean)
-        : [];
+      // Derive zip codes from chips (smart mode) or from text input (fallback mode)
+      let zipCodes: string[];
+      if (hasSmartFeatures) {
+        zipCodes = zipChips.map((c) => c.zip);
+      } else {
+        zipCodes = data.zip_codes
+          ? data.zip_codes.split(',').map((zc) => zc.trim()).filter(Boolean)
+          : [];
+      }
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('delivery_zones')
         .insert({
           tenant_id: tenant.id,
@@ -84,19 +163,23 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
           minimum_order: data.minimum_order ? Number(data.minimum_order) : 0,
           zip_codes: zipCodes,
           is_active: true,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
       setAddedZones((prev) => [
         ...prev,
         {
+          id: inserted.id,
           name: data.name,
           delivery_fee: Number(data.delivery_fee),
           zip_codes: zipCodes,
         },
       ]);
       form.reset();
+      setZipChips([]);
       toast.success(`Zone "${data.name}" added!`);
     } catch (error) {
       logger.error('Failed to add delivery zone', error instanceof Error ? error : new Error(String(error)), { component: 'DeliveryZonesStep' });
@@ -115,7 +198,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
         .from('delivery_zones')
         .delete()
         .eq('tenant_id', tenant.id)
-        .eq('name', zone.name);
+        .eq('id', zone.id);
 
       if (error) throw error;
 
@@ -137,6 +220,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-xl">
           <MapPin className="h-6 w-6 text-orange-600 dark:text-orange-400" />
@@ -146,6 +230,33 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
           <p className="text-sm text-muted-foreground">Define where you deliver and how much it costs</p>
         </div>
       </div>
+
+      {/* Business Location (smart mode only) */}
+      {hasSmartFeatures && (
+        <div className="space-y-2">
+          <FormLabel>Business Location</FormLabel>
+          <AddressAutocomplete
+            value={businessAddress}
+            onChange={setBusinessAddress}
+            onSelectAddress={handleSelectAddress}
+            placeholder="Enter your business address for smart zone suggestions"
+          />
+          {businessLocation && (
+            <p className="text-xs text-green-600 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              Location set — zone presets and fee suggestions enabled
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Zone Presets (smart mode only) */}
+      {hasSmartFeatures && (
+        <ZonePresets
+          onSelectPreset={handleSelectPreset}
+          hasBusinessLocation={!!businessLocation}
+        />
+      )}
 
       {/* Added zones list */}
       {addedZones.length > 0 && (
@@ -177,6 +288,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
         </div>
       )}
 
+      {/* Zone Form */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmitZone)} className="space-y-4">
           <FormField
@@ -188,25 +300,43 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
                 <FormControl>
                   <Input placeholder="e.g., Downtown, Suburbs" {...field} />
                 </FormControl>
+                {hasSmartFeatures && zipChips.length > 0 && (
+                  <FormDescription>Auto-filled from ZIP code cities</FormDescription>
+                )}
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="zip_codes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ZIP Codes</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., 90210, 90211, 90212" {...field} />
-                </FormControl>
-                <FormDescription>Comma-separated list of zip codes (optional)</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* ZIP Codes — smart chips or plain text fallback */}
+          {hasSmartFeatures ? (
+            <div className="space-y-2">
+              <FormLabel>ZIP Codes</FormLabel>
+              <ZipCodeInput
+                value={zipChips}
+                onChange={handleZipChipsChange}
+                mapboxToken={mapboxToken}
+              />
+              <p className="text-xs text-muted-foreground">
+                Type a ZIP code and press Enter to add
+              </p>
+            </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name="zip_codes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ZIP Codes</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 90210, 90211, 90212" {...field} />
+                  </FormControl>
+                  <FormDescription>Comma-separated list of zip codes (optional)</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -218,6 +348,9 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
                   <FormControl>
                     <Input type="number" step="0.01" min="0" placeholder="5.00" {...field} />
                   </FormControl>
+                  {hasSmartFeatures && businessLocation && zipChips.length > 0 && (
+                    <FormDescription>Suggested from distance</FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -254,6 +387,17 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
         </form>
       </Form>
 
+      {/* Fallback hint when no Mapbox token */}
+      {!hasSmartFeatures && (
+        <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
+          <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            Add a Mapbox token in settings for smart zone features like ZIP code geocoding, zone presets, and auto-fill.
+          </p>
+        </div>
+      )}
+
+      {/* Continue / Skip */}
       {addedZones.length > 0 ? (
         <Button onClick={onComplete} className="w-full">
           Continue to Next Step

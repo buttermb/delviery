@@ -50,6 +50,29 @@ export const SETUP_WIZARD_STEPS: SetupWizardStep[] = [
   },
 ];
 
+export interface ZipChip {
+  zip: string;
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  status: 'valid' | 'invalid' | 'loading' | 'not_found';
+}
+
+export interface ZonePreset {
+  id: 'nearby' | 'standard' | 'extended';
+  label: string;
+  description: string;
+  radiusMiles: number;
+  suggestedFee: number;
+}
+
+export const ZONE_PRESETS: ZonePreset[] = [
+  { id: 'nearby', label: 'Nearby', description: '5-mile radius', radiusMiles: 5, suggestedFee: 4 },
+  { id: 'standard', label: 'Standard', description: '10-mile radius', radiusMiles: 10, suggestedFee: 7 },
+  { id: 'extended', label: 'Extended', description: '20-mile radius', radiusMiles: 20, suggestedFee: 12 },
+];
+
 export interface SkipWarning {
   stepId: SetupWizardStepId;
   title: string;
