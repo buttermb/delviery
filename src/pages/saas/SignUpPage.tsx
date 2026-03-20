@@ -360,34 +360,34 @@ export default function SignUpPage() {
       }
 
       // Auto-assign free tier BEFORE storing to auth context (prevents stale data in localStorage)
-      try {
-        logger.info('[SIGNUP] Auto-assigning free tier');
+      logger.info('[SIGNUP] Auto-assigning free tier');
 
-        // Update tenant to free tier — must complete before handleSignupSuccess
-        const { error: updateError } = await supabase
-          .from('tenants')
-          .update({
-            is_free_tier: true,
-            credits_enabled: true,
-          })
-          .eq('id', tenant.id);
+      // Update tenant to free tier — must complete before handleSignupSuccess
+      const { error: updateError } = await supabase
+        .from('tenants')
+        .update({
+          is_free_tier: true,
+          credits_enabled: true,
+        })
+        .eq('id', tenant.id);
 
-        if (updateError) {
-          logger.warn('[SIGNUP] Failed to set free tier status', updateError);
-        }
+      if (updateError) {
+        logger.error('[SIGNUP] Failed to set free tier status', updateError);
+        toast.error('Account created but free tier activation failed. Please contact support.');
+        // Continue — account exists, credits can be granted manually
+      }
 
-        // Grant initial credits — must complete before dashboard shows
-        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
-          p_tenant_id: tenant.id
-        } as never);
+      // Grant initial credits — must complete before dashboard shows
+      const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
+        p_tenant_id: tenant.id
+      } as never);
 
-        if (creditError) {
-          logger.warn('[SIGNUP] Failed to grant initial credits', creditError);
-        } else {
-          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
-        }
-      } catch (freeTierError) {
-        logger.warn('[SIGNUP] Free tier assignment failed, continuing anyway', freeTierError);
+      if (creditError) {
+        logger.error('[SIGNUP] Failed to grant initial credits', creditError);
+        toast.error('Account created but credits could not be granted. Please contact support.');
+        // Continue — account exists, credits can be granted manually
+      } else {
+        logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
       }
 
       // Patch tenant object so handleSignupSuccess stores correct state

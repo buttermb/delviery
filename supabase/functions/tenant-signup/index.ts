@@ -35,8 +35,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing environment variables');
+    }
+    if (!supabaseAnonKey) {
+      throw new Error('Missing SUPABASE_ANON_KEY environment variable');
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -182,12 +187,17 @@ serve(async (req) => {
     let slugExists = true;
     let attempts = 0;
     while (slugExists && attempts < 10) {
-      const { count } = await supabase
+      const { count, error: slugError } = await supabase
         .from('tenants')
         .select('id', { count: 'exact', head: true })
         .eq('slug', slug);
 
-      if (count === 0) {
+      if (slugError) {
+        console.error('[SIGNUP] Slug check failed', slugError);
+        throw new Error('Failed to verify slug uniqueness');
+      }
+
+      if (count === 0 || count === null) {
         slugExists = false;
       } else {
         slug = `${generateSlug(business_name)}-${Date.now()}`;
@@ -236,10 +246,7 @@ serve(async (req) => {
 
     // Generate Supabase session for immediate login
     // Use anon client to sign in (admin client can't generate sessions)
-    const anonClient = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey);
 
     const { data: signInData, error: signInError } = await anonClient.auth.signInWithPassword({
       email: email.toLowerCase(),
@@ -476,7 +483,7 @@ serve(async (req) => {
                   tenant_slug: tenant.slug,
                   dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
                   // Credit info for welcome email
-                  initial_credits: atomicResult.initial_credits || 10000,
+                  initial_credits: 10000, // Free tier default
                   plan: tenant.subscription_plan || 'free',
                   is_free_tier: tenant.is_free_tier !== false,
                 },
