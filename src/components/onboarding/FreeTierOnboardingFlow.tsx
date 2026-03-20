@@ -403,7 +403,7 @@ function WelcomeStep({ businessName }: { businessName: string }) {
                 transition={{ delay: 0.9 }}
                 className="text-sm text-muted-foreground"
             >
-                This will only take <strong>30 seconds</strong> ⏱️
+                Let's take a quick look ⏱️
             </motion.p>
         </div>
     );

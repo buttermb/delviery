@@ -108,7 +108,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
       description: "Start building your customer base",
       action: () => {
         handleClose();
-        navigate(`/${tenantSlug}/admin/customers/add`);
+        navigate(`/${tenantSlug}/admin/big-plug-clients`);
       },
     },
     {
@@ -117,7 +117,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
       description: "Share a secure, one-time menu with clients",
       action: () => {
         handleClose();
-        navigate(`/${tenantSlug}/admin/menus/create`);
+        navigate(`/${tenantSlug}/admin/disposable-menus?action=create`);
       },
     },
   ];

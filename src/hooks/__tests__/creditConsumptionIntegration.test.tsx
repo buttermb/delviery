@@ -740,21 +740,32 @@ describe('Insufficient Credits - Modal with Purchase Options', () => {
       expect(screen.getByText('100 credits')).toBeInTheDocument();
     });
 
-    it('should display quick purchase button for 5K credits', () => {
+    it('should display quick purchase button for quick-boost credits', () => {
+      renderModalWithProps();
+      const button = screen.getByTestId('quick-purchase-quick-boost');
+      expect(button).toBeInTheDocument();
+      expect(screen.getByText('500 Credits')).toBeInTheDocument();
+    });
+
+    it('should display quick purchase button for starter-pack credits', () => {
       renderModalWithProps();
       const button = screen.getByTestId('quick-purchase-starter-pack');
       expect(button).toBeInTheDocument();
-      expect(screen.getByText('5K Credits')).toBeInTheDocument();
+      expect(screen.getByText('1,500 Credits')).toBeInTheDocument();
     });
 
-    it('should display quick purchase button for 15K credits', () => {
-      renderModalWithProps();
-      const button = screen.getByTestId('quick-purchase-growth-pack');
-      expect(button).toBeInTheDocument();
-      expect(screen.getByText('15K Credits')).toBeInTheDocument();
+    it('should call onQuickPurchase with quick-boost when clicking quick-boost button', () => {
+      const onQuickPurchase = vi.fn();
+      const onOpenChange = vi.fn();
+      renderModalWithProps({ onQuickPurchase, onOpenChange });
+
+      fireEvent.click(screen.getByTestId('quick-purchase-quick-boost'));
+
+      expect(onQuickPurchase).toHaveBeenCalledWith('quick-boost');
+      expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it('should call onQuickPurchase with starter-pack when clicking 5K button', () => {
+    it('should call onQuickPurchase with starter-pack when clicking starter-pack button', () => {
       const onQuickPurchase = vi.fn();
       const onOpenChange = vi.fn();
       renderModalWithProps({ onQuickPurchase, onOpenChange });
@@ -762,17 +773,6 @@ describe('Insufficient Credits - Modal with Purchase Options', () => {
       fireEvent.click(screen.getByTestId('quick-purchase-starter-pack'));
 
       expect(onQuickPurchase).toHaveBeenCalledWith('starter-pack');
-      expect(onOpenChange).toHaveBeenCalledWith(false);
-    });
-
-    it('should call onQuickPurchase with growth-pack when clicking 15K button', () => {
-      const onQuickPurchase = vi.fn();
-      const onOpenChange = vi.fn();
-      renderModalWithProps({ onQuickPurchase, onOpenChange });
-
-      fireEvent.click(screen.getByTestId('quick-purchase-growth-pack'));
-
-      expect(onQuickPurchase).toHaveBeenCalledWith('growth-pack');
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
@@ -823,16 +823,16 @@ describe('Insufficient Credits - Modal with Purchase Options', () => {
       expect(screen.getByText("Don't lose momentum!")).toBeInTheDocument();
     });
 
-    it('should show Stay Limited dismiss button', () => {
+    it('should show Maybe Later dismiss button', () => {
       renderModalWithProps();
-      expect(screen.getByText('Stay Limited')).toBeInTheDocument();
+      expect(screen.getByText('Maybe Later')).toBeInTheDocument();
     });
 
-    it('should close modal when Stay Limited is clicked', () => {
+    it('should close modal when Maybe Later is clicked', () => {
       const onOpenChange = vi.fn();
       renderModalWithProps({ onOpenChange });
 
-      fireEvent.click(screen.getByText('Stay Limited'));
+      fireEvent.click(screen.getByText('Maybe Later'));
 
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });

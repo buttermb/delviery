@@ -11,7 +11,7 @@
  * - PREMIUM (200+): AI features, large exports, advanced analytics
  * 
  * Weekly burn estimate for active user: ~4,000 credits
- * Free tier (10,000) lasts: ~2.5 weeks for active users
+ * Free tier (500) lasts: ~1 day for active users
  */
 
 export interface CreditCost {
@@ -1444,10 +1444,8 @@ export function getPricePerCredit(priceCents: number, credits: number): number {
 // ============================================================================
 
 /**
- * Free tier monthly credit allocation
- * Reduced from 1,000 to 500 for aggressive monetization
- * This gives ~1 day of active business use
- * Maintains "free" illusion while driving upgrades
+ * Free tier monthly credit allocation (500 credits/month)
+ * Provides ~1 day of active business use
  */
 export const FREE_TIER_MONTHLY_CREDITS = 500;
 export const LOW_CREDIT_WARNING_THRESHOLD = 2000;

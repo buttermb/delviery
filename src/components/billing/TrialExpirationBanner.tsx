@@ -53,12 +53,12 @@ export function TrialExpirationBanner({
         if (daysRemaining === 0) {
             return {
                 title: "⛔ Your trial has ended",
-                description: "Add a payment method now to avoid service interruption. Your account will be suspended without payment details.",
+                description: "Add a payment method to keep your current plan. Otherwise, your account will switch to the free plan with 500 monthly credits.",
             };
         } else if (daysRemaining === 1) {
             return {
                 title: "⚠️ Your trial ends tomorrow",
-                description: "Add a payment method today to ensure uninterrupted service. Without payment details, your account will be suspended.",
+                description: "Add a payment method today to keep your current plan. Without payment details, your account will switch to the free plan with 500 monthly credits.",
             };
         } else if (daysRemaining <= 3) {
             return {

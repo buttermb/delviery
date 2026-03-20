@@ -102,11 +102,15 @@ export default function TenantAdminWelcomePage() {
             Welcome to {tenant?.business_name || "Your Dashboard"}!
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-[hsl(var(--tenant-text-light))] mb-4 sm:mb-6 px-2">
-            Your 14-day trial has started. Let's get you set up in minutes.
+            {trialEndsAt
+              ? "Your trial has started. Let's get you set up in minutes."
+              : "Your free account is ready. Let's get you set up in minutes."}
           </p>
-          <Badge className="bg-[hsl(var(--tenant-primary))] text-white px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base min-h-[44px] touch-manipulation">
-            ⏰ {daysLeft} days left in trial
-          </Badge>
+          {trialEndsAt && (
+            <Badge className="bg-[hsl(var(--tenant-primary))] text-white px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base min-h-[44px] touch-manipulation">
+              ⏰ {daysLeft} days left in trial
+            </Badge>
+          )}
         </div>
 
         {/* Progress Overview */}
@@ -187,17 +191,13 @@ export default function TenantAdminWelcomePage() {
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-              <Button variant="outline" className="h-auto min-h-[44px] py-3 sm:py-4 flex-col gap-2 touch-manipulation" asChild>
-                <a href="https://docs.example.com" target="_blank" rel="noopener noreferrer">
-                  <BookOpen className="h-5 w-5" />
-                  <span className="text-xs sm:text-sm">Documentation</span>
-                </a>
+              <Button variant="outline" className="h-auto min-h-[44px] py-3 sm:py-4 flex-col gap-2 touch-manipulation" onClick={() => navigate(`/${tenantSlug}/admin/help`)}>
+                <BookOpen className="h-5 w-5" />
+                <span className="text-xs sm:text-sm">Help Center</span>
               </Button>
-              <Button variant="outline" className="h-auto min-h-[44px] py-3 sm:py-4 flex-col gap-2 touch-manipulation" asChild>
-                <a href="https://youtube.com/tutorials" target="_blank" rel="noopener noreferrer">
-                  <PlayCircle className="h-5 w-5" />
-                  <span className="text-xs sm:text-sm">Video Tutorials</span>
-                </a>
+              <Button variant="outline" className="h-auto min-h-[44px] py-3 sm:py-4 flex-col gap-2 touch-manipulation" onClick={() => navigate(`/${tenantSlug}/admin/faq`)}>
+                <PlayCircle className="h-5 w-5" />
+                <span className="text-xs sm:text-sm">FAQ</span>
               </Button>
               <Button variant="outline" className="h-auto min-h-[44px] py-3 sm:py-4 flex-col gap-2 touch-manipulation sm:col-span-2 md:col-span-1" asChild>
                 <a href="/contact" target="_blank" rel="noopener noreferrer">

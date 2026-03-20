@@ -7,7 +7,7 @@
  *
  * Features:
  * - Progress bar showing required vs available credits
- * - Quick purchase buttons for 5K and 15K credit packages
+ * - Quick purchase buttons for credit packages
  * - Auto top-up setup suggestion
  * - Link to all packages
  */
@@ -45,12 +45,15 @@ import {
   calculateCreditVsSubscription,
   CREDIT_PACKAGES,
 } from '@/lib/credits';
+import { PLAN_CONFIG } from '@/config/planPricing';
 
-// Quick purchase packages: 5K and 15K
-const QUICK_PACKAGES = [
-  { id: 'starter-pack', credits: 5000, price: 9.99, label: '5K Credits' },
-  { id: 'growth-pack', credits: 15000, price: 24.99, label: '15K Credits' },
-];
+// Quick purchase packages — first 2 entries from actual CREDIT_PACKAGES
+const QUICK_PACKAGES = CREDIT_PACKAGES.slice(0, 2).map((pkg) => ({
+  id: pkg.id,
+  credits: pkg.credits,
+  price: pkg.priceCents / 100,
+  label: `${pkg.credits.toLocaleString()} Credits`,
+}));
 
 export interface OutOfCreditsModalProps {
   open: boolean;
@@ -249,7 +252,7 @@ export function OutOfCreditsModal({
             {/* Subscription Option - Highlighted */}
             <div className="p-4 bg-primary/5 relative">
               <Badge className="absolute top-2 right-2 bg-emerald-500">
-                SAVE 90%+
+                BEST VALUE
               </Badge>
               <div className="flex items-center gap-2 mb-3">
                 <Crown className="h-5 w-5 text-primary" />
@@ -258,7 +261,7 @@ export function OutOfCreditsModal({
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center p-2 rounded bg-white/50 dark:bg-black/20">
-                  <div className="text-2xl font-bold text-primary">$79</div>
+                  <div className="text-2xl font-bold text-primary">${PLAN_CONFIG.starter.priceMonthly}</div>
                   <div className="text-xs text-muted-foreground">/month</div>
                 </div>
                 <div className="p-2 text-sm">
@@ -307,7 +310,7 @@ export function OutOfCreditsModal({
                 onClick={handleBuyCredits}
               >
                 <Coins className="h-4 w-4 mr-2" />
-                Buy Credits (Not Recommended)
+                Buy Credit Pack
               </Button>
             </div>
           </div>
@@ -322,7 +325,7 @@ export function OutOfCreditsModal({
               <p className="text-xs text-muted-foreground">
                 You've used <strong>{lifetimeSpent.toLocaleString()}</strong> credits.
                 At credit pack rates, that's <strong className="text-red-500">${comparison.creditPackCost}+</strong>.
-                Subscription = <strong className="text-emerald-500">$79 flat</strong>.
+                Subscription = <strong className="text-emerald-500">${PLAN_CONFIG.starter.priceMonthly} flat</strong>.
               </p>
             </div>
           )}
@@ -335,7 +338,7 @@ export function OutOfCreditsModal({
             onClick={() => onOpenChange(false)}
           >
             <X className="h-4 w-4 mr-1" />
-            Stay Limited
+            Maybe Later
           </Button>
         </DialogFooter>
       </DialogContent>

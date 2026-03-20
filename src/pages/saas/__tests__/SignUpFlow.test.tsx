@@ -150,7 +150,7 @@ vi.mock('@/components/marketing/ForceLightMode', () => ({
 }));
 
 vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
 }));
 
 vi.mock('@/config/planPricing', () => ({
@@ -792,16 +792,16 @@ describe('Complete Signup Flow', () => {
 
   describe('Credits account initial state verification', () => {
     it('should initialize credit account with plan-based amount for free tier', () => {
-      // Free tier: 10,000 credits
+      // Free tier: 500 credits
       const PLAN_CREDIT_AMOUNTS: Record<string, number> = {
-        free: 10000,
+        free: 500,
         starter: 25000,
         pro: 100000,
         enterprise: 500000,
       };
 
       const initialCredits = PLAN_CREDIT_AMOUNTS['free'];
-      expect(initialCredits).toBe(10000);
+      expect(initialCredits).toBe(500);
     });
 
     it('should set purchased_credits_balance to zero on new account', () => {
@@ -814,16 +814,16 @@ describe('Complete Signup Flow', () => {
       }
 
       const newAccount: CreditAccountState = {
-        balance: 10000,
-        freeCreditsBalance: 10000,
+        balance: 500,
+        freeCreditsBalance: 500,
         purchasedCreditsBalance: 0,
-        lifetimeEarned: 10000,
+        lifetimeEarned: 500,
         isFreeTier: true,
       };
 
       expect(newAccount.purchasedCreditsBalance).toBe(0);
       expect(newAccount.isFreeTier).toBe(true);
-      expect(newAccount.freeCreditsBalance).toBe(10000);
+      expect(newAccount.freeCreditsBalance).toBe(500);
     });
 
     it('should create idempotency key to prevent duplicate initial grants', () => {

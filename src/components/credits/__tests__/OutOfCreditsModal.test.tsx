@@ -113,23 +113,35 @@ describe('OutOfCreditsModal', () => {
   });
 
   describe('Quick Purchase Buttons', () => {
-    it('should display 5K credits quick purchase button', () => {
+    it('should display quick-boost credits quick purchase button', () => {
+      renderModal();
+
+      const button = screen.getByTestId('quick-purchase-quick-boost');
+      expect(button).toBeInTheDocument();
+      expect(screen.getByText('500 Credits')).toBeInTheDocument();
+    });
+
+    it('should display starter-pack credits quick purchase button', () => {
       renderModal();
 
       const button = screen.getByTestId('quick-purchase-starter-pack');
       expect(button).toBeInTheDocument();
-      expect(screen.getByText('5K Credits')).toBeInTheDocument();
+      expect(screen.getByText('1,500 Credits')).toBeInTheDocument();
     });
 
-    it('should display 15K credits quick purchase button', () => {
-      renderModal();
+    it('should call onQuickPurchase with correct package id when clicking quick-boost button', () => {
+      const onQuickPurchase = vi.fn();
+      const onOpenChange = vi.fn();
+      renderModal({ onQuickPurchase, onOpenChange });
 
-      const button = screen.getByTestId('quick-purchase-growth-pack');
-      expect(button).toBeInTheDocument();
-      expect(screen.getByText('15K Credits')).toBeInTheDocument();
+      const button = screen.getByTestId('quick-purchase-quick-boost');
+      fireEvent.click(button);
+
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(onQuickPurchase).toHaveBeenCalledWith('quick-boost');
     });
 
-    it('should call onQuickPurchase with correct package id when clicking 5K button', () => {
+    it('should call onQuickPurchase with correct package id when clicking starter-pack button', () => {
       const onQuickPurchase = vi.fn();
       const onOpenChange = vi.fn();
       renderModal({ onQuickPurchase, onOpenChange });
@@ -139,18 +151,6 @@ describe('OutOfCreditsModal', () => {
 
       expect(onOpenChange).toHaveBeenCalledWith(false);
       expect(onQuickPurchase).toHaveBeenCalledWith('starter-pack');
-    });
-
-    it('should call onQuickPurchase with correct package id when clicking 15K button', () => {
-      const onQuickPurchase = vi.fn();
-      const onOpenChange = vi.fn();
-      renderModal({ onQuickPurchase, onOpenChange });
-
-      const button = screen.getByTestId('quick-purchase-growth-pack');
-      fireEvent.click(button);
-
-      expect(onOpenChange).toHaveBeenCalledWith(false);
-      expect(onQuickPurchase).toHaveBeenCalledWith('growth-pack');
     });
   });
 
