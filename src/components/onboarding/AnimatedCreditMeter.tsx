@@ -225,7 +225,7 @@ export function AnimatedCreditMeter({
                     className="p-4 rounded-lg bg-muted/50 border border-dashed"
                 >
                     <p className="text-sm text-muted-foreground text-center">
-                        💡 <strong>Tip:</strong> Viewing & browsing is always <span className="text-green-600 font-semibold">FREE</span> —
+                        <strong>Tip:</strong> Viewing & browsing is always <span className="text-green-600 font-semibold">FREE</span> —
                         credits are only used for actions that generate value.
                     </p>
                 </motion.div>

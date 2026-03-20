@@ -81,8 +81,8 @@
     body {
       margin: 0;
       line-height: inherit;
-      background-color: #0f1419;
-      color: #e2e8f0
+      background-color: #ffffff;
+      color: #0f172a
     }
 
     #root {
@@ -184,8 +184,7 @@
   <!-- Apply theme BEFORE React loads to prevent flash -->
   <script>
     try {
-      const theme = localStorage.getItem('theme') ||
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const theme = localStorage.getItem('theme') || 'light';
       document.documentElement.classList.add(theme);
     } catch (e) {
       document.documentElement.classList.add('light');

@@ -197,10 +197,15 @@ export default function SelectPlanPage() {
     setError(null);
 
     try {
-      // Update tenant to free tier
+      // Update tenant to free tier with full status
       const { error: updateError } = await supabase
         .from('tenants')
-        .update({ is_free_tier: true })
+        .update({
+          is_free_tier: true,
+          credits_enabled: true,
+          subscription_status: 'active',
+          subscription_plan: 'free',
+        })
         .eq('id', tenant.id);
 
       if (updateError) throw updateError;
@@ -216,7 +221,7 @@ export default function SelectPlanPage() {
       }
 
       toast.success("Welcome to the Free tier! You've received your credits.");
-      navigate(`/${tenant.slug}/admin/dashboard`);
+      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
     } catch (error) {
       handleError(error, {
         component: 'SelectPlanPage',
@@ -249,7 +254,22 @@ export default function SelectPlanPage() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract actual error from edge function response
+        let errorMessage = 'Failed to start checkout';
+        try {
+          const ctx = (error as Record<string, unknown>).context;
+          if (ctx && typeof (ctx as Response).json === 'function') {
+            const errorBody = await (ctx as Response).json();
+            if (errorBody?.error && typeof errorBody.error === 'string') {
+              errorMessage = errorBody.error;
+            }
+          }
+        } catch {
+          // Use generic message
+        }
+        throw new Error(errorMessage);
+      }
 
       if (data?.url) {
         window.open(data.url, '_blank', 'noopener,noreferrer');

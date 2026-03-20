@@ -94,7 +94,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
           </div>
 
           <p className="text-xs text-muted-foreground">
-            💡 Your dashboard will populate automatically as you add data. All features work with real data only.
+            Your dashboard will populate automatically as you add data. All features work with real data only.
           </p>
         </div>
 

@@ -190,7 +190,22 @@ export default function SelectPlanPage() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract actual error from edge function response
+        let errorMessage = 'Failed to start checkout';
+        try {
+          const ctx = (error as Record<string, unknown>).context;
+          if (ctx && typeof (ctx as Response).json === 'function') {
+            const errorBody = await (ctx as Response).json();
+            if (errorBody?.error && typeof errorBody.error === 'string') {
+              errorMessage = errorBody.error;
+            }
+          }
+        } catch {
+          // Use generic message
+        }
+        throw new Error(errorMessage);
+      }
 
       if (data?.url) {
         window.location.href = data.url;
@@ -223,6 +238,7 @@ export default function SelectPlanPage() {
         .from('tenants')
         .update({
           is_free_tier: true,
+          credits_enabled: true,
           subscription_status: 'active',
           subscription_plan: 'free',
         })
@@ -406,7 +422,7 @@ export default function SelectPlanPage() {
                 {/* Credit usage hint */}
                 <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <p className="text-xs text-muted-foreground">
-                    💡 <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits ≈ 1 day of active use.
+                    <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits is approximately 1 day of active use.
                     Upgrade for unlimited!
                   </p>
                 </div>

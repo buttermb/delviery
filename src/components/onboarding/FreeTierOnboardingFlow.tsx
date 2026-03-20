@@ -334,22 +334,28 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
 // ============================================================================
 
 function WelcomeStep({ businessName }: { businessName: string }) {
-    const emojis = ['🎉', '🔥', '🚀', '💫', '🌟'];
+    const icons = [
+        <PartyPopper key="party" className="h-6 w-6 text-pink-500" />,
+        <Sparkles key="sparkles" className="h-6 w-6 text-amber-500" />,
+        <Rocket key="rocket" className="h-6 w-6 text-blue-500" />,
+        <CheckCircle2 key="check" className="h-6 w-6 text-emerald-500" />,
+        <Crown key="crown" className="h-6 w-6 text-purple-500" />,
+    ];
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-            {/* Confetti emojis */}
+            {/* Animated icons */}
             <div className="flex gap-4 mb-2">
-                {emojis.map((emoji, i) => (
+                {icons.map((icon, i) => (
                     <motion.span
                         key={i}
                         custom={i}
                         variants={confettiVariants}
                         initial="initial"
                         animate="animate"
-                        className="text-3xl"
+                        className="p-2 rounded-lg bg-muted/50"
                     >
-                        {emoji}
+                        {icon}
                     </motion.span>
                 ))}
             </div>
@@ -404,7 +410,7 @@ function WelcomeStep({ businessName }: { businessName: string }) {
                 transition={{ delay: 0.9 }}
                 className="text-sm text-muted-foreground"
             >
-                Let's take a quick look ⏱️
+                Let's take a quick look
             </motion.p>
         </div>
     );
