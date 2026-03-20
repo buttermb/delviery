@@ -31,10 +31,11 @@ import { CHART_COLORS } from "@/lib/chartColors";
 interface TrialWelcomeModalProps {
   tenantSlug?: string;
   businessName?: string;
+  onOpen?: () => void;
   onClose?: () => void;
 }
 
-export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWelcomeModalProps) {
+export function TrialWelcomeModal({ tenantSlug, businessName, onOpen, onClose }: TrialWelcomeModalProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -70,6 +71,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
       }
 
       setOpen(true);
+      onOpen?.();
 
       // Trigger confetti on open
       const timer = setTimeout(() => {

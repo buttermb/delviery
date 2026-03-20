@@ -132,6 +132,7 @@ export default function TenantAdminDashboardPage() {
   // Tenant-specific state
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
+  const [isTrialWelcomeOpen, setIsTrialWelcomeOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Guards for modal timing
@@ -211,13 +212,19 @@ export default function TenantAdminDashboardPage() {
         const isEmpty = (!products || products.length === 0) && (!menus || menus.length === 0);
 
         const onboardingCompleted = localStorage.getItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenant.id}`);
-        if (isEmpty && !onboardingCompleted && !showWelcomeModal) {
+        const dbOnboardingCompleted = tenant.onboarding_completed === true;
+        if (isEmpty && !onboardingCompleted && !dbOnboardingCompleted && !showWelcomeModal && !isTrialWelcomeOpen) {
           quickStartTimer = setTimeout(() => {
             // Don't show if WelcomeModal was triggered but hasn't been closed yet
             if (welcomeTriggeredRef.current && welcomeClosedAtRef.current === 0) return;
             // Don't show QuickStart if WelcomeModal was closed within the last 5 seconds
             const timeSinceWelcomeClosed = Date.now() - welcomeClosedAtRef.current;
             if (timeSinceWelcomeClosed < 5000) return;
+            // Don't show if TrialWelcomeModal is open
+            if (isTrialWelcomeOpen) return;
+            // Don't show if another modal has the mutex
+            if (sessionStorage.getItem('floraiq_active_modal')) return;
+            sessionStorage.setItem('floraiq_active_modal', 'quick_start');
             setShowQuickStart(true);
           }, 3000);
         }
@@ -228,7 +235,8 @@ export default function TenantAdminDashboardPage() {
 
     checkIfEmpty();
     return () => clearTimeout(quickStartTimer);
-  }, [tenant?.id, authLoading, showWelcomeModal]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- tenant.onboarding_completed is stable after load
+  }, [tenant?.id, tenant?.onboarding_completed, authLoading, showWelcomeModal, isTrialWelcomeOpen]);
 
   // Auth loading timeout — redirect after 15s
   useEffect(() => {
@@ -482,6 +490,8 @@ export default function TenantAdminDashboardPage() {
       <TrialWelcomeModal
         tenantSlug={tenant?.slug}
         businessName={tenant?.business_name}
+        onOpen={() => setIsTrialWelcomeOpen(true)}
+        onClose={() => setIsTrialWelcomeOpen(false)}
       />
       <CreditPurchaseCelebration
         open={showCelebration}
@@ -491,9 +501,15 @@ export default function TenantAdminDashboardPage() {
       />
       <QuickStartWizard
         open={showQuickStart}
-        onOpenChange={setShowQuickStart}
+        onOpenChange={(open) => {
+          setShowQuickStart(open);
+          if (!open) {
+            sessionStorage.removeItem('floraiq_active_modal');
+          }
+        }}
         onComplete={() => {
           setShowQuickStart(false);
+          sessionStorage.removeItem('floraiq_active_modal');
           localStorage.setItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenant?.id}`, 'true');
           queryClient.invalidateQueries();
         }}

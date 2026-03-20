@@ -111,7 +111,12 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
     // Suppress auto-open when ?welcome=true is in URL — WelcomeModal handles the greeting
     const hasWelcomeParam = searchParams.get('welcome') === 'true';
     const welcomeSeenKey = tenant?.id ? `welcome_seen_${tenant.id}` : null;
-    const welcomeJustSeen = welcomeSeenKey ? sessionStorage.getItem(welcomeSeenKey) === 'true' : false;
+    const welcomeJustSeen = welcomeSeenKey
+        ? (sessionStorage.getItem(welcomeSeenKey) === 'true' || localStorage.getItem(welcomeSeenKey) === 'true')
+        : false;
+
+    // Check if another modal already has the mutex
+    const anotherModalActive = Boolean(sessionStorage.getItem('floraiq_active_modal'));
 
     // Determine if onboarding should show
     const shouldShow = Boolean(
@@ -122,6 +127,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         !state.isSkipped &&
         !hasWelcomeParam &&
         !welcomeJustSeen &&
+        !anotherModalActive &&
         // Only show for relatively new tenants (created in last 7 days)
         tenant.created_at &&
         new Date(tenant.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -132,6 +138,9 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         if (shouldShow && !isOpen && !state.isComplete && !state.isSkipped) {
             // Small delay to let the dashboard load first
             const timer = setTimeout(() => {
+                // Re-check mutex at open time (another modal may have claimed it during the delay)
+                if (sessionStorage.getItem('floraiq_active_modal')) return;
+                sessionStorage.setItem('floraiq_active_modal', 'free_tier_onboarding');
                 setIsOpen(true);
                 if (!state.startedAt) {
                     const newState = { ...state, startedAt: new Date().toISOString() };
@@ -195,6 +204,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         setState(newState);
         persistState(newState);
         setIsOpen(false);
+        sessionStorage.removeItem('floraiq_active_modal');
         logger.info('[FreeTierOnboarding] Completed onboarding', {
             tenantId: tenant?.id,
             duration: state.startedAt
@@ -212,6 +222,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         setState(newState);
         persistState(newState);
         setIsOpen(false);
+        sessionStorage.removeItem('floraiq_active_modal');
         logger.info('[FreeTierOnboarding] Skipped onboarding', {
             tenantId: tenant?.id,
             stepReached: state.currentStep
@@ -226,6 +237,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
 
     const dismiss = useCallback(() => {
         setIsOpen(false);
+        sessionStorage.removeItem('floraiq_active_modal');
     }, []);
 
     return {

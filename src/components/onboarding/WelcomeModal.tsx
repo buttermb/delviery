@@ -35,12 +35,12 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
   // Check if coming from signup (URL param)
   const isFromSignup = searchParams.get('welcome') === 'true';
 
-  // Check if user has already seen welcome modal
+  // Check if user has already seen welcome modal (check both storages for persistence)
   useEffect(() => {
     if (tenant?.id) {
       const welcomeKey = `welcome_seen_${tenant.id}`;
-      const seen = sessionStorage.getItem(welcomeKey);
-      if (seen === 'true' && !isFromSignup) {
+      const seen = sessionStorage.getItem(welcomeKey) === 'true' || localStorage.getItem(welcomeKey) === 'true';
+      if (seen && !isFromSignup) {
         setHasSeenWelcome(true);
         onClose();
       }
@@ -60,6 +60,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
     if (tenant?.id) {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
+      localStorage.setItem(welcomeKey, 'true');
     }
     cleanupWelcomeParam();
     onClose();
@@ -74,6 +75,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
     if (tenant?.id) {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
+      localStorage.setItem(welcomeKey, 'true');
     }
     cleanupWelcomeParam();
     onClose();
@@ -86,6 +88,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
     if (tenant?.id) {
       const welcomeKey = `welcome_seen_${tenant.id}`;
       sessionStorage.setItem(welcomeKey, 'true');
+      localStorage.setItem(welcomeKey, 'true');
     }
     cleanupWelcomeParam();
     onClose();
@@ -101,6 +104,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
         // Handles overlay click / Escape key — same cleanup as explicit handlers
         if (tenant?.id) {
           sessionStorage.setItem(`welcome_seen_${tenant.id}`, 'true');
+          localStorage.setItem(`welcome_seen_${tenant.id}`, 'true');
         }
         cleanupWelcomeParam();
         onClose();

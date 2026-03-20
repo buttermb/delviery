@@ -16,7 +16,6 @@ import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
 import { broadcastLogout } from "@/lib/auth/logoutCleanup";
 import { clearPreAuthSessionData, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
-import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
 import { performFullLogout } from "@/lib/utils/authHelpers";
@@ -205,29 +204,31 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const refreshTimerHandleRef = useRef<RefreshTimerHandle | null>(null);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const hasShownOnboardingRef = useRef(false);
   const [mfaRequired, setMfaRequired] = useState(false);
 
   // Check onboarding status - redirect to setup wizard once per session
   useEffect(() => {
-    if (tenant && !loading && !tenant.onboarding_completed && !hasShownOnboardingRef.current) {
+    // Use sessionStorage to persist the guard across remounts within the same session
+    const alreadyRedirected = sessionStorage.getItem('floraiq_setup_wizard_redirected') === 'true';
+    if (tenant && !loading && !tenant.onboarding_completed && !alreadyRedirected) {
       const currentPath = location.pathname;
       const setupWizardPath = `/${tenant.slug}/admin/setup-wizard`;
 
-      // Don't redirect if already on setup wizard or auth-related pages
+      // Don't redirect if already on setup wizard, auth-related pages, or fresh signup landing
       if (
         currentPath.includes('/setup-wizard') ||
         currentPath.includes('/login') ||
         currentPath.includes('/auth/') ||
         currentPath.includes('/verify-email') ||
-        currentPath.includes('/reset/')
+        currentPath.includes('/reset/') ||
+        currentPath.includes('/welcome') ||
+        window.location.search.includes('welcome=true')
       ) {
         return;
       }
 
-      // Mark as shown to prevent re-triggering
-      hasShownOnboardingRef.current = true;
+      // Mark as shown to prevent re-triggering (persists across remounts, clears on browser close)
+      sessionStorage.setItem('floraiq_setup_wizard_redirected', 'true');
 
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
@@ -1623,13 +1624,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         onExtendSession={refreshAuthToken}
         onLogout={logout}
       />
-      {/* Legacy onboarding dialog - kept for fallback if setup wizard is bypassed */}
-      {onboardingOpen && !location.pathname.includes('/setup-wizard') && (
-        <OnboardingWizard
-          open={onboardingOpen}
-          onOpenChange={setOnboardingOpen}
-        />
-      )}
       {/* Free Tier Onboarding - Only shows for free tier users after initial onboarding */}
       <FreeTierOnboardingFlow />
     </TenantAdminAuthContext.Provider>
