@@ -17,13 +17,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     // Get stored theme or determine default
     const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-    let initialTheme: Theme = "light"; // Default to light mode
+    
+    // Feature Request: Enforce Light Mode as the absolute global default 
+    // to preserve the CRM's premium aesthetic for all new visitors.
+    let initialTheme: Theme = "light"; 
 
     if (stored === "light" || stored === "dark") {
       initialTheme = stored;
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      initialTheme = "dark";
     }
+    // Intentionally skipped checking `window.matchMedia("(prefers-color-scheme: dark)")`
+    // so that it stays light unless explicitly requested otherwise.
 
     // Apply theme IMMEDIATELY before React renders
     const root = document.documentElement;
