@@ -130,9 +130,13 @@ export default function SelectPlanPage() {
 
       if (error || !tenant) return;
 
-      // If active and not free tier, redirect to billing or show message
-      // Note: 'free' plan is technically 'active' status usually, so we check plan too.
-      // Assuming 'free' plan is named 'free' or similar.
+      // Free tier users should go to dashboard
+      if (tenant.subscription_status === 'active' && tenant.subscription_plan === 'free') {
+        navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+        return;
+      }
+
+      // Paid subscribers should go to billing
       if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
         toast.info("You already have an active subscription. Redirecting to billing...");
         navigate(`/${tenant.slug}/admin/settings/billing`);

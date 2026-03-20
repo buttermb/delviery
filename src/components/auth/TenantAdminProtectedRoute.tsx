@@ -381,9 +381,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   }
 
   // Check if payment method is required and not added
+  // Free tier users never need a payment method
   // For Clerk users, we need to fetch tenant data from Supabase
   const needsPaymentMethod = !effectiveTenant?.payment_method_added &&
-    effectiveTenant?.subscription_status !== 'active';
+    effectiveTenant?.subscription_status !== 'active' &&
+    !effectiveTenant?.is_free_tier;
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
   const isOnboardingRoute = location.pathname.includes('/admin/welcome') ||
     location.pathname.includes('/admin/onboarding');

@@ -77,7 +77,7 @@ const STATIC_PLANS: Plan[] = [
 
 export default function SelectPlanPage() {
   const navigate = useNavigate();
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, refreshTenant } = useTenantAdminAuth();
   const {
     isFreeTier,
     isEnterprise,
@@ -216,6 +216,9 @@ export default function SelectPlanPage() {
         }
         throw new Error(errorMessage);
       }
+
+      // Refresh tenant context so route guards see updated is_free_tier/subscription_status
+      await refreshTenant();
 
       toast.success("Welcome to the Free tier! You've received your credits.");
       navigate(`/${data?.slug || tenant.slug}/admin/dashboard`, { replace: true });
