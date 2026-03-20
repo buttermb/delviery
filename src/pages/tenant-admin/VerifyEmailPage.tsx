@@ -43,21 +43,17 @@ export default function VerifyEmailPage() {
 
   const handleResendVerification = async () => {
     if (!admin?.email) return;
-    
+
     setResending(true);
     try {
-      // Call edge function to resend verification email
-      const { data, error } = await supabase.functions.invoke('send-verification-email', {
-        body: { email: admin.email, adminId: admin.id, tenantSlug }
+      // Use Supabase Auth's built-in resend for admin users (who are Auth users)
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: admin.email,
       });
-      
+
       if (error) throw error;
 
-      // Check for error in response body (edge functions can return 200 with error)
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to send verification email');
-      }
-      
       toast.success('Verification email sent! Please check your inbox.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to resend verification email. Please try again.';

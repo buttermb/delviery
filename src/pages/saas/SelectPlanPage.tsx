@@ -218,7 +218,7 @@ export default function SelectPlanPage() {
     }
   };
 
-  // Handle selecting the free tier
+  // Handle selecting the free tier via atomic edge function
   const handleSelectFreeTier = async () => {
     if (!tenantId) {
       toast.error("Missing tenant information");
@@ -233,41 +233,31 @@ export default function SelectPlanPage() {
     setLoading('free');
 
     try {
-      // Set tenant to free tier and grant initial credits
-      const { error: updateError } = await supabase
-        .from('tenants')
-        .update({
-          is_free_tier: true,
-          credits_enabled: true,
-          subscription_status: 'active',
-          subscription_plan: 'free',
-        })
-        .eq('id', tenantId);
-
-      if (updateError) throw updateError;
-
-      // Grant initial credits
-      const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
-      const { error: creditError } = await rpc('grant_free_credits', { // Supabase type limitation
-        p_tenant_id: tenantId,
-        p_amount: FREE_TIER_MONTHLY_CREDITS,
+      const { data, error } = await supabase.functions.invoke('set-free-tier', {
+        body: { tenant_id: tenantId },
       });
 
-      if (creditError) {
-        logger.warn('[SELECT_PLAN] Failed to grant initial credits', creditError);
+      if (error) {
+        // Extract actual error from edge function response
+        let errorMessage = 'Failed to start free tier';
+        try {
+          const ctx = (error as Record<string, unknown>).context;
+          if (ctx && typeof (ctx as Response).json === 'function') {
+            const errorBody = await (ctx as Response).json();
+            if (errorBody?.error && typeof errorBody.error === 'string') {
+              errorMessage = errorBody.error;
+            }
+          }
+        } catch {
+          // Use generic message
+        }
+        throw new Error(errorMessage);
       }
-
-      // Get tenant slug for redirect
-      const { data: tenant } = await supabase
-        .from('tenants')
-        .select('slug')
-        .eq('id', tenantId)
-        .maybeSingle();
 
       toast.success(`You've been granted ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits!`);
 
-      // Redirect to dashboard
-      navigate(`/${tenant?.slug || 'admin'}/admin/dashboard`, { replace: true });
+      // Redirect to dashboard using slug from edge function response
+      navigate(`/${data?.slug || 'admin'}/admin/dashboard`, { replace: true });
     } catch (error) {
       handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to start free tier' });
       setLoading(null);

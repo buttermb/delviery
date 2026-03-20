@@ -195,33 +195,30 @@ export default function SelectPlanPage() {
     setError(null);
 
     try {
-      // Update tenant to free tier with full status
-      const { error: updateError } = await supabase
-        .from('tenants')
-        .update({
-          is_free_tier: true,
-          credits_enabled: true,
-          subscription_status: 'active',
-          subscription_plan: 'free',
-        })
-        .eq('id', tenant.id);
-
-      if (updateError) throw updateError;
-
-      // Grant initial credits via RPC
-      const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
-      const { error: creditError } = await rpc('grant_free_credits', {
-        p_tenant_id: tenant.id,
-        p_amount: FREE_TIER_MONTHLY_CREDITS,
+      // Use atomic edge function that validates ownership, sets flags, and grants credits
+      const { data, error } = await supabase.functions.invoke('set-free-tier', {
+        body: { tenant_id: tenant.id },
       });
 
-      if (creditError) {
-        logger.warn('[SELECT_PLAN] Failed to grant initial credits', creditError);
-        // Don't fail the whole operation, credits can be granted later
+      if (error) {
+        // Extract actual error from edge function response
+        let errorMessage = 'Failed to switch to free tier';
+        try {
+          const ctx = (error as Record<string, unknown>).context;
+          if (ctx && typeof (ctx as Response).json === 'function') {
+            const errorBody = await (ctx as Response).json();
+            if (errorBody?.error && typeof errorBody.error === 'string') {
+              errorMessage = errorBody.error;
+            }
+          }
+        } catch {
+          // Use generic message
+        }
+        throw new Error(errorMessage);
       }
 
       toast.success("Welcome to the Free tier! You've received your credits.");
-      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+      navigate(`/${data?.slug || tenant.slug}/admin/dashboard`, { replace: true });
     } catch (error) {
       handleError(error, {
         component: 'SelectPlanPage',
