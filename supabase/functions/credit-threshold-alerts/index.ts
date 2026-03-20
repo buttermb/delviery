@@ -243,7 +243,8 @@ async function checkAndAlertTenant(
                 tenantData.owner_email,
                 tenantData.slug || 'your-business',
                 threshold,
-                balance
+                balance,
+                tenantId
               );
               channels_sent.push('email');
             }
@@ -345,10 +346,11 @@ async function sendEmailAlert(
   email: string,
   tenantSlug: string,
   threshold: typeof ALERT_THRESHOLDS[number],
-  balance: number
+  balance: number,
+  tenantId?: string
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
   const subject = getEmailSubject(threshold.severity);
   const html = getEmailHtml(threshold.severity, balance, tenantSlug);
@@ -360,10 +362,12 @@ async function sendEmailAlert(
       'Authorization': `Bearer ${supabaseKey}`,
     },
     body: JSON.stringify({
-      type: 'email',
-      to: email,
-      subject,
-      html,
+      type: 'system',
+      tenant_id: tenantId,
+      title: subject,
+      message: `Credit balance: ${balance} credits remaining. ${threshold.severity === 'critical' ? 'Immediate action required.' : 'Consider purchasing more credits.'}`,
+      channels: ['email'],
+      metadata: { recipient_email: email, balance, severity: threshold.severity, html },
     }),
   });
 

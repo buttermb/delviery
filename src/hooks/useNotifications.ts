@@ -488,7 +488,7 @@ export const useSendBulkNotification = () => {
               const { error } = await supabase.functions.invoke('send-notification', {
                 body: {
                   tenant_id: tenant.id,
-                  type: 'bulk_message',
+                  type: 'system',
                   title: subject || 'Notification',
                   message,
                   channels: ['email'],

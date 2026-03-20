@@ -84,13 +84,15 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
     try {
       setSendingEmail(true);
 
-      // Use send-verification-email or similar email function
-      // For now, we'll use a generic approach
-      const { data: _data, error } = await supabase.functions.invoke('send-verification-email', {
+      // Use send-notification with email channel
+      const { data: _data, error } = await supabase.functions.invoke('send-notification', {
         body: {
-          email: client.email,
-          subject: 'Your Client Portal Access',
+          type: 'system',
+          tenant_id: client.tenant_id,
+          title: 'Your Client Portal Access',
           message: message,
+          channels: ['email'],
+          metadata: { recipient_email: client.email, portal_url: portalUrl },
         },
       });
 

@@ -379,10 +379,9 @@ export default function SignUpPage() {
         logger.error('[SIGNUP] Failed to save lastTenantSlug', error);
       }
 
-      // Auto-assign free tier and grant credits
-      // These require an authenticated session (RLS enforced)
+      // Ensure free tier flags are set (safety net — edge function should have done this)
       if (sessionEstablished) {
-        logger.info('[SIGNUP] Granting free tier + credits (authenticated)');
+        logger.info('[SIGNUP] Ensuring free tier flags are set (authenticated)');
 
         const { error: updateError } = await supabase
           .from('tenants')
@@ -394,21 +393,11 @@ export default function SignUpPage() {
 
         if (updateError) {
           logger.error('[SIGNUP] Failed to set free tier status', updateError);
-          // Non-fatal: edge function may have already set this
+          // Non-fatal: edge function should have already set this
         }
-
-        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
-          p_tenant_id: tenant.id
-        } as never);
-
-        if (creditError) {
-          logger.error('[SIGNUP] Failed to grant initial credits', creditError);
-          toast.error('Account created but credits could not be granted. Please contact support.');
-        } else {
-          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
-        }
+        // Credits are granted by the tenant-signup edge function — no duplicate grant needed
       } else {
-        logger.warn('[SIGNUP] No authenticated session — credits must be granted by edge function or manually');
+        logger.warn('[SIGNUP] No authenticated session — free tier flags must be set by edge function');
       }
 
       // Patch tenant object so handleSignupSuccess stores correct state

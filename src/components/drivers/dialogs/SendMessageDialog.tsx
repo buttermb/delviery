@@ -87,15 +87,16 @@ export function SendMessageDialog({
       });
       if (error) throw error;
 
-      // For email, call a notification function if available
+      // For email, call the notification function
       if (channel === 'Email') {
         const res = await supabase.functions.invoke('send-notification', {
           body: {
-            type: 'email',
-            to: driver.email,
-            subject,
-            body,
-            driver_id: driver.id,
+            type: 'system',
+            tenant_id: tenantId,
+            title: subject,
+            message: body,
+            channels: ['email'],
+            metadata: { driver_id: driver.id, driver_email: driver.email },
           },
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
