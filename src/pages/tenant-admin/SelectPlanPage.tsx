@@ -79,6 +79,7 @@ export default function SelectPlanPage() {
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const {
+    isFreeTier,
     isEnterprise,
     isTrial,
     isActive,
@@ -92,21 +93,6 @@ export default function SelectPlanPage() {
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [skipTrial, setSkipTrial] = useState(false);
-  const [isFreeTier, setIsFreeTier] = useState(false);
-
-  // Check if tenant is on free tier
-  useEffect(() => {
-    const checkFreeTier = async () => {
-      if (!tenant?.id) return;
-      const { data } = await supabase
-        .from('tenants')
-        .select('is_free_tier')
-        .eq('id', tenant.id)
-        .maybeSingle();
-      setIsFreeTier(data?.is_free_tier ?? false);
-    };
-    checkFreeTier();
-  }, [tenant?.id]);
 
   // Check if user already completed payment and redirect to dashboard
   useEffect(() => {
@@ -115,12 +101,18 @@ export default function SelectPlanPage() {
 
       const { data: freshTenant } = await supabase
         .from('tenants')
-        .select('payment_method_added, subscription_status, slug')
+        .select('payment_method_added, subscription_status, is_free_tier, slug')
         .eq('id', tenant.id)
         .maybeSingle();
 
-      if (freshTenant?.payment_method_added && freshTenant?.subscription_status === 'active') {
-        logger.info('[SELECT_PLAN] Already has active subscription, redirecting to dashboard');
+      const hasPaidSubscription = freshTenant?.payment_method_added && freshTenant?.subscription_status === 'active';
+      const hasFreeTier = freshTenant?.is_free_tier && freshTenant?.subscription_status === 'active';
+
+      if (hasPaidSubscription || hasFreeTier) {
+        logger.info('[SELECT_PLAN] Already has active subscription, redirecting to dashboard', {
+          isPaid: hasPaidSubscription,
+          isFree: hasFreeTier,
+        });
         navigate(`/${freshTenant.slug || tenant.slug}/admin/dashboard`, { replace: true });
       }
     };
@@ -145,8 +137,9 @@ export default function SelectPlanPage() {
     return billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
   };
 
-  // Check if plan is current
+  // Check if plan is current (free tier is displayed separately, not as a paid plan)
   const isCurrentPlan = (plan: Plan): boolean => {
+    if (isFreeTier) return false;
     return plan.name.toLowerCase() === currentTier;
   };
 
@@ -211,8 +204,10 @@ export default function SelectPlanPage() {
       if (updateError) throw updateError;
 
       // Grant initial credits via RPC
-      const { error: creditError } = await supabase.rpc('grant_free_credits', {
-        p_tenant_id: tenant.id
+      const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+      const { error: creditError } = await rpc('grant_free_credits', {
+        p_tenant_id: tenant.id,
+        p_amount: FREE_TIER_MONTHLY_CREDITS,
       });
 
       if (creditError) {

@@ -51,6 +51,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
         body: {
           to: client.phone,
           message: message,
+          accountId: client.tenant_id,
         },
       });
 

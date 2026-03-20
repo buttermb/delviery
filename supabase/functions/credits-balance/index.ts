@@ -122,24 +122,15 @@ serve(async (req: Request) => {
     }
 
     // Determine if user is on free tier
-    // Paid plans (professional, enterprise) are NEVER free tier
-    // If credits are disabled for tenant, they are NOT free tier (they're paid)
+    // is_free_tier flag is the source of truth — set on free signup, cleared by stripe-webhook on paid subscription
+    // Fallback to heuristics only when the flag is null/undefined (legacy tenants)
     const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
                        tenantData?.subscription_plan === 'enterprise';
-
-    // Active subscription statuses (including 'trialing')
-    const hasActiveSubscription = tenantData?.subscription_status === 'active' ||
-                                   tenantData?.subscription_status === 'trial' ||
-                                   tenantData?.subscription_status === 'trialing';
-
-    // Credits disabled means they're on a paid plan that doesn't use credits
     const creditsDisabled = tenantData?.credits_enabled === false;
 
-    // User is NOT free tier if:
-    // 1. Credits are disabled for their tenant
-    // 2. They have a paid plan
-    // 3. They have an active subscription
-    const isFreeTier = creditsDisabled ? false : !(isPaidPlan || hasActiveSubscription);
+    const isFreeTier = tenantData?.is_free_tier != null
+      ? tenantData.is_free_tier === true
+      : creditsDisabled ? false : !isPaidPlan;
 
     // Fetch credit balance from tenant_credits table
     const { data: credits, error: creditsError } = await supabase

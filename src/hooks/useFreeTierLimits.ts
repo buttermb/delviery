@@ -66,11 +66,14 @@ export function useFreeTierLimits() {
   
   const tenantId = tenant?.id;
   
-  // PRIORITY: Check subscription status first - this is the source of truth
-  // Active/trial subscriptions are NOT on free tier, regardless of is_free_tier flag
-  const hasActiveSubscription = tenant?.subscription_status === 'active' || 
-                                 tenant?.subscription_status === 'trial';
-  const isFreeTier = hasActiveSubscription ? false : (tenant?.is_free_tier ?? true);
+  // is_free_tier is the source of truth — set true on free signup, cleared by stripe-webhook on paid subscription
+  // Paid active = is_free_tier: false, subscription_status: 'active'
+  // Free active = is_free_tier: true, subscription_status: 'active'
+  // Trial = subscription_status: 'trial' (always paid plan trial, not free tier)
+  const isFreeTier = tenant?.is_free_tier === true;
+  const hasActiveSubscription = !isFreeTier && (
+    tenant?.subscription_status === 'active' || tenant?.subscription_status === 'trial'
+  );
 
   // Check if user has purchased credits AND has a positive balance
   // Users need BOTH to bypass daily/monthly limits:

@@ -264,7 +264,7 @@ serve(async (req) => {
                 try {
                   await supabase.functions.invoke('send-sms', {
                     body: {
-                      phone: entry.customer_phone,
+                      to: entry.customer_phone,
                       message: smsMessage,
                     },
                   });
