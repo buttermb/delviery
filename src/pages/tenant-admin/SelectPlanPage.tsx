@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { PLAN_CONFIG } from "@/config/planPricing";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -27,13 +28,9 @@ interface Plan {
   popular?: boolean;
 }
 
-const STATIC_PLANS: Plan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    priceMonthly: 79,
-    priceYearly: 790,
-    description: 'Unlimited usage for small businesses',
+/** Feature lists for each paid plan (display-only, not gating). */
+const PLAN_FEATURES: Record<string, { features: string[]; popular?: boolean }> = {
+  starter: {
     features: [
       "Unlimited Products",
       "3 Staff Members",
@@ -42,12 +39,7 @@ const STATIC_PLANS: Plan[] = [
       "Mobile App Access",
     ],
   },
-  {
-    id: 'professional',
-    name: 'Professional',
-    priceMonthly: 150,
-    priceYearly: 1500,
-    description: 'Ideal for growing businesses',
+  professional: {
     features: [
       "Everything in Starter",
       "10 Staff Members",
@@ -58,12 +50,7 @@ const STATIC_PLANS: Plan[] = [
     ],
     popular: true,
   },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    priceMonthly: 499,
-    priceYearly: 4990,
-    description: 'Complete solution for large operations',
+  enterprise: {
     features: [
       "Everything in Professional",
       "Unlimited Staff",
@@ -73,7 +60,22 @@ const STATIC_PLANS: Plan[] = [
       "SLA Guarantees",
     ],
   },
-];
+};
+
+/** Derived from PLAN_CONFIG — single source of truth for prices. */
+const STATIC_PLANS: Plan[] = (['starter', 'professional', 'enterprise'] as const).map((key) => {
+  const cfg = PLAN_CONFIG[key];
+  const meta = PLAN_FEATURES[key];
+  return {
+    id: key,
+    name: cfg.name,
+    priceMonthly: cfg.priceMonthly,
+    priceYearly: cfg.priceYearly,
+    description: cfg.description,
+    features: meta.features,
+    popular: meta.popular,
+  };
+});
 
 export default function SelectPlanPage() {
   const navigate = useNavigate();
