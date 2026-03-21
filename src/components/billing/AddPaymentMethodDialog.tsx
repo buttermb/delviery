@@ -10,21 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CreditCard } from "lucide-react";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface AddPaymentMethodDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenantId: string;
-    onSuccess?: () => void;
 }
-
-import { handleError } from '@/utils/errorHandling/handlers';
 
 export function AddPaymentMethodDialog({
     open,
     onOpenChange,
     tenantId,
-    onSuccess: _onSuccess,
 }: AddPaymentMethodDialogProps) {
     const [loading, setLoading] = useState(false);
 
