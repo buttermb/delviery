@@ -5,7 +5,7 @@
 
 import { serve, corsHeaders } from '../_shared/deps.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 // Helper logging function
 const logStep = (step: string, details?: unknown) => {
@@ -134,7 +134,7 @@ serve(async (req) => {
 
     // Initialize Stripe SDK
     const stripeClient = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: '2025-08-27.basil',
+      apiVersion: STRIPE_API_VERSION,
       httpClient: Stripe.createFetchHttpClient(),
     });
 

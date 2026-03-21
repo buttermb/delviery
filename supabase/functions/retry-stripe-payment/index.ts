@@ -1,5 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 /**
  * SECURITY FIX: This function now derives the Stripe customer ID from the
@@ -94,7 +94,7 @@ serve(async (req) => {
       throw new Error("STRIPE_SECRET_KEY is not properly configured");
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: STRIPE_API_VERSION });
 
     // Find open or past_due invoices for this customer
     const invoices = await stripe.invoices.list({

@@ -1,5 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 import { validateStartTrial } from './validation.ts';
 
 serve(async (req) => {
@@ -132,7 +132,7 @@ serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: STRIPE_API_VERSION,
     });
 
     // Get or create Stripe customer

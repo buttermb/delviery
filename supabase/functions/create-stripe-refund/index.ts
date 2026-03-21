@@ -1,5 +1,5 @@
 import { serve, createClient, z, corsHeaders } from "../_shared/deps.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 const RefundSchema = z.object({
   customerId: z.string().min(1, "Customer ID is required"),
@@ -92,7 +92,7 @@ serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: STRIPE_API_VERSION });
 
     // Find the most recent successful payment intent for this customer
     const paymentIntents = await stripe.paymentIntents.list({
