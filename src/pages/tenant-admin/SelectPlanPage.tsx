@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { PLAN_CONFIG, type PlanKey } from "@/config/planPricing";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -27,53 +28,43 @@ interface Plan {
   popular?: boolean;
 }
 
-const STATIC_PLANS: Plan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    priceMonthly: 79,
-    priceYearly: 790,
-    description: 'Unlimited usage for small businesses',
-    features: [
-      "Unlimited Products",
-      "3 Staff Members",
-      "Basic Reporting",
-      "Standard Support",
-      "Mobile App Access",
-    ],
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    priceMonthly: 150,
-    priceYearly: 1500,
-    description: 'Ideal for growing businesses',
-    features: [
-      "Everything in Starter",
-      "10 Staff Members",
-      "Advanced Analytics",
-      "API Access",
-      "Priority Email Support",
-      "Custom Branding",
-    ],
-    popular: true,
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    priceMonthly: 499,
-    priceYearly: 4990,
-    description: 'Complete solution for large operations',
-    features: [
-      "Everything in Professional",
-      "Unlimited Staff",
-      "Dedicated Account Manager",
-      "White-Label Options",
-      "Custom Integrations",
-      "SLA Guarantees",
-    ],
-  },
-];
+const PLAN_FEATURES_LIST: Record<string, string[]> = {
+  starter: [
+    "Unlimited Products",
+    "3 Staff Members",
+    "Basic Reporting",
+    "Standard Support",
+    "Mobile App Access",
+  ],
+  professional: [
+    "Everything in Starter",
+    "10 Staff Members",
+    "Advanced Analytics",
+    "API Access",
+    "Priority Email Support",
+    "Custom Branding",
+  ],
+  enterprise: [
+    "Everything in Professional",
+    "Unlimited Staff",
+    "Dedicated Account Manager",
+    "White-Label Options",
+    "Custom Integrations",
+    "SLA Guarantees",
+  ],
+};
+
+const STATIC_PLANS: Plan[] = (Object.entries(PLAN_CONFIG) as [PlanKey, typeof PLAN_CONFIG[PlanKey]][])
+  .filter(([key]) => key !== 'free')
+  .map(([key, config]) => ({
+    id: key,
+    name: config.name,
+    priceMonthly: config.priceMonthly,
+    priceYearly: config.priceYearly,
+    description: config.description,
+    features: PLAN_FEATURES_LIST[key] ?? [],
+    popular: key === 'professional',
+  }));
 
 export default function SelectPlanPage() {
   const navigate = useNavigate();
