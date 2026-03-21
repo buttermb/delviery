@@ -66,41 +66,14 @@ serve(async (req) => {
       );
     }
 
-    // Plan configuration (Single source of truth - matches frontend PLAN_CONFIG)
-    const PLAN_CONFIG: Record<string, {
-      name: string;
-      priceMonthly: number;
-      priceYearly: number;
-      stripePriceId: string | null;
-      stripePriceIdYearly: string | null;
-    }> = {
-      starter: {
-        name: 'Starter',
-        priceMonthly: 79,
-        priceYearly: 790,
-        stripePriceId: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP',
-        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP', // Use same for now, update when yearly price exists
-      },
-      professional: {
-        name: 'Professional',
-        priceMonthly: 150,
-        priceYearly: 1500,
-        stripePriceId: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
-        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
-      },
-      enterprise: {
-        name: 'Enterprise',
-        priceMonthly: 499,
-        priceYearly: 4990,
-        stripePriceId: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
-        stripePriceIdYearly: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
-      },
-    };
+    // Look up plan from subscription_plans table by slug (single source of truth)
+    const { data: plan, error: planError } = await supabaseClient
+      .from("subscription_plans")
+      .select("id, name, slug, stripe_price_id, stripe_price_id_yearly, price, price_yearly")
+      .eq("slug", plan_id)
+      .maybeSingle();
 
-    // Get plan details from config
-    const plan = PLAN_CONFIG[plan_id];
-
-    if (!plan) {
+    if (planError || !plan) {
       return new Response(
         JSON.stringify({ error: `Unknown plan: ${plan_id}` }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -109,13 +82,22 @@ serve(async (req) => {
 
     // Get the appropriate Stripe price ID based on billing cycle
     const stripePriceId = billing_cycle === 'yearly'
-      ? plan.stripePriceIdYearly
-      : plan.stripePriceId;
+      ? plan.stripe_price_id_yearly
+      : plan.stripe_price_id;
 
     if (!stripePriceId) {
       return new Response(
-        JSON.stringify({ error: `Plan not found or missing Stripe Price ID for ${billing_cycle} billing` }),
+        JSON.stringify({ error: `Missing Stripe Price ID for ${billing_cycle} billing on plan ${plan.name}` }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Guard: yearly price ID must differ from monthly to prevent billing errors
+    if (billing_cycle === 'yearly' && plan.stripe_price_id && plan.stripe_price_id_yearly === plan.stripe_price_id) {
+      console.error('[START-TRIAL] ERROR: Yearly price ID is identical to monthly — aborting to prevent wrong billing');
+      return new Response(
+        JSON.stringify({ error: 'Yearly billing is not yet configured for this plan. Please contact support.' }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
