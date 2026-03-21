@@ -124,6 +124,15 @@ serve(async (req) => {
 
     logStep('Plan found', { planName: plan.name, stripePriceId: plan.stripe_price_id });
 
+    // Validate that the plan has a Stripe price ID configured
+    if (!plan.stripe_price_id) {
+      logStep('ERROR: Plan missing stripe_price_id', { planName: plan.name, planId: plan.id });
+      return new Response(
+        JSON.stringify({ error: "Plan is not configured for billing. Run setup-stripe-products first." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
     
     if (!STRIPE_SECRET_KEY) {
