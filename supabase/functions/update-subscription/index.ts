@@ -65,27 +65,28 @@ serve(async (req) => {
       .from("tenant_users")
       .select("tenant_id, role")
       .eq("user_id", user.id)
+      .eq("tenant_id", clientTenantId)
       .maybeSingle();
 
-    const resolvedTenantId = tenantUser?.tenant_id;
-
-    if (tenantUserError || !resolvedTenantId) {
-      logStep('ERROR: No tenant associated with user');
+    if (tenantUserError || !tenantUser) {
+      logStep('ERROR: No tenant association found for user and requested tenant');
       return new Response(
         JSON.stringify({ error: "No tenant associated with user" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (resolvedTenantId !== clientTenantId) {
-      logStep('ERROR: Tenant ID mismatch — caller does not own requested tenant');
+    // Verify role — only admin or owner can update subscriptions
+    const allowedRoles = ['owner', 'admin'];
+    if (!allowedRoles.includes(tenantUser.role)) {
+      logStep('ERROR: Insufficient role for subscription update', { role: tenantUser.role });
       return new Response(
-        JSON.stringify({ error: "Not authorized for this tenant" }),
+        JSON.stringify({ error: "Insufficient permissions — admin or owner access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const tenant_id = resolvedTenantId;
+    const tenant_id = clientTenantId;
 
     logStep('Fetching tenant', { tenantId: tenant_id });
 
