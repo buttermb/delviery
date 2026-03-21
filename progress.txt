@@ -480,6 +480,17 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Preserved intentionally: strain-type colors (indica/sativa/hybrid), social media brand colors, accentColor dynamic props, ambient decorative gradients
 - TypeScript compilation passes with zero errors
 
+## Verify stripe-customer-portal validates Stripe key
+- Verified stripe-customer-portal/index.ts (lines 114-131) validates STRIPE_SECRET_KEY:
+  - Checks existence (returns 500 with "Stripe not configured" if missing)
+  - Validates sk_ prefix (returns 500 with "Invalid Stripe configuration" if publishable key used)
+- Validation is consistent with all other Stripe edge functions: check-stripe-config, update-subscription, start-trial, create-checkout, create-setup-session, verify-tenant-stripe
+- Added 8 tests to edge-functions.test.ts covering stripe-customer-portal:
+  - Portal URL success, auth required, tenant_id required, missing Stripe key, publishable key rejection, non-admin forbidden, tenant not found, CORS preflight
+- Added stripe-customer-portal to CORS endpoint coverage test
+- Added stripe-customer-portal auth requirement to security tests
+- All 61 tests pass, TypeScript compilation clean
+
 ## Lazy load ProductCatalogPage with React.lazy
 - Already implemented — no changes needed
 - ProductCatalogPage is lazy-loaded in src/routes/lazyImports.ts:187 as ShopProductCatalogPage
