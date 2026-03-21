@@ -110,9 +110,9 @@ function getSeverityStyles(severity: ThresholdConfig['severity']): {
  * Determine the current warning threshold based on balance
  */
 function getCurrentThreshold(balance: number): ThresholdConfig | null {
-  // Find the highest threshold that the balance is at or below
-  // Sort thresholds in descending order and find the first one the balance qualifies for
-  const sortedThresholds = [...THRESHOLD_CONFIGS].sort((a, b) => b.threshold - a.threshold);
+  // Find the most specific (lowest) threshold that the balance is at or below
+  // Sort thresholds in ascending order so we match the tightest threshold first
+  const sortedThresholds = [...THRESHOLD_CONFIGS].sort((a, b) => a.threshold - b.threshold);
 
   for (const config of sortedThresholds) {
     if (balance <= config.threshold && balance > 0) {
