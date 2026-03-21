@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -10,6 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CreditCard } from "lucide-react";
+import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface AddPaymentMethodDialogProps {
     open: boolean;
@@ -18,20 +22,23 @@ interface AddPaymentMethodDialogProps {
     onSuccess?: () => void;
 }
 
-import { handleError } from '@/utils/errorHandling/handlers';
-
 export function AddPaymentMethodDialog({
     open,
     onOpenChange,
     tenantId,
-    onSuccess: _onSuccess,
+    onSuccess,
 }: AddPaymentMethodDialogProps) {
     const [loading, setLoading] = useState(false);
 
     const handleAddPaymentMethod = async () => {
+        if (!tenantId) {
+            logger.error("Cannot add payment method: missing tenant_id", { component: "AddPaymentMethodDialog" });
+            toast.error("Error", { description: "Unable to add payment method. Please try again." });
+            return;
+        }
+
         setLoading(true);
         try {
-            // Create a checkout session for setup mode
             const { data, error } = await supabase.functions.invoke("create-setup-session", {
                 body: {
                     tenant_id: tenantId,
@@ -42,12 +49,14 @@ export function AddPaymentMethodDialog({
             if (error) throw error;
 
             if (data?.url) {
+                onSuccess?.();
                 window.location.href = data.url;
             } else {
                 throw new Error("No setup URL received");
             }
         } catch (error) {
-            handleError(error, { component: "AddPaymentMethodDialog", toastTitle: "Error" });
+            logger.error("Failed to create payment setup session", error, { component: "AddPaymentMethodDialog", tenantId });
+            toast.error("Error", { description: "Failed to set up payment method. Please try again." });
         } finally {
             setLoading(false);
         }
@@ -86,7 +95,7 @@ export function AddPaymentMethodDialog({
                     >
                         Remind Me Later
                     </Button>
-                    <Button onClick={handleAddPaymentMethod} disabled={loading}>
+                    <Button onClick={handleAddPaymentMethod} disabled={loading || !tenantId}>
                         {loading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
