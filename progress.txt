@@ -487,3 +487,34 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Verify useCredits real-time subscription for credit updates
+- **Issue found**: tenant_credits and credit_transactions tables were NOT added to the supabase_realtime publication
+  - The useCredits hook (src/hooks/useCredits.ts) subscribes to postgres_changes on both tables
+  - Without publication membership, Postgres never broadcasts changes through Supabase Realtime
+  - The subscriptions were silently dead — channel connects but never receives events
+- **Fix**: Created migration 20260321000001_add_credit_tables_to_realtime.sql
+  - Adds tenant_credits to supabase_realtime publication (balance changes trigger instant UI refresh)
+  - Adds credit_transactions to supabase_realtime publication (new transactions trigger balance refetch)
+  - Idempotent: checks for table existence and publication membership before altering
+- **Verified hook implementation** (src/hooks/useCredits.ts lines 203-238):
+  - Channel name scoped to tenant: `credits:${tenantId}`
+  - tenant_credits subscription: event='*', filter=`tenant_id=eq.${tenantId}`
+  - credit_transactions subscription: event='INSERT', filter=`tenant_id=eq.${tenantId}`
+  - Both callbacks invalidate `queryKeys.credits.all` to refetch balance
+  - Cleanup removes channel on unmount
+  - Effect depends on [tenantId, queryClient] — recreates on tenant change
+- **RLS verified**: Both tables have RLS enabled with SELECT policies for tenant users
+- **Tests**: Created src/hooks/__tests__/useCreditsRealtime.test.tsx with 10 tests:
+  1. Channel scoped to tenant_id
+  2. tenant_credits subscription with event='*' and tenant_id filter
+  3. credit_transactions subscription with event='INSERT' and tenant_id filter
+  4. Channel .subscribe() called
+  5. Invalidates credit queries on tenant_credits change
+  6. Invalidates credit queries on credit_transactions insert
+  7. Removes channel on unmount
+  8. Does not create channel when tenantId is missing
+  9. Recreates channel when tenantId changes
+  10. Both subscriptions filtered by tenant_id
+- TypeScript compilation passes with zero errors
+- All 10 new tests pass, all 39 existing useCredits tests pass
