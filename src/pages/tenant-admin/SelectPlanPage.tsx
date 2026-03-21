@@ -14,18 +14,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { TIER_ORDER, isPlanUpgrade, isPlanCurrent, type Plan } from "@/pages/tenant-admin/selectPlanHelpers";
 
 type BillingCycle = 'monthly' | 'yearly';
-
-interface Plan {
-  id: string;
-  name: string;
-  priceMonthly: number;
-  priceYearly: number;
-  description: string;
-  features: string[];
-  popular?: boolean;
-}
 
 const STATIC_PLANS: Plan[] = [
   {
@@ -137,28 +128,15 @@ export default function SelectPlanPage() {
     return billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
   };
 
-  // Check if plan is current (free tier is displayed separately, not as a paid plan)
-  const isCurrentPlan = (plan: Plan): boolean => {
-    if (isFreeTier) return false;
-    return plan.name.toLowerCase() === currentTier;
-  };
-
-  // Check if plan is an upgrade
-  const isUpgrade = (plan: Plan): boolean => {
-    if (isFreeTier) return true; // All paid plans are upgrades from free
-    const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-    const currentOrder = tierOrder[currentTier] ?? 0;
-    const planOrder = tierOrder[plan.name.toLowerCase()] ?? 0;
-    return planOrder > currentOrder;
-  };
+  const isCurrentPlan = (plan: Plan): boolean => isPlanCurrent(plan, currentTier, isFreeTier);
+  const isUpgrade = (plan: Plan): boolean => isPlanUpgrade(plan, currentTier, isFreeTier);
 
   // Get button text
   const getButtonText = (plan: Plan): string => {
-    const planTier = plan.name.toLowerCase();
     const price = billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
     const period = billingCycle === 'yearly' ? '/yr' : '/mo';
 
-    if (!isFreeTier && planTier === currentTier) {
+    if (isPlanCurrent(plan, currentTier, isFreeTier)) {
       return 'Current Plan';
     }
 
@@ -171,9 +149,8 @@ export default function SelectPlanPage() {
     }
 
     if (isActive) {
-      const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-      const currentOrder = tierOrder[currentTier] ?? 0;
-      const planOrder = tierOrder[planTier] ?? 0;
+      const currentOrder = TIER_ORDER[currentTier] ?? 0;
+      const planOrder = TIER_ORDER[plan.id] ?? 0;
 
       if (planOrder > currentOrder) {
         return `Upgrade to $${price}${period}`;
