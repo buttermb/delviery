@@ -487,3 +487,13 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Test BillingSettings annual savings banner 'Switch to Annual' button
+- Created src/pages/tenant-admin/settings/__tests__/BillingSettings.annualBanner.test.tsx with 18 tests
+- Banner Visibility tests (5): shown for monthly paid subscribers, hidden for trial/free-tier/yearly, shown when billing_cycle undefined
+- Savings Calculation tests (3): correct dollar amounts for Starter ($161), Professional ($306), Enterprise ($1,018)
+- Switch to Annual Button tests (6): renders, calls stripe-customer-portal, opens URL in new tab, shows success toast, handles edge function error, handles data.error, no-op when tenantId missing
+- Banner Content tests (3): headline text, "2 months free" messaging, "Switch to yearly billing" text
+- All mocks: useTenantAdminAuth, useSubscriptionStatus, useFeatureAccess, useCredits (hook + context), supabase client, sonner, humanizeError, tierMapping
+- TypeScript compilation passes with zero errors
+- All 18 tests pass
