@@ -98,14 +98,16 @@ export function useCustomerInvoices() {
     useQuery({
       queryKey: queryKeys.customerInvoices.detail(id),
       queryFn: async () => {
+        if (!tenant?.id) return null;
+
         const result = await db.from('customer_invoices').select(`
             *,
             customer:customers(id, first_name, last_name, email, phone)
-          `).eq('id', id).maybeSingle();
+          `).eq('id', id).eq('tenant_id', tenant.id).maybeSingle();
         if (result.error) throw result.error;
         return result.data as unknown as CustomerInvoice | null;
       },
-      enabled: !!id,
+      enabled: !!id && !!tenant?.id,
       staleTime: 30_000,
       retry: 2,
     });
@@ -243,7 +245,7 @@ export function useCustomerInvoices() {
           const updatePaidResult = await db.from('customer_invoices').update({
             amount_paid: data.total,
             amount_due: 0,
-          }).eq('id', invoiceId);
+          }).eq('id', invoiceId).eq('tenant_id', tenant.id);
           if (updatePaidResult.error) throw updatePaidResult.error;
         }
 
