@@ -487,3 +487,18 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Verify saas SelectPlanPage redirects to login when unauthenticated
+- Created src/pages/saas/__tests__/SelectPlanPage.test.tsx with 8 test cases
+- Test 1: Redirects to /saas/login?returnUrl=/select-plan when unauthenticated and not from signup flow
+- Test 2: Shows error toast "Please log in to select a plan" before redirecting
+- Test 3: Does not render plan cards while unauthenticated (shows loading spinner)
+- Test 4: Renders plan cards when authenticated with session
+- Test 5: Allows access when tenant_id is in search params (signup flow)
+- Test 6: Does not redirect even without session when tenant_id is present (signup flow bypass)
+- Test 7: Shows loading spinner during auth check
+- Test 8: Retries session check up to 3 times with delays between attempts
+- Mocks: supabase.auth.getSession (controllable per test), sonner toast, logger, ForceLightMode, react-router-dom navigate
+- Uses fake timers to advance through retry delays (300ms × 3) and signup flow delay (500ms)
+- TypeScript compilation passes with zero errors
+- All 8 tests pass
