@@ -371,6 +371,39 @@ describe('Edge Functions Integration Tests', () => {
   describe('check-stripe-config', () => {
     const endpoint = `${FUNCTIONS_URL}/check-stripe-config`;
 
+    it('should require authentication (reject missing auth header)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Missing authorization header' }, 401)
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.error).toBe('Missing authorization header');
+    });
+
+    it('should reject invalid auth token', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Unauthorized' }, 401)
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer invalid-or-expired-token',
+        },
+      });
+
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.error).toBe('Unauthorized');
+    });
+
     it('should return configured=true and valid=true when Stripe is properly configured', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
@@ -382,7 +415,10 @@ describe('Edge Functions Integration Tests', () => {
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
       });
 
       const data = await response.json();
@@ -403,7 +439,10 @@ describe('Edge Functions Integration Tests', () => {
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
       });
 
       const data = await response.json();
@@ -423,7 +462,10 @@ describe('Edge Functions Integration Tests', () => {
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
       });
 
       const data = await response.json();
@@ -445,13 +487,42 @@ describe('Edge Functions Integration Tests', () => {
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
       });
 
       const data = await response.json();
 
       expect(data.configured).toBe(true);
       expect(data.valid).toBe(false);
+    });
+
+    it('should not leak sensitive data in error responses', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          configured: true,
+          valid: false,
+          error: 'Invalid Stripe key',
+          testMode: true,
+        })
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+      });
+
+      const data = await response.json();
+      const responseStr = JSON.stringify(data);
+
+      // Response should never contain the actual secret key
+      expect(responseStr).not.toMatch(/sk_test_/);
+      expect(responseStr).not.toMatch(/sk_live_/);
     });
   });
 
@@ -1223,6 +1294,19 @@ describe('Edge Function Security Tests', () => {
       });
 
       expect(response.ok).toBe(true);
+    });
+
+    it('check-stripe-config should require auth (reveals config status)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Missing authorization header' }, 401)
+      );
+
+      const response = await fetch(`${FUNCTIONS_URL}/check-stripe-config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      expect(response.status).toBe(401);
     });
 
     it('process-payment should require auth (protected endpoint)', async () => {
