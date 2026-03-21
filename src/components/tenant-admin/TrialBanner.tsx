@@ -47,7 +47,7 @@ export function TrialBanner({ daysRemaining, trialEndsAt, tenantSlug }: TrialBan
             asChild
             className="border-foreground/20"
           >
-            <Link to={`/${tenantSlug}/admin/billing`}>
+            <Link to={`/${tenantSlug}/admin/settings?tab=billing`}>
               Manage Subscription
             </Link>
           </Button>
