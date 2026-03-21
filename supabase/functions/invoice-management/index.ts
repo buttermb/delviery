@@ -293,6 +293,21 @@ serve(async (req) => {
         );
       }
 
+      // Verify invoice exists and belongs to this tenant before updating
+      const { data: existingInvoice } = await serviceClient
+        .from('invoices')
+        .select('id, tenant_id')
+        .eq('id', invoice_id)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (!existingInvoice) {
+        return new Response(
+          JSON.stringify({ error: 'Invoice not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Recalculate amounts if relevant fields are updated
       const updateData: Record<string, unknown> = { ...invoice_data };
       if (updateData.subtotal !== undefined || updateData.tax !== undefined) {
