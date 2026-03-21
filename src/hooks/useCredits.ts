@@ -94,8 +94,8 @@ export interface UseCreditsReturn {
 // Constants
 // ============================================================================
 
-const REFETCH_INTERVAL_MS = 30_000; // 30 seconds
-const STALE_TIME_MS = 15_000; // 15 seconds
+export const REFETCH_INTERVAL_MS = 30_000; // 30 seconds
+export const STALE_TIME_MS = 15_000; // 15 seconds
 
 const DEFAULT_LIFETIME_STATS: LifetimeStats = {
   earned: FREE_TIER_MONTHLY_CREDITS,
