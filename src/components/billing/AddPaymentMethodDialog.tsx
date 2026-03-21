@@ -42,14 +42,14 @@ export function AddPaymentMethodDialog({
             if (error) throw error;
 
             if (data?.url) {
+                // Keep loading=true during redirect to avoid UI flash
                 window.location.href = data.url;
             } else {
                 throw new Error("No setup URL received");
             }
         } catch (error) {
-            handleError(error, { component: "AddPaymentMethodDialog", toastTitle: "Error" });
-        } finally {
             setLoading(false);
+            handleError(error, { component: "AddPaymentMethodDialog", toastTitle: "Error" });
         }
     };
 
