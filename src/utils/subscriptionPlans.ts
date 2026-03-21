@@ -1,6 +1,12 @@
 /**
  * Subscription Plan Constants
- * Central source of truth for subscription plan identifiers and features
+ * Must stay aligned with create_tenant_atomic() in the database
+ * and TIER_PRICES in featureConfig.ts.
+ *
+ * Canonical prices (from planPricing.ts / featureConfig.ts):
+ *   Starter:      $79/mo
+ *   Professional: $150/mo
+ *   Enterprise:   $499/mo
  */
 
 export const SUBSCRIPTION_PLANS = {
@@ -14,13 +20,13 @@ export type SubscriptionPlan = typeof SUBSCRIPTION_PLANS[keyof typeof SUBSCRIPTI
 export const PLAN_FEATURES = {
     [SUBSCRIPTION_PLANS.STARTER]: {
         displayName: 'Starter',
-        price: 0, // or whatever the price is
+        price: 79,
         limits: {
-            customers: 50,
-            menus: 3,
-            products: 100,
-            locations: 2,
-            users: 3,
+            customers: 200,
+            menus: 10,
+            products: 500,
+            locations: 5,
+            users: 10,
         },
         features: {
             api_access: false,
@@ -32,13 +38,13 @@ export const PLAN_FEATURES = {
     },
     [SUBSCRIPTION_PLANS.PROFESSIONAL]: {
         displayName: 'Professional',
-        price: 299,
+        price: 150,
         limits: {
-            customers: 500,
-            menus: -1, // Unlimited
-            products: -1,
-            locations: 10,
-            users: 10,
+            customers: 1000,
+            menus: 50,
+            products: 2000,
+            locations: 20,
+            users: 50,
         },
         features: {
             api_access: true,
@@ -50,7 +56,7 @@ export const PLAN_FEATURES = {
     },
     [SUBSCRIPTION_PLANS.ENTERPRISE]: {
         displayName: 'Enterprise',
-        price: 799,
+        price: 499,
         limits: {
             customers: -1,
             menus: -1,
