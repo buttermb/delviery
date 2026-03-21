@@ -124,20 +124,20 @@ export default function SelectPlanPage() {
 
       const { data: tenant, error } = await supabase
         .from('tenants')
-        .select('subscription_status, subscription_plan, slug')
+        .select('subscription_status, is_free_tier, slug')
         .eq('id', tenantId)
         .maybeSingle();
 
       if (error || !tenant) return;
 
       // Free tier users should go to dashboard
-      if (tenant.subscription_status === 'active' && tenant.subscription_plan === 'free') {
+      if (tenant.subscription_status === 'active' && tenant.is_free_tier) {
         navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
         return;
       }
 
       // Paid subscribers should go to billing
-      if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
+      if (tenant.subscription_status === 'active' && !tenant.is_free_tier) {
         toast.info("You already have an active subscription. Redirecting to billing...");
         navigate(`/${tenant.slug}/admin/settings/billing`);
       }
@@ -261,7 +261,12 @@ export default function SelectPlanPage() {
       toast.success(`You've been granted ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits!`);
 
       // Redirect to dashboard using slug from edge function response
-      navigate(`/${data?.slug || 'admin'}/admin/dashboard`, { replace: true });
+      if (!data?.slug) {
+        logger.warn('[SELECT_PLAN] No slug returned from set-free-tier, redirecting to login');
+        navigate('/saas/login', { replace: true });
+        return;
+      }
+      navigate(`/${data.slug}/admin/dashboard`, { replace: true });
     } catch (error) {
       handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to start free tier' });
       setLoading(null);
