@@ -124,7 +124,7 @@ export function InvoiceAgingReport({ invoices }: InvoiceAgingReportProps) {
           <FileText className="h-5 w-5 text-emerald-600" />
           Invoice Aging Report
         </CardTitle>
-        <Button onClick={handleExport} size="sm" variant="outline">
+        <Button onClick={handleExport} size="sm" variant="outline" aria-label="Export invoice aging report">
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
