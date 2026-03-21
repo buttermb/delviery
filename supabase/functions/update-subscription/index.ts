@@ -5,6 +5,7 @@
 
 import { serve, corsHeaders } from '../_shared/deps.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
 
 // Helper logging function
@@ -150,28 +151,12 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Get or create Stripe customer
-    let customerId = tenant.stripe_customer_id;
-    
-    if (!customerId) {
-      logStep('Creating new Stripe customer');
-      const customer = await stripe.customers.create({
-        email: tenant.owner_email,
-        name: tenant.business_name,
-        metadata: { tenant_id: tenant.id },
-      });
-      customerId = customer.id;
-      logStep('Stripe customer created', { customerId });
-
-      await supabaseClient
-        .from("tenants")
-        .update({ stripe_customer_id: customerId })
-        .eq("id", tenant_id);
-      
-      logStep('Tenant updated with Stripe customer ID');
-    } else {
-      logStep('Using existing Stripe customer', { customerId });
-    }
+    // Get or create Stripe customer (idempotent)
+    const customerId = await getOrCreateStripeCustomer({
+      stripe,
+      supabase: supabaseClient,
+      tenant,
+    });
 
     // Create checkout session
     logStep('Creating checkout session', { priceId: plan.stripe_price_id });

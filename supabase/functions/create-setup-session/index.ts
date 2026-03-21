@@ -5,6 +5,7 @@
 
 import { serve, corsHeaders } from '../_shared/deps.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
 import { validateSetupSession } from './validation.ts';
 
@@ -128,30 +129,12 @@ serve(async (req) => {
             httpClient: Stripe.createFetchHttpClient(),
         });
 
-        // Get or create Stripe customer
-        let stripeCustomerId = tenant.stripe_customer_id;
-
-        if (!stripeCustomerId) {
-            logStep('Creating new Stripe customer');
-            const customer = await stripeClient.customers.create({
-                email: tenant.owner_email,
-                name: tenant.business_name,
-                metadata: {
-                    tenant_id: tenant.id,
-                },
-            });
-            stripeCustomerId = customer.id;
-            logStep('Stripe customer created', { customerId: stripeCustomerId });
-
-            // Update tenant with Stripe customer ID
-            await supabase.from('tenants').update({
-                stripe_customer_id: stripeCustomerId,
-            }).eq('id', tenant_id);
-
-            logStep('Tenant updated with Stripe customer ID');
-        } else {
-            logStep('Using existing Stripe customer', { customerId: stripeCustomerId });
-        }
+        // Get or create Stripe customer (idempotent)
+        const stripeCustomerId = await getOrCreateStripeCustomer({
+            stripe: stripeClient,
+            supabase,
+            tenant,
+        });
 
         // Get site URL for return URL
         const siteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://app.example.com';

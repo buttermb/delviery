@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
+import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 
 /**
  * Credits Purchase Edge Function
@@ -141,42 +143,17 @@ serve(async (req: Request) => {
       );
     }
 
-    // Ensure Stripe customer exists
-    let stripeCustomerId = tenant.stripe_customer_id;
+    // Ensure Stripe customer exists (idempotent)
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2025-08-27.basil',
+    });
 
-    if (!stripeCustomerId) {
-      // Create a Stripe customer for this tenant
-      const createCustomerResponse = await fetch('https://api.stripe.com/v1/customers', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${stripeSecretKey}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          'email': user.email || '',
-          'metadata[tenant_id]': tenantId,
-          'metadata[tenant_slug]': tenant.slug || '',
-        }),
-      });
-
-      if (!createCustomerResponse.ok) {
-        const err = await createCustomerResponse.json();
-        console.error('[CREDITS_PURCHASE] Failed to create Stripe customer:', err);
-        return new Response(
-          JSON.stringify({ error: 'Failed to set up payment account' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const customer = await createCustomerResponse.json();
-      stripeCustomerId = customer.id;
-
-      // Persist customer ID on tenant
-      await supabase
-        .from('tenants')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', tenantId);
-    }
+    const stripeCustomerId = await getOrCreateStripeCustomer({
+      stripe,
+      supabase,
+      tenant,
+      email: user.email,
+    });
 
     // Stable idempotency key — no Date.now() so duplicate submissions are truly deduplicated
     const idempotencyKey = `credits-purchase:${tenantId}:${package_id}:${payment_method_id}`;
