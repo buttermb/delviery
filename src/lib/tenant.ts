@@ -192,9 +192,9 @@ export function isSubscriptionActive(tenant: Tenant): boolean {
  */
 export function getPlanPrice(plan: string): number {
   const prices: Record<string, number> = {
-    starter: 99,
-    professional: 299,
-    enterprise: 799,
+    starter: 79,
+    professional: 150,
+    enterprise: 499,
   };
   return prices[plan] ?? 0;
 }

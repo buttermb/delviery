@@ -33,7 +33,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 import { isTrial as checkIsTrial, SUBSCRIPTION_STATUS } from '@/utils/subscriptionStatus';
-import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { SUBSCRIPTION_PLANS, PLAN_FEATURES } from '@/utils/subscriptionPlans';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -135,25 +135,14 @@ export default function BillingDashboard() {
 
     try {
       // Update subscription plan in database
+      const planConfig = PLAN_FEATURES[selectedPlan as keyof typeof PLAN_FEATURES];
       const { error } = await supabase
         .from('tenants')
         .update({
           subscription_plan: selectedPlan,
           subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
-          limits: {
-            customers: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 500 : -1,
-            menus: -1,
-            products: -1,
-            locations: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 10 : -1,
-            users: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 10 : -1,
-          },
-          features: {
-            api_access: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
-            custom_branding: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
-            white_label: selectedPlan === SUBSCRIPTION_PLANS.ENTERPRISE,
-            advanced_analytics: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
-            sms_enabled: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
-          },
+          limits: planConfig.limits,
+          features: planConfig.features,
         })
         .eq('id', tenant.id);
 
