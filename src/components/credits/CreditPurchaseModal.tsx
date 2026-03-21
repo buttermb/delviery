@@ -8,18 +8,12 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { humanizeError } from "@/lib/humanizeError";
+import { CREDIT_PACKAGES } from "@/lib/credits";
 
 interface CreditPurchaseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const PACKAGES = [
-  { id: 'starter-pack', credits: 5000, price: 9.99, label: 'Starter Pack', popular: false },
-  { id: 'growth-pack', credits: 15000, price: 24.99, label: 'Growth Pack', popular: true },
-  { id: 'power-pack', credits: 50000, price: 49.99, label: 'Power Pack', popular: false },
-  { id: 'enterprise-pack', credits: 150000, price: 179.99, label: 'Enterprise Pack', popular: false },
-];
 
 export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalProps) {
   const { tenant } = useTenantAdminAuth();
@@ -79,56 +73,60 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 py-4">
-          {PACKAGES.map((pkg) => (
-            <Card key={pkg.id} className={`relative ${pkg.popular ? 'border-primary ring-2 ring-primary/20' : ''}`}>
-              {pkg.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                  Best Value
-                </div>
-              )}
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-lg">{pkg.label}</CardTitle>
-                <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                  <Coins className="w-4 h-4" />
-                  <span>{pkg.credits.toLocaleString()}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="text-center pb-4">
-                <div className="text-3xl font-bold">${pkg.price}</div>
-                <CardDescription className="text-xs mt-1">
-                  ${(pkg.price / pkg.credits * 100).toFixed(1)}¢ / credit
-                </CardDescription>
+          {CREDIT_PACKAGES.map((pkg) => {
+            const priceDisplay = pkg.priceCents / 100;
+            const isPopular = pkg.badge === 'POPULAR';
+            return (
+              <Card key={pkg.id} className={`relative ${isPopular ? 'border-primary ring-2 ring-primary/20' : ''}`}>
+                {pkg.badge && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                    {pkg.badge}
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-lg">{pkg.name}</CardTitle>
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                    <Coins className="w-4 h-4" />
+                    <span>{pkg.credits.toLocaleString()}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-center pb-4">
+                  <div className="text-3xl font-bold">${priceDisplay.toFixed(2)}</div>
+                  <CardDescription className="text-xs mt-1">
+                    ${(priceDisplay / pkg.credits * 100).toFixed(1)}¢ / credit
+                  </CardDescription>
 
-                <ul className="mt-4 space-y-2 text-sm text-left px-2">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>Instant delivery</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>Never expires</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <div className="p-4 pt-0">
-                <Button
-                  className="w-full"
-                  variant={pkg.popular ? "default" : "outline"}
-                  disabled={loadingId !== null}
-                  onClick={() => handlePurchase(pkg.id)}
-                >
-                  {loadingId === pkg.id ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    'Buy Now'
-                  )}
-                </Button>
-              </div>
-            </Card>
-          ))}
+                  <ul className="mt-4 space-y-2 text-sm text-left px-2">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Instant delivery</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Never expires</span>
+                    </li>
+                  </ul>
+                </CardContent>
+                <div className="p-4 pt-0">
+                  <Button
+                    className="w-full"
+                    variant={isPopular ? "default" : "outline"}
+                    disabled={loadingId !== null}
+                    onClick={() => handlePurchase(pkg.slug)}
+                  >
+                    {loadingId === pkg.slug ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Buy Now'
+                    )}
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>
