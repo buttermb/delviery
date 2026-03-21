@@ -124,22 +124,34 @@ export default function SelectPlanPage() {
 
       const { data: tenant, error } = await supabase
         .from('tenants')
-        .select('subscription_status, subscription_plan, slug')
+        .select('subscription_status, subscription_plan, is_free_tier, payment_method_added, slug')
         .eq('id', tenantId)
         .maybeSingle();
 
       if (error || !tenant) return;
 
+      const isActive = tenant.subscription_status === 'active';
+      const hasFreeTier = tenant.is_free_tier === true;
+      const hasPaidSubscription = tenant.payment_method_added && isActive;
+
       // Free tier users should go to dashboard
-      if (tenant.subscription_status === 'active' && tenant.subscription_plan === 'free') {
+      if (isActive && hasFreeTier) {
+        logger.info('[SELECT_PLAN] Active free-tier user, redirecting to dashboard', {
+          tenantId,
+          slug: tenant.slug,
+        });
         navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
         return;
       }
 
       // Paid subscribers should go to billing
-      if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
+      if (hasPaidSubscription) {
+        logger.info('[SELECT_PLAN] Active paid subscriber, redirecting to billing', {
+          tenantId,
+          plan: tenant.subscription_plan,
+        });
         toast.info("You already have an active subscription. Redirecting to billing...");
-        navigate(`/${tenant.slug}/admin/settings/billing`);
+        navigate(`/${tenant.slug}/admin/settings/billing`, { replace: true });
       }
     }
 
