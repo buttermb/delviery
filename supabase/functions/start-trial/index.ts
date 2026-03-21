@@ -66,34 +66,39 @@ serve(async (req) => {
       );
     }
 
-    // Plan configuration (Single source of truth - matches frontend PLAN_CONFIG)
+    // Plan configuration — MUST stay in sync with src/config/planPricing.ts
+    // See src/config/__tests__/planPricing.test.ts for the consistency test.
     const PLAN_CONFIG: Record<string, {
       name: string;
       priceMonthly: number;
       priceYearly: number;
       stripePriceId: string | null;
       stripePriceIdYearly: string | null;
+      stripeProductId: string | null;
     }> = {
       starter: {
         name: 'Starter',
         priceMonthly: 79,
         priceYearly: 790,
         stripePriceId: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP',
-        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP', // Use same for now, update when yearly price exists
+        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP', // TODO: update when yearly Stripe price exists
+        stripeProductId: 'prod_TYA2kle7mkwTJo',
       },
       professional: {
         name: 'Professional',
         priceMonthly: 150,
         priceYearly: 1500,
         stripePriceId: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
-        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
+        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI', // TODO: update when yearly Stripe price exists
+        stripeProductId: 'prod_TYA2CWSnpNaui9',
       },
       enterprise: {
         name: 'Enterprise',
         priceMonthly: 499,
         priceYearly: 4990,
         stripePriceId: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
-        stripePriceIdYearly: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
+        stripePriceIdYearly: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E', // TODO: update when yearly Stripe price exists
+        stripeProductId: 'prod_TYA2f6LK7qu8i9',
       },
     };
 
