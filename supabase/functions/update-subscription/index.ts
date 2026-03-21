@@ -3,8 +3,7 @@
  * Creates a Stripe Checkout session for subscription upgrades/downgrades
  */
 
-import { serve, corsHeaders } from '../_shared/deps.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve, corsHeaders, createClient } from '../_shared/deps.ts';
 import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
 
 // Helper logging function
@@ -81,6 +80,16 @@ serve(async (req) => {
       logStep('ERROR: Tenant ID mismatch — caller does not own requested tenant');
       return new Response(
         JSON.stringify({ error: "Not authorized for this tenant" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Only owners and admins can manage subscriptions
+    const allowedRoles = ['owner', 'admin'];
+    if (!tenantUser?.role || !allowedRoles.includes(tenantUser.role)) {
+      logStep('ERROR: Insufficient role for subscription management', { role: tenantUser?.role });
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions. Only owners and admins can manage subscriptions." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
