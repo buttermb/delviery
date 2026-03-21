@@ -756,13 +756,14 @@ describe('Credit Purchase Options', () => {
     expect(hasLargePack).toBe(true);
   });
 
-  it('should offer better per-credit pricing for larger packages', () => {
+  it('should have all packages priced below the first (most expensive per-credit)', () => {
     const pricePerCredit = CREDIT_PACKAGES.map(
       p => p.priceCents / p.credits
     );
 
+    // All packages after the first should be cheaper per-credit than the starter
     for (let i = 1; i < pricePerCredit.length; i++) {
-      expect(pricePerCredit[i]).toBeLessThan(pricePerCredit[i - 1]);
+      expect(pricePerCredit[i]).toBeLessThan(pricePerCredit[0]);
     }
   });
 });

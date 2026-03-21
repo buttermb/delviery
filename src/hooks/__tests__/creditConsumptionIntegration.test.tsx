@@ -110,10 +110,10 @@ vi.mock('@/lib/credits', () => ({
     savingsPercent: 90,
   })),
   CREDIT_PACKAGES: [
-    { id: 'quick-boost', name: 'Quick Boost', slug: 'quick-boost', credits: 500, priceCents: 1999, description: 'Quick boost pack' },
-    { id: 'starter-pack', name: 'Starter Pack', slug: 'starter-pack', credits: 1500, priceCents: 3999, description: 'Starter pack' },
-    { id: 'growth-pack', name: 'Growth Pack', slug: 'growth-pack', credits: 5000, priceCents: 7999, description: 'Growth pack' },
-    { id: 'power-pack', name: 'Power Pack', slug: 'power-pack', credits: 15000, priceCents: 14999, description: 'Power pack' },
+    { id: 'starter-pack', name: 'Starter Pack', slug: 'starter-pack', credits: 5000, priceCents: 999, description: '5,000 credits for $9.99' },
+    { id: 'growth-pack', name: 'Growth Pack', slug: 'growth-pack', credits: 15000, priceCents: 2499, badge: 'POPULAR', description: '15,000 credits for $24.99' },
+    { id: 'power-pack', name: 'Power Pack', slug: 'power-pack', credits: 50000, priceCents: 4999, description: '50,000 credits for $49.99' },
+    { id: 'enterprise-pack', name: 'Enterprise Pack', slug: 'enterprise-pack', credits: 150000, priceCents: 17999, badge: 'BEST VALUE', description: '150,000 credits for $179.99' },
   ],
 }));
 
@@ -740,29 +740,18 @@ describe('Insufficient Credits - Modal with Purchase Options', () => {
       expect(screen.getByText('100 credits')).toBeInTheDocument();
     });
 
-    it('should display quick purchase button for quick-boost credits', () => {
-      renderModalWithProps();
-      const button = screen.getByTestId('quick-purchase-quick-boost');
-      expect(button).toBeInTheDocument();
-      expect(screen.getByText('500 Credits')).toBeInTheDocument();
-    });
-
     it('should display quick purchase button for starter-pack credits', () => {
       renderModalWithProps();
       const button = screen.getByTestId('quick-purchase-starter-pack');
       expect(button).toBeInTheDocument();
-      expect(screen.getByText('1,500 Credits')).toBeInTheDocument();
+      expect(screen.getByText('5,000 Credits')).toBeInTheDocument();
     });
 
-    it('should call onQuickPurchase with quick-boost when clicking quick-boost button', () => {
-      const onQuickPurchase = vi.fn();
-      const onOpenChange = vi.fn();
-      renderModalWithProps({ onQuickPurchase, onOpenChange });
-
-      fireEvent.click(screen.getByTestId('quick-purchase-quick-boost'));
-
-      expect(onQuickPurchase).toHaveBeenCalledWith('quick-boost');
-      expect(onOpenChange).toHaveBeenCalledWith(false);
+    it('should display quick purchase button for growth-pack credits', () => {
+      renderModalWithProps();
+      const button = screen.getByTestId('quick-purchase-growth-pack');
+      expect(button).toBeInTheDocument();
+      expect(screen.getByText('15,000 Credits')).toBeInTheDocument();
     });
 
     it('should call onQuickPurchase with starter-pack when clicking starter-pack button', () => {
@@ -773,6 +762,17 @@ describe('Insufficient Credits - Modal with Purchase Options', () => {
       fireEvent.click(screen.getByTestId('quick-purchase-starter-pack'));
 
       expect(onQuickPurchase).toHaveBeenCalledWith('starter-pack');
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('should call onQuickPurchase with growth-pack when clicking growth-pack button', () => {
+      const onQuickPurchase = vi.fn();
+      const onOpenChange = vi.fn();
+      renderModalWithProps({ onQuickPurchase, onOpenChange });
+
+      fireEvent.click(screen.getByTestId('quick-purchase-growth-pack'));
+
+      expect(onQuickPurchase).toHaveBeenCalledWith('growth-pack');
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 

@@ -58,7 +58,8 @@ vi.mock('@/lib/credits', () => ({
     creditPackCost: 150,
   }),
   CREDIT_PACKAGES: [
-    { id: 'quick-boost', credits: 500, priceCents: 1999, slug: 'quick-boost' },
+    { id: 'starter-pack', name: 'Starter Pack', credits: 5000, priceCents: 999, slug: 'starter-pack', description: '5,000 credits for $9.99' },
+    { id: 'growth-pack', name: 'Growth Pack', credits: 15000, priceCents: 2499, slug: 'growth-pack', badge: 'POPULAR', description: '15,000 credits for $24.99' },
   ],
 }));
 
@@ -113,32 +114,20 @@ describe('OutOfCreditsModal', () => {
   });
 
   describe('Quick Purchase Buttons', () => {
-    it('should display quick-boost credits quick purchase button', () => {
-      renderModal();
-
-      const button = screen.getByTestId('quick-purchase-quick-boost');
-      expect(button).toBeInTheDocument();
-      expect(screen.getByText('500 Credits')).toBeInTheDocument();
-    });
-
     it('should display starter-pack credits quick purchase button', () => {
       renderModal();
 
       const button = screen.getByTestId('quick-purchase-starter-pack');
       expect(button).toBeInTheDocument();
-      expect(screen.getByText('1,500 Credits')).toBeInTheDocument();
+      expect(screen.getByText('5,000 Credits')).toBeInTheDocument();
     });
 
-    it('should call onQuickPurchase with correct package id when clicking quick-boost button', () => {
-      const onQuickPurchase = vi.fn();
-      const onOpenChange = vi.fn();
-      renderModal({ onQuickPurchase, onOpenChange });
+    it('should display growth-pack credits quick purchase button', () => {
+      renderModal();
 
-      const button = screen.getByTestId('quick-purchase-quick-boost');
-      fireEvent.click(button);
-
-      expect(onOpenChange).toHaveBeenCalledWith(false);
-      expect(onQuickPurchase).toHaveBeenCalledWith('quick-boost');
+      const button = screen.getByTestId('quick-purchase-growth-pack');
+      expect(button).toBeInTheDocument();
+      expect(screen.getByText('15,000 Credits')).toBeInTheDocument();
     });
 
     it('should call onQuickPurchase with correct package id when clicking starter-pack button', () => {
@@ -151,6 +140,18 @@ describe('OutOfCreditsModal', () => {
 
       expect(onOpenChange).toHaveBeenCalledWith(false);
       expect(onQuickPurchase).toHaveBeenCalledWith('starter-pack');
+    });
+
+    it('should call onQuickPurchase with correct package id when clicking growth-pack button', () => {
+      const onQuickPurchase = vi.fn();
+      const onOpenChange = vi.fn();
+      renderModal({ onQuickPurchase, onOpenChange });
+
+      const button = screen.getByTestId('quick-purchase-growth-pack');
+      fireEvent.click(button);
+
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(onQuickPurchase).toHaveBeenCalledWith('growth-pack');
     });
   });
 
@@ -180,7 +181,7 @@ describe('OutOfCreditsModal', () => {
       renderModal();
 
       expect(screen.getByText('Never run out again')).toBeInTheDocument();
-      expect(screen.getByText(/Set up auto top-up/)).toBeInTheDocument();
+      expect(screen.getByTestId('setup-auto-top-up')).toBeInTheDocument();
     });
 
     it('should display auto top-up description', () => {

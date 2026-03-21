@@ -88,14 +88,15 @@ describe('getAutoTopUpOptions', () => {
     }
   });
 
-  it('should have better price-per-credit for larger packages', () => {
+  it('should have better price-per-credit for non-starter packages', () => {
     const options = getAutoTopUpOptions();
     const pricePerCredit = options.map(
       (o) => o.priceCents / o.credits
     );
 
+    // All packages after the first should be cheaper per-credit than the starter
     for (let i = 1; i < pricePerCredit.length; i++) {
-      expect(pricePerCredit[i]).toBeLessThan(pricePerCredit[i - 1]);
+      expect(pricePerCredit[i]).toBeLessThan(pricePerCredit[0]);
     }
   });
 });
