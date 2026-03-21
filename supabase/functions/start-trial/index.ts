@@ -66,6 +66,14 @@ serve(async (req) => {
       );
     }
 
+    if (!tenant.slug) {
+      console.error('[START-TRIAL] Tenant missing slug:', { tenant_id: tenant.id });
+      return new Response(
+        JSON.stringify({ error: "Tenant configuration incomplete — missing slug" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Plan configuration (Single source of truth - matches frontend PLAN_CONFIG)
     const PLAN_CONFIG: Record<string, {
       name: string;
