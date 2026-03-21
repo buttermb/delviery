@@ -401,7 +401,7 @@ export function useFreeTierLimits() {
         description,
         action: {
           label: hasPurchasedCredits ? 'Buy Credits' : 'Upgrade',
-          onClick: () => window.location.href = `/${tenant?.slug}/admin/settings/billing`,
+          onClick: () => window.location.href = `/${tenant?.slug}/admin/settings?tab=payments`,
         },
       });
       return false;

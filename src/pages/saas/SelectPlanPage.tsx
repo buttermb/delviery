@@ -139,7 +139,7 @@ export default function SelectPlanPage() {
       // Paid subscribers should go to billing
       if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
         toast.info("You already have an active subscription. Redirecting to billing...");
-        navigate(`/${tenant.slug}/admin/settings/billing`);
+        navigate(`/${tenant.slug}/admin/settings?tab=payments`, { replace: true });
       }
     }
 
