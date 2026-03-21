@@ -2,9 +2,10 @@
  * Invoices RLS Policy Tests
  *
  * These tests verify that the invoices table RLS policies correctly:
- * 1. Allow users to access invoices in their tenant
+ * 1. Allow users to access invoices only in their tenant (via tenant_id)
  * 2. Deny access to invoices in other tenants
  * 3. Apply correct policies for SELECT, INSERT, UPDATE, DELETE operations
+ * 4. Require admin/owner role for write operations
  *
  * Note: These tests verify the policy SQL structure and logic.
  * For integration testing against a real database, use the SQL verification queries
@@ -13,7 +14,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-// Policy definitions that should be applied by the migration
+// Policy definitions matching 20260321000000_fix_invoices_rls_tenant_isolation.sql
 const EXPECTED_POLICIES = {
   invoices_tenant_select: {
     command: 'SELECT',
@@ -23,52 +24,71 @@ const EXPECTED_POLICIES = {
   invoices_tenant_insert: {
     command: 'INSERT',
     withCheckClause:
-      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid())',
+      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (\'admin\', \'owner\'))',
   },
   invoices_tenant_update: {
     command: 'UPDATE',
     usingClause:
-      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid())',
+      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (\'admin\', \'owner\'))',
   },
   invoices_tenant_delete: {
     command: 'DELETE',
     usingClause:
-      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid())',
+      'tenant_id IN (SELECT tu.tenant_id FROM tenant_users tu WHERE tu.user_id = auth.uid() AND tu.role IN (\'admin\', \'owner\'))',
   },
 } as const;
 
 describe('Invoices RLS Policies', () => {
   describe('Policy Structure', () => {
-    it('should define SELECT policy for tenant isolation', () => {
+    it('should define SELECT policy with tenant_id isolation', () => {
       const policy = EXPECTED_POLICIES.invoices_tenant_select;
       expect(policy.command).toBe('SELECT');
+      expect(policy.usingClause).toContain('tenant_id IN');
       expect(policy.usingClause).toContain('tenant_users');
       expect(policy.usingClause).toContain('auth.uid()');
     });
 
-    it('should define INSERT policy for tenant isolation', () => {
+    it('should define INSERT policy with tenant_id isolation and role check', () => {
       const policy = EXPECTED_POLICIES.invoices_tenant_insert;
       expect(policy.command).toBe('INSERT');
+      expect(policy.withCheckClause).toContain('tenant_id IN');
       expect(policy.withCheckClause).toContain('tenant_users');
       expect(policy.withCheckClause).toContain('auth.uid()');
+      expect(policy.withCheckClause).toContain("'admin'");
+      expect(policy.withCheckClause).toContain("'owner'");
     });
 
-    it('should define UPDATE policy for tenant isolation', () => {
+    it('should define UPDATE policy with tenant_id isolation and role check', () => {
       const policy = EXPECTED_POLICIES.invoices_tenant_update;
       expect(policy.command).toBe('UPDATE');
+      expect(policy.usingClause).toContain('tenant_id IN');
       expect(policy.usingClause).toContain('tenant_users');
       expect(policy.usingClause).toContain('auth.uid()');
+      expect(policy.usingClause).toContain("'admin'");
+      expect(policy.usingClause).toContain("'owner'");
     });
 
-    it('should define DELETE policy for tenant isolation', () => {
+    it('should define DELETE policy with tenant_id isolation and role check', () => {
       const policy = EXPECTED_POLICIES.invoices_tenant_delete;
       expect(policy.command).toBe('DELETE');
+      expect(policy.usingClause).toContain('tenant_id IN');
       expect(policy.usingClause).toContain('tenant_users');
       expect(policy.usingClause).toContain('auth.uid()');
+      expect(policy.usingClause).toContain("'admin'");
+      expect(policy.usingClause).toContain("'owner'");
     });
   });
 
-  describe('Policy Consistency', () => {
+  describe('Tenant Isolation', () => {
+    it('should use tenant_id IN subquery pattern (not bare EXISTS)', () => {
+      Object.values(EXPECTED_POLICIES).forEach((policy) => {
+        const clause =
+          'usingClause' in policy ? policy.usingClause : policy.withCheckClause;
+        // Must start with tenant_id IN — not just EXISTS
+        expect(clause).toMatch(/^tenant_id IN/);
+      });
+    });
+
     it('should use the same tenant isolation pattern across all policies', () => {
       const expectedPattern = 'tenant_users tu WHERE tu.user_id = auth.uid()';
 
@@ -86,6 +106,14 @@ describe('Invoices RLS Policies', () => {
       );
     });
 
+    it('should select tu.tenant_id to match against invoices.tenant_id', () => {
+      Object.values(EXPECTED_POLICIES).forEach((policy) => {
+        const clause =
+          'usingClause' in policy ? policy.usingClause : policy.withCheckClause;
+        expect(clause).toContain('tu.tenant_id');
+      });
+    });
+
     it('should cover all CRUD operations', () => {
       const commands = Object.values(EXPECTED_POLICIES).map((p) => p.command);
 
@@ -94,14 +122,6 @@ describe('Invoices RLS Policies', () => {
       expect(commands).toContain('UPDATE');
       expect(commands).toContain('DELETE');
       expect(commands).toHaveLength(4);
-    });
-
-    it('should all use tenant_id column for isolation', () => {
-      Object.values(EXPECTED_POLICIES).forEach((policy) => {
-        const clause =
-          'usingClause' in policy ? policy.usingClause : policy.withCheckClause;
-        expect(clause).toContain('tenant_id IN');
-      });
     });
   });
 
@@ -127,41 +147,34 @@ describe('Invoices RLS Policies', () => {
       Object.values(EXPECTED_POLICIES).forEach((policy) => {
         const clause =
           'usingClause' in policy ? policy.usingClause : policy.withCheckClause;
-        // Should use tenant_users
         expect(clause).toContain('tenant_users');
-        // Should NOT directly query profiles or use old patterns
         expect(clause).not.toContain('profiles.account_id');
         expect(clause).not.toContain('admin_users');
         expect(clause).not.toContain('accounts.tenant_id');
       });
     });
+
+    it('should require admin/owner role for write operations', () => {
+      const writeOps = [
+        EXPECTED_POLICIES.invoices_tenant_insert,
+        EXPECTED_POLICIES.invoices_tenant_update,
+        EXPECTED_POLICIES.invoices_tenant_delete,
+      ];
+
+      writeOps.forEach((policy) => {
+        const clause =
+          'usingClause' in policy ? policy.usingClause : policy.withCheckClause;
+        expect(clause).toContain("tu.role IN ('admin', 'owner')");
+      });
+    });
+
+    it('should NOT require role for SELECT (all tenant members can read)', () => {
+      expect(EXPECTED_POLICIES.invoices_tenant_select.usingClause).not.toContain('role');
+    });
   });
 });
 
 describe('Migration File Verification', () => {
-  it('should drop all old permissive policies', () => {
-    // These are the policies that should be dropped by the migration
-    const policiesToDrop = [
-      'Tenants can view their own invoices',
-      'Admins can view all invoices',
-      'Super admins can view all invoices',
-      'Users can view invoices',
-      'Users can create invoices',
-      'Users can update invoices',
-      'Users can delete invoices',
-      'Tenant members can view invoices',
-      'Tenant members can create invoices',
-      'Tenant members can update invoices',
-      'Tenant members can delete invoices',
-    ];
-
-    // Verify each policy name is different from new policy names
-    const newPolicyNames = Object.keys(EXPECTED_POLICIES);
-    policiesToDrop.forEach((oldPolicy) => {
-      expect(newPolicyNames).not.toContain(oldPolicy);
-    });
-  });
-
   it('should create exactly 4 new policies', () => {
     const policyCount = Object.keys(EXPECTED_POLICIES).length;
     expect(policyCount).toBe(4);
