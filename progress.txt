@@ -487,3 +487,22 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Verify invoice-management credit gating for create action
+- Verified CreateInvoicePage.tsx properly uses useCreditGatedAction from @/hooks/useCredits
+- Credit gating wraps the entire invoice creation flow with executeCreditAction('invoice_create', ...)
+- invoice_create action costs 50 credits (defined in creditCosts.ts)
+- For free-tier users: canPerformAction checks balance >= 50, then consumeCredits via performAction
+- For paid-tier users: credit check is skipped, action executes directly
+- When insufficient credits: action is blocked, returns null, onInsufficientCredits callback fires
+- Created comprehensive test suite at src/pages/admin/__tests__/CreateInvoiceCreditGating.test.tsx (9 tests):
+  1. Form renders correctly
+  2. executeCreditAction called with 'invoice_create' action key on submit
+  3. Invoice NOT created when credit gate blocks (returns null)
+  4. Invoice created successfully when credit gate allows
+  5. Form validation prevents submit without line items (credit gate not reached)
+  6. invoice_create costs 50 credits
+  7. invoice_create is not a free action
+  8. invoice_create categorized under 'invoices' with correct metadata
+  9. generate_invoice legacy alias has same 50-credit cost
+- All 9 tests pass, TypeScript compilation clean
