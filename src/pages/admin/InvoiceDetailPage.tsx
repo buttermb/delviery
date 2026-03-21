@@ -296,9 +296,11 @@ export default function InvoiceDetailPage() {
                             </>
                         )}
 
-                        <Button variant="destructive" size="icon" disabled={isAnyPending} onClick={() => setDeleteDialogOpen(true)} aria-label="Delete invoice">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {invoice.status === 'draft' && (
+                            <Button variant="destructive" size="icon" disabled={isAnyPending} onClick={() => setDeleteDialogOpen(true)} aria-label="Delete invoice">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
                 </div>
 
