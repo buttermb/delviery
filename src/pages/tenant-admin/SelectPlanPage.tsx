@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { getButtonText } from "@/pages/tenant-admin/getButtonText";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -83,6 +84,9 @@ export default function SelectPlanPage() {
     isEnterprise,
     isTrial,
     isActive,
+    isCancelled,
+    isPastDue,
+    isSuspended,
     currentTier,
     hasActiveSubscription
   } = useSubscriptionStatus();
@@ -152,37 +156,25 @@ export default function SelectPlanPage() {
     return planOrder > currentOrder;
   };
 
-  // Get button text
-  const getButtonText = (plan: Plan): string => {
+  // Get button text — delegates to extracted pure function
+  const getPlanButtonText = (plan: Plan): string => {
     const planTier = plan.name.toLowerCase();
     const price = billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
     const period = billingCycle === 'yearly' ? '/yr' : '/mo';
 
-    if (!isFreeTier && planTier === currentTier) {
-      return 'Current Plan';
-    }
-
-    if (isFreeTier) {
-      return skipTrial ? `Subscribe Now - $${price}${period}` : 'Start 14-Day Free Trial';
-    }
-
-    if (isTrial) {
-      return skipTrial ? `Subscribe Now - $${price}${period}` : 'Start 14-Day Free Trial';
-    }
-
-    if (isActive) {
-      const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-      const currentOrder = tierOrder[currentTier] ?? 0;
-      const planOrder = tierOrder[planTier] ?? 0;
-
-      if (planOrder > currentOrder) {
-        return `Upgrade to $${price}${period}`;
-      } else if (planOrder < currentOrder) {
-        return `Downgrade to $${price}${period}`;
-      }
-    }
-
-    return skipTrial ? `Subscribe - $${price}${period}` : 'Start Free Trial';
+    return getButtonText({
+      planTier,
+      price,
+      period,
+      currentTier,
+      isFreeTier,
+      isTrial,
+      isActive,
+      isCancelled,
+      isPastDue,
+      isSuspended,
+      skipTrial,
+    });
   };
 
   const handleSelectFreeTier = async () => {
@@ -645,7 +637,7 @@ export default function SelectPlanPage() {
                         Processing...
                       </>
                     ) : (
-                      getButtonText(plan)
+                      getPlanButtonText(plan)
                     )}
                   </Button>
 
