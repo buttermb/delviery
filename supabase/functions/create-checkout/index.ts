@@ -12,6 +12,7 @@ import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { validateCreateCheckout } from './validation.ts';
+import { validateStripeSecretKey } from '../_shared/validation.ts';
 
 serve(secureHeadersMiddleware(async (req) => {
   if (req.method === "OPTIONS") {
@@ -101,9 +102,10 @@ serve(secureHeadersMiddleware(async (req) => {
 
     // Initialize Stripe
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
-    if (!stripeKey.startsWith('sk_')) {
+    const keyValidation = validateStripeSecretKey(stripeKey);
+    if (!keyValidation.valid) {
       return new Response(
-        JSON.stringify({ error: "Invalid Stripe configuration" }),
+        JSON.stringify({ error: keyValidation.error }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

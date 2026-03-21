@@ -77,6 +77,35 @@ export function sanitizeOrderInput(input: Record<string, unknown>): {
   };
 }
 
+/**
+ * Validate that a Stripe key is a secret key (sk_*), not publishable (pk_*) or restricted (rk_*).
+ */
+export function validateStripeSecretKey(key: string | undefined | null): { valid: boolean; error?: string } {
+  if (!key || key.trim() === '') {
+    return { valid: false, error: 'STRIPE_SECRET_KEY is missing or empty.' };
+  }
+
+  if (key.startsWith('pk_')) {
+    return {
+      valid: false,
+      error: "Invalid Stripe configuration. Please use a secret key (starts with 'sk_'), not a publishable key.",
+    };
+  }
+
+  if (key.startsWith('rk_')) {
+    return {
+      valid: false,
+      error: "Invalid Stripe configuration. Please use a secret key (starts with 'sk_'), not a restricted key.",
+    };
+  }
+
+  if (!key.startsWith('sk_')) {
+    return { valid: false, error: "Invalid Stripe configuration. The key must start with 'sk_'." };
+  }
+
+  return { valid: true };
+}
+
 // Simple in-memory rate limiting (use Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
