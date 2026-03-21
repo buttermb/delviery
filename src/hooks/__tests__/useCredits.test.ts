@@ -340,6 +340,215 @@ describe('Rate Limiting Logic', () => {
   });
 });
 
+describe('isFreeTier Determination Logic', () => {
+  // Mirrors the logic in useCredits.ts (lines 254-259) and credits-balance edge function
+  // Priority: creditData.subscription.isFreeTier → tenant.is_free_tier → fallback heuristic
+  interface TenantData {
+    is_free_tier?: boolean | null;
+    subscription_plan?: string | null;
+    credits_enabled?: boolean;
+  }
+
+  interface CreditData {
+    subscription: { isFreeTier: boolean };
+  }
+
+  /**
+   * Extracted isFreeTier logic matching useCredits.ts exactly.
+   * This function tests the same branching used in the hook.
+   */
+  function determineIsFreeTier(
+    creditData: CreditData | null,
+    tenant: TenantData | null
+  ): boolean {
+    const isPaidPlan = tenant?.subscription_plan === 'professional' ||
+                       tenant?.subscription_plan === 'enterprise';
+    const creditsDisabled = (tenant as { credits_enabled?: boolean })?.credits_enabled === false;
+
+    return creditData
+      ? creditData.subscription.isFreeTier
+      : tenant?.is_free_tier != null
+        ? tenant.is_free_tier === true
+        : creditsDisabled ? false : !isPaidPlan;
+  }
+
+  describe('when creditData is available (edge function response)', () => {
+    it('should use subscription.isFreeTier=true from edge function', () => {
+      const creditData = { subscription: { isFreeTier: true } };
+      const tenant = { is_free_tier: false, subscription_plan: 'free' };
+      expect(determineIsFreeTier(creditData, tenant)).toBe(true);
+    });
+
+    it('should use subscription.isFreeTier=false from edge function', () => {
+      const creditData = { subscription: { isFreeTier: false } };
+      const tenant = { is_free_tier: true, subscription_plan: 'free' };
+      expect(determineIsFreeTier(creditData, tenant)).toBe(false);
+    });
+
+    it('should trust edge function over tenant flag', () => {
+      // Edge function says paid, tenant flag says free — trust edge function
+      const creditData = { subscription: { isFreeTier: false } };
+      const tenant = { is_free_tier: true, subscription_plan: 'professional' };
+      expect(determineIsFreeTier(creditData, tenant)).toBe(false);
+    });
+  });
+
+  describe('when creditData is null (pre-load / error fallback)', () => {
+    it('should use is_free_tier=true from tenant', () => {
+      const tenant = { is_free_tier: true, subscription_plan: 'free' };
+      expect(determineIsFreeTier(null, tenant)).toBe(true);
+    });
+
+    it('should use is_free_tier=false from tenant', () => {
+      const tenant = { is_free_tier: false, subscription_plan: 'professional' };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+
+    it('should treat is_free_tier=false as not-free-tier (explicit flag)', () => {
+      // Even if plan looks "free", the explicit flag overrides
+      const tenant = { is_free_tier: false, subscription_plan: 'free', credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+  });
+
+  describe('fallback when is_free_tier is null/undefined (legacy tenants)', () => {
+    it('should return false when credits are disabled (paid plan)', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'starter', credits_enabled: false };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+
+    it('should return false for professional plan', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'professional', credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+
+    it('should return false for enterprise plan', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'enterprise', credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+
+    it('should return true for free plan with credits enabled', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'free', credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(true);
+    });
+
+    it('should return true for starter plan with credits enabled', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'starter', credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(true);
+    });
+
+    it('should return true when is_free_tier is undefined and plan is null', () => {
+      const tenant = { subscription_plan: null, credits_enabled: true };
+      expect(determineIsFreeTier(null, tenant)).toBe(true);
+    });
+
+    it('should return false when credits disabled even if plan is free', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'free', credits_enabled: false };
+      expect(determineIsFreeTier(null, tenant)).toBe(false);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle null tenant gracefully', () => {
+      // No tenant data at all — isPaidPlan=false, creditsDisabled=false → true
+      expect(determineIsFreeTier(null, null)).toBe(true);
+    });
+
+    it('should handle empty tenant object', () => {
+      expect(determineIsFreeTier(null, {})).toBe(true);
+    });
+
+    it('should handle credits_enabled=undefined as not-disabled', () => {
+      const tenant = { is_free_tier: null, subscription_plan: 'free' };
+      expect(determineIsFreeTier(null, tenant)).toBe(true);
+    });
+  });
+
+  describe('paid plans never see credit warnings', () => {
+    // Verify that for paid plans, status flags are never set
+    const deriveStatusFlagsWithCreditsDisabled = (
+      balance: number,
+      isFreeTier: boolean,
+      creditsDisabled: boolean
+    ) => ({
+      isLowCredits: isFreeTier && !creditsDisabled && balance <= LOW_CREDIT_WARNING_THRESHOLD,
+      isCriticalCredits: isFreeTier && !creditsDisabled && balance <= CRITICAL_CREDIT_THRESHOLD,
+      isOutOfCredits: isFreeTier && !creditsDisabled && balance <= 0,
+    });
+
+    it('professional plan user should never see warnings', () => {
+      const isFreeTier = determineIsFreeTier(null, {
+        is_free_tier: false,
+        subscription_plan: 'professional',
+        credits_enabled: false,
+      });
+      const flags = deriveStatusFlagsWithCreditsDisabled(0, isFreeTier, true);
+      expect(flags.isLowCredits).toBe(false);
+      expect(flags.isCriticalCredits).toBe(false);
+      expect(flags.isOutOfCredits).toBe(false);
+    });
+
+    it('enterprise plan user should never see warnings', () => {
+      const isFreeTier = determineIsFreeTier(null, {
+        is_free_tier: false,
+        subscription_plan: 'enterprise',
+        credits_enabled: false,
+      });
+      const flags = deriveStatusFlagsWithCreditsDisabled(0, isFreeTier, true);
+      expect(flags.isLowCredits).toBe(false);
+      expect(flags.isCriticalCredits).toBe(false);
+      expect(flags.isOutOfCredits).toBe(false);
+    });
+
+    it('free tier user WITH zero balance should see all warnings', () => {
+      const isFreeTier = determineIsFreeTier(null, {
+        is_free_tier: true,
+        subscription_plan: 'free',
+        credits_enabled: true,
+      });
+      const flags = deriveStatusFlagsWithCreditsDisabled(0, isFreeTier, false);
+      expect(flags.isLowCredits).toBe(true);
+      expect(flags.isCriticalCredits).toBe(true);
+      expect(flags.isOutOfCredits).toBe(true);
+    });
+  });
+
+  describe('consistency with edge function logic', () => {
+    // The edge function (credits-balance/index.ts) uses:
+    //   tenantData?.is_free_tier != null
+    //     ? tenantData.is_free_tier === true
+    //     : creditsDisabled ? false : !isPaidPlan
+    // Verify our client-side fallback matches
+    function edgeFunctionIsFreeTier(tenantData: TenantData | null): boolean {
+      const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
+                         tenantData?.subscription_plan === 'enterprise';
+      const creditsDisabled = tenantData?.credits_enabled === false;
+
+      return tenantData?.is_free_tier != null
+        ? tenantData.is_free_tier === true
+        : creditsDisabled ? false : !isPaidPlan;
+    }
+
+    const testCases: Array<{ tenant: TenantData; desc: string }> = [
+      { tenant: { is_free_tier: true, subscription_plan: 'free', credits_enabled: true }, desc: 'free tier explicit' },
+      { tenant: { is_free_tier: false, subscription_plan: 'professional', credits_enabled: false }, desc: 'professional explicit' },
+      { tenant: { is_free_tier: null, subscription_plan: 'professional', credits_enabled: true }, desc: 'legacy professional' },
+      { tenant: { is_free_tier: null, subscription_plan: 'enterprise', credits_enabled: true }, desc: 'legacy enterprise' },
+      { tenant: { is_free_tier: null, subscription_plan: 'free', credits_enabled: true }, desc: 'legacy free' },
+      { tenant: { is_free_tier: null, subscription_plan: 'starter', credits_enabled: false }, desc: 'legacy starter disabled' },
+      { tenant: { is_free_tier: null, subscription_plan: 'free', credits_enabled: false }, desc: 'legacy free disabled' },
+    ];
+
+    for (const { tenant, desc } of testCases) {
+      it(`client fallback should match edge function for: ${desc}`, () => {
+        const clientResult = determineIsFreeTier(null, tenant);
+        const edgeResult = edgeFunctionIsFreeTier(tenant);
+        expect(clientResult).toBe(edgeResult);
+      });
+    }
+  });
+});
+
 describe('Idempotency Key Generation', () => {
   const generateIdempotencyKey = (actionKey: string, referenceId?: string) => {
     return `${actionKey}:${referenceId || 'default'}`;

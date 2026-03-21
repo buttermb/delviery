@@ -245,17 +245,20 @@ export function useCredits(): UseCreditsReturn {
   
   // CRITICAL: If credits are disabled for tenant OR they have a paid plan,
   // force isFreeTier to false to prevent credit warnings
-  const isPaidPlan = tenant?.subscription_plan === 'professional' || 
+  const isPaidPlan = tenant?.subscription_plan === 'professional' ||
                      tenant?.subscription_plan === 'enterprise';
-  const hasActiveStatus = tenant?.subscription_status === 'active';
   const creditsDisabled = (tenant as { credits_enabled?: boolean })?.credits_enabled === false;
-  
-  // Determine isFreeTier: use subscription data if available, else trust explicit tenant flag, else fallback
+
+  // Determine isFreeTier: use subscription data if available, else trust explicit tenant flag, else fallback.
+  // Fallback logic matches edge function (credits-balance) and creditService.ts:
+  //   is_free_tier flag → source of truth when present
+  //   creditsDisabled → false (paid plans have credits disabled)
+  //   otherwise → !isPaidPlan (default free unless on a paid plan)
   const isFreeTier = creditData
     ? subscription.isFreeTier
     : tenant?.is_free_tier != null
       ? tenant.is_free_tier === true
-      : !(creditsDisabled || isPaidPlan);
+      : creditsDisabled ? false : !isPaidPlan;
 
   // Legacy backward-compat values
   const lifetimeEarned = lifetimeStats.earned;
