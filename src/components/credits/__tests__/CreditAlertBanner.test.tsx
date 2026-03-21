@@ -27,9 +27,16 @@ vi.mock('@/hooks/useCredits', () => ({
   }),
 }));
 
-vi.mock('@/lib/credits', () => ({
-  LOW_BALANCE_WARNING_LEVELS: [2000, 1000, 500, 100],
-}));
+vi.mock('@/lib/credits', async () => {
+  // Import only the warning config directly to avoid loading supabase client
+  const warningConfig = await import('@/lib/credits/creditWarningConfig');
+  return {
+    LOW_BALANCE_WARNING_LEVELS: [2000, 1000, 500, 100],
+    getCurrentThreshold: warningConfig.getCurrentThreshold,
+    getAlertSeverityStyles: warningConfig.getAlertSeverityStyles,
+    CREDIT_THRESHOLD_CONFIGS: warningConfig.CREDIT_THRESHOLD_CONFIGS,
+  };
+});
 
 const renderBanner = (props = {}) => {
   const defaultProps = {

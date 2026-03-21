@@ -16,111 +16,17 @@ import { AlertTriangle, X, Coins, TrendingDown } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useCredits } from '@/hooks/useCredits';
+import {
+  getCurrentThreshold,
+  getAlertSeverityStyles,
+  type CreditThresholdConfig,
+} from '@/lib/credits';
 
 export interface CreditAlertBannerProps {
   /** Callback when buy credits button is clicked */
   onBuyCredits?: () => void;
   /** Custom class name for the banner */
   className?: string;
-}
-
-interface ThresholdConfig {
-  threshold: number;
-  severity: 'info' | 'warning' | 'critical' | 'danger';
-  title: string;
-  description: string;
-}
-
-const THRESHOLD_CONFIGS: ThresholdConfig[] = [
-  {
-    threshold: 2000,
-    severity: 'info',
-    title: 'Credits Running Low',
-    description: 'Your credit balance is getting low. Consider purchasing more to avoid interruptions.',
-  },
-  {
-    threshold: 1000,
-    severity: 'warning',
-    title: 'Credit Balance Warning',
-    description: 'You have less than 1,000 credits. Some features may become unavailable soon.',
-  },
-  {
-    threshold: 500,
-    severity: 'critical',
-    title: 'Low Credit Balance',
-    description: 'Only {balance} credits remaining. Purchase credits now to continue using premium features.',
-  },
-  {
-    threshold: 100,
-    severity: 'danger',
-    title: 'Critical Credit Balance',
-    description: 'Only {balance} credits left! Actions will be blocked when credits run out.',
-  },
-];
-
-/**
- * Get severity styles for the alert
- */
-function getSeverityStyles(severity: ThresholdConfig['severity']): {
-  variant: 'default' | 'destructive';
-  iconColor: string;
-  bgColor: string;
-  borderColor: string;
-} {
-  switch (severity) {
-    case 'info':
-      return {
-        variant: 'default',
-        iconColor: 'text-blue-500',
-        bgColor: 'bg-blue-500/5',
-        borderColor: 'border-blue-500/20',
-      };
-    case 'warning':
-      return {
-        variant: 'default',
-        iconColor: 'text-amber-500',
-        bgColor: 'bg-amber-500/5',
-        borderColor: 'border-amber-500/20',
-      };
-    case 'critical':
-      return {
-        variant: 'default',
-        iconColor: 'text-orange-500',
-        bgColor: 'bg-orange-500/5',
-        borderColor: 'border-orange-500/20',
-      };
-    case 'danger':
-      return {
-        variant: 'destructive',
-        iconColor: 'text-red-500',
-        bgColor: 'bg-red-500/5',
-        borderColor: 'border-red-500/20',
-      };
-    default:
-      return {
-        variant: 'default',
-        iconColor: 'text-muted-foreground',
-        bgColor: '',
-        borderColor: '',
-      };
-  }
-}
-
-/**
- * Determine the current warning threshold based on balance
- */
-function getCurrentThreshold(balance: number): ThresholdConfig | null {
-  // Find the highest threshold that the balance is at or below
-  // Sort thresholds in descending order and find the first one the balance qualifies for
-  const sortedThresholds = [...THRESHOLD_CONFIGS].sort((a, b) => b.threshold - a.threshold);
-
-  for (const config of sortedThresholds) {
-    if (balance <= config.threshold && balance > 0) {
-      return config;
-    }
-  }
-
-  return null;
 }
 
 export function CreditAlertBanner({ onBuyCredits, className }: CreditAlertBannerProps) {
@@ -169,7 +75,7 @@ export function CreditAlertBanner({ onBuyCredits, className }: CreditAlertBanner
     return null;
   }
 
-  const styles = getSeverityStyles(currentConfig.severity);
+  const styles = getAlertSeverityStyles(currentConfig.severity);
   const description = currentConfig.description.replace('{balance}', balance.toLocaleString());
 
   return (
