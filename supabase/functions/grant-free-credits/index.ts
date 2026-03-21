@@ -25,16 +25,17 @@ import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 // Plan-based credit amounts per specification
 // These are the MONTHLY refresh amounts for existing tenants
 // Initial signup amounts are handled by create_tenant_atomic
+// Free tier: 500 credits/month (matches FREE_TIER_MONTHLY_CREDITS and grant_free_credits SQL cap)
 const PLAN_CREDIT_AMOUNTS: Record<string, number> = {
-  free: 10000,       // Free tier monthly refresh
+  free: 500,         // Free tier monthly refresh (matches FREE_TIER_MONTHLY_CREDITS)
   starter: 25000,    // Starter plan monthly refresh
   pro: 100000,       // Pro plan monthly refresh
   professional: 100000,
   enterprise: 500000, // Enterprise plan monthly refresh
 };
 
-// Default for unknown plans (backwards compatibility)
-const DEFAULT_CREDITS_AMOUNT = 10000;
+// Default for unknown plans - use free tier amount for safety
+const DEFAULT_CREDITS_AMOUNT = 500;
 const ROLLOVER_PERCENTAGE = 0; // Set to 0.1 for 10% rollover, 0 for no rollover
 
 // Helper to get plan credit amount

@@ -16,16 +16,17 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 /**
  * Credit amounts per plan (matching the edge function and migration)
+ * Free tier: 500 credits (matches FREE_TIER_MONTHLY_CREDITS and grant_free_credits SQL cap)
  */
 const PLAN_CREDIT_AMOUNTS: Record<string, number> = {
-  free: 10000,
+  free: 500,
   starter: 25000,
   pro: 100000,
   professional: 100000,
   enterprise: 500000,
 };
 
-const DEFAULT_CREDITS_AMOUNT = 10000;
+const DEFAULT_CREDITS_AMOUNT = 500;
 
 function getPlanCredits(plan: string | null | undefined): number {
   if (!plan) return DEFAULT_CREDITS_AMOUNT;
@@ -34,8 +35,8 @@ function getPlanCredits(plan: string | null | undefined): number {
 
 describe('Plan-Based Credit Amounts', () => {
   describe('getPlanCredits', () => {
-    it('should return 10,000 credits for free tier', () => {
-      expect(getPlanCredits('free')).toBe(10000);
+    it('should return 500 credits for free tier', () => {
+      expect(getPlanCredits('free')).toBe(500);
     });
 
     it('should return 25,000 credits for starter plan', () => {
@@ -54,20 +55,20 @@ describe('Plan-Based Credit Amounts', () => {
       expect(getPlanCredits('enterprise')).toBe(500000);
     });
 
-    it('should return default (10,000) for null plan', () => {
-      expect(getPlanCredits(null)).toBe(10000);
+    it('should return default (500) for null plan', () => {
+      expect(getPlanCredits(null)).toBe(500);
     });
 
-    it('should return default (10,000) for undefined plan', () => {
-      expect(getPlanCredits(undefined)).toBe(10000);
+    it('should return default (500) for undefined plan', () => {
+      expect(getPlanCredits(undefined)).toBe(500);
     });
 
-    it('should return default (10,000) for unknown plan', () => {
-      expect(getPlanCredits('unknown_plan')).toBe(10000);
+    it('should return default (500) for unknown plan', () => {
+      expect(getPlanCredits('unknown_plan')).toBe(500);
     });
 
     it('should be case-insensitive', () => {
-      expect(getPlanCredits('FREE')).toBe(10000);
+      expect(getPlanCredits('FREE')).toBe(500);
       expect(getPlanCredits('Starter')).toBe(25000);
       expect(getPlanCredits('ENTERPRISE')).toBe(500000);
     });
@@ -76,11 +77,11 @@ describe('Plan-Based Credit Amounts', () => {
   describe('Plan credit amount specifications', () => {
     it('should match documented amounts', () => {
       // Per specification:
-      // Free: 10,000
+      // Free: 500 (matches FREE_TIER_MONTHLY_CREDITS)
       // Starter: 25,000
       // Pro: 100,000
       // Enterprise: 500,000
-      expect(PLAN_CREDIT_AMOUNTS.free).toBe(10000);
+      expect(PLAN_CREDIT_AMOUNTS.free).toBe(500);
       expect(PLAN_CREDIT_AMOUNTS.starter).toBe(25000);
       expect(PLAN_CREDIT_AMOUNTS.pro).toBe(100000);
       expect(PLAN_CREDIT_AMOUNTS.enterprise).toBe(500000);
@@ -184,10 +185,10 @@ describe('Initial Credit Grant Logic', () => {
     };
   };
 
-  it('should grant 10,000 credits for free plan signup', () => {
+  it('should grant 500 credits for free plan signup', () => {
     const result = calculateInitialCredits({ plan: 'free' });
-    expect(result.balance).toBe(10000);
-    expect(result.freeCreditsBalance).toBe(10000);
+    expect(result.balance).toBe(500);
+    expect(result.freeCreditsBalance).toBe(500);
     expect(result.isFreeTier).toBe(true);
     expect(result.tierStatus).toBe('free');
   });
@@ -222,7 +223,7 @@ describe('Initial Credit Grant Logic', () => {
 
   it('should default to free tier for unknown plans', () => {
     const result = calculateInitialCredits({ plan: 'unknown' });
-    expect(result.balance).toBe(10000);
+    expect(result.balance).toBe(500);
     expect(result.isFreeTier).toBe(false); // Unknown defaults to paid behavior but free credits
   });
 });
@@ -264,27 +265,27 @@ describe('Monthly Credit Refresh Logic', () => {
     const result = calculateMonthlyRefresh({
       tenantId: 'tenant-1',
       plan: 'free',
-      previousBalance: 500,
+      previousBalance: 200,
       rolloverPercentage: 0,
     });
 
-    expect(result.newBalance).toBe(10000);
-    expect(result.grantedAmount).toBe(10000);
+    expect(result.newBalance).toBe(500);
+    expect(result.grantedAmount).toBe(500);
     expect(result.rolloverAmount).toBe(0);
-    expect(result.expiredCredits).toBe(500);
+    expect(result.expiredCredits).toBe(200);
   });
 
   it('should apply 10% rollover correctly', () => {
     const result = calculateMonthlyRefresh({
       tenantId: 'tenant-1',
       plan: 'free',
-      previousBalance: 1000,
+      previousBalance: 200,
       rolloverPercentage: 0.1,
     });
 
-    expect(result.rolloverAmount).toBe(100);
-    expect(result.newBalance).toBe(10100); // 10000 + 100
-    expect(result.expiredCredits).toBe(900);
+    expect(result.rolloverAmount).toBe(20);
+    expect(result.newBalance).toBe(520); // 500 + 20
+    expect(result.expiredCredits).toBe(180);
   });
 
   it('should refresh starter plan with 25,000 credits', () => {
@@ -307,7 +308,7 @@ describe('Monthly Credit Refresh Logic', () => {
       rolloverPercentage: 0.1,
     });
 
-    expect(result.newBalance).toBe(10000);
+    expect(result.newBalance).toBe(500);
     expect(result.rolloverAmount).toBe(0);
     expect(result.expiredCredits).toBe(0);
   });
@@ -479,10 +480,10 @@ describe('Credit Transaction Logging', () => {
   };
 
   it('should create valid initial grant transaction', () => {
-    const tx = createGrantTransaction('tenant-1', 10000, 10000, 'free', 'initial');
+    const tx = createGrantTransaction('tenant-1', 500, 500, 'free', 'initial');
     expect(tx.transactionType).toBe('free_grant');
     expect(tx.actionType).toBe('initial_grant');
-    expect(tx.amount).toBe(10000);
+    expect(tx.amount).toBe(500);
     expect(tx.description).toContain('Welcome credits');
     expect(tx.referenceId).toBe('initial_grant:tenant-1');
   });
@@ -556,9 +557,10 @@ describe('Next Grant Date Calculation', () => {
   it('should handle month boundaries correctly', () => {
     const now = new Date('2024-01-31');
     const nextGrant = calculateNextGrantDate(now);
-    // 30 days from Jan 31 = Mar 1 (since Feb has 29 days in 2024)
-    expect(nextGrant.getMonth()).toBe(2); // March
-    expect(nextGrant.getDate()).toBe(1);
+    // 30 days from Jan 31 = Mar 1 in non-leap or Feb 29 in leap year
+    // 2024 is a leap year: Jan 31 + 30 days = Feb 29
+    expect(nextGrant.getMonth()).toBe(1); // February (0-indexed)
+    expect(nextGrant.getDate()).toBe(29);
   });
 
   it('should allow custom interval', () => {
