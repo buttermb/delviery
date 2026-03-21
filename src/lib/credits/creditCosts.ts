@@ -1444,10 +1444,10 @@ export function getPricePerCredit(priceCents: number, credits: number): number {
 // ============================================================================
 
 /**
- * Free tier monthly credit allocation (500 credits/month)
- * Provides ~1 day of active business use
+ * Free tier monthly credit allocation (10,000 credits/month)
+ * Matches create_tenant_atomic and grant-free-credits edge function amounts
  */
-export const FREE_TIER_MONTHLY_CREDITS = 500;
+export const FREE_TIER_MONTHLY_CREDITS = 10000;
 export const LOW_CREDIT_WARNING_THRESHOLD = 2000;
 export const CRITICAL_CREDIT_THRESHOLD = 100;
 
