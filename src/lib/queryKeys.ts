@@ -1822,6 +1822,8 @@ export const queryKeys = {
       ['credit-purchases', tenantId] as const,
     recentTransactions: (tenantId?: string) =>
       ['credits', 'recent-transactions', tenantId] as const,
+    usageBreakdown: (tenantId?: string, days?: number) =>
+      ['credit-usage-breakdown', tenantId, days] as const,
   },
 
   // Platform Admin Check

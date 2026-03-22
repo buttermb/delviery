@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { CreditUsageBreakdown } from '@/components/credits/CreditUsageBreakdown';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
@@ -448,8 +449,8 @@ export function CreditsPage() {
           </CardContent>
         </Card>
 
-        {/* Spacer for layout on large screens */}
-        <div className="hidden lg:block lg:col-span-2" />
+        {/* Usage Breakdown - full width */}
+        <CreditUsageBreakdown />
 
         {/* Credit Optimization Tips - show when balance is low */}
         {isFreeTier && balance < 500 && balance > 0 && (
