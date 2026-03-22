@@ -1,5 +1,12 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
+import { CREDIT_ACTIONS } from '../_shared/creditGate.ts';
+
+const CHANNEL_CREDIT_MAP: Record<string, string> = {
+  email: CREDIT_ACTIONS.SEND_EMAIL,
+  sms: CREDIT_ACTIONS.SEND_SMS,
+  push: CREDIT_ACTIONS.SEND_PUSH_NOTIFICATION,
+};
 
 const notificationSchema = z.object({
   user_id: z.string().uuid().optional(),
@@ -8,7 +15,7 @@ const notificationSchema = z.object({
   title: z.string().min(1).max(255),
   message: z.string().min(1).max(1000),
   metadata: z.record(z.unknown()).optional(),
-  channels: z.array(z.enum(['database', 'email', 'push'])).default(['database']),
+  channels: z.array(z.enum(['database', 'email', 'sms', 'push'])).default(['database']),
 });
 
 serve(
@@ -31,9 +38,96 @@ serve(
         );
       }
 
+      // Resolve tenant from JWT
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const tenantId = tenantUser?.tenant_id;
+      if (!tenantId) {
+        return new Response(
+          JSON.stringify({ error: 'No tenant found for user' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check if tenant is on free tier
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('is_free_tier')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      const isFreeTier = tenant?.is_free_tier ?? false;
+
       // Parse and validate request
       const body = await req.json();
       const notificationData = notificationSchema.parse(body);
+
+      // Determine which channels need credit deduction
+      const billableChannels = notificationData.channels.filter(
+        (ch) => ch in CHANNEL_CREDIT_MAP
+      );
+
+      // Deduct credits for each billable channel (free tier only)
+      let totalCreditsConsumed = 0;
+      let creditsRemaining = -1;
+
+      if (isFreeTier && billableChannels.length > 0) {
+        for (const channel of billableChannels) {
+          const actionKey = CHANNEL_CREDIT_MAP[channel];
+
+          const { data, error: rpcError } = await supabase
+            .rpc('consume_credits', {
+              p_tenant_id: tenantId,
+              p_action_key: actionKey,
+              p_reference_type: 'notification',
+              p_description: `Send ${channel} notification: ${notificationData.title}`,
+            });
+
+          if (rpcError) {
+            console.error(`Credit deduction error for ${channel}:`, rpcError);
+            return new Response(
+              JSON.stringify({
+                error: 'Credit deduction failed',
+                channel,
+                message: rpcError.message,
+              }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          const result = data?.[0];
+          if (!result?.success) {
+            return new Response(
+              JSON.stringify({
+                error: 'Insufficient credits',
+                code: 'INSUFFICIENT_CREDITS',
+                message: result?.error_message || 'Not enough credits for this notification',
+                channel,
+                actionKey,
+                creditsRequired: result?.credits_cost ?? 0,
+                currentBalance: result?.new_balance ?? 0,
+              }),
+              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          totalCreditsConsumed += result.credits_cost ?? 0;
+          creditsRemaining = result.new_balance ?? 0;
+        }
+      }
 
       const results: Record<string, unknown> = {};
 
@@ -43,7 +137,7 @@ serve(
           .from('notifications')
           .insert({
             user_id: notificationData.user_id || null,
-            tenant_id: notificationData.tenant_id || null,
+            tenant_id: tenantId,
             type: notificationData.type,
             title: notificationData.title,
             message: notificationData.message,
@@ -63,33 +157,50 @@ serve(
 
       // Send email (if requested and user_id provided)
       if (notificationData.channels.includes('email') && notificationData.user_id) {
-        // Get user email
-        const { data: user } = await supabase.auth.admin.getUserById(notificationData.user_id);
-        
-        if (user?.user?.email) {
+        const { data: targetUser } = await supabase.auth.admin.getUserById(notificationData.user_id);
+
+        if (targetUser?.user?.email) {
           // In production, integrate with email service (SendGrid, Resend, etc.)
-          // For now, just log
-          console.error('Email notification would be sent to:', user.user.email);
+          console.error('Email notification would be sent to:', targetUser.user.email);
           results.email = { success: true, sent: false, note: 'Email service not configured' };
         } else {
           results.email = { error: 'User email not found' };
         }
       }
 
+      // Send SMS (if requested and user_id provided)
+      if (notificationData.channels.includes('sms') && notificationData.user_id) {
+        // In production, integrate with Twilio/SMS service
+        console.error('SMS notification would be sent to user:', notificationData.user_id);
+        results.sms = { success: true, sent: false, note: 'SMS service not configured' };
+      }
+
       // Send push notification (if requested and user_id provided)
       if (notificationData.channels.includes('push') && notificationData.user_id) {
         // In production, integrate with FCM/APNS
-        // For now, just log
         console.error('Push notification would be sent to user:', notificationData.user_id);
         results.push = { success: true, sent: false, note: 'Push service not configured' };
+      }
+
+      const responseHeaders: Record<string, string> = {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      };
+
+      if (totalCreditsConsumed > 0) {
+        responseHeaders['X-Credits-Consumed'] = String(totalCreditsConsumed);
+        responseHeaders['X-Credits-Remaining'] = String(creditsRemaining);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           results,
+          credits: totalCreditsConsumed > 0
+            ? { consumed: totalCreditsConsumed, remaining: creditsRemaining }
+            : undefined,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: responseHeaders }
       );
     } catch (error) {
       console.error('Send notification error:', error);
@@ -102,4 +213,3 @@ serve(
     }
   })
 );
-
