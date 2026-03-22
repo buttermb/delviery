@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,102 +8,83 @@ vi.mock('@/lib/formatters', () => ({
   formatSmartDate: (date: string) => new Date(date).toLocaleDateString(),
 }));
 
-function renderBanner(props: { daysRemaining: number; trialEndsAt: string | null; tenantSlug: string }) {
+function renderBanner(props: Partial<Parameters<typeof TrialBanner>[0]> = {}) {
+  const defaultProps = {
+    daysRemaining: 5,
+    trialEndsAt: '2026-04-01T00:00:00Z',
+    tenantSlug: 'acme',
+  };
   return render(
     <MemoryRouter>
-      <TrialBanner {...props} />
+      <TrialBanner {...defaultProps} {...props} />
     </MemoryRouter>
   );
 }
 
-const futureDate = '2026-04-05T00:00:00Z';
+describe('TrialBanner', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-describe('TrialBanner destructive variant for <=1 day', () => {
+  it('renders the trial banner with days remaining message', () => {
+    renderBanner({ daysRemaining: 5 });
+    expect(screen.getByText(/your trial ends in 5 days/i)).toBeInTheDocument();
+  });
+
+  it('renders "Manage Subscription" button linking to billing page', () => {
+    renderBanner({ tenantSlug: 'acme' });
+    const link = screen.getByRole('link', { name: /manage subscription/i });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/acme/admin/billing');
+  });
+
+  it('uses correct tenant slug in the billing link', () => {
+    renderBanner({ tenantSlug: 'my-dispensary' });
+    const link = screen.getByRole('link', { name: /manage subscription/i });
+    expect(link).toHaveAttribute('href', '/my-dispensary/admin/billing');
+  });
+
+  it('shows "trial ends today" message when daysRemaining is 0', () => {
+    renderBanner({ daysRemaining: 0 });
+    expect(screen.getByText(/your trial ends today/i)).toBeInTheDocument();
+  });
+
+  it('shows "trial ends tomorrow" message when daysRemaining is 1', () => {
+    renderBanner({ daysRemaining: 1 });
+    expect(screen.getByText(/your trial ends tomorrow/i)).toBeInTheDocument();
+  });
+
   it('renders destructive variant when daysRemaining is 0', () => {
-    const { container } = renderBanner({
-      daysRemaining: 0,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
+    const { container } = renderBanner({ daysRemaining: 0 });
     const alert = container.querySelector('[role="alert"]');
     expect(alert).toBeInTheDocument();
     expect(alert?.className).toMatch(/destructive/);
   });
 
   it('renders destructive variant when daysRemaining is 1', () => {
-    const { container } = renderBanner({
-      daysRemaining: 1,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
+    const { container } = renderBanner({ daysRemaining: 1 });
     const alert = container.querySelector('[role="alert"]');
     expect(alert).toBeInTheDocument();
     expect(alert?.className).toMatch(/destructive/);
   });
 
   it('does NOT render destructive variant when daysRemaining is 2', () => {
-    const { container } = renderBanner({
-      daysRemaining: 2,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
+    const { container } = renderBanner({ daysRemaining: 2 });
     const alert = container.querySelector('[role="alert"]');
     expect(alert).toBeInTheDocument();
     expect(alert?.className).not.toMatch(/destructive/);
   });
 
   it('does NOT render destructive variant when daysRemaining is 7', () => {
-    const { container } = renderBanner({
-      daysRemaining: 7,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
+    const { container } = renderBanner({ daysRemaining: 7 });
     const alert = container.querySelector('[role="alert"]');
     expect(alert).toBeInTheDocument();
     expect(alert?.className).not.toMatch(/destructive/);
   });
 
-  it('shows "ends today" message for 0 days remaining', () => {
-    renderBanner({
-      daysRemaining: 0,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
-    expect(screen.getByText(/your trial ends today/i)).toBeInTheDocument();
-  });
-
-  it('shows "ends tomorrow" message for 1 day remaining', () => {
-    renderBanner({
-      daysRemaining: 1,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
-    expect(screen.getByText(/your trial ends tomorrow/i)).toBeInTheDocument();
-  });
-
-  it('shows days count message for >1 days remaining', () => {
-    renderBanner({
-      daysRemaining: 5,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
-    expect(screen.getByText(/your trial ends in 5 days/i)).toBeInTheDocument();
-  });
-
-  it('renders nothing when dismissed', async () => {
+  it('dismisses the banner when close button is clicked', async () => {
     const user = userEvent.setup();
-    const { container } = renderBanner({
-      daysRemaining: 0,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
+    const { container } = renderBanner({ daysRemaining: 0 });
 
     const dismissBtn = container.querySelector('button:last-of-type');
     expect(dismissBtn).toBeInTheDocument();
@@ -112,34 +93,13 @@ describe('TrialBanner destructive variant for <=1 day', () => {
     expect(container.querySelector('[role="alert"]')).not.toBeInTheDocument();
   });
 
-  it('renders nothing when daysRemaining is negative (expired)', () => {
-    const { container } = renderBanner({
-      daysRemaining: -1,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
+  it('returns null when daysRemaining is negative (expired)', () => {
+    const { container } = renderBanner({ daysRemaining: -1 });
     expect(container.querySelector('[role="alert"]')).not.toBeInTheDocument();
   });
 
-  it('renders nothing when trialEndsAt is null', () => {
-    const { container } = renderBanner({
-      daysRemaining: 5,
-      trialEndsAt: null,
-      tenantSlug: 'acme',
-    });
-
+  it('returns null when trialEndsAt is null', () => {
+    const { container } = renderBanner({ trialEndsAt: null });
     expect(container.querySelector('[role="alert"]')).not.toBeInTheDocument();
-  });
-
-  it('includes a link to the billing page with tenant slug', () => {
-    renderBanner({
-      daysRemaining: 1,
-      trialEndsAt: futureDate,
-      tenantSlug: 'acme',
-    });
-
-    const link = screen.getByRole('link', { name: /manage subscription/i });
-    expect(link).toHaveAttribute('href', '/acme/admin/billing');
   });
 });
