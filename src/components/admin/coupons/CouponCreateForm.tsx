@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { sanitizeCouponCode, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
@@ -52,6 +53,7 @@ const generateCouponCode = () => {
 export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: CouponCreateFormProps) {
   const { tenant: _tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const [formData, setFormData] = useState({
     code: "",
     discount_type: "percentage" as "percentage" | "fixed" | "free_shipping" | "bogo",
@@ -179,7 +181,9 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     if (isEditing) {
       await updateMutation.mutateAsync(couponData);
     } else {
-      await createMutation.mutateAsync(couponData as Database['public']['Tables']['coupon_codes']['Insert']);
+      await executeCreditAction('coupon_create', async () => {
+        await createMutation.mutateAsync(couponData as Database['public']['Tables']['coupon_codes']['Insert']);
+      });
     }
   };
 
