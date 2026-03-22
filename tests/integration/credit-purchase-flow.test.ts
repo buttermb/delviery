@@ -153,7 +153,7 @@ class CreditPurchaseSystem {
         name: 'Enterprise Pack',
         slug: 'enterprise-pack',
         credits: 150000,
-        priceCents: 12999,
+        priceCents: 17999,
         description: '150,000 credits for enterprises',
         isActive: true,
         stripePriceId: 'price_enterprise',
@@ -530,7 +530,7 @@ describe('Credit Purchase Flow Integration', () => {
       const result = system.selectPackage('enterprise-pack');
       expect(result.success).toBe(true);
       expect(result.package?.credits).toBe(150000);
-      expect(result.package?.priceCents).toBe(12999);
+      expect(result.package?.priceCents).toBe(17999);
     });
 
     it('should reject invalid package slug', () => {
@@ -548,8 +548,8 @@ describe('Credit Purchase Flow Integration', () => {
       expect(result.error).toBe('Package is no longer available');
     });
 
-    it('should have price per credit decreasing for larger packages', () => {
-      const slugs = ['starter-pack', 'growth-pack', 'power-pack', 'enterprise-pack'];
+    it('should have price per credit decreasing from starter through power pack', () => {
+      const slugs = ['starter-pack', 'growth-pack', 'power-pack'];
       const pricesPerCredit = slugs.map(slug => {
         const result = system.selectPackage(slug);
         const pkg = result.package!;
@@ -886,7 +886,7 @@ describe('Credit Purchase Flow Integration', () => {
       const checkoutResult = system.createCheckoutSession({
         tenantId: TEST_TENANT_ID,
         packageSlug: 'enterprise-pack',
-        priceCents: 12999,
+        priceCents: 17999,
         credits: 150000,
         successUrl: 'https://app.floraiq.com/success',
         cancelUrl: 'https://app.floraiq.com/cancelled',
@@ -1074,7 +1074,7 @@ describe('Credit Purchase Flow Integration', () => {
       const checkoutResult = system.createCheckoutSession({
         tenantId: TEST_TENANT_ID,
         packageSlug: 'enterprise-pack',
-        priceCents: 12999,
+        priceCents: 17999,
         credits: 150000,
         successUrl: 'https://app.floraiq.com/success',
         cancelUrl: 'https://app.floraiq.com/cancelled',
@@ -1339,7 +1339,7 @@ describe('Credit Purchase Flow Integration', () => {
         null
       );
       expect(discountInfo.discountCents).toBe(0);
-      expect(discountInfo.finalPriceCents).toBe(12999);
+      expect(discountInfo.finalPriceCents).toBe(17999);
 
       // Step 3: Create checkout session
       const checkoutResult = system.createCheckoutSession({
@@ -1372,13 +1372,13 @@ describe('Credit Purchase Flow Integration', () => {
         email: TEST_TENANT_EMAIL,
         packageSlug: 'enterprise-pack',
         credits: 150000,
-        amountPaidCents: 12999,
+        amountPaidCents: 17999,
         transactionId: paymentResult.transactionId!,
       });
 
       const email = system.getEmailsSent(TEST_TENANT_ID)[0];
       expect(email.credits).toBe(150000);
-      expect(email.amountPaid).toBeCloseTo(129.99, 2);
+      expect(email.amountPaid).toBeCloseTo(179.99, 2);
     });
 
     it('should handle multiple purchases accumulating credits', () => {

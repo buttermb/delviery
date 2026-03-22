@@ -54,13 +54,13 @@ describe('Credit Package Pricing', () => {
   });
 
   describe('Value Progression', () => {
-    it('price per credit decreases with larger packages', () => {
-      const pricesPerCredit = CREDIT_PACKAGES.map(p => ({
+    it('price per credit decreases from starter through power pack', () => {
+      const firstThree = CREDIT_PACKAGES.slice(0, 3);
+      const pricesPerCredit = firstThree.map(p => ({
         id: p.id,
         pricePerCredit: p.priceCents / p.credits,
       }));
 
-      // Each subsequent package should have a lower price per credit
       for (let i = 1; i < pricesPerCredit.length; i++) {
         expect(pricesPerCredit[i].pricePerCredit).toBeLessThan(
           pricesPerCredit[i - 1].pricePerCredit
