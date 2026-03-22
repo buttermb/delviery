@@ -1,13 +1,13 @@
 /**
  * Update Subscription — Tenant Ownership Verification Tests
  *
- * Verifies the update-subscription edge function enforces tenant ownership:
- * 1. Requires valid Authorization header
- * 2. Rejects unauthenticated users
- * 3. Rejects users with no tenant association
- * 4. Rejects cross-tenant requests (resolved tenant_id !== client tenant_id)
- * 5. Accepts valid requests where tenant ownership is confirmed
- * 6. Validates required parameters
+ * Verifies that the update-subscription edge function:
+ * 1. Requires authentication (Authorization header with valid JWT)
+ * 2. Resolves tenant_id from tenant_users, never trusting client-supplied value
+ * 3. Rejects requests when client tenant_id doesn't match resolved tenant_id
+ * 4. Rejects requests from users with no tenant association
+ * 5. Requires owner or admin role for subscription management
+ * 6. Rejects missing required parameters (tenant_id, plan_id)
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -26,7 +26,7 @@ const createMockResponse = (data: unknown, status = 200) => ({
   headers: new Headers({ 'Content-Type': 'application/json' }),
 });
 
-describe('update-subscription tenant ownership', () => {
+describe('update-subscription tenant ownership verification', () => {
   beforeEach(() => {
     mockFetch.mockClear();
   });
@@ -36,7 +36,7 @@ describe('update-subscription tenant ownership', () => {
   });
 
   describe('authentication', () => {
-    it('should reject requests without authorization header', async () => {
+    it('should reject requests without Authorization header', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing authorization header' }, 401)
       );
@@ -72,74 +72,8 @@ describe('update-subscription tenant ownership', () => {
     });
   });
 
-  describe('tenant ownership verification', () => {
-    it('should reject user with no tenant association (403)', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'No tenant associated with user' }, 403)
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token-no-tenant',
-        },
-        body: JSON.stringify({ tenant_id: 'tenant-123', plan_id: 'plan-456' }),
-      });
-
-      expect(response.status).toBe(403);
-      const data = await response.json();
-      expect(data.error).toBe('No tenant associated with user');
-    });
-
-    it('should reject cross-tenant requests (resolved tenant_id !== client tenant_id)', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'Not authorized for this tenant' }, 403)
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token-tenant-a',
-        },
-        body: JSON.stringify({
-          tenant_id: 'tenant-b-different',
-          plan_id: 'plan-456',
-        }),
-      });
-
-      expect(response.status).toBe(403);
-      const data = await response.json();
-      expect(data.error).toBe('Not authorized for this tenant');
-    });
-
-    it('should accept request when resolved tenant matches client tenant', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ url: 'https://checkout.stripe.com/session/test' })
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token-owner',
-        },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-          plan_id: 'plan-456',
-        }),
-      });
-
-      expect(response.ok).toBe(true);
-      const data = await response.json();
-      expect(data.url).toBeDefined();
-      expect(data.url).toContain('stripe.com');
-    });
-  });
-
-  describe('parameter validation', () => {
-    it('should reject request missing tenant_id', async () => {
+  describe('input validation', () => {
+    it('should reject requests missing tenant_id', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
       );
@@ -158,7 +92,7 @@ describe('update-subscription tenant ownership', () => {
       expect(data.error).toBe('Missing tenant_id or plan_id');
     });
 
-    it('should reject request missing plan_id', async () => {
+    it('should reject requests missing plan_id', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
       );
@@ -194,6 +128,144 @@ describe('update-subscription tenant ownership', () => {
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error).toBe('Missing tenant_id or plan_id');
+    });
+  });
+
+  describe('tenant ownership', () => {
+    it('should reject users with no tenant association', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'No tenant associated with user' }, 403)
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token-no-tenant',
+        },
+        body: JSON.stringify({ tenant_id: 'tenant-123', plan_id: 'plan-456' }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toBe('No tenant associated with user');
+    });
+
+    it('should reject when client tenant_id does not match resolved tenant_id', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Not authorized for this tenant' }, 403)
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token-tenant-a',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-b-different',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toBe('Not authorized for this tenant');
+    });
+
+    it('should accept when client tenant_id matches resolved tenant_id', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ url: 'https://checkout.stripe.com/session/test' })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token-owner',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-123',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.ok).toBe(true);
+      const data = await response.json();
+      expect(data.url).toBeDefined();
+      expect(data.url).toContain('stripe.com');
+    });
+  });
+
+  describe('role-based authorization', () => {
+    it('should reject users with insufficient role (e.g. staff)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Insufficient permissions. Only owners and admins can manage subscriptions.' },
+          403
+        )
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer staff-user-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-123',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toContain('Insufficient permissions');
+      expect(data.error).toContain('owners and admins');
+    });
+
+    it('should allow owner role to update subscription', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ url: 'https://checkout.stripe.com/owner-session' })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer owner-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-123',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.ok).toBe(true);
+      const data = await response.json();
+      expect(data.url).toBeDefined();
+    });
+
+    it('should allow admin role to update subscription', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ url: 'https://checkout.stripe.com/admin-session' })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer admin-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-123',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.ok).toBe(true);
+      const data = await response.json();
+      expect(data.url).toBeDefined();
     });
   });
 
@@ -286,7 +358,7 @@ describe('update-subscription tenant ownership', () => {
       expect(data.error).toBe('Internal server error');
     });
 
-    it('should return error when Stripe is not configured', async () => {
+    it('should return 500 when Stripe is not configured', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse(
           { error: 'Stripe not configured. Please set STRIPE_SECRET_KEY.' },
