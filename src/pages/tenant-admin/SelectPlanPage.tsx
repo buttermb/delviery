@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
 import { PLAN_CONFIG } from "@/config/planPricing";
 import { getButtonText } from "@/pages/tenant-admin/getButtonText";
+import { isPlanUpgrade, isPlanCurrent } from "@/pages/tenant-admin/selectPlanHelpers";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -143,20 +144,8 @@ export default function SelectPlanPage() {
     return billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
   };
 
-  // Check if plan is current (free tier is displayed separately, not as a paid plan)
-  const isCurrentPlan = (plan: Plan): boolean => {
-    if (isFreeTier) return false;
-    return plan.name.toLowerCase() === currentTier;
-  };
-
-  // Check if plan is an upgrade
-  const isUpgrade = (plan: Plan): boolean => {
-    if (isFreeTier) return true; // All paid plans are upgrades from free
-    const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-    const currentOrder = tierOrder[currentTier] ?? 0;
-    const planOrder = tierOrder[plan.name.toLowerCase()] ?? 0;
-    return planOrder > currentOrder;
-  };
+  const isCurrentPlan = (plan: Plan): boolean => isPlanCurrent(plan, currentTier, isFreeTier);
+  const isUpgrade = (plan: Plan): boolean => isPlanUpgrade(plan, currentTier, isFreeTier);
 
   // Get button text — delegates to extracted pure function
   const getPlanButtonText = (plan: Plan): string => {
