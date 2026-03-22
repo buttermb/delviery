@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { processPayment, refundPayment } from "../_shared/payment.ts";
 import { validateMenuOrderPlace, type MenuOrderPlaceInput } from './validation.ts';
+import { checkCreditsAvailable } from "../_shared/creditGate.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -140,6 +141,69 @@ serve(async (req) => {
 
     console.error(`[ORDER_CREATE] Server-calculated total: ${totalAmount}`, { traceId });
 
+    // 2a. GET MENU TENANT INFO (needed for credit check before payment)
+    const { data: menuData } = await supabaseClient
+      .from('disposable_menus')
+      .select('tenant_id')
+      .eq('id', menu_id)
+      .maybeSingle();
+
+    // 2b. DEDUCT CREDITS from menu owner's tenant (action_key: menu_order_received, 75 credits)
+    if (menuData?.tenant_id) {
+      const creditCheck = await checkCreditsAvailable(
+        supabaseClient,
+        menuData.tenant_id,
+        'menu_order_received'
+      );
+
+      if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        console.error(`[ORDER_CREATE] Insufficient credits for tenant`, {
+          traceId,
+          tenantId: menuData.tenant_id,
+          creditsRequired: creditCheck.cost,
+          currentBalance: creditCheck.balance,
+        });
+        await supabaseClient.rpc('cancel_reservation', {
+          p_reservation_id: reservation_id,
+          p_reason: 'insufficient_credits'
+        });
+        return new Response(
+          JSON.stringify({
+            error: 'This menu is temporarily unavailable',
+            code: 'INSUFFICIENT_CREDITS',
+            trace_id: traceId,
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Consume credits for free tier tenants
+      if (creditCheck.isFreeTier) {
+        const { error: creditError } = await supabaseClient.rpc('consume_credits', {
+          p_tenant_id: menuData.tenant_id,
+          p_action_key: 'menu_order_received',
+          p_reference_id: reservation_id,
+          p_reference_type: 'menu_order',
+          p_description: `Menu order received via menu ${menu_id}`,
+        });
+
+        if (creditError) {
+          console.error(`[ORDER_CREATE] Credit deduction failed`, {
+            traceId,
+            tenantId: menuData.tenant_id,
+            error: creditError.message,
+          });
+          // Fail open: log but don't block the customer order
+        } else {
+          console.error(`[ORDER_CREATE] Credits deducted (menu_order_received)`, {
+            traceId,
+            tenantId: menuData.tenant_id,
+          });
+        }
+      }
+    }
+
+    // 2c. PROCESS PAYMENT
     const paymentResult = await processPayment(totalAmount, payment_method, {
       reservation_id,
       trace_id: traceId
@@ -167,14 +231,7 @@ serve(async (req) => {
       transactionId: paymentResult.transaction_id
     });
 
-    // 3. GET MENU TENANT INFO
-    const { data: menuData } = await supabaseClient
-      .from('disposable_menus')
-      .select('tenant_id')
-      .eq('id', menu_id)
-      .maybeSingle();
-
-    // 4. CONFIRM ORDER (Atomic RPC)
+    // 3. CONFIRM ORDER (Atomic RPC)
     const { data: order, error: confirmError } = await supabaseClient
       .rpc('confirm_menu_order', {
         p_reservation_id: reservation_id,
