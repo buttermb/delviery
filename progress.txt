@@ -626,3 +626,16 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - Verifies all 4xx/5xx responses contain an `error` field
   - Validates shared helper exports, format, CORS headers, and Content-Type header
 - All 405 tests pass, TypeScript compilation clean
+
+## Test refundCredits adds credits back after failed action
+- Created src/lib/credits/__tests__/creditRecovery.test.ts with 34 tests
+- Tests cover all 6 exported functions from creditRecovery.ts:
+  - refundCredits: 7 tests (RPC params, success/error/exception, default notes, null amount, all reason types)
+  - recoverFailedAction: 6 tests (RPC params, success, null txn_id, error, exception, null recovered)
+  - directRefund: 6 tests (RPC params, success, null amount fallback, default notes, error, exception)
+  - batchRefund: 4 tests (sum total, partial failures, all fail, empty batch)
+  - isTransactionRefunded: 4 tests (exists, not exists, query error, exception)
+  - getRefundHistory: 3 tests (tenant+type filter, error, exception)
+- End-to-end refund scenario: 4 tests verifying credits are added back after failed SMS/menu actions
+- Mocks: supabase RPC, from/select/eq/order/limit chain, logger
+- All 34 tests pass, TypeScript compilation clean
