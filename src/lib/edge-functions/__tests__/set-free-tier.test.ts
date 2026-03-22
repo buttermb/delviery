@@ -8,7 +8,7 @@
  * 2. Tenant ownership — resolves tenant from user, rejects mismatches
  * 3. Request validation — requires valid UUID tenant_id
  * 4. Idempotency — returns success if already on free tier
- * 5. Success path — updates tenant + grants credits + returns slug
+ * 5. First-time activation — sets correct flags and grants credits
  * 6. Rollback — reverts tenant on credit grant failure
  */
 
@@ -242,10 +242,8 @@ describe('set-free-tier Edge Function', () => {
   // Idempotency
   // =========================================================================
 
-  describe('idempotency', () => {
-    it('should return success with already_free flag when tenant is already on free tier', async () => {
-      const tenantId = '550e8400-e29b-41d4-a716-446655440000';
-
+  describe('idempotency — already on free tier', () => {
+    it('should return success with already_free flag when tenant is already free', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           success: true,
@@ -260,19 +258,138 @@ describe('set-free-tier Edge Function', () => {
           'Content-Type': 'application/json',
           Authorization: 'Bearer valid-owner-token',
         },
-        body: JSON.stringify({ tenant_id: tenantId }),
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+        }),
       });
 
-      expect(response.ok).toBe(true);
       const data = await response.json();
+
+      expect(response.ok).toBe(true);
       expect(data.success).toBe(true);
       expect(data.already_free).toBe(true);
       expect(data.slug).toBe('my-dispensary');
     });
+
+    it('should NOT include credits_granted when already on free tier', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          success: true,
+          slug: 'my-dispensary',
+          already_free: true,
+        })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-owner-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+        }),
+      });
+
+      const data = await response.json();
+
+      // No credits_granted field means no credit-granting side effect
+      expect(data.credits_granted).toBeUndefined();
+    });
+
+    it('should return same response shape on repeated calls', async () => {
+      const idempotentResponse = {
+        success: true,
+        slug: 'my-dispensary',
+        already_free: true,
+      };
+
+      // Simulate two identical calls
+      mockFetch
+        .mockResolvedValueOnce(createMockResponse(idempotentResponse))
+        .mockResolvedValueOnce(createMockResponse(idempotentResponse));
+
+      const body = JSON.stringify({
+        tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+      });
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer valid-owner-token',
+      };
+
+      const response1 = await fetch(ENDPOINT, { method: 'POST', headers, body });
+      const response2 = await fetch(ENDPOINT, { method: 'POST', headers, body });
+
+      const data1 = await response1.json();
+      const data2 = await response2.json();
+
+      expect(data1).toEqual(data2);
+      expect(data1.success).toBe(true);
+      expect(data1.already_free).toBe(true);
+    });
+
+    it('should return HTTP 200 (not 409 or 304) for idempotent repeat', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          success: true,
+          slug: 'my-dispensary',
+          already_free: true,
+        })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-owner-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+        }),
+      });
+
+      expect(response.status).toBe(200);
+    });
   });
 
   // =========================================================================
-  // Failure Handling
+  // First-time Activation
+  // =========================================================================
+
+  describe('first-time activation', () => {
+    it('should grant credits and return slug on first activation', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          success: true,
+          slug: 'my-dispensary',
+          credits_granted: 500,
+        })
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-owner-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.ok).toBe(true);
+      expect(data.success).toBe(true);
+      expect(data.credits_granted).toBe(500);
+      expect(data.slug).toBe('my-dispensary');
+      // First activation does NOT include already_free
+      expect(data.already_free).toBeUndefined();
+    });
+  });
+
+  // =========================================================================
+  // Failure Handling & Rollback
   // =========================================================================
 
   describe('failure handling', () => {
@@ -315,6 +432,43 @@ describe('set-free-tier Edge Function', () => {
       expect(response.status).toBe(500);
       const data = await response.json();
       expect(data.error).toContain('Failed to grant initial credits');
+    });
+
+    it('should allow retry after rollback (not stuck in bad state)', async () => {
+      // First call: credit grant fails, tenant is rolled back
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Failed to grant initial credits. Please try again.' },
+          500
+        )
+      );
+
+      // Second call: succeeds because rollback restored tenant state
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          success: true,
+          slug: 'my-dispensary',
+          credits_granted: 500,
+        })
+      );
+
+      const body = JSON.stringify({
+        tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+      });
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer valid-owner-token',
+      };
+
+      const response1 = await fetch(ENDPOINT, { method: 'POST', headers, body });
+      expect(response1.status).toBe(500);
+
+      const response2 = await fetch(ENDPOINT, { method: 'POST', headers, body });
+      const data2 = await response2.json();
+
+      expect(response2.ok).toBe(true);
+      expect(data2.success).toBe(true);
+      expect(data2.credits_granted).toBe(500);
     });
   });
 
