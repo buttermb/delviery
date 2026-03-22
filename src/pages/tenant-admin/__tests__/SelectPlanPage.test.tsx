@@ -6,10 +6,12 @@
  * 3. Trial users without payment are NOT redirected (can select plan)
  * 4. Users with no subscription are NOT redirected
  * 5. Enterprise users with active subscription see enterprise guard
+ * Also verifies that redirect and free-tier navigation use tenant slug.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -52,7 +54,7 @@ const mockTenantAuth = {
     is_free_tier?: boolean;
     trial_ends_at?: string | null;
   } | null,
-  refreshTenant: vi.fn(),
+  refreshTenant: vi.fn().mockResolvedValue(undefined),
   admin: null as { email: string; userId: string; role: string } | null,
   tenantSlug: 'test-tenant',
   token: 'valid-token',
@@ -236,7 +238,7 @@ describe('Tenant Admin SelectPlanPage', () => {
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith(
           '/test-tenant/admin/dashboard',
-          { replace: true }
+          { replace: true },
         );
       });
     });
@@ -271,7 +273,109 @@ describe('Tenant Admin SelectPlanPage', () => {
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith(
           '/test-tenant/admin/dashboard',
-          { replace: true }
+          { replace: true },
+        );
+      });
+    });
+
+    it('should redirect using freshTenant.slug when it differs from tenant.slug', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'old-slug',
+        subscription_plan: 'starter',
+        subscription_status: 'active',
+        payment_method_added: true,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isActive = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      // Fresh data from DB has updated slug
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: true,
+          subscription_status: 'active',
+          is_free_tier: false,
+          slug: 'fresh-slug',
+        },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/fresh-slug/admin/dashboard',
+          { replace: true },
+        );
+      });
+    });
+
+    it('should redirect using freshTenant.slug for free tier active', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-456',
+        slug: 'old-slug',
+        subscription_plan: 'free',
+        subscription_status: 'active',
+        payment_method_added: false,
+        is_free_tier: true,
+      };
+      mockSubscriptionStatus.isFreeTier = true;
+      mockSubscriptionStatus.isActive = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: false,
+          subscription_status: 'active',
+          is_free_tier: true,
+          slug: 'free-tenant-slug',
+        },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/free-tenant-slug/admin/dashboard',
+          { replace: true },
+        );
+      });
+    });
+
+    it('should fall back to tenant.slug when freshTenant has no slug', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'fallback-slug',
+        subscription_plan: 'starter',
+        subscription_status: 'active',
+        payment_method_added: true,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isActive = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      // Fresh data from DB has null slug
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: true,
+          subscription_status: 'active',
+          is_free_tier: false,
+          slug: null,
+        },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/fallback-slug/admin/dashboard',
+          { replace: true },
         );
       });
     });
@@ -346,74 +450,6 @@ describe('Tenant Admin SelectPlanPage', () => {
 
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(screen.getByText('Choose Your Plan')).toBeInTheDocument();
-    });
-
-    it('should use freshTenant slug for redirect when available', async () => {
-      mockTenantAuth.tenant = {
-        id: 'tenant-123',
-        slug: 'old-slug',
-        subscription_plan: 'starter',
-        subscription_status: 'active',
-        payment_method_added: true,
-        is_free_tier: false,
-      };
-      mockSubscriptionStatus.isActive = true;
-      mockSubscriptionStatus.hasActiveSubscription = true;
-      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
-
-      // Fresh data from DB has updated slug
-      mockMaybeSingle.mockResolvedValue({
-        data: {
-          payment_method_added: true,
-          subscription_status: 'active',
-          is_free_tier: false,
-          slug: 'new-slug',
-        },
-        error: null,
-      });
-
-      renderSelectPlanPage();
-
-      await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith(
-          '/new-slug/admin/dashboard',
-          { replace: true }
-        );
-      });
-    });
-
-    it('should fall back to tenant.slug when freshTenant has no slug', async () => {
-      mockTenantAuth.tenant = {
-        id: 'tenant-123',
-        slug: 'fallback-slug',
-        subscription_plan: 'starter',
-        subscription_status: 'active',
-        payment_method_added: true,
-        is_free_tier: false,
-      };
-      mockSubscriptionStatus.isActive = true;
-      mockSubscriptionStatus.hasActiveSubscription = true;
-      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
-
-      // Fresh data from DB has empty slug
-      mockMaybeSingle.mockResolvedValue({
-        data: {
-          payment_method_added: true,
-          subscription_status: 'active',
-          is_free_tier: false,
-          slug: '',
-        },
-        error: null,
-      });
-
-      renderSelectPlanPage();
-
-      await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith(
-          '/fallback-slug/admin/dashboard',
-          { replace: true }
-        );
-      });
     });
 
     it('should query tenants table with tenant id for fresh status check', async () => {
@@ -529,6 +565,135 @@ describe('Tenant Admin SelectPlanPage', () => {
     });
   });
 
+  describe('handleSelectFreeTier uses slug', () => {
+    it('navigates using edge function slug after selecting free tier', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'test-tenant',
+        subscription_plan: 'starter',
+        subscription_status: 'trial',
+        payment_method_added: false,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isTrial = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: false,
+          subscription_status: 'trial',
+          is_free_tier: false,
+          slug: 'test-tenant',
+        },
+        error: null,
+      });
+
+      mockFunctionsInvoke.mockResolvedValue({
+        data: { success: true, slug: 'edge-fn-slug', credits_granted: 500 },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      // Find and click the "Switch to Free" button
+      const freeButton = await screen.findByRole('button', { name: /switch to free/i });
+      await userEvent.click(freeButton);
+
+      await waitFor(() => {
+        expect(mockFunctionsInvoke).toHaveBeenCalledWith('set-free-tier', {
+          body: { tenant_id: 'tenant-123' },
+        });
+      });
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/edge-fn-slug/admin/dashboard',
+          { replace: true },
+        );
+      });
+    });
+
+    it('falls back to tenant.slug when edge function returns no slug', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'test-tenant',
+        subscription_plan: 'starter',
+        subscription_status: 'trial',
+        payment_method_added: false,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isTrial = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: false,
+          subscription_status: 'trial',
+          is_free_tier: false,
+          slug: 'test-tenant',
+        },
+        error: null,
+      });
+
+      mockFunctionsInvoke.mockResolvedValue({
+        data: { success: true },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      const freeButton = await screen.findByRole('button', { name: /switch to free/i });
+      await userEvent.click(freeButton);
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/test-tenant/admin/dashboard',
+          { replace: true },
+        );
+      });
+    });
+
+    it('refreshes tenant context before navigating', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'test-tenant',
+        subscription_plan: 'starter',
+        subscription_status: 'trial',
+        payment_method_added: false,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isTrial = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: false,
+          subscription_status: 'trial',
+          is_free_tier: false,
+          slug: 'test-tenant',
+        },
+        error: null,
+      });
+
+      mockFunctionsInvoke.mockResolvedValue({
+        data: { success: true, slug: 'test-tenant' },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      const freeButton = await screen.findByRole('button', { name: /switch to free/i });
+      await userEvent.click(freeButton);
+
+      await waitFor(() => {
+        expect(mockTenantAuth.refreshTenant).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('Plan display and interaction', () => {
     it('should display all plan cards including free tier', async () => {
       mockTenantAuth.tenant = {
@@ -620,6 +785,37 @@ describe('Tenant Admin SelectPlanPage', () => {
 
       expect(screen.getByText('Monthly')).toBeInTheDocument();
       expect(screen.getByText('Yearly')).toBeInTheDocument();
+    });
+
+    it('back to dashboard button uses tenant slug', async () => {
+      mockTenantAuth.tenant = {
+        id: 'tenant-123',
+        slug: 'test-tenant',
+        subscription_plan: 'starter',
+        subscription_status: 'trial',
+        payment_method_added: false,
+        is_free_tier: false,
+      };
+      mockSubscriptionStatus.isTrial = true;
+      mockSubscriptionStatus.hasActiveSubscription = true;
+      mockSubscriptionStatus.tenant = mockTenantAuth.tenant;
+
+      mockMaybeSingle.mockResolvedValue({
+        data: {
+          payment_method_added: false,
+          subscription_status: 'trial',
+          is_free_tier: false,
+          slug: 'test-tenant',
+        },
+        error: null,
+      });
+
+      renderSelectPlanPage();
+
+      const dashboardButton = await screen.findByRole('button', { name: /dashboard/i });
+      await userEvent.click(dashboardButton);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/dashboard');
     });
   });
 });
