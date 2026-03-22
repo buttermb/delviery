@@ -172,6 +172,7 @@ const queryClient = appQueryClient;
 
 const App = () => {
   const [VercelAnalytics, setVercelAnalytics] = useState<ComponentType | null>(null);
+  const [VercelSpeedInsights, setVercelSpeedInsights] = useState<ComponentType | null>(null);
   const [DeferredUpdateBanner, setDeferredUpdateBanner] = useState<ComponentType | null>(null);
   const [DeferredInstallPWA, setDeferredInstallPWA] = useState<ComponentType | null>(null);
   const [DeferredDeviceTracker, setDeferredDeviceTracker] = useState<ComponentType | null>(null);
@@ -224,12 +225,16 @@ const App = () => {
     return () => cleanup?.();
   }, []);
 
-  // Load analytics after initial UI is interactive
+  // Load analytics and speed insights after initial UI is interactive
   useEffect(() => {
     if (!import.meta.env.PROD) return;
     scheduleIdle(async () => {
-      const mod = await import('@vercel/analytics/react');
-      setVercelAnalytics(() => mod.Analytics);
+      const [analyticsMod, speedMod] = await Promise.all([
+        import('@vercel/analytics/react'),
+        import('@vercel/speed-insights/react'),
+      ]);
+      setVercelAnalytics(() => analyticsMod.Analytics);
+      setVercelSpeedInsights(() => speedMod.SpeedInsights);
     }, 4000);
   }, []);
 
@@ -297,6 +302,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       {VercelAnalytics ? <VercelAnalytics /> : null}
+      {VercelSpeedInsights ? <VercelSpeedInsights /> : null}
       <QueryClientProvider client={queryClient}>
         <FeatureFlagsProvider>
           <ThemeProvider>
