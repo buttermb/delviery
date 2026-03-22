@@ -110,9 +110,9 @@ export function OptimizedSidebar({
         if (!showLockedFeatures) return {};
 
         const tierHierarchy: Record<SubscriptionTier, number> = {
-            STARTER: 1,
-            PROFESSIONAL: 2,
-            ENTERPRISE: 3,
+            starter: 1,
+            professional: 2,
+            enterprise: 3,
         };
         const userTierLevel = tierHierarchy[userTier];
 
@@ -219,21 +219,12 @@ export function OptimizedSidebar({
         onNavigate?.();
     }, [navigate, getFullPath, onNavigate]);
 
-    // Map optimized tier to feature tier for modal
-    const mapTierToFeatureTier = (tier: SubscriptionTier): 'starter' | 'professional' | 'enterprise' => {
-        switch (tier) {
-            case 'ENTERPRISE': return 'enterprise';
-            case 'PROFESSIONAL': return 'professional';
-            default: return 'starter';
-        }
-    };
-
     // Get tier display info
     const getTierBadgeInfo = (tier: SubscriptionTier) => {
         switch (tier) {
-            case 'ENTERPRISE':
+            case 'enterprise':
                 return { label: 'Pro+', color: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/50' };
-            case 'PROFESSIONAL':
+            case 'professional':
                 return { label: 'Pro', color: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/50' };
             default:
                 return { label: 'Start', color: 'text-green-600 dark:text-green-400', border: 'border-green-500/50' };
@@ -331,7 +322,7 @@ export function OptimizedSidebar({
                         <div className="space-y-1">
                             <p className="font-medium text-sm">{item.name}</p>
                             <p className="text-xs text-muted-foreground">
-                                Requires {FEATURE_TIER_NAMES[mapTierToFeatureTier(item.tier)]} plan
+                                Requires {FEATURE_TIER_NAMES[item.tier]} plan
                             </p>
                             <p className="text-xs text-primary font-medium">
                                 Click to upgrade →

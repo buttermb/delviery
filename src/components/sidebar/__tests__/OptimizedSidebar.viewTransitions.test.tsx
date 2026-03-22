@@ -68,7 +68,7 @@ describe('OptimizedSidebar - View Transitions', () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/test-tenant/admin/dashboard']}>
           <LiveBadgeProvider>
-            <OptimizedSidebar userTier="PROFESSIONAL" {...props} />
+            <OptimizedSidebar userTier="professional" {...props} />
           </LiveBadgeProvider>
         </MemoryRouter>
       </QueryClientProvider>
@@ -308,7 +308,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     it('should render for STARTER tier', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
 
-      const { container } = renderSidebar({ userTier: 'STARTER' });
+      const { container } = renderSidebar({ userTier: 'starter' });
 
       expect(container.querySelector('nav')).toBeInTheDocument();
     });
@@ -316,7 +316,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     it('should render for PROFESSIONAL tier', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
 
-      const { container } = renderSidebar({ userTier: 'PROFESSIONAL' });
+      const { container } = renderSidebar({ userTier: 'professional' });
 
       expect(container.querySelector('nav')).toBeInTheDocument();
     });
@@ -324,7 +324,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     it('should render for ENTERPRISE tier', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
 
-      const { container } = renderSidebar({ userTier: 'ENTERPRISE' });
+      const { container } = renderSidebar({ userTier: 'enterprise' });
 
       expect(container.querySelector('nav')).toBeInTheDocument();
     });
@@ -333,7 +333,7 @@ describe('OptimizedSidebar - View Transitions', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
 
       const { container } = renderSidebar({
-        userTier: 'STARTER',
+        userTier: 'starter',
         showLockedFeatures: true,
       });
 
@@ -346,7 +346,7 @@ describe('OptimizedSidebar - View Transitions', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
 
       const { container } = renderSidebar({
-        userTier: 'STARTER',
+        userTier: 'starter',
         showLockedFeatures: false,
       });
 
