@@ -8,6 +8,7 @@
  * - Handles edge function errors (fallback redirect)
  * - Skips processing when URL params are missing
  * - Supports legacy ?welcome=true parameter
+ * - Cleans URL params after Stripe redirect processing
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -72,6 +73,7 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -79,6 +81,8 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
   },
 }));
 
@@ -340,5 +344,84 @@ describe('useStripeRedirectHandler', () => {
         expect.objectContaining({ replace: true }),
       );
     });
+  });
+
+  it('cleans URL params after successful Stripe redirect', async () => {
+    setUrlParams({ success: 'true', trial: 'true' });
+    mockValidSession();
+    mockEdgeFunctionSuccess();
+
+    const { useStripeRedirectHandler } = await import('../useStripeRedirectHandler');
+    renderHook(() => useStripeRedirectHandler());
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/acme/admin/dashboard', { replace: true });
+    });
+
+    // The navigate path must NOT contain query parameters
+    const [navigatedPath] = mockNavigate.mock.calls[0] as [string];
+    expect(navigatedPath).not.toContain('?');
+    expect(navigatedPath).not.toContain('success');
+    expect(navigatedPath).not.toContain('trial');
+  });
+
+  it('cleans tenant_id param from URL after processing', async () => {
+    mockTenant = null;
+    mockAdmin = null;
+    setUrlParams({ success: 'true', trial: 'true', tenant_id: 'tid-999' });
+    mockValidSession();
+    mockEdgeFunctionSuccess();
+
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { slug: 'fetched-slug' } });
+    const eq = vi.fn().mockReturnValue({ maybeSingle });
+    const select = vi.fn().mockReturnValue({ eq });
+    mockFrom.mockReturnValue({ select });
+
+    const { useStripeRedirectHandler } = await import('../useStripeRedirectHandler');
+    renderHook(() => useStripeRedirectHandler());
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+
+    const [navigatedPath] = mockNavigate.mock.calls[0] as [string];
+    expect(navigatedPath).not.toContain('tenant_id');
+    expect(navigatedPath).not.toContain('tid-999');
+  });
+
+  it('cleans URL params even when edge function fails', async () => {
+    setUrlParams({ success: 'true', trial: 'true' });
+    mockValidSession();
+    mockEdgeFunctionError('Edge function failed');
+    mockSafeStorageGetItem.mockReturnValue('fallback-slug');
+
+    const { useStripeRedirectHandler } = await import('../useStripeRedirectHandler');
+    renderHook(() => useStripeRedirectHandler());
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+
+    const [navigatedPath, options] = mockNavigate.mock.calls[0] as [string, { replace: boolean }];
+    expect(navigatedPath).not.toContain('?');
+    expect(navigatedPath).not.toContain('success');
+    expect(options).toEqual({ replace: true });
+  });
+
+  it('cleans URL params when session is expired', async () => {
+    setUrlParams({ success: 'true', trial: 'true' });
+    mockNoSession();
+
+    const { useStripeRedirectHandler } = await import('../useStripeRedirectHandler');
+    renderHook(() => useStripeRedirectHandler());
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+
+    const [navigatedPath] = mockNavigate.mock.calls[0] as [string];
+    expect(navigatedPath).not.toContain('?');
+    expect(navigatedPath).not.toContain('success');
+    expect(navigatedPath).not.toContain('trial');
   });
 });
