@@ -60,7 +60,7 @@ serve(async (req) => {
 
     logStep('User authenticated', { userId: user.id, email: user.email });
 
-    const { tenant_id } = await req.json();
+    const { tenant_id, return_url } = await req.json();
 
     if (!tenant_id) {
       logStep('ERROR: Missing tenant_id');
@@ -163,9 +163,43 @@ serve(async (req) => {
       logStep('Using existing Stripe customer', { customerId: stripeCustomerId });
     }
 
-    // Get site URL for return URL
-    const siteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://app.example.com';
-    const returnUrl = `${siteUrl}/${tenant.slug}/admin/billing`;
+    // Build return URL — require SITE_URL or origin header
+    const rawSiteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin');
+    if (!rawSiteUrl) {
+      logStep('ERROR: Missing SITE_URL env var and origin header');
+      return new Response(
+        JSON.stringify({ error: 'Server misconfiguration: SITE_URL not set' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const siteUrl = rawSiteUrl.replace(/\/+$/, '');
+
+    // Default return path is /{slug}/admin/billing; clients may override with a relative path
+    const defaultPath = `/${tenant.slug}/admin/billing`;
+    let returnPath = defaultPath;
+
+    if (typeof return_url === 'string' && return_url.length > 0) {
+      // Only allow relative paths scoped to this tenant's admin area
+      const trimmed = return_url.startsWith('/') ? return_url : `/${return_url}`;
+      if (trimmed.startsWith(`/${tenant.slug}/admin/`)) {
+        returnPath = trimmed;
+      } else {
+        logStep('WARN: Ignoring invalid return_url, using default', { return_url, defaultPath });
+      }
+    }
+
+    const returnUrl = `${siteUrl}${returnPath}`;
+
+    // Validate the constructed URL
+    try {
+      new URL(returnUrl);
+    } catch {
+      logStep('ERROR: Constructed return URL is invalid', { returnUrl });
+      return new Response(
+        JSON.stringify({ error: 'Server misconfiguration: invalid return URL' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     logStep('Creating Customer Portal session', { returnUrl });
 
