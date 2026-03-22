@@ -9,6 +9,7 @@ import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEncryption } from '@/lib/hooks/useEncryption';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Database } from '@/integrations/supabase/types';
 
 type CustomerInsert = Database['public']['Tables']['customers']['Insert'];
@@ -84,6 +85,8 @@ export default function CustomerForm() {
     mode: 'onBlur',
   });
 
+  const { execute: executeCreditAction } = useCreditGatedAction();
+
   const emailValue = form.watch('email');
   const emailCheck = useEmailValidation(emailValue);
 
@@ -141,20 +144,9 @@ export default function CustomerForm() {
     }
   };
 
-  const onSubmit = async (values: CustomerFormValues) => {
-    // Validate CSRF token
-    if (!validateToken()) {
-      toast.error('Security validation failed. Please refresh the page and try again.');
-      return;
-    }
-
+  const saveCustomer = async (values: CustomerFormValues) => {
     if (!tenant) {
       toast.error('Tenant not found');
-      return;
-    }
-
-    if (!encryptionIsReady) {
-      toast.error('Encryption not initialized. Please log in again.');
       return;
     }
 
@@ -240,6 +232,31 @@ export default function CustomerForm() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onSubmit = async (values: CustomerFormValues) => {
+    // Validate CSRF token
+    if (!validateToken()) {
+      toast.error('Security validation failed. Please refresh the page and try again.');
+      return;
+    }
+
+    if (!tenant) {
+      toast.error('Tenant not found');
+      return;
+    }
+
+    if (!encryptionIsReady) {
+      toast.error('Encryption not initialized. Please log in again.');
+      return;
+    }
+
+    // Gate new customer creation behind credits; updates are free
+    if (isEdit) {
+      await saveCustomer(values);
+    } else {
+      await executeCreditAction('customer_add', () => saveCustomer(values));
     }
   };
 
