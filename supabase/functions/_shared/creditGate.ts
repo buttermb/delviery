@@ -615,6 +615,7 @@ export const CREDIT_ACTIONS = {
   MENU_OCR: 'menu_ocr',
   AI_SUGGESTIONS: 'ai_suggestions',
   AI_ANALYTICS: 'ai_analytics',
+  AI_TASK_RUN: 'ai_task_run',
 
   // API
   API_CALL: 'api_call',
