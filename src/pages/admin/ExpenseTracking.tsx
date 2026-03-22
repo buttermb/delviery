@@ -13,6 +13,9 @@ import {
   DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
   TrendingDown, X, Trash2
 } from 'lucide-react';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import {
   Dialog,
   DialogContent,
@@ -76,9 +79,11 @@ export default function ExpenseTracking() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [showOutOfCreditsModal, setShowOutOfCreditsModal] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -245,7 +250,9 @@ export default function ExpenseTracking() {
       showErrorToast('Missing fields', 'Please fill in description and amount');
       return;
     }
-    await addExpenseMutation.mutateAsync(formData);
+    await executeCreditAction('expense_add', () => addExpenseMutation.mutateAsync(formData), {
+      onInsufficientCredits: () => setShowOutOfCreditsModal(true),
+    });
   };
 
   // Filter expenses
@@ -363,9 +370,12 @@ export default function ExpenseTracking() {
             onSearchChange={setSearchQuery}
             searchPlaceholder="Search expenses..."
             actions={
-              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" /> Add Expense
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" /> Add Expense
+                </Button>
+                <CreditCostBadge actionKey="expense_add" />
+              </div>
             }
             filters={
               <div className="flex items-center gap-2 w-full md:w-auto">
@@ -485,6 +495,12 @@ export default function ExpenseTracking() {
         onConfirm={handleDeleteExpense}
         itemType="expense"
         isLoading={deleteExpenseMutation.isPending}
+      />
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={setShowOutOfCreditsModal}
+        actionAttempted="expense_add"
       />
     </div>
   );
