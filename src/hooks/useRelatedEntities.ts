@@ -814,7 +814,8 @@ function getProductQueries(
             merchant_id,
             updated_at
           `)
-          .eq('product_id', productId!);
+          .eq('product_id', productId!)
+          .eq('tenant_id', tenantId!);
 
         if (error) {
           logger.error('Failed to fetch product stock', error, { productId, tenantId });

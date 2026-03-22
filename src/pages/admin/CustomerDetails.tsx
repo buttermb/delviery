@@ -184,6 +184,7 @@ export default function CustomerDetails() {
         .from('customer_payments')
         .select('id, customer_id, amount, created_at, payment_method, payment_status')
         .eq('customer_id', id)
+        .eq('tenant_id', tenantId as string)
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;

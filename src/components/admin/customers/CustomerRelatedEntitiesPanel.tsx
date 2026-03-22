@@ -206,6 +206,7 @@ function useRelatedPayments(customerId: string | undefined, tenantId: string | u
         .from('customer_payments')
         .select('id, amount, payment_method, payment_status, created_at')
         .eq('customer_id', customerId!)
+        .eq('tenant_id', tenantId!)
         .neq('payment_status', 'completed')
         .order('created_at', { ascending: false })
         .limit(10);
