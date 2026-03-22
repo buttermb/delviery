@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 interface ReceivingItem {
   product_id: string;
@@ -28,6 +29,7 @@ interface ReceivingItem {
 export function QuickReceiving() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const [items, setItems] = useState<ReceivingItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -218,12 +220,10 @@ export function QuickReceiving() {
           </div>
 
           <Button
-            onClick={() => {
-              try {
-                receiveMutation.mutate();
-              } catch (error) {
-                logger.error('Button click error', error, { component: 'QuickReceiving' });
-              }
+            onClick={async () => {
+              await executeCreditAction('receiving_log', async () => {
+                await receiveMutation.mutateAsync();
+              });
             }}
             disabled={items.length === 0 || receiveMutation.isPending}
             className="w-full"
