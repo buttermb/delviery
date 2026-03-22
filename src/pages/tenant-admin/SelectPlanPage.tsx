@@ -65,7 +65,7 @@ const PLAN_FEATURES: Record<string, { features: string[]; popular?: boolean }> =
 };
 
 /** Derived from PLAN_CONFIG — single source of truth for prices. */
-const STATIC_PLANS: Plan[] = (['starter', 'professional', 'enterprise'] as const).map((key) => {
+const PAID_PLANS: Plan[] = (['starter', 'professional', 'enterprise'] as const).map((key) => {
   const cfg = PLAN_CONFIG[key];
   const meta = PLAN_FEATURES[key];
   return {
@@ -94,7 +94,7 @@ export default function SelectPlanPage() {
     hasActiveSubscription
   } = useSubscriptionStatus();
   const [loading, setLoading] = useState<string | null>(null);
-  const plans = STATIC_PLANS;
+  const plans = PAID_PLANS;
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
