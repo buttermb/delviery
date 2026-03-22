@@ -80,6 +80,46 @@ serve(async (req) => {
   }
 
   try {
+    // --- Auth check ---
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabaseAuth = createClient(supabaseUrl, supabaseKey);
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "User not authenticated" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify caller is an admin/owner of at least one tenant (platform admin operation)
+    const { data: tenantUser } = await supabaseAuth
+      .from("tenant_users")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "owner"])
+      .limit(1)
+      .maybeSingle();
+
+    if (!tenantUser) {
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions — admin or owner access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    // --- End auth check ---
+
     // Validate Stripe key
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey || !stripeKey.startsWith("sk_")) {
@@ -97,10 +137,8 @@ serve(async (req) => {
       apiVersion: STRIPE_API_VERSION,
     });
 
-    // Initialize Supabase
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Reuse the Supabase client from auth check
+    const supabase = supabaseAuth;
 
     console.error("[SETUP-STRIPE] Starting product setup...");
 

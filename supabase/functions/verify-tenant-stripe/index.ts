@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 const corsHeaders = {
@@ -12,7 +13,49 @@ serve(async (req) => {
   }
 
   try {
-    const { stripeSecretKey } = await req.json();
+    // --- Auth check ---
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'User not authenticated' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { stripeSecretKey, tenant_id } = await req.json();
+
+    // Verify caller is admin/owner of the tenant
+    if (tenant_id) {
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
+        .select('role')
+        .eq('tenant_id', tenant_id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!tenantUser || !['admin', 'owner'].includes(tenantUser.role)) {
+        return new Response(
+          JSON.stringify({ error: 'Insufficient permissions' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    // --- End auth check ---
     
     // Check if key exists
     if (!stripeSecretKey || stripeSecretKey.length === 0) {
