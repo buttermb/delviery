@@ -60,32 +60,32 @@ serve(async (req) => {
       );
     }
 
-    // Resolve caller's tenant_id from tenant_users — never trust client-supplied value
+    // Verify user belongs to the requested tenant and has admin/owner role
     const { data: tenantUser, error: tenantUserError } = await supabaseClient
       .from("tenant_users")
       .select("tenant_id, role")
+      .eq("tenant_id", clientTenantId)
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const resolvedTenantId = tenantUser?.tenant_id;
-
-    if (tenantUserError || !resolvedTenantId) {
-      logStep('ERROR: No tenant associated with user');
-      return new Response(
-        JSON.stringify({ error: "No tenant associated with user" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (resolvedTenantId !== clientTenantId) {
-      logStep('ERROR: Tenant ID mismatch — caller does not own requested tenant');
+    if (tenantUserError || !tenantUser) {
+      logStep('ERROR: User is not a member of the requested tenant');
       return new Response(
         JSON.stringify({ error: "Not authorized for this tenant" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const tenant_id = resolvedTenantId;
+    const isAdmin = tenantUser.role === 'admin' || tenantUser.role === 'owner';
+    if (!isAdmin) {
+      logStep('ERROR: Insufficient permissions — admin or owner role required', { role: tenantUser.role });
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions - admin or owner access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const tenant_id = clientTenantId;
 
     logStep('Fetching tenant', { tenantId: tenant_id });
 
