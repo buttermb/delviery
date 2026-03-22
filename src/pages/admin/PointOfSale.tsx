@@ -14,6 +14,7 @@ import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minim
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PendingPickupsPanel } from '@/components/pos/PendingPickupsPanel';
@@ -31,6 +32,7 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { publish } from '@/lib/eventBus';
 import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
+import { CreditCostBadge } from '@/components/credits';
 
 export interface Product {
   id: string;
@@ -61,6 +63,7 @@ export default function PointOfSale() {
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
+  const { execute: executeCreditAction, isFreeTier } = useCreditGatedAction();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -282,16 +285,17 @@ export default function PointOfSale() {
       }
     }
 
+    const { subtotal, tax, discount, total } = calculateTotals();
+
+    if (paymentMethod === 'cash' && cashTendered && parseFloat(cashTendered) < total) {
+      toast.error('Insufficient cash tendered');
+      return;
+    }
+
     setLoading(true);
-    try {
-      const { subtotal, tax, discount, total } = calculateTotals();
 
-      if (paymentMethod === 'cash' && cashTendered && parseFloat(cashTendered) < total) {
-        toast.error('Insufficient cash tendered');
-        setLoading(false);
-        return;
-      }
-
+    // Gate the sale behind credit consumption (25 credits for pos_process_sale)
+    await executeCreditAction('pos_process_sale', async () => {
       // Prepare transaction items
       const transactionItems = cart.map(item => ({
         product_id: item.id,
@@ -457,12 +461,15 @@ export default function PointOfSale() {
       clearCart();
       loadProducts();
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
-    } catch (error) {
-      logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
-      toast.error('Error completing sale', { description: humanizeError(error, 'Unknown error') });
-    } finally {
-      setLoading(false);
-    }
+    }, {
+      onInsufficientCredits: () => {
+        toast.error('Insufficient Credits', {
+          description: 'You need credits to process sales. Purchase more to continue.',
+        });
+      },
+    });
+
+    setLoading(false);
   };
 
   const handleLoadOrder = (order: PendingOrder) => {
@@ -858,11 +865,12 @@ export default function PointOfSale() {
 
               <Button
                 size="lg"
-                className="w-full text-lg h-14 font-bold shadow-lg"
+                className="w-full text-lg h-14 font-bold shadow-lg group"
                 onClick={completeSale}
                 disabled={cart.length === 0 || loading || (paymentMethod === 'cash' && !!cashTendered && parseFloat(cashTendered) < total)}
               >
                 {loading ? 'Processing...' : `Charge ${formatCurrency(total)}`}
+                {isFreeTier && <CreditCostBadge actionKey="pos_process_sale" compact hoverMode className="ml-2" />}
               </Button>
 
               <div className="grid grid-cols-2 gap-2">
