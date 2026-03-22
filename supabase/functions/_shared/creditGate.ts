@@ -38,6 +38,79 @@ interface TenantInfo {
   subscriptionStatus: string | null;
 }
 
+/** Successful credit consumption result */
+export interface CreditConsumeResult {
+  success: true;
+  newBalance: number;
+  creditsCost: number;
+}
+
+/** Options for consumeCreditsOrFail */
+export interface ConsumeCreditsOptions {
+  referenceId?: string;
+  referenceType?: string;
+  description?: string;
+  /** Skip credit check for paid tiers (default: true) */
+  skipForPaidTiers?: boolean;
+}
+
+// ============================================================================
+// CreditError
+// ============================================================================
+
+/**
+ * Error thrown when a tenant has insufficient credits for an action.
+ * Catch this in edge functions to return a 402 response.
+ */
+export class CreditError extends Error {
+  readonly code = 'INSUFFICIENT_CREDITS' as const;
+  readonly statusCode = 402 as const;
+  readonly actionKey: string;
+  readonly creditsRequired: number;
+  readonly currentBalance: number;
+
+  constructor(
+    actionKey: string,
+    creditsRequired: number,
+    currentBalance: number,
+    message?: string,
+  ) {
+    super(message ?? `Insufficient credits for ${actionKey}: need ${creditsRequired}, have ${currentBalance}`);
+    this.name = 'CreditError';
+    this.actionKey = actionKey;
+    this.creditsRequired = creditsRequired;
+    this.currentBalance = currentBalance;
+  }
+
+  /** Serialize to the standard 402 response body */
+  toJSON(): Record<string, unknown> {
+    return {
+      error: 'Insufficient credits',
+      code: this.code,
+      message: this.message,
+      creditsRequired: this.creditsRequired,
+      currentBalance: this.currentBalance,
+      actionKey: this.actionKey,
+    };
+  }
+}
+
+/** Type guard for CreditError */
+export function isCreditError(error: unknown): error is CreditError {
+  return error instanceof CreditError;
+}
+
+/** Convert a CreditError to an HTTP 402 Response */
+export function creditErrorResponse(error: CreditError): Response {
+  return new Response(
+    JSON.stringify(error.toJSON()),
+    {
+      status: 402,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    },
+  );
+}
+
 // ============================================================================
 // Credit Gate Middleware
 // ============================================================================
@@ -413,6 +486,82 @@ export async function checkCreditsAvailable(
     balance,
     cost,
     isFreeTier: true,
+  };
+}
+
+// ============================================================================
+// Standalone Credit Consumption (non-middleware)
+// ============================================================================
+
+/**
+ * Consume credits for an action or throw CreditError.
+ *
+ * Use this in edge functions where the withCreditGate middleware wrapper
+ * doesn't fit — e.g., functions with multiple credit actions, conditional
+ * charges, or post-success billing.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   const result = await consumeCreditsOrFail(supabase, tenantId, 'send_sms', {
+ *     referenceId: orderId,
+ *     referenceType: 'order',
+ *     description: 'SMS notification for order confirmation',
+ *   });
+ *   // result.newBalance, result.creditsCost available
+ * } catch (err) {
+ *   if (isCreditError(err)) return creditErrorResponse(err);
+ *   throw err;
+ * }
+ * ```
+ */
+export async function consumeCreditsOrFail(
+  supabaseClient: SupabaseClient,
+  tenantId: string,
+  actionKey: string,
+  options?: ConsumeCreditsOptions,
+): Promise<CreditConsumeResult> {
+  // Check if tenant is on free tier; paid tiers skip by default
+  const skipForPaid = options?.skipForPaidTiers ?? true;
+  if (skipForPaid) {
+    const tenantInfo = await getTenantInfo(supabaseClient, tenantId);
+    if (tenantInfo && !tenantInfo.isFreeTier) {
+      return { success: true, newBalance: -1, creditsCost: 0 };
+    }
+  }
+
+  // Attempt to consume credits via RPC
+  const result = await consumeCreditsForAction(
+    supabaseClient,
+    tenantId,
+    actionKey,
+    options?.referenceId,
+    options?.referenceType,
+    options?.description,
+  );
+
+  if (!result.success) {
+    // Track the blocked action (fire-and-forget)
+    trackCreditEvent(
+      supabaseClient,
+      tenantId,
+      'action_blocked_insufficient_credits',
+      result.newBalance,
+      actionKey,
+    ).catch(() => { /* analytics is best-effort */ });
+
+    throw new CreditError(
+      actionKey,
+      result.creditsCost,
+      result.newBalance,
+      result.errorMessage ?? undefined,
+    );
+  }
+
+  return {
+    success: true,
+    newBalance: result.newBalance,
+    creditsCost: result.creditsCost,
   };
 }
 
