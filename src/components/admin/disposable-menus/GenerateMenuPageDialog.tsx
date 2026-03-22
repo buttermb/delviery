@@ -17,9 +17,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useProductsForMenu } from '@/hooks/useProductsForMenu';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useGenerateMenu } from '@/hooks/useCreditGatedAction';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import {
@@ -126,6 +129,13 @@ export function GenerateMenuPageDialog({
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const { data: products = [], isLoading: productsLoading } = useProductsForMenu(tenant?.id);
+  const {
+    generateMenu,
+    isGenerating,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useGenerateMenu();
 
   // Core fields
   const [title, setTitle] = useState(preselectedMenuName ?? '');
@@ -150,7 +160,6 @@ export function GenerateMenuPageDialog({
   const [customMessage, setCustomMessage] = useState('');
 
   // Generation state
-  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -220,72 +229,75 @@ export function GenerateMenuPageDialog({
 
     const selectedScheme = COLOR_SCHEMES.find((s) => s.id === colorSchemeId) ?? COLOR_SCHEMES[0];
 
-    setIsGenerating(true);
-    try {
-      // Create a disposable menu via the edge function with static_page menu_type
-      const { data, error } = await supabase.functions.invoke('create-encrypted-menu', {
-        body: {
-          tenant_id: tenant.id,
-          name: title.trim(),
-          description: `Static menu page: ${title.trim()}`,
-          custom_message: customMessage.trim() || undefined,
-          show_product_images: displayOptions.showImages,
-          products: (() => {
-            const allPrices = buildProductPrices();
-            return Array.from(selectedProducts).map((pid, idx) => ({
-              product_id: pid,
-              display_availability: true,
-              display_order: idx,
-              prices: allPrices[pid],
-            }));
-          })(),
-          security_settings: { menu_type: 'static_page' },
-          appearance_settings: {
-            color_scheme: selectedScheme.id,
-            colors: {
-              bg: selectedScheme.bg,
-              text: selectedScheme.text,
-              accent: selectedScheme.accent,
-              cardBg: selectedScheme.cardBg,
-              border: selectedScheme.border,
+    await generateMenu(
+      async () => {
+        // Create a disposable menu via the edge function with static_page menu_type
+        const { data, error } = await supabase.functions.invoke('create-encrypted-menu', {
+          body: {
+            tenant_id: tenant.id,
+            name: title.trim(),
+            description: `Static menu page: ${title.trim()}`,
+            custom_message: customMessage.trim() || undefined,
+            show_product_images: displayOptions.showImages,
+            products: (() => {
+              const allPrices = buildProductPrices();
+              return Array.from(selectedProducts).map((pid, idx) => ({
+                product_id: pid,
+                display_availability: true,
+                display_order: idx,
+                prices: allPrices[pid],
+              }));
+            })(),
+            security_settings: { menu_type: 'static_page' },
+            appearance_settings: {
+              color_scheme: selectedScheme.id,
+              colors: {
+                bg: selectedScheme.bg,
+                text: selectedScheme.text,
+                accent: selectedScheme.accent,
+                cardBg: selectedScheme.cardBg,
+                border: selectedScheme.border,
+              },
+              show_prices: displayOptions.showPrices,
+              show_descriptions: displayOptions.showDescriptions,
+              contact_info: contactInfo.trim() || undefined,
             },
-            show_prices: displayOptions.showPrices,
-            show_descriptions: displayOptions.showDescriptions,
-            contact_info: contactInfo.trim() || undefined,
+            access_code: generateAccessCode(),
+            never_expires: true,
           },
-          access_code: generateAccessCode(),
-          never_expires: true,
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate page');
+
+        const urlToken = data?.url_token ?? data?.menu?.encrypted_url_token;
+        if (!urlToken) throw new Error('No URL token returned');
+
+        return urlToken;
+      },
+      {
+        onSuccess: (urlToken) => {
+          const staticPageUrl = `${window.location.origin}/page/${urlToken}`;
+          setGeneratedUrl(staticPageUrl);
+
+          queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
+          toast.success('Menu page generated!');
+          logger.info('Static menu page generated', {
+            component: 'GenerateMenuPageDialog',
+            menuTitle: title.trim(),
+            productCount: selectedProducts.size,
+            colorScheme: selectedScheme.id,
+          });
         },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate page');
-
-      const urlToken = data?.url_token ?? data?.menu?.encrypted_url_token;
-      if (!urlToken) throw new Error('No URL token returned');
-
-      // Build the static page URL using the React route
-      const staticPageUrl = `${window.location.origin}/page/${urlToken}`;
-      setGeneratedUrl(staticPageUrl);
-
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
-      toast.success('Menu page generated!');
-      logger.info('Static menu page generated', {
-        component: 'GenerateMenuPageDialog',
-        menuTitle: title.trim(),
-        productCount: selectedProducts.size,
-        colorScheme: selectedScheme.id,
-      });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to generate page';
-      toast.error(message);
-      logger.error('Static menu page generation failed', {
-        component: 'GenerateMenuPageDialog',
-        error: message,
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+        onError: (error) => {
+          toast.error(error.message);
+          logger.error('Static menu page generation failed', {
+            component: 'GenerateMenuPageDialog',
+            error: error.message,
+          });
+        },
+      }
+    );
   };
 
   const handleCopyUrl = async () => {
@@ -580,13 +592,21 @@ export function GenerateMenuPageDialog({
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || selectedProducts.size === 0 || !title.trim()}
+              className="group gap-2"
             >
-              {isGenerating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isGenerating && <Loader2 className="h-4 w-4 animate-spin" />}
               Generate Page
+              <CreditCostBadge actionKey="menu_create" showTooltip={false} compact />
             </Button>
           )}
         </DialogFooter>
       </DialogContent>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </Dialog>
   );
 }
