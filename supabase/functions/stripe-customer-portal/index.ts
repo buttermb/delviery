@@ -60,15 +60,42 @@ serve(async (req) => {
 
     logStep('User authenticated', { userId: user.id, email: user.email });
 
-    const { tenant_id, return_url } = await req.json();
+    const { tenant_id: clientTenantId, return_url } = await req.json();
 
-    if (!tenant_id) {
+    if (!clientTenantId) {
       logStep('ERROR: Missing tenant_id');
       return new Response(
         JSON.stringify({ error: 'Missing tenant_id' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Resolve caller's tenant_id from tenant_users — never trust client-supplied value
+    const { data: tenantUser, error: tenantUserError } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const resolvedTenantId = tenantUser?.tenant_id;
+
+    if (tenantUserError || !resolvedTenantId) {
+      logStep('ERROR: No tenant associated with user');
+      return new Response(
+        JSON.stringify({ error: 'No tenant associated with user' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (resolvedTenantId !== clientTenantId) {
+      logStep('ERROR: Tenant ID mismatch — caller does not own requested tenant');
+      return new Response(
+        JSON.stringify({ error: 'Not authorized for this tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const tenant_id = resolvedTenantId;
 
     logStep('Fetching tenant', { tenantId: tenant_id });
 
@@ -88,28 +115,6 @@ serve(async (req) => {
     }
 
     logStep('Tenant found', { slug: tenant.slug, stripeCustomerId: tenant.stripe_customer_id });
-
-    // Verify user has permission - check both owner and tenant_users
-    const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
-
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('tenant_id', tenant_id)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    const isAdmin = tenantUser?.role === 'admin' || tenantUser?.role === 'owner';
-
-    if (!isOwner && !isAdmin) {
-      logStep('ERROR: Insufficient permissions', { isOwner, isAdmin });
-      return new Response(
-        JSON.stringify({ error: 'Insufficient permissions - admin or owner access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    logStep('User has permission', { isOwner, isAdmin });
 
     const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
 
