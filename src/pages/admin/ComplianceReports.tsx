@@ -31,11 +31,14 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CreditCostBadge } from '@/components/credits';
+import { useCredits } from '@/hooks/useCredits';
 
 export function ComplianceReports() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const [customerId, setCustomerId] = useState('');
+  const { isFreeTier, performAction } = useCredits();
 
   // Fetch data retention policy
   const { data: retentionPolicy, isLoading: policyLoading } = useQuery({
@@ -80,10 +83,18 @@ export function ComplianceReports() {
     enabled: !!tenantId,
   });
 
-  // Generate audit trail export
+  // Generate audit trail export (credit-gated: 100 credits for compliance_report_generate)
   const exportAuditTrail = useMutation({
     mutationFn: async ({ startDate, endDate }: { startDate?: string; endDate?: string }) => {
       if (!tenantId) throw new Error('No tenant context');
+
+      // Deduct credits for free-tier tenants
+      if (isFreeTier) {
+        const creditResult = await performAction('compliance_report_generate', undefined, 'compliance');
+        if (!creditResult.success) {
+          throw new Error(creditResult.errorMessage || 'Insufficient credits');
+        }
+      }
 
       const query = supabase
         .from('audit_logs')
@@ -266,6 +277,7 @@ export function ComplianceReports() {
                 <Download className="h-4 w-4" />
               )}
               Export Audit Trail (CSV)
+              <CreditCostBadge actionKey="compliance_report_generate" />
             </Button>
           </CardContent>
         </Card>
