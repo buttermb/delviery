@@ -10,10 +10,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-
-const requestSchema = z.object({
-  tenant_id: z.string().uuid(),
-});
+import { validateSetFreeTier } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -47,7 +44,7 @@ serve(async (req) => {
 
     // 2. Parse and validate request
     const body = await req.json();
-    const { tenant_id: clientTenantId } = requestSchema.parse(body);
+    const { tenant_id: clientTenantId } = validateSetFreeTier(body);
 
     // 3. Verify user owns this tenant (never trust client-supplied tenant_id)
     const { data: tenantUser, error: tenantUserError } = await supabaseClient
