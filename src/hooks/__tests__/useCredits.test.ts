@@ -10,6 +10,7 @@ import {
   LOW_CREDIT_WARNING_THRESHOLD,
   CRITICAL_CREDIT_THRESHOLD,
 } from '@/lib/credits';
+import { REFETCH_INTERVAL_MS, STALE_TIME_MS } from '@/hooks/useCredits';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -45,6 +46,20 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
   },
 }));
+
+describe('useCredits Query Configuration', () => {
+  it('should have refetch interval set to 30 seconds (30000ms)', () => {
+    expect(REFETCH_INTERVAL_MS).toBe(30_000);
+  });
+
+  it('should have stale time set to 15 seconds (15000ms)', () => {
+    expect(STALE_TIME_MS).toBe(15_000);
+  });
+
+  it('should have stale time shorter than refetch interval', () => {
+    expect(STALE_TIME_MS).toBeLessThan(REFETCH_INTERVAL_MS);
+  });
+});
 
 describe('Credit Warning Thresholds Configuration', () => {
   it('should have correct low balance warning levels', () => {
