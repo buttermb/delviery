@@ -37,6 +37,7 @@ import {
 import jsPDF from 'jspdf';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 type BarcodeType = 'CODE128' | 'EAN13' | 'CODE39' | 'QR';
 type LabelType = 'product' | 'small_package' | 'batch' | 'custom';
@@ -52,6 +53,7 @@ interface GeneratedBarcode {
 
 export default function GenerateBarcodes() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+  const { execute: executeCreditAction, isPerforming: isCreditActionPending } = useCreditGatedAction();
   // Generation mode
   const [mode, setMode] = useState<GenerationMode>('product');
   const [barcodeType, setBarcodeType] = useState<BarcodeType>('CODE128');
@@ -190,89 +192,94 @@ export default function GenerateBarcodes() {
     }
   };
 
-  // Print all labels as PDF
+  // Internal: generate and save barcode sheet PDF
+  const generateBarcodePdf = async () => {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: [8.5, 11] // US Letter
+    });
+
+    const cols = 3;
+    const rows = 10;
+    const cardWidth = 2.5;
+    const cardHeight = 1;
+    const margin = 0.25;
+    const spacing = 0.2;
+
+    let index = 0;
+    let page = 0;
+
+    // Process in batches to keep UI responsive
+    const chunkSize = 10;
+    for (let i = 0; i < generatedBarcodes.length; i += chunkSize) {
+      const chunk = generatedBarcodes.slice(i, i + chunkSize);
+
+      // Yield to browser between chunks
+      await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
+
+      for (const barcode of chunk) {
+        if (index >= rows * cols) {
+          pdf.addPage();
+          index = 0;
+          page++;
+        }
+
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+
+        const x = margin + col * (cardWidth + spacing);
+        const y = margin + row * (cardHeight + spacing) + (page * 11);
+
+        // Draw border
+        pdf.setDrawColor(200, 200, 200);
+        pdf.rect(x, y, cardWidth, cardHeight);
+
+        // Add barcode data
+        pdf.setFontSize(8);
+        pdf.text(barcode.label || barcode.value, x + 0.1, y + 0.15, { maxWidth: cardWidth - 0.2 });
+        pdf.setFontSize(7);
+        pdf.text(barcode.value, x + 0.1, y + 0.8, { maxWidth: cardWidth - 0.2 });
+
+        index++;
+      }
+    }
+
+    pdf.save(`barcode_sheet_${Date.now()}.pdf`);
+    toast.success('Barcode sheet downloaded');
+  };
+
+  // Print all labels as PDF (credit-gated: 25 credits)
   const handlePrintAll = async () => {
     if (generatedBarcodes.length === 0) return;
 
     setPdfGenerating(true);
-    toast.success("Please wait while we create your label sheet");
+    toast.success('Please wait while we create your label sheet');
 
     try {
-      // Defer heavy operation to avoid blocking UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // For now, use print sheet for all labels
-      // Individual label printing can be added later with proper QR code rendering
-      await handlePrintSheet();
+      await executeCreditAction('barcode_print_batch', async () => {
+        // Defer heavy operation to avoid blocking UI
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await generateBarcodePdf();
+      }, { referenceType: 'barcode_batch' });
     } catch (error: unknown) {
-      const _errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
-      toast.error("Error");
+      logger.error('Error printing all labels', error, { component: 'GenerateBarcodes' });
+      toast.error('Failed to print labels');
     } finally {
       setPdfGenerating(false);
     }
   };
 
-  // Print single barcode sheet
+  // Download barcode sheet (credit-gated: 25 credits)
   const handlePrintSheet = async () => {
     if (generatedBarcodes.length === 0) return;
 
     setPdfGenerating(true);
 
     try {
-      // Process in chunks to avoid blocking
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'in',
-        format: [8.5, 11] // US Letter
-      });
-
-      const cols = 3;
-      const rows = 10;
-      const cardWidth = 2.5;
-      const cardHeight = 1;
-      const margin = 0.25;
-      const spacing = 0.2;
-
-      let index = 0;
-      let page = 0;
-
-      // Process in batches to keep UI responsive
-      const chunkSize = 10;
-      for (let i = 0; i < generatedBarcodes.length; i += chunkSize) {
-        const chunk = generatedBarcodes.slice(i, i + chunkSize);
-
-        // Yield to browser between chunks
-        await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
-
-        for (const barcode of chunk) {
-          if (index >= rows * cols) {
-            pdf.addPage();
-            index = 0;
-            page++;
-          }
-
-          const col = index % cols;
-          const row = Math.floor(index / cols);
-
-          const x = margin + col * (cardWidth + spacing);
-          const y = margin + row * (cardHeight + spacing) + (page * 11);
-
-          // Draw border
-          pdf.setDrawColor(200, 200, 200);
-          pdf.rect(x, y, cardWidth, cardHeight);
-
-          // Add barcode data
-          pdf.setFontSize(8);
-          pdf.text(barcode.label || barcode.value, x + 0.1, y + 0.15, { maxWidth: cardWidth - 0.2 });
-          pdf.setFontSize(7);
-          pdf.text(barcode.value, x + 0.1, y + 0.8, { maxWidth: cardWidth - 0.2 });
-
-          index++;
-        }
-      }
-
-      pdf.save(`barcode_sheet_${Date.now()}.pdf`);
-      toast.success("Barcode sheet downloaded");
+      await executeCreditAction('barcode_print_batch', async () => {
+        await generateBarcodePdf();
+      }, { referenceType: 'barcode_batch' });
     } finally {
       setPdfGenerating(false);
     }
@@ -581,7 +588,7 @@ export default function GenerateBarcodes() {
                 <Button
                   variant="outline"
                   onClick={handlePrintSheet}
-                  disabled={pdfGenerating}
+                  disabled={pdfGenerating || isCreditActionPending}
                 >
                   {pdfGenerating ? (
                     <>
@@ -598,7 +605,7 @@ export default function GenerateBarcodes() {
                 <Button
                   variant="outline"
                   onClick={handlePrintAll}
-                  disabled={pdfGenerating}
+                  disabled={pdfGenerating || isCreditActionPending}
                 >
                   {pdfGenerating ? (
                     <>
