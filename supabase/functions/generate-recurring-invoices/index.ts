@@ -1,10 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { checkCreditsAvailable } from "../_shared/creditGate.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const INVOICE_CREATE_ACTION_KEY = "invoice_create";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -40,18 +37,63 @@ serve(async (req) => {
     const results = {
       processed: 0,
       created: 0,
+      skipped_insufficient_credits: 0,
       errors: [] as string[],
     };
 
     for (const schedule of schedules || []) {
       try {
+        const tenantId = schedule.tenant_id;
+
+        // Check and consume credits for the tenant before creating the invoice
+        const creditCheck = await checkCreditsAvailable(
+          supabase,
+          tenantId,
+          INVOICE_CREATE_ACTION_KEY,
+        );
+
+        if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+          console.error(
+            `[generate-recurring-invoices] Skipping schedule ${schedule.id}: tenant ${tenantId} has insufficient credits (balance: ${creditCheck.balance}, cost: ${creditCheck.cost})`,
+          );
+          results.skipped_insufficient_credits++;
+          results.errors.push(
+            `Schedule ${schedule.id}: Insufficient credits (balance: ${creditCheck.balance}, required: ${creditCheck.cost})`,
+          );
+          continue;
+        }
+
+        // Consume credits for free tier tenants before creating the invoice
+        if (creditCheck.isFreeTier) {
+          const { error: creditError } = await supabase.rpc("consume_credits", {
+            p_tenant_id: tenantId,
+            p_action_key: INVOICE_CREATE_ACTION_KEY,
+            p_reference_type: "recurring_invoice",
+            p_description: `Recurring invoice for schedule: ${schedule.name || schedule.id}`,
+          });
+
+          if (creditError) {
+            console.error(
+              `[generate-recurring-invoices] Credit deduction failed for schedule ${schedule.id}:`,
+              creditError,
+            );
+            results.skipped_insufficient_credits++;
+            results.errors.push(
+              `Schedule ${schedule.id}: Credit deduction failed: ${creditError.message}`,
+            );
+            continue;
+          }
+        }
+
         // Generate invoice number
         const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
-        
+
         // Calculate totals from line items
         const lineItems = schedule.line_items || [];
-        const subtotal = lineItems.reduce((sum: number, item: Record<string, unknown>) =>
-          sum + (Number(item.quantity) || 1) * (Number(item.unit_price) || 0), 0
+        const subtotal = lineItems.reduce(
+          (sum: number, item: Record<string, unknown>) =>
+            sum + (Number(item.quantity) || 1) * (Number(item.unit_price) || 0),
+          0,
         );
         const taxRate = schedule.template?.template_data?.taxRate || 0;
         const taxAmount = subtotal * (taxRate / 100);
@@ -85,12 +127,17 @@ serve(async (req) => {
           .single();
 
         if (invoiceError) {
-          console.error(`[generate-recurring-invoices] Error creating invoice for schedule ${schedule.id}:`, invoiceError);
+          console.error(
+            `[generate-recurring-invoices] Error creating invoice for schedule ${schedule.id}:`,
+            invoiceError,
+          );
           results.errors.push(`Schedule ${schedule.id}: ${invoiceError.message}`);
           continue;
         }
 
-        console.error(`[generate-recurring-invoices] Created invoice ${invoice.id} for schedule ${schedule.id}`);
+        console.error(
+          `[generate-recurring-invoices] Created invoice ${invoice.id} for schedule ${schedule.id}`,
+        );
         results.created++;
 
         // Calculate next run date based on frequency
@@ -127,8 +174,13 @@ serve(async (req) => {
 
         results.processed++;
       } catch (err) {
-        console.error(`[generate-recurring-invoices] Error processing schedule ${schedule.id}:`, err);
-        results.errors.push(`Schedule ${schedule.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
+        console.error(
+          `[generate-recurring-invoices] Error processing schedule ${schedule.id}:`,
+          err,
+        );
+        results.errors.push(
+          `Schedule ${schedule.id}: ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
       }
     }
 
@@ -140,8 +192,13 @@ serve(async (req) => {
   } catch (error) {
     console.error("[generate-recurring-invoices] Fatal error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
