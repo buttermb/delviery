@@ -7,6 +7,7 @@
  * 3. Credit check blocks action when insufficient credits
  * 4. Credit check allows action when sufficient credits
  * 5. Non-free-tier users bypass credit checks
+ * 6. OutOfCreditsModal is rendered when credits are insufficient
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -21,6 +22,7 @@ import { type ReactNode } from 'react';
 // ============================================================================
 
 const mockExecute = vi.fn();
+const mockCloseOutOfCreditsModal = vi.fn();
 const mockCreateInvoice = vi.fn();
 const mockLogActivity = vi.fn();
 const mockNavigate = vi.fn();
@@ -43,6 +45,7 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
       name: 'Test Tenant',
       is_free_tier: true,
     },
+    tenantSlug: 'test-tenant',
     isAuthenticated: true,
     accessToken: 'test-token',
   }),
@@ -55,12 +58,27 @@ vi.mock('@/contexts/AccountContext', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useCredits', () => ({
+let mockShowOutOfCreditsModal = false;
+
+vi.mock('@/hooks/useCreditGatedAction', () => ({
   useCreditGatedAction: () => ({
     execute: mockExecute,
-    isPerforming: false,
+    isExecuting: false,
+    showOutOfCreditsModal: mockShowOutOfCreditsModal,
+    closeOutOfCreditsModal: mockCloseOutOfCreditsModal,
+    blockedAction: mockShowOutOfCreditsModal ? 'invoice_create' : null,
+    balance: 500,
     isFreeTier: true,
   }),
+}));
+
+vi.mock('@/components/credits/OutOfCreditsModal', () => ({
+  OutOfCreditsModal: ({ open, actionAttempted }: { open: boolean; actionAttempted?: string }) =>
+    open ? (
+      <div data-testid="out-of-credits-modal">
+        Out of credits{actionAttempted ? ` for ${actionAttempted}` : ''}
+      </div>
+    ) : null,
 }));
 
 vi.mock('@/hooks/crm/useInvoices', () => ({
@@ -190,9 +208,11 @@ function renderWithProviders(ui: ReactNode) {
 describe('CreateInvoicePage Credit Gating', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockShowOutOfCreditsModal = false;
     mockExecute.mockImplementation(
-      async (_actionKey: string, action: () => Promise<unknown>) => {
-        return action();
+      async (options: { actionKey: string; action: () => Promise<unknown> }) => {
+        const result = await options.action();
+        return { success: true, result, creditsCost: 50, wasBlocked: false };
       }
     );
     mockCreateInvoice.mockResolvedValue({
@@ -229,15 +249,23 @@ describe('CreateInvoicePage Credit Gating', () => {
     await waitFor(() => {
       expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(mockExecute).toHaveBeenCalledWith(
-        'invoice_create',
-        expect.any(Function)
+        expect.objectContaining({
+          actionKey: 'invoice_create',
+          referenceType: 'invoice',
+          action: expect.any(Function),
+          onError: expect.any(Function),
+        })
       );
     });
   });
 
   it('should not create invoice when credit gate blocks the action', async () => {
-    // Simulate credit gate blocking the action (returns null)
-    mockExecute.mockResolvedValue(null);
+    // Simulate credit gate blocking the action (wasBlocked: true)
+    mockExecute.mockResolvedValue({
+      success: false,
+      creditsCost: 50,
+      wasBlocked: true,
+    });
 
     const user = userEvent.setup();
     const CreateInvoicePage = (await import('../CreateInvoicePage')).default;
@@ -256,11 +284,13 @@ describe('CreateInvoicePage Credit Gating', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(mockExecute).toHaveBeenCalledWith('invoice_create', expect.any(Function));
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.objectContaining({ actionKey: 'invoice_create' })
+      );
     });
 
-    // The createInvoice mutation should NOT have been called directly
-    // (it's called inside the action callback which was blocked by the gate)
+    // The createInvoice mutation should NOT have been called
+    // (action callback was never invoked by the gate)
     expect(mockCreateInvoice).not.toHaveBeenCalled();
   });
 
@@ -323,6 +353,25 @@ describe('CreateInvoicePage Credit Gating', () => {
 
     // Credit gate should NOT have been called
     expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it('should render OutOfCreditsModal when showOutOfCreditsModal is true', async () => {
+    mockShowOutOfCreditsModal = true;
+
+    const CreateInvoicePage = (await import('../CreateInvoicePage')).default;
+    renderWithProviders(<CreateInvoicePage />);
+
+    expect(screen.getByTestId('out-of-credits-modal')).toBeInTheDocument();
+    expect(screen.getByText(/out of credits for invoice_create/i)).toBeInTheDocument();
+  });
+
+  it('should not render OutOfCreditsModal when showOutOfCreditsModal is false', async () => {
+    mockShowOutOfCreditsModal = false;
+
+    const CreateInvoicePage = (await import('../CreateInvoicePage')).default;
+    renderWithProviders(<CreateInvoicePage />);
+
+    expect(screen.queryByTestId('out-of-credits-modal')).not.toBeInTheDocument();
   });
 });
 
