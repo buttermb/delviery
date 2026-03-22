@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import {
   DollarSign, Calendar, Download, Loader2,
-  CheckCircle2, Clock, Percent
+  CheckCircle2, Clock, Percent, Calculator
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -18,6 +18,8 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 interface CommissionRecord {
   id: string;
@@ -40,6 +42,13 @@ export default function CommissionTracking() {
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const [isExporting, setIsExporting] = useState(false);
+  const {
+    execute: executeCreditAction,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isExecuting: isCalculating,
+  } = useCreditGatedAction();
 
   const { data: commissions, isLoading } = useQuery({
     queryKey: queryKeys.commissionTracking.byTenant(tenantId),
@@ -54,25 +63,7 @@ export default function CommissionTracking() {
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
-        if (error && error.code === '42P01') {
-          // Table doesn't exist, calculate from orders
-          const { data: orders, error: orderError } = await supabase
-            .from('orders')
-            .select('id, total, created_at, tenant_id')
-            .eq('tenant_id', tenantId);
-
-          if (orderError && orderError.code === '42P01') return [];
-          if (orderError) throw orderError;
-
-          // Calculate commissions from orders (2% default)
-          return (orders ?? []).map((order: OrderRecord) => ({
-            id: order.id,
-            amount: parseFloat(String(order.total ?? 0)) * 0.02,
-            order_id: order.id,
-            created_at: order.created_at,
-            status: 'pending'
-          }));
-        }
+        if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data ?? [];
       } catch (error) {
@@ -84,6 +75,47 @@ export default function CommissionTracking() {
     enabled: !!tenantId,
     retry: 2,
   });
+
+  // Credit-gated commission calculation from orders
+  const handleCalculateCommissions = async () => {
+    if (!tenantId) return;
+
+    await executeCreditAction({
+      actionKey: 'commission_calculate',
+      action: async () => {
+        const { data: orders, error: orderError } = await supabase
+          .from('orders')
+          .select('id, total, created_at, tenant_id')
+          .eq('tenant_id', tenantId);
+
+        if (orderError) throw orderError;
+
+        const calculated = (orders ?? []).map((order: OrderRecord) => ({
+          id: order.id,
+          amount: parseFloat(String(order.total ?? 0)) * 0.02,
+          order_id: order.id,
+          created_at: order.created_at,
+          status: 'pending',
+        }));
+
+        logger.info('Commission calculation complete', {
+          component: 'CommissionTracking',
+          count: calculated.length,
+        });
+
+        return calculated;
+      },
+      referenceType: 'commission',
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.commissionTracking.byTenant(tenantId) });
+        showSuccessToast('Commissions Calculated', 'Commission data has been recalculated from orders');
+      },
+      onError: (error) => {
+        logger.error('Commission calculation failed', error, { component: 'CommissionTracking' });
+        showErrorToast('Calculation failed');
+      },
+    });
+  };
 
   // Toggle commission status
   const toggleStatusMutation = useMutation({
@@ -172,15 +204,26 @@ export default function CommissionTracking() {
           </h1>
           <p className="text-muted-foreground">Track and manage sales commissions</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleExportCSV}
-          disabled={isExporting || !commissions?.length}
-          className="gap-2"
-        >
-          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            onClick={handleCalculateCommissions}
+            disabled={isCalculating}
+            className="gap-2"
+          >
+            {isCalculating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />}
+            Calculate Commissions
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            disabled={isExporting || !commissions?.length}
+            className="gap-2"
+          >
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -295,6 +338,12 @@ export default function CommissionTracking() {
           )}
         </CardContent>
       </Card>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
