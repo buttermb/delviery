@@ -28,7 +28,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { useCreditGatedAction } from "@/hooks/useCreditGatedAction";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
 import { humanizeError } from '@/lib/humanizeError';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { queryKeys } from '@/lib/queryKeys';
@@ -85,6 +87,13 @@ export default function LoyaltyProgramPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
+  const {
+    execute: executeCreditAction,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isExecuting: isCreatingRewardWithCredits,
+  } = useCreditGatedAction();
 
   // Dialog States
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -224,6 +233,22 @@ export default function LoyaltyProgramPage() {
       setTierForm({ name: "", color: "#000000", multiplier: 1, min_points: 0, benefits: [] });
     }
     setIsTierOpen(true);
+  };
+
+  const handleSaveReward = async () => {
+    if (editingReward) {
+      // Editing existing reward — no credit cost
+      upsertRewardMutation.mutate(rewardForm);
+    } else {
+      // Creating new reward — costs 25 credits
+      await executeCreditAction({
+        actionKey: 'loyalty_reward_create',
+        action: async () => {
+          await upsertRewardMutation.mutateAsync(rewardForm);
+        },
+        referenceType: 'loyalty_reward',
+      });
+    }
   };
 
   const handleOpenReward = (reward?: LoyaltyReward) => {
@@ -803,8 +828,11 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
-            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
-              {upsertRewardMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Button
+              disabled={upsertRewardMutation.isPending || isCreatingRewardWithCredits}
+              onClick={handleSaveReward}
+            >
+              {(upsertRewardMutation.isPending || isCreatingRewardWithCredits) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Reward
             </Button>
           </DialogFooter>
@@ -820,6 +848,12 @@ export default function LoyaltyProgramPage() {
         itemType={dialogState.itemType}
         onConfirm={dialogState.onConfirm}
         isLoading={dialogState.isLoading}
+      />
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
       />
     </div >
   );
