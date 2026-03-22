@@ -24,6 +24,8 @@ import FileText from "lucide-react/dist/esm/icons/file-text";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import {
   OrderPrintView,
   type OrderPrintData,
@@ -73,17 +75,16 @@ export function OrderPrintDialog({
   const [showPrices, setShowPrices] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const {
+    execute: executeCreditAction,
+    isExecuting: isCreditChecking,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useCreditGatedAction();
 
-  const handlePrintClick = useCallback(() => {
-    if (!order) {
-      toast.error('No order data available');
-      return;
-    }
-
-    if (!printRef.current) {
-      toast.error('Print content not available');
-      return;
-    }
+  const executePrint = useCallback(() => {
+    if (!order || !printRef.current) return;
 
     setIsPrinting(true);
     logger.info('Starting print job', {
@@ -270,6 +271,31 @@ export function OrderPrintDialog({
     };
   }, [order, selectedLayout]);
 
+  const handlePrintClick = useCallback(async () => {
+    if (!order) {
+      toast.error('No order data available');
+      return;
+    }
+
+    if (!printRef.current) {
+      toast.error('Print content not available');
+      return;
+    }
+
+    await executeCreditAction({
+      actionKey: 'pos_print_receipt',
+      action: async () => {
+        executePrint();
+        return { success: true };
+      },
+      referenceId: order.id,
+      referenceType: 'order',
+      onError: (error) => {
+        toast.error('Print failed', { description: error.message });
+      },
+    });
+  }, [order, executeCreditAction, executePrint]);
+
   if (!order) {
     return null;
   }
@@ -300,6 +326,7 @@ export function OrderPrintDialog({
   };
 
   return (
+  <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -422,11 +449,11 @@ export function OrderPrintDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handlePrintClick} disabled={isPrinting}>
-            {isPrinting ? (
+          <Button onClick={handlePrintClick} disabled={isPrinting || isCreditChecking}>
+            {isPrinting || isCreditChecking ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Printing...
+                {isCreditChecking ? 'Checking credits...' : 'Printing...'}
               </>
             ) : (
               <>
@@ -438,5 +465,12 @@ export function OrderPrintDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <OutOfCreditsModal
+      open={showOutOfCreditsModal}
+      onOpenChange={closeOutOfCreditsModal}
+      actionAttempted={blockedAction ?? undefined}
+    />
+  </>
   );
 }
