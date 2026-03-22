@@ -1,6 +1,7 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { validateStartTrial } from './validation.ts';
+import { validateStripeSecretKey } from '../_shared/validation.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -131,10 +132,10 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
-    // Validate that we have a secret key, not a publishable key
-    if (!stripeKey.startsWith('sk_')) {
+    const keyValidation = validateStripeSecretKey(stripeKey);
+    if (!keyValidation.valid) {
       return new Response(
-        JSON.stringify({ error: "Invalid Stripe configuration. Please use a secret key (starts with 'sk_'), not a publishable key." }),
+        JSON.stringify({ error: keyValidation.error }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
