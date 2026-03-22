@@ -1,129 +1,63 @@
 /**
- * BillingSettings Cancel Subscription Dialog Tests
+ * BillingSettings Cancel Dialog Tests
  *
  * Verifies:
- * 1. Cancel button visible for non-trial, non-starter subscriptions
- * 2. Clicking Cancel Subscription opens the cancel dialog
- * 3. Cancel dialog shows expected content (title, description, buttons)
- * 4. Cancel button hidden during trial
- * 5. Cancel button hidden for starter tier
- * 6. Keep Subscription closes the dialog
+ * - Cancel button visible for non-trial, non-starter subscriptions
+ * - Clicking Cancel Subscription opens the cancel dialog
+ * - Cancel dialog shows expected content (title, description, buttons)
+ * - Keep Subscription closes the dialog
+ * - Cancel button hidden during trial
+ * - Cancel button hidden for starter tier
+ * - Clicking "Proceed to Cancel" calls stripe-customer-portal edge function
+ * - Dialog closes immediately on click
+ * - Success path: opens Stripe portal URL in new tab, shows success toast
+ * - Error path: shows error toast with humanized message
+ * - Button is disabled while loading
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ReactNode } from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 
-// --- Mutable mock state ---
+// ---- Mutable mock config (changed per-test, read by hoisted vi.mock factories) ----
 
-let mockFeatureAccessReturn = {
-  currentTier: 'professional' as string,
-  currentTierName: 'Professional' as string,
-  canAccess: () => true,
+const mockConfig = {
+  featureAccess: {
+    currentTier: 'block' as string,
+    currentTierName: 'Professional',
+    currentTierPrice: 150,
+  },
+  subscriptionStatus: {
+    isTrial: false,
+    needsPaymentMethod: false,
+  },
 };
 
-let mockSubscriptionStatusReturn = {
-  isTrial: false,
-  needsPaymentMethod: false,
-  isActive: true,
-  isPastDue: false,
-};
+// ---- Mocks (hoisted — must not reference non-hoisted variables) ----
 
-// --- Mocks ---
-
-const mockNavigate = vi.fn();
-
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ tenantSlug: 'test-tenant' }),
-    useSearchParams: () => [new URLSearchParams(), vi.fn()],
-  };
-});
-
-vi.mock('@/integrations/supabase/client', () => {
-  const createChainMock = (resolvedValue: { data: unknown; error: unknown } = { data: [], error: null }) => {
-    const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-    chain.select = vi.fn().mockReturnValue(chain);
-    chain.eq = vi.fn().mockReturnValue(chain);
-    chain.neq = vi.fn().mockReturnValue(chain);
-    chain.in = vi.fn().mockReturnValue(chain);
-    chain.gte = vi.fn().mockReturnValue(chain);
-    chain.lt = vi.fn().mockReturnValue(chain);
-    chain.lte = vi.fn().mockReturnValue(chain);
-    chain.not = vi.fn().mockReturnValue(chain);
-    chain.order = vi.fn().mockReturnValue(chain);
-    chain.limit = vi.fn().mockReturnValue(chain);
-    chain.returns = vi.fn().mockResolvedValue(resolvedValue);
-    chain.maybeSingle = vi.fn().mockResolvedValue(resolvedValue);
-    chain.single = vi.fn().mockResolvedValue(resolvedValue);
-    chain.then = vi.fn((resolve) => Promise.resolve(resolvedValue).then(resolve));
-    return chain;
-  };
-
-  return {
-    supabase: {
-      from: vi.fn(() => createChainMock()),
-      functions: {
-        invoke: vi.fn().mockResolvedValue({ data: null, error: null }),
-      },
-      auth: {
-        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null }),
-        signOut: vi.fn().mockResolvedValue({ error: null }),
-      },
-      channel: vi.fn().mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn().mockReturnThis(),
-      }),
-      removeChannel: vi.fn(),
-    },
-  };
-});
-
-vi.mock('@/hooks/useFeatureAccess', () => ({
-  useFeatureAccess: () => mockFeatureAccessReturn,
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    functions: { invoke: vi.fn() },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    }),
+  },
 }));
 
-vi.mock('@/hooks/useSubscriptionStatus', () => ({
-  useSubscriptionStatus: () => mockSubscriptionStatusReturn,
-}));
-
-vi.mock('@/contexts/TenantAdminAuthContext', () => ({
-  useTenantAdminAuth: () => ({
-    tenant: {
-      id: 'tenant-123',
-      slug: 'test-tenant',
-      name: 'Test Dispensary',
-      subscription_plan: 'professional',
-      subscription_status: 'active',
-      trial_ends_at: null,
-      billing_cycle: 'monthly',
-      created_at: '2025-01-01T00:00:00Z',
-      payment_method_added: true,
-      limits: {},
-      usage: {},
-    },
-    admin: { id: 'admin-1', email: 'admin@test.com' },
-    isAuthenticated: true,
-    loading: false,
-    tenantSlug: 'test-tenant',
-  }),
-}));
-
-vi.mock('@/hooks/useCredits', () => ({
-  useCredits: () => ({
-    balance: 100,
-    isFreeTier: false,
-    isLowCredits: false,
-    isCriticalCredits: false,
-    isOutOfCredits: false,
-    nextFreeGrantAt: null,
-    lifetimeSpent: 50,
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
   }),
 }));
 
@@ -136,92 +70,198 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+vi.mock('@/contexts/TenantAdminAuthContext', () => ({
+  useTenantAdminAuth: () => ({
+    tenant: {
+      id: 'tenant-123',
+      name: 'Test Tenant',
+      slug: 'test-tenant',
+      subscription_plan: 'professional',
+      billing_cycle: 'monthly',
+      limits: {},
+      usage: {},
+    },
+    tenantSlug: 'test-tenant',
+  }),
 }));
 
-vi.mock('@/components/billing/AddPaymentMethodDialog', () => ({
-  AddPaymentMethodDialog: () => <div data-testid="add-payment-dialog" />,
+vi.mock('@/hooks/useSubscriptionStatus', () => ({
+  useSubscriptionStatus: () => ({
+    isTrial: mockConfig.subscriptionStatus.isTrial,
+    isActive: !mockConfig.subscriptionStatus.isTrial,
+    isSuspended: false,
+    isCancelled: false,
+    isPastDue: false,
+    isFreeTier: false,
+    isEnterprise: false,
+    isProfessional: true,
+    isStarter: false,
+    hasActiveSubscription: !mockConfig.subscriptionStatus.isTrial,
+    needsPaymentMethod: mockConfig.subscriptionStatus.needsPaymentMethod,
+  }),
 }));
 
-vi.mock('@/components/credits', () => ({
-  CreditBalance: () => <div data-testid="credit-balance" />,
-  CreditUsageStats: () => <div data-testid="credit-usage-stats" />,
+vi.mock('@/hooks/useFeatureAccess', () => ({
+  useFeatureAccess: () => ({
+    currentTier: mockConfig.featureAccess.currentTier,
+    currentTierName: mockConfig.featureAccess.currentTierName,
+    currentTierPrice: mockConfig.featureAccess.currentTierPrice,
+    canAccess: () => true,
+    subscriptionValid: true,
+    isTrialExpired: false,
+    isSuspended: false,
+    isCancelled: false,
+    isPastDue: false,
+    getFeatureTier: vi.fn(),
+    checkUpgrade: () => ({ required: false, targetTier: null, priceDifference: 0 }),
+    getTierDisplayInfo: () => ({
+      name: mockConfig.featureAccess.currentTierName,
+      price: mockConfig.featureAccess.currentTierPrice,
+    }),
+    tenant: null,
+  }),
+}));
+
+vi.mock('@/hooks/useCredits', () => ({
+  useCredits: () => ({
+    balance: 500,
+    isFreeTier: false,
+    isLowCredits: false,
+    isCriticalCredits: false,
+    isOutOfCredits: false,
+    nextFreeGrantAt: null,
+    lifetimeSpent: 0,
+  }),
+}));
+
+vi.mock('@/lib/humanizeError', () => ({
+  humanizeError: (error: unknown, fallback?: string) => {
+    if (error instanceof Error) return error.message;
+    return fallback ?? 'Unknown error';
+  },
 }));
 
 vi.mock('@/lib/tierMapping', () => ({
   businessTierToSubscriptionTier: (tier: string) => {
-    if (!tier) return 'starter';
-    const t = tier.toLowerCase();
-    if (t.includes('enterprise') || t === 'empire') return 'enterprise';
-    if (t.includes('professional') || t === 'block' || t === 'hood') return 'professional';
+    if (tier === 'block' || tier === 'hood') return 'professional';
+    if (tier === 'empire') return 'enterprise';
     return 'starter';
   },
 }));
 
-// --- Test setup ---
+vi.mock('@/lib/featureConfig', () => ({
+  TIER_PRICES: { starter: 79, professional: 150, enterprise: 499 },
+  TIER_NAMES: { starter: 'Starter', professional: 'Professional', enterprise: 'Enterprise' },
+  getFeaturesByCategory: vi.fn().mockReturnValue({}),
+}));
 
-import BillingSettings from '@/pages/tenant-admin/settings/BillingSettings';
+vi.mock('@/lib/credits', () => ({
+  FREE_TIER_MONTHLY_CREDITS: 500,
+}));
 
-function createWrapper() {
-  const queryClient = new QueryClient({
+vi.mock('@/components/billing/AddPaymentMethodDialog', () => ({
+  AddPaymentMethodDialog: () => null,
+}));
+
+vi.mock('@/components/credits', () => ({
+  CreditBalance: () => null,
+  CreditUsageStats: () => null,
+}));
+
+// ---- Imports (after mocks) ----
+
+import BillingSettings from '../BillingSettings';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+const mockInvoke = vi.mocked(supabase.functions.invoke);
+const mockToast = toast as unknown as { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+
+// ---- Helpers ----
+
+function createQueryClient() {
+  return new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: 0 },
       mutations: { retry: false },
     },
   });
-
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={['/test-tenant/admin/settings/billing']}>
-          {children}
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-  };
 }
 
 function renderBillingSettings() {
-  return render(<BillingSettings />, { wrapper: createWrapper() });
+  const queryClient = createQueryClient();
+  const user = userEvent.setup();
+
+  const result = render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <BillingSettings />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+
+  return { ...result, user };
 }
 
-// --- Tests ---
+async function openCancelDialog(user: ReturnType<typeof userEvent.setup>) {
+  const cancelBtn = await screen.findByRole('button', { name: /cancel subscription/i });
+  await user.click(cancelBtn);
+  await screen.findByText('Proceed to Cancel');
+}
 
-describe('BillingSettings - Cancel Subscription Dialog', () => {
+function stubEdgeFunctions(overrides?: Record<string, unknown>) {
+  mockInvoke.mockImplementation((fnName: string) => {
+    if (overrides && fnName in overrides) {
+      return Promise.resolve(overrides[fnName]);
+    }
+    if (fnName === 'check-stripe-config') {
+      return Promise.resolve({
+        data: { configured: true, valid: true, testMode: false },
+        error: null,
+      });
+    }
+    if (fnName === 'invoice-management') {
+      return Promise.resolve({ data: { invoices: [] }, error: null });
+    }
+    return Promise.resolve({ data: null, error: null });
+  });
+}
+
+// ---- Tests ----
+
+describe('BillingSettings — Cancel Subscription Dialog', () => {
+  const mockWindowOpen = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset to professional tier, non-trial
-    mockFeatureAccessReturn = {
-      currentTier: 'professional',
+    // Reset mutable config to defaults
+    mockConfig.featureAccess = {
+      currentTier: 'block',
       currentTierName: 'Professional',
-      canAccess: () => true,
+      currentTierPrice: 150,
     };
-    mockSubscriptionStatusReturn = {
+    mockConfig.subscriptionStatus = {
       isTrial: false,
       needsPaymentMethod: false,
-      isActive: true,
-      isPastDue: false,
     };
+    stubEdgeFunctions();
+    mockWindowOpen.mockReset();
+    vi.spyOn(window, 'open').mockImplementation(mockWindowOpen);
   });
 
   it('renders Cancel Subscription button for non-trial professional plan', async () => {
     renderBillingSettings();
 
     await waitFor(() => {
-      expect(screen.getByText('Cancel Subscription')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /cancel subscription/i })).toBeInTheDocument();
     });
   });
 
   it('opens cancel dialog when Cancel Subscription button is clicked', async () => {
-    const user = userEvent.setup();
-    renderBillingSettings();
+    const { user } = renderBillingSettings();
 
-    const cancelButton = await screen.findByText('Cancel Subscription');
-    await user.click(cancelButton);
+    await openCancelDialog(user);
 
-    // Dialog should now be open with cancel-specific content
-    // Text is split by <br /> and <strong>, so use a function matcher
     await waitFor(() => {
       expect(screen.getByText(/Are you sure you want to cancel your subscription/)).toBeInTheDocument();
     });
@@ -231,11 +271,9 @@ describe('BillingSettings - Cancel Subscription Dialog', () => {
   });
 
   it('shows cancel dialog title with destructive styling', async () => {
-    const user = userEvent.setup();
-    renderBillingSettings();
+    const { user } = renderBillingSettings();
 
-    const cancelButton = await screen.findByText('Cancel Subscription');
-    await user.click(cancelButton);
+    await openCancelDialog(user);
 
     await waitFor(() => {
       // The dialog title should appear (two "Cancel Subscription" texts:
@@ -246,17 +284,9 @@ describe('BillingSettings - Cancel Subscription Dialog', () => {
   });
 
   it('closes dialog when Keep Subscription is clicked', async () => {
-    const user = userEvent.setup();
-    renderBillingSettings();
+    const { user } = renderBillingSettings();
 
-    // Open dialog
-    const cancelButton = await screen.findByText('Cancel Subscription');
-    await user.click(cancelButton);
-
-    // Verify dialog is open
-    await waitFor(() => {
-      expect(screen.getByText('Proceed to Cancel')).toBeInTheDocument();
-    });
+    await openCancelDialog(user);
 
     // Click Keep Subscription
     await user.click(screen.getByText('Keep Subscription'));
@@ -267,40 +297,205 @@ describe('BillingSettings - Cancel Subscription Dialog', () => {
     });
   });
 
-  it('hides Cancel Subscription button during trial period', async () => {
-    mockSubscriptionStatusReturn = {
-      isTrial: true,
-      needsPaymentMethod: true,
-      isActive: true,
-      isPastDue: false,
-    };
-
-    renderBillingSettings();
-
-    // Wait for page to render (multiple "Current Plan" texts may exist in plan comparison)
-    await waitFor(() => {
-      expect(screen.getAllByText('Current Plan').length).toBeGreaterThan(0);
+  it('calls stripe-customer-portal with tenant_id on click', async () => {
+    stubEdgeFunctions({
+      'stripe-customer-portal': {
+        data: { url: 'https://billing.stripe.com/session/test' },
+        error: null,
+      },
     });
 
-    // Cancel button should NOT be present
-    expect(screen.queryByText('Cancel Subscription')).not.toBeInTheDocument();
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    await waitFor(() => {
+      expect(mockInvoke).toHaveBeenCalledWith('stripe-customer-portal', {
+        body: { tenant_id: 'tenant-123' },
+      });
+    });
   });
 
-  it('hides Cancel Subscription button for starter tier', async () => {
-    mockFeatureAccessReturn = {
-      currentTier: 'starter',
+  it('closes dialog immediately when Proceed to Cancel is clicked', async () => {
+    let resolvePortal!: (value: unknown) => void;
+    mockInvoke.mockImplementation((fnName: string) => {
+      if (fnName === 'stripe-customer-portal') {
+        return new Promise((resolve) => { resolvePortal = resolve; });
+      }
+      if (fnName === 'check-stripe-config') {
+        return Promise.resolve({ data: { configured: true, valid: true, testMode: false }, error: null });
+      }
+      if (fnName === 'invoice-management') {
+        return Promise.resolve({ data: { invoices: [] }, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    // Dialog should close immediately (before the edge function responds)
+    await waitFor(() => {
+      expect(screen.queryByText('Are you sure you want to cancel your subscription?')).not.toBeInTheDocument();
+    });
+
+    // Resolve the pending request to avoid dangling promises
+    resolvePortal({ data: { url: 'https://billing.stripe.com/test' }, error: null });
+  });
+
+  it('opens Stripe portal URL in a new tab on success', async () => {
+    const portalUrl = 'https://billing.stripe.com/session/portal-abc';
+
+    stubEdgeFunctions({
+      'stripe-customer-portal': { data: { url: portalUrl }, error: null },
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    await waitFor(() => {
+      expect(mockWindowOpen).toHaveBeenCalledWith(portalUrl, '_blank', 'noopener,noreferrer');
+    });
+  });
+
+  it('shows success toast after opening Stripe portal', async () => {
+    stubEdgeFunctions({
+      'stripe-customer-portal': {
+        data: { url: 'https://billing.stripe.com/session/ok' },
+        error: null,
+      },
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    await waitFor(() => {
+      expect(mockToast.success).toHaveBeenCalledWith(
+        'Manage Subscription',
+        { description: 'Opening Stripe portal to manage your subscription...' },
+      );
+    });
+  });
+
+  it('shows error toast when edge function returns an error', async () => {
+    stubEdgeFunctions({
+      'stripe-customer-portal': {
+        data: null,
+        error: new Error('Edge function failed'),
+      },
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'Error',
+        expect.objectContaining({ description: expect.any(String) }),
+      );
+    });
+  });
+
+  it('shows error toast when data contains error field', async () => {
+    stubEdgeFunctions({
+      'stripe-customer-portal': {
+        data: { error: 'Stripe customer not found' },
+        error: null,
+      },
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'Error',
+        { description: 'Stripe customer not found' },
+      );
+    });
+  });
+
+  it('disables Cancel Subscription trigger button while loading', async () => {
+    let resolvePortal!: (value: unknown) => void;
+    mockInvoke.mockImplementation((fnName: string) => {
+      if (fnName === 'stripe-customer-portal') {
+        return new Promise((resolve) => { resolvePortal = resolve; });
+      }
+      if (fnName === 'check-stripe-config') {
+        return Promise.resolve({ data: { configured: true, valid: true, testMode: false }, error: null });
+      }
+      if (fnName === 'invoice-management') {
+        return Promise.resolve({ data: { invoices: [] }, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    const { user } = renderBillingSettings();
+    await openCancelDialog(user);
+
+    const proceedBtn = screen.getByRole('button', { name: /proceed to cancel/i });
+    await user.click(proceedBtn);
+
+    // The dialog closes, but upgradeLoading is set — the trigger button should be disabled
+    await waitFor(() => {
+      const cancelTrigger = screen.getByRole('button', { name: /cancel subscription/i });
+      expect(cancelTrigger).toBeDisabled();
+    });
+
+    // Resolve to clean up
+    resolvePortal({ data: { url: 'https://billing.stripe.com/test' }, error: null });
+
+    await waitFor(() => {
+      const cancelTrigger = screen.getByRole('button', { name: /cancel subscription/i });
+      expect(cancelTrigger).toBeEnabled();
+    });
+  });
+
+  it('does not show Cancel Subscription button for starter tier', async () => {
+    mockConfig.featureAccess = {
+      currentTier: 'street',
       currentTierName: 'Starter',
-      canAccess: () => true,
+      currentTierPrice: 79,
     };
 
     renderBillingSettings();
 
-    // Wait for page to render (multiple "Current Plan" texts may exist in plan comparison)
     await waitFor(() => {
-      expect(screen.getAllByText('Current Plan').length).toBeGreaterThan(0);
+      expect(screen.getByText(/manage subscription/i)).toBeInTheDocument();
     });
 
-    // Cancel button should NOT be present for starter tier
-    expect(screen.queryByText('Cancel Subscription')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /cancel subscription/i })).not.toBeInTheDocument();
+  });
+
+  it('does not show Cancel Subscription button during trial', async () => {
+    mockConfig.subscriptionStatus = {
+      isTrial: true,
+      needsPaymentMethod: true,
+    };
+
+    renderBillingSettings();
+
+    await waitFor(() => {
+      expect(screen.getByText(/manage subscription/i)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: /cancel subscription/i })).not.toBeInTheDocument();
   });
 });
