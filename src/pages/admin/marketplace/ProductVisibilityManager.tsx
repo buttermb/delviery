@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -8,9 +8,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { humanizeError } from "@/lib/humanizeError";
-import { Loader2, Plus, Search, Filter, MoreHorizontal } from "lucide-react";
+import { logger } from "@/lib/logger";
+import { Loader2, Plus, Search, Filter, MoreHorizontal, Eye, EyeOff } from "lucide-react";
 import { MarketplaceListing } from "@/types/marketplace-extended";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import {
@@ -31,12 +33,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCreditGatedAction } from "@/hooks/useCredits";
+import { CreditCostBadge } from "@/components/credits/CreditCostBadge";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
 
 export default function ProductVisibilityManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
     const navigateTenant = useTenantNavigate();
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [showOutOfCreditsModal, setShowOutOfCreditsModal] = useState(false);
+    const { execute: executeCreditAction, isPerforming: isBulkUpdating } = useCreditGatedAction();
 
     // Fetch listings
     const { data: listings, isLoading } = useQuery<MarketplaceListing[]>({
@@ -107,6 +115,65 @@ export default function ProductVisibilityManager() {
         listing.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     ) ?? [];
 
+    const allFilteredSelected = filteredListings.length > 0 && filteredListings.every(l => selectedIds.has(l.id));
+    const someFilteredSelected = filteredListings.some(l => selectedIds.has(l.id));
+
+    const toggleSelectAll = useCallback(() => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (allFilteredSelected) {
+                filteredListings.forEach(l => next.delete(l.id));
+            } else {
+                filteredListings.forEach(l => next.add(l.id));
+            }
+            return next;
+        });
+    }, [filteredListings, allFilteredSelected]);
+
+    const toggleSelectOne = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }, []);
+
+    const handleBulkVisibility = useCallback(async (newVisibility: 'public' | 'hidden') => {
+        if (!tenant?.id || selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds);
+
+        await executeCreditAction(
+            'marketplace_bulk_update',
+            async () => {
+                const { error } = await supabase
+                    .from('marketplace_listings')
+                    .update({ visibility: newVisibility })
+                    .in('id', ids)
+                    .eq('tenant_id', tenant.id);
+
+                if (error) throw error;
+
+                logger.info('Marketplace bulk visibility update completed', {
+                    count: ids.length,
+                    visibility: newVisibility,
+                    tenantId: tenant.id,
+                });
+
+                queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.all });
+                setSelectedIds(new Set());
+                toast.success(`${ids.length} product(s) set to ${newVisibility}`);
+                return { count: ids.length };
+            },
+            {
+                onInsufficientCredits: () => setShowOutOfCreditsModal(true),
+            }
+        );
+    }, [tenant?.id, selectedIds, executeCreditAction, queryClient]);
+
     if (isLoading) {
         return <EnhancedLoadingState variant="table" message="Loading products..." />;
     }
@@ -125,6 +192,43 @@ export default function ProductVisibilityManager() {
                     Add Product
                 </Button>
             </div>
+
+            {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 border rounded-lg">
+                    <span className="text-sm font-medium">
+                        {selectedIds.size} selected
+                    </span>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isBulkUpdating}
+                            onClick={() => handleBulkVisibility('public')}
+                        >
+                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
+                            Set Public
+                            <CreditCostBadge actionKey="marketplace_bulk_update" className="ml-2" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isBulkUpdating}
+                            onClick={() => handleBulkVisibility('hidden')}
+                        >
+                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <EyeOff className="mr-2 h-4 w-4" />}
+                            Set Hidden
+                            <CreditCostBadge actionKey="marketplace_bulk_update" className="ml-2" />
+                        </Button>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedIds(new Set())}
+                    >
+                        Clear
+                    </Button>
+                </div>
+            )}
 
             <Card>
                 <CardHeader className="p-4">
@@ -151,6 +255,13 @@ export default function ProductVisibilityManager() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[40px]">
+                                    <Checkbox
+                                        checked={allFilteredSelected ? true : someFilteredSelected ? 'indeterminate' : false}
+                                        onCheckedChange={toggleSelectAll}
+                                        aria-label="Select all"
+                                    />
+                                </TableHead>
                                 <TableHead className="w-[80px]">Image</TableHead>
                                 <TableHead>Product</TableHead>
                                 <TableHead>Type</TableHead>
@@ -164,13 +275,20 @@ export default function ProductVisibilityManager() {
                         <TableBody>
                             {filteredListings.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                         No listings found. Click "Add Product" to get started.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 filteredListings.map((listing) => (
-                                    <TableRow key={listing.id}>
+                                    <TableRow key={listing.id} data-selected={selectedIds.has(listing.id) || undefined}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedIds.has(listing.id)}
+                                                onCheckedChange={() => toggleSelectOne(listing.id)}
+                                                aria-label={`Select ${listing.product_name}`}
+                                            />
+                                        </TableCell>
                                         <TableCell>
                                             <div className="h-10 w-10 rounded bg-muted overflow-hidden flex items-center justify-center">
                                                 {listing.images && listing.images[0] ? (
@@ -244,6 +362,12 @@ export default function ProductVisibilityManager() {
                     </Table>
                 </CardContent>
             </Card>
+
+            <OutOfCreditsModal
+                open={showOutOfCreditsModal}
+                onOpenChange={setShowOutOfCreditsModal}
+                actionAttempted="marketplace_bulk_update"
+            />
         </div>
     );
 }
