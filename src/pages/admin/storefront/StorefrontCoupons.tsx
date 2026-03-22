@@ -55,6 +55,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import {
   Select,
   SelectContent,
@@ -102,6 +103,7 @@ export default function StorefrontCoupons() {
   const tenantId = tenant?.id;
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [formData, setFormData] = useState<CouponFormData>(initialFormData);
@@ -251,13 +253,22 @@ export default function StorefrontCoupons() {
     setFormData((prev) => ({ ...prev, code }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.code || !formData.discount_value) {
       toast.error("Please fill in the required fields");
       return;
     }
-    saveCouponMutation.mutate(formData);
+
+    if (editingCoupon) {
+      // Editing existing coupon — no credit charge
+      saveCouponMutation.mutate(formData);
+    } else {
+      // Creating new coupon — gate with credits (25 credits)
+      await executeCreditAction('marketplace_coupon_created', async () => {
+        await saveCouponMutation.mutateAsync(formData);
+      });
+    }
   };
 
   if (!store) {
@@ -409,7 +420,7 @@ export default function StorefrontCoupons() {
                 </Button>
                 <SaveButton
                   type="submit"
-                  isPending={saveCouponMutation.isPending}
+                  isPending={saveCouponMutation.isPending || isPerforming}
                   isSuccess={saveCouponMutation.isSuccess}
                 >
                   Save Coupon
