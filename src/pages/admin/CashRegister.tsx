@@ -48,6 +48,7 @@ import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
@@ -1560,7 +1561,7 @@ function CashRegisterContent() {
               </Button>
               <DisabledTooltip disabled={cart.length === 0 && !processPayment.isPending} reason="Add items to cart before processing payment">
                 <Button
-                  className="flex-1 min-h-[44px]"
+                  className="flex-1 min-h-[44px] group"
                   variant="default"
                   onClick={async () => {
                     try {
@@ -1584,6 +1585,7 @@ function CashRegisterContent() {
                       <DollarSign className="h-4 w-4 mr-2" />
                       {!isOnline ? 'Queue Payment' : 'Pay'}
                       <span className="ml-1.5 hidden md:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
+                      <CreditCostBadge actionKey="pos_process_sale" compact hoverMode className="ml-1.5" />
                     </>
                   )}
                 </Button>

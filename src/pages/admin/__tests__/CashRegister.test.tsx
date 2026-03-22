@@ -40,6 +40,13 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
   }),
 }));
 
+vi.mock('@/contexts/VerificationContext', () => ({
+  useVerification: () => ({
+    isVerified: true,
+    isVerifying: false,
+  }),
+}));
+
 vi.mock('@/hooks/useHapticFeedback', () => ({
   useHapticFeedback: () => ({
     triggerSuccess: vi.fn(),
@@ -52,6 +59,19 @@ vi.mock('@/hooks/useCredits', () => ({
   useCreditGatedAction: () => ({
     execute: vi.fn((_, fn) => fn()),
   }),
+  useCredits: () => ({
+    balance: 1000,
+    isFreeTier: true,
+    isLoading: false,
+  }),
+}));
+
+vi.mock('@/lib/credits', () => ({
+  getCreditCost: (key: string) => (key === 'pos_process_sale' ? 25 : 0),
+  getCreditCostInfo: (key: string) =>
+    key === 'pos_process_sale'
+      ? { actionKey: 'pos_process_sale', actionName: 'POS Sale', credits: 25, category: 'pos', description: 'Process a POS sale' }
+      : null,
 }));
 
 vi.mock('@/lib/offlineQueue', () => ({
@@ -272,6 +292,7 @@ describe('CashRegister Component', () => {
         expect(paymentButton).toBeDisabled();
       });
     });
+
   });
 
   describe('Product Dialog', () => {
