@@ -53,6 +53,9 @@ import { cn } from '@/lib/utils';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { CreditCostBadge, CreditCostIndicator } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 // Union type for all communication sources
 interface CommunicationItem {
@@ -89,6 +92,14 @@ export function CommunicationHistory({
   const queryClient = useQueryClient();
   const { navigateToAdmin } = useTenantNavigation();
   const isMobile = useIsMobile();
+  const {
+    execute: executeCreditGated,
+    isExecuting: isCreditChecking,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isFreeTier,
+  } = useCreditGatedAction();
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [newMessage, setNewMessage] = useState({
     type: 'email' as 'email' | 'sms',
@@ -305,7 +316,7 @@ export function CommunicationHistory({
     },
   });
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.body.trim()) {
       toast.error('Please enter a message');
       return;
@@ -318,6 +329,23 @@ export function CommunicationHistory({
 
     if (newMessage.type === 'sms' && !customerPhone) {
       toast.error('Customer phone is needed to send SMS');
+      return;
+    }
+
+    if (newMessage.type === 'sms') {
+      await executeCreditGated({
+        actionKey: 'send_sms',
+        action: async () => {
+          return new Promise<void>((resolve, reject) => {
+            sendMessageMutation.mutate(newMessage, {
+              onSuccess: () => resolve(),
+              onError: (err) => reject(err),
+            });
+          });
+        },
+        referenceId: customerId,
+        referenceType: 'crm_sms',
+      });
       return;
     }
 
@@ -665,6 +693,10 @@ export function CommunicationHistory({
                   />
                 </div>
 
+                {isFreeTier && newMessage.type === 'sms' && (
+                  <CreditCostIndicator actionKey="send_sms" />
+                )}
+
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -675,10 +707,10 @@ export function CommunicationHistory({
                   </Button>
                   <Button
                     onClick={handleSendMessage}
-                    disabled={sendMessageMutation.isPending}
+                    disabled={sendMessageMutation.isPending || isCreditChecking}
                     className="flex-1"
                   >
-                    {sendMessageMutation.isPending ? (
+                    {sendMessageMutation.isPending || isCreditChecking ? (
                       <>
                         <Clock className="h-4 w-4 mr-2 animate-spin" />
                         Sending...
@@ -687,6 +719,9 @@ export function CommunicationHistory({
                       <>
                         <Send className="h-4 w-4 mr-2" />
                         Send
+                        {isFreeTier && newMessage.type === 'sms' && (
+                          <CreditCostBadge actionKey="send_sms" className="ml-2" showTooltip={false} />
+                        )}
                       </>
                     )}
                   </Button>
@@ -696,6 +731,12 @@ export function CommunicationHistory({
           </div>
         )}
       </CardContent>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </Card>
   );
 }
