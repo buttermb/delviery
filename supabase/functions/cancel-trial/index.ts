@@ -12,15 +12,40 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-    
-    if (!user) {
-      throw new Error("User not authenticated");
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "User not authenticated" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const { tenant_id } = await req.json();
+
+    // Verify caller is admin/owner of the tenant
+    const { data: tenantUser } = await supabaseClient
+      .from("tenant_users")
+      .select("role")
+      .eq("tenant_id", tenant_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!tenantUser || !["admin", "owner"].includes(tenantUser.role)) {
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions — admin or owner access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get tenant
     const { data: tenant } = await supabaseClient

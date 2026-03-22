@@ -49,6 +49,21 @@ serve(secureHeadersMiddleware(async (req) => {
     const rawBody = await req.json();
     const { tenant_id, plan_id, billing_cycle, skip_trial } = validateCreateCheckout(rawBody);
 
+    // Verify caller is admin/owner of the tenant
+    const { data: tenantUser } = await supabaseClient
+      .from("tenant_users")
+      .select("role")
+      .eq("tenant_id", tenant_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!tenantUser || !["admin", "owner"].includes(tenantUser.role)) {
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions — admin or owner access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.error('[CREATE-CHECKOUT] Request:', { tenant_id, plan_id, billing_cycle, skip_trial });
 
     // Get tenant
