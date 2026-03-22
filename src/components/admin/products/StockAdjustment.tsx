@@ -43,6 +43,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -132,6 +133,7 @@ export function StockAdjustment({
 }: StockAdjustmentProps) {
   const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>('add');
   const [quantity, setQuantity] = useState('');
@@ -296,14 +298,18 @@ export function StockAdjustment({
       // For add/remove, quantity must be > 0; for set, allow 0 (zero out stock)
       if (adjustmentType !== 'set' && parsedQuantity <= 0) return;
 
-      adjustmentMutation.mutate({
+      const payload: AdjustmentPayload = {
         type: adjustmentType,
         quantity: parsedQuantity,
         reason,
         notes,
-      });
+      };
+
+      executeCreditAction('stock_update', () =>
+        adjustmentMutation.mutateAsync(payload)
+      );
     },
-    [adjustmentMutation, adjustmentType, parsedQuantity, reason, notes]
+    [executeCreditAction, adjustmentMutation, adjustmentType, parsedQuantity, reason, notes]
   );
 
   const handleClose = useCallback(() => {
