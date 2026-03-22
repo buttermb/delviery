@@ -27,10 +27,12 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { cn } from "@/lib/utils";
 import { useCreatePreOrder } from "@/hooks/crm/usePreOrders";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { ClientSelector } from "@/components/crm/ClientSelector";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
@@ -48,6 +50,7 @@ export default function CreatePreOrderPage() {
     const { navigateToAdmin, navigate } = useTenantNavigation();
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
+    const { execute: executeCreditAction } = useCreditGatedAction();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
     // useForm must be called before any early returns to satisfy React hooks rules
@@ -108,31 +111,36 @@ export default function CreatePreOrderPage() {
             return;
         }
 
-        try {
-            const preOrder = await createPreOrder.mutateAsync({
-                client_id: values.client_id,
-                status: "pending",
-                line_items: lineItems,
-                subtotal: total,
-                tax: 0,
-                total,
-            });
+        await executeCreditAction('order_create_manual', async () => {
+            try {
+                const preOrder = await createPreOrder.mutateAsync({
+                    client_id: values.client_id,
+                    status: "pending",
+                    line_items: lineItems,
+                    subtotal: total,
+                    tax: 0,
+                    total,
+                });
 
-            // Log activity
-            logActivity.mutate({
-                client_id: values.client_id,
-                activity_type: "pre_order_created",
-                description: `Pre-order #${preOrder.pre_order_number} created`,
-                reference_id: preOrder.id,
-                reference_type: "crm_pre_orders",
-            });
+                // Log activity
+                logActivity.mutate({
+                    client_id: values.client_id,
+                    activity_type: "pre_order_created",
+                    description: `Pre-order #${preOrder.pre_order_number} created`,
+                    reference_id: preOrder.id,
+                    reference_type: "crm_pre_orders",
+                });
 
-            toast.success("Pre-order created successfully");
-            // Use validated tenantSlug (guaranteed to exist at this point)
-            navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
-        } catch {
-            // Error handled by hook
-        }
+                toast.success("Pre-order created successfully");
+                navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
+            } catch (error: unknown) {
+                logger.error('Failed to create pre-order', error, {
+                    component: 'CreatePreOrderPage',
+                    clientId: values.client_id,
+                });
+                throw error;
+            }
+        });
     };
 
     return (
