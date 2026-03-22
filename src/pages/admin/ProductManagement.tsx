@@ -16,6 +16,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -124,6 +125,7 @@ export default function ProductManagement() {
   useEncryption();
   const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   // Product duplication hook with callback to open edit dialog
   const { duplicateProduct, isPending: isDuplicating } = useProductDuplicate({
@@ -699,41 +701,44 @@ export default function ProductManagement() {
           action: 'updated',
         });
       } else {
-        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
-        if (error) throw error;
-        toast.success("Product created");
-        // Manually update state
-        setProducts(prev => [newProduct, ...prev]);
+        // Gate new product creation behind credits (10 credits)
+        await executeCreditAction('product_add', async () => {
+          const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
+          if (error) throw error;
+          toast.success("Product created");
+          // Manually update state
+          setProducts(prev => [newProduct, ...prev]);
 
-        // Log audit event
-        logAuditEvent({
-          action: 'product.created',
-          resourceType: 'product',
-          resourceId: newProduct.id,
-          tenantId: tenant.id,
-          changes: { name: productData.name, sku: productData.sku },
-        });
-
-        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
-        // this handles marketplace_products with additional fields like slug)
-        if (store?.id && newProduct) {
-          const { error: syncError } = await (supabase.rpc as (fn: string, params: Record<string, string>) => ReturnType<typeof supabase.rpc>)('sync_product_to_marketplace', {
-            p_product_id: newProduct.id,
-            p_store_id: store.id,
+          // Log audit event
+          logAuditEvent({
+            action: 'product.created',
+            resourceType: 'product',
+            resourceId: newProduct.id,
+            tenantId: tenant.id,
+            changes: { name: productData.name, sku: productData.sku },
           });
-          if (syncError) {
-            // Don't block on sync error - product was created successfully
-            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
-          }
-        }
 
-        // Invalidate all product caches so storefront reflects changes instantly
-        invalidateProductCaches({
-          tenantId: tenant.id,
-          storeId: store?.id || undefined,
-          productId: newProduct.id,
-          category: productData.category || undefined,
-          action: 'created',
+          // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
+          // this handles marketplace_products with additional fields like slug)
+          if (store?.id && newProduct) {
+            const { error: syncError } = await (supabase.rpc as (fn: string, params: Record<string, string>) => ReturnType<typeof supabase.rpc>)('sync_product_to_marketplace', {
+              p_product_id: newProduct.id,
+              p_store_id: store.id,
+            });
+            if (syncError) {
+              // Don't block on sync error - product was created successfully
+              logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
+            }
+          }
+
+          // Invalidate all product caches so storefront reflects changes instantly
+          invalidateProductCaches({
+            tenantId: tenant.id,
+            storeId: store?.id || undefined,
+            productId: newProduct.id,
+            category: productData.category || undefined,
+            action: 'created',
+          });
         });
       }
       setIsDialogOpen(false);
