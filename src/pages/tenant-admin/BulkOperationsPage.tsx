@@ -1,9 +1,9 @@
-import { logger } from '@/lib/logger';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 interface BulkOperationParams {
   priceChangeType?: string;
@@ -108,6 +110,14 @@ export default function BulkOperationsPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [operationDialogOpen, setOperationDialogOpen] = useState(false);
   const [operationParams, setOperationParams] = useState<BulkOperationParams>({});
+
+  const {
+    execute: executeCreditAction,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isExecuting: isCreditActionExecuting,
+  } = useCreditGatedAction();
 
   // Fetch products
   const { data: products, isLoading, isError } = useQuery({
@@ -489,20 +499,38 @@ export default function BulkOperationsPage() {
             <Button
               onClick={() => {
                 if (selectedOperation && selectedProducts.size > 0) {
-                  executeBulkOperation.mutate({
-                    operation: selectedOperation,
-                    productIds: Array.from(selectedProducts),
-                    params: operationParams
+                  executeCreditAction({
+                    actionKey: 'marketplace_bulk_update',
+                    action: async () => {
+                      await executeBulkOperation.mutateAsync({
+                        operation: selectedOperation,
+                        productIds: Array.from(selectedProducts),
+                        params: operationParams,
+                      });
+                    },
+                    onError: (error) => {
+                      logger.error('Credit-gated bulk operation failed', error, {
+                        component: 'BulkOperationsPage',
+                        operation: selectedOperation,
+                        productCount: selectedProducts.size,
+                      });
+                    },
                   });
                 }
               }}
-              disabled={selectedProducts.size === 0 || executeBulkOperation.isPending}
+              disabled={selectedProducts.size === 0 || executeBulkOperation.isPending || isCreditActionExecuting}
             >
-              {executeBulkOperation.isPending ? 'Processing...' : 'Execute Operation'}
+              {executeBulkOperation.isPending || isCreditActionExecuting ? 'Processing...' : 'Execute Operation'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
