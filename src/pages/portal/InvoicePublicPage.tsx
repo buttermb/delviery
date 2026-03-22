@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePublicInvoice } from "@/hooks/crm/usePublicInvoice";
+import type { LineItem } from "@/types/crm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
@@ -172,7 +173,7 @@ export default function InvoicePublicPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {invoice.line_items.map((item: { description?: string; product_name?: string; quantity: number; unit_price: number; total?: number; line_total?: number }, index: number) => (
+                                    {invoice.line_items.map((item: LineItem, index: number) => (
                                         <TableRow key={index} className="border-slate-100">
                                             <TableCell className="pl-6 font-medium text-slate-900">
                                                 {item.description || item.product_name}
@@ -180,7 +181,7 @@ export default function InvoicePublicPage() {
                                             <TableCell className="text-right text-slate-600">{item.quantity}</TableCell>
                                             <TableCell className="text-right text-slate-600">{formatCurrency(item.unit_price)}</TableCell>
                                             <TableCell className="text-right pr-6 font-medium text-slate-900">
-                                                {formatCurrency(item.line_total ?? item.total)}
+                                                {formatCurrency(item.line_total)}
                                             </TableCell>
                                         </TableRow>
                                     ))}

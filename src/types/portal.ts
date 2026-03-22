@@ -1,3 +1,5 @@
+import type { CRMInvoiceStatus } from '@/types/crm';
+
 export interface PortalClient {
   id: string;
   business_name: string;
@@ -14,7 +16,7 @@ export interface PortalInvoice {
   total: number;
   subtotal: number;
   tax: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  status: CRMInvoiceStatus;
   issue_date: string;
   due_date: string;
   line_items: Array<{
