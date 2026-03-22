@@ -370,7 +370,7 @@ describe('useCreditGatedAction', () => {
 
       // Verify setQueryData was called
       expect(mockSetQueryData).toHaveBeenCalledWith(
-        ['credits', 'test-tenant-id'],
+        ['credits', 'balance', 'test-tenant-id'],
         expect.any(Function)
       );
     });
@@ -400,7 +400,7 @@ describe('useCreditGatedAction', () => {
 
       // Verify invalidateQueries was called to sync with server
       expect(mockInvalidateQueries).toHaveBeenCalledWith({
-        queryKey: ['credits', 'test-tenant-id'],
+        queryKey: ['credits', 'balance', 'test-tenant-id'],
       });
     });
 
@@ -534,6 +534,174 @@ describe('useCreditGatedAction', () => {
       // After execution completes
       expect(result.current.isExecuting).toBe(false);
       expect(mockAction).toHaveBeenCalled();
+    });
+  });
+
+  // ==========================================================================
+  // Credit Gate: Blocks action and shows modal when insufficient
+  // ==========================================================================
+
+  describe('Credit Gate blocks action and shows modal when insufficient', () => {
+    it('should block menu_create and show modal when balance is 50 (costs 100)', async () => {
+      // Mock low balance of 50 credits (menu_create costs 100)
+      vi.mocked(useCredits).mockReturnValue({
+        balance: 50,
+        isFreeTier: true,
+        isLoading: false,
+        error: null,
+        isLowCredits: true,
+        isCriticalCredits: true,
+        isOutOfCredits: false,
+        lifetimeEarned: 1000,
+        lifetimeSpent: 950,
+        nextFreeGrantAt: null,
+        percentUsed: 95,
+        canPerformAction: mockCanPerformAction,
+        performAction: mockPerformAction,
+        refetch: vi.fn(),
+        lifetimeStats: { earned: 1000, spent: 950, purchased: 0, expired: 0, refunded: 0 },
+        subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+        hasCredits: vi.fn().mockReturnValue(false),
+        invalidate: vi.fn(),
+      });
+
+      // canPerformAction returns false for insufficient balance
+      mockCanPerformAction.mockResolvedValue(false);
+
+      const { result } = renderHook(() => useCreditGatedAction(), {
+        wrapper: createWrapper(),
+      });
+
+      const actionCallback = vi.fn().mockResolvedValue({ menuId: 'menu-1' });
+
+      // Initially modal should be hidden
+      expect(result.current.showOutOfCreditsModal).toBe(false);
+      expect(result.current.blockedAction).toBeNull();
+
+      let executeResult: Awaited<ReturnType<typeof result.current.execute>>;
+
+      await act(async () => {
+        executeResult = await result.current.execute({
+          actionKey: 'menu_create',
+          action: actionCallback,
+        });
+      });
+
+      // Action callback must NOT have been called
+      expect(actionCallback).not.toHaveBeenCalled();
+
+      // OutOfCreditsModal should be shown
+      expect(result.current.showOutOfCreditsModal).toBe(true);
+
+      // Blocked action should be set to menu_create
+      expect(result.current.blockedAction).toBe('menu_create');
+
+      // Result should indicate blocking
+      expect(executeResult!.success).toBe(false);
+      expect(executeResult!.wasBlocked).toBe(true);
+      expect(executeResult!.creditsCost).toBe(100);
+
+      // Credits should not have been consumed
+      expect(mockPerformAction).not.toHaveBeenCalled();
+    });
+
+    it('should not show modal when balance insufficient and skipModal is true', async () => {
+      vi.mocked(useCredits).mockReturnValue({
+        balance: 50,
+        isFreeTier: true,
+        isLoading: false,
+        error: null,
+        isLowCredits: true,
+        isCriticalCredits: true,
+        isOutOfCredits: false,
+        lifetimeEarned: 1000,
+        lifetimeSpent: 950,
+        nextFreeGrantAt: null,
+        percentUsed: 95,
+        canPerformAction: mockCanPerformAction,
+        performAction: mockPerformAction,
+        refetch: vi.fn(),
+        lifetimeStats: { earned: 1000, spent: 950, purchased: 0, expired: 0, refunded: 0 },
+        subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+        hasCredits: vi.fn().mockReturnValue(false),
+        invalidate: vi.fn(),
+      });
+
+      mockCanPerformAction.mockResolvedValue(false);
+
+      const { result } = renderHook(() => useCreditGatedAction(), {
+        wrapper: createWrapper(),
+      });
+
+      const actionCallback = vi.fn();
+      const onInsufficientCredits = vi.fn();
+
+      await act(async () => {
+        await result.current.execute({
+          actionKey: 'menu_create',
+          action: actionCallback,
+          skipModal: true,
+          onInsufficientCredits,
+        });
+      });
+
+      // Action blocked
+      expect(actionCallback).not.toHaveBeenCalled();
+
+      // Modal NOT shown because skipModal is true
+      expect(result.current.showOutOfCreditsModal).toBe(false);
+
+      // But callback still fires for custom handling
+      expect(onInsufficientCredits).toHaveBeenCalledWith('menu_create');
+    });
+
+    it('should allow closing the modal after being blocked', async () => {
+      vi.mocked(useCredits).mockReturnValue({
+        balance: 50,
+        isFreeTier: true,
+        isLoading: false,
+        error: null,
+        isLowCredits: true,
+        isCriticalCredits: true,
+        isOutOfCredits: false,
+        lifetimeEarned: 1000,
+        lifetimeSpent: 950,
+        nextFreeGrantAt: null,
+        percentUsed: 95,
+        canPerformAction: mockCanPerformAction,
+        performAction: mockPerformAction,
+        refetch: vi.fn(),
+        lifetimeStats: { earned: 1000, spent: 950, purchased: 0, expired: 0, refunded: 0 },
+        subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+        hasCredits: vi.fn().mockReturnValue(false),
+        invalidate: vi.fn(),
+      });
+
+      mockCanPerformAction.mockResolvedValue(false);
+
+      const { result } = renderHook(() => useCreditGatedAction(), {
+        wrapper: createWrapper(),
+      });
+
+      await act(async () => {
+        await result.current.execute({
+          actionKey: 'menu_create',
+          action: vi.fn(),
+        });
+      });
+
+      // Modal is shown
+      expect(result.current.showOutOfCreditsModal).toBe(true);
+      expect(result.current.blockedAction).toBe('menu_create');
+
+      // Close the modal
+      act(() => {
+        result.current.closeOutOfCreditsModal();
+      });
+
+      // Modal is hidden, blocked action cleared
+      expect(result.current.showOutOfCreditsModal).toBe(false);
+      expect(result.current.blockedAction).toBeNull();
     });
   });
 
@@ -703,7 +871,7 @@ describe('useCreateStorefront', () => {
     });
   });
 
-  it('should use marketplace_list_product action key', async () => {
+  it('should use storefront_create action key', async () => {
     const { result } = renderHook(() => useCreateStorefront(), {
       wrapper: createWrapper(),
     });
@@ -714,10 +882,10 @@ describe('useCreateStorefront', () => {
       await result.current.createStorefront(mockAction);
     });
 
-    expect(mockCanPerformAction).toHaveBeenCalledWith('marketplace_list_product');
+    expect(mockCanPerformAction).toHaveBeenCalledWith('storefront_create');
     // When no storefrontId is provided, referenceId is undefined
     expect(mockPerformAction).toHaveBeenCalledWith(
-      'marketplace_list_product',
+      'storefront_create',
       undefined,
       'storefront'
     );
@@ -737,7 +905,7 @@ describe('useCreateStorefront', () => {
     });
 
     expect(mockPerformAction).toHaveBeenCalledWith(
-      'marketplace_list_product',
+      'storefront_create',
       'specific-store-id',
       'storefront'
     );
@@ -763,7 +931,7 @@ describe('useCreateStorefront', () => {
     });
 
     expect(result.current.showOutOfCreditsModal).toBe(true);
-    expect(result.current.blockedAction).toBe('marketplace_list_product');
+    expect(result.current.blockedAction).toBe('storefront_create');
   });
 });
 
@@ -1062,7 +1230,7 @@ describe('Complete User Flow', () => {
 
     // 6. Balance was synced with server
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['credits', 'test-tenant-id'],
+      queryKey: ['credits', 'balance', 'test-tenant-id'],
     });
   });
 
