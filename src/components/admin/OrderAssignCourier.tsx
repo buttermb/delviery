@@ -6,6 +6,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { humanizeError } from '@/lib/humanizeError';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 import {
   Dialog,
   DialogContent,
@@ -65,6 +67,7 @@ export function OrderAssignCourier({
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [selectedCourierId, setSelectedCourierId] = useState<string | null>(null);
+  const { execute: executeCreditAction, isPerforming: isCreditChecking } = useCreditGatedAction();
 
   // Fetch available couriers using TanStack Query
   const {
@@ -138,16 +141,20 @@ export function OrderAssignCourier({
     },
   });
 
-  const handleAssignSelected = () => {
+  const handleAssignSelected = async () => {
     if (!selectedCourierId) {
       toast.error('Please select a courier');
       return;
     }
-    assignCourierMutation.mutate({ courierId: selectedCourierId });
+    await executeCreditAction('courier_assign_delivery', async () => {
+      await assignCourierMutation.mutateAsync({ courierId: selectedCourierId });
+    }, { referenceId: orderId, referenceType: 'order' });
   };
 
-  const handleAutoAssign = () => {
-    assignCourierMutation.mutate({ autoAssign: true });
+  const handleAutoAssign = async () => {
+    await executeCreditAction('courier_assign_delivery', async () => {
+      await assignCourierMutation.mutateAsync({ autoAssign: true });
+    }, { referenceId: orderId, referenceType: 'order' });
   };
 
   const handleClose = () => {
@@ -167,6 +174,7 @@ export function OrderAssignCourier({
           <DialogTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5" />
             Assign Courier
+            <CreditCostBadge actionKey="courier_assign_delivery" compact />
           </DialogTitle>
           <DialogDescription>
             {orderNumber ? (
@@ -184,9 +192,9 @@ export function OrderAssignCourier({
               variant="outline"
               className="w-full justify-start gap-2 border-dashed"
               onClick={handleAutoAssign}
-              disabled={assignCourierMutation.isPending}
+              disabled={assignCourierMutation.isPending || isCreditChecking}
             >
-              {assignCourierMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 text-warning" />}
+              {(assignCourierMutation.isPending || isCreditChecking) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 text-warning" />}
               Auto-assign nearest available courier
             </Button>
           )}
@@ -229,7 +237,7 @@ export function OrderAssignCourier({
                           courier={courier}
                           isSelected={selectedCourierId === courier.id}
                           onSelect={() => setSelectedCourierId(courier.id)}
-                          disabled={assignCourierMutation.isPending}
+                          disabled={assignCourierMutation.isPending || isCreditChecking}
                         />
                       ))}
                     </div>
@@ -250,7 +258,7 @@ export function OrderAssignCourier({
                           courier={courier}
                           isSelected={selectedCourierId === courier.id}
                           onSelect={() => setSelectedCourierId(courier.id)}
-                          disabled={assignCourierMutation.isPending}
+                          disabled={assignCourierMutation.isPending || isCreditChecking}
                         />
                       ))}
                     </div>
@@ -262,10 +270,10 @@ export function OrderAssignCourier({
         </div>
 
         <DialogFooterActions
-          primaryLabel={assignCourierMutation.isPending ? 'Assigning...' : 'Assign Selected'}
+          primaryLabel={(assignCourierMutation.isPending || isCreditChecking) ? 'Assigning...' : 'Assign Selected'}
           onPrimary={handleAssignSelected}
-          primaryDisabled={!selectedCourierId || assignCourierMutation.isPending}
-          primaryLoading={assignCourierMutation.isPending}
+          primaryDisabled={!selectedCourierId || assignCourierMutation.isPending || isCreditChecking}
+          primaryLoading={assignCourierMutation.isPending || isCreditChecking}
           secondaryLabel="Cancel"
           onSecondary={handleClose}
         />
