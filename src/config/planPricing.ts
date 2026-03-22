@@ -23,7 +23,7 @@ export const PLAN_CONFIG = {
     priceMonthly: 79,
     priceYearly: 790,
     stripePriceId: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP',
-    stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP', // TODO: update when yearly Stripe price exists
+    stripePriceIdYearly: null, // Set after running setup-stripe-products edge function
     stripeProductId: 'prod_TYA2kle7mkwTJo',
     description: 'Unlimited usage for small businesses',
     trialDays: 14,
@@ -33,7 +33,7 @@ export const PLAN_CONFIG = {
     priceMonthly: 150,
     priceYearly: 1500,
     stripePriceId: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
-    stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI', // TODO: update when yearly Stripe price exists
+    stripePriceIdYearly: null, // Set after running setup-stripe-products edge function
     stripeProductId: 'prod_TYA2CWSnpNaui9',
     description: 'Ideal for growing businesses',
     trialDays: 14,
@@ -43,7 +43,7 @@ export const PLAN_CONFIG = {
     priceMonthly: 499,
     priceYearly: 4990,
     stripePriceId: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
-    stripePriceIdYearly: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E', // TODO: update when yearly Stripe price exists
+    stripePriceIdYearly: null, // Set after running setup-stripe-products edge function
     stripeProductId: 'prod_TYA2f6LK7qu8i9',
     description: 'Complete solution for large operations',
     trialDays: 14,
