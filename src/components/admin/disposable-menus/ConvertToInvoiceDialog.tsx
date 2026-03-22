@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Search, FileText, Package, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2, Search, FileText, Package, AlertTriangle, RefreshCw, Coins } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatPhoneNumber, formatCurrency } from '@/lib/formatters';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 export interface ConvertToInvoiceDialogProps {
   open: boolean;
@@ -52,7 +53,7 @@ export function ConvertToInvoiceDialog({
   const queryClient = useQueryClient();
   const [selectedClientId, setSelectedClientId] = useState<string>(order.client_id ?? '');
   const [clientSearchQuery, setClientSearchQuery] = useState('');
-  const [isConverting, setIsConverting] = useState(false);
+  const { execute: executeCreditAction, isPerforming: isConverting } = useCreditGatedAction();
 
   // Fetch wholesale clients for selection
   const { data: clients, isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useQuery({
@@ -124,9 +125,7 @@ export function ConvertToInvoiceDialog({
       return;
     }
 
-    try {
-      setIsConverting(true);
-
+    await executeCreditAction('invoice_create', async () => {
       const { data, error } = await supabase.functions.invoke('convert-menu-order-to-invoice', {
         body: {
           menu_order_id: order.id,
@@ -135,22 +134,20 @@ export function ConvertToInvoiceDialog({
       });
 
       if (error) {
-        logger.error('Failed to convert order to invoice', error, { 
+        logger.error('Failed to convert order to invoice', error, {
           component: 'ConvertToInvoiceDialog',
           orderId: order.id,
           clientId: selectedClientId,
         });
-        showErrorToast(error.message || 'Failed to convert order to invoice');
-        return;
+        throw new Error(error.message || 'Failed to convert order to invoice');
       }
 
       if (!data || !data.success) {
-        logger.error('Conversion failed', { data }, { 
+        logger.error('Conversion failed', { data }, {
           component: 'ConvertToInvoiceDialog',
           orderId: order.id,
         });
-        showErrorToast(data?.error || 'Failed to convert order to invoice');
-        return;
+        throw new Error(data?.error || 'Failed to convert order to invoice');
       }
 
       showSuccessToast(
@@ -172,16 +169,13 @@ export function ConvertToInvoiceDialog({
 
       onSuccess?.();
       onOpenChange(false);
-    } catch (error: unknown) {
-      logger.error('Error converting order to invoice', error, { 
-        component: 'ConvertToInvoiceDialog',
-        orderId: order.id,
-      });
-      showErrorToast('An unexpected error occurred');
-    } finally {
-      setIsConverting(false);
-    }
-  }, [selectedClientId, order, queryClient, onSuccess, onOpenChange, tenant?.id]);
+
+      return data;
+    }, {
+      referenceId: order.id,
+      referenceType: 'menu_order',
+    });
+  }, [selectedClientId, order, queryClient, onSuccess, onOpenChange, tenant?.id, executeCreditAction]);
 
   // Check if already converted
   if (order.converted_to_invoice_id) {
@@ -369,6 +363,10 @@ export function ConvertToInvoiceDialog({
               <>
                 <FileText className="h-4 w-4 mr-2" />
                 Convert to Invoice
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  <Coins className="h-3 w-3 mr-1" />
+                  50
+                </Badge>
               </>
             )}
           </Button>
