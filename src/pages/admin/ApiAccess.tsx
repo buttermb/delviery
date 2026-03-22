@@ -10,11 +10,23 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Key, Plus, Copy, Loader2 } from 'lucide-react';
+import { Key, Plus, Copy, Loader2, Coins } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCredits } from '@/hooks/useCredits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+
+/** Per-call credit costs by HTTP method for API endpoints */
+const API_ENDPOINT_COSTS = [
+  { method: 'GET', cost: 1, description: 'Read operations (list, fetch details)', variant: 'secondary' as const },
+  { method: 'POST', costRange: '5–25', cost: 5, description: 'Create operations (orders, products, menus)', variant: 'default' as const },
+  { method: 'PUT', cost: 3, description: 'Update operations (edit records)', variant: 'secondary' as const },
+  { method: 'DELETE', cost: 1, description: 'Delete operations (remove records)', variant: 'outline' as const },
+] as const;
 
 export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
@@ -26,18 +38,27 @@ export default function ApiAccess() {
     permissions: [] as string[],
   });
 
+  const { isFreeTier, balance } = useCredits();
+  const {
+    execute,
+    isExecuting,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useCreditGatedAction();
+
   const { data: apiKeys, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.apiKeys.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
       const { data, error } = await listAdminRecords('api_keys');
-      
+
       if (error) {
         logger.error('Error fetching API keys:', error);
         return [];
       }
-      
+
       return data ?? [];
     },
     enabled: !!tenantId,
@@ -67,6 +88,18 @@ export default function ApiAccess() {
       toast.error(`Failed to create API key: ${humanizeError(error)}`);
     },
   });
+
+  const handleCreateKey = () => {
+    execute({
+      actionKey: 'api_call',
+      action: async () => {
+        createKeyMutation.mutate(formData);
+      },
+      onSuccess: () => {
+        logger.info('API key creation credit-gated action succeeded');
+      },
+    });
+  };
 
   const handleCopy = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -101,11 +134,52 @@ export default function ApiAccess() {
           <h1 className="text-xl font-bold">API Access</h1>
           <p className="text-muted-foreground">Manage API keys and access tokens</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create API Key
-        </Button>
+        <div className="flex items-center gap-2">
+          <CreditCostBadge actionKey="api_call" showTooltip />
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create API Key
+          </Button>
+        </div>
       </div>
+
+      {isFreeTier && (
+        <Card data-testid="api-cost-reference">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Coins className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Per-Call API Costs</CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              Each API call consumes credits based on the HTTP method. Current balance: {balance.toLocaleString()} credits.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {API_ENDPOINT_COSTS.map((endpoint) => (
+                <div
+                  key={endpoint.method}
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg bg-muted/50 text-center"
+                  data-testid={`api-cost-${endpoint.method.toLowerCase()}`}
+                >
+                  <Badge variant={endpoint.variant} className="font-mono text-xs">
+                    {endpoint.method}
+                  </Badge>
+                  <span className="text-lg font-bold">
+                    {'costRange' in endpoint ? endpoint.costRange : endpoint.cost}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {endpoint.description}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Example: 1,000 GET calls = 1,000 credits · 100 POST calls = 500–2,500 credits
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {apiKeys && apiKeys.length > 0 ? (
         <div className="space-y-4">
@@ -186,20 +260,25 @@ export default function ApiAccess() {
               Cancel
             </Button>
             <Button
-              onClick={() => createKeyMutation.mutate(formData)}
-              disabled={createKeyMutation.isPending}
+              onClick={handleCreateKey}
+              disabled={createKeyMutation.isPending || isExecuting}
             >
-              {createKeyMutation.isPending ? (
+              {(createKeyMutation.isPending || isExecuting) ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Plus className="h-4 w-4 mr-2" />
               )}
-              {createKeyMutation.isPending ? 'Creating...' : 'Create Key'}
+              {(createKeyMutation.isPending || isExecuting) ? 'Creating...' : 'Create Key'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
-
