@@ -21,6 +21,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 // ============================================================================
 // Types
@@ -609,12 +610,15 @@ export interface UsePointsMutationsReturn {
   isAwarding: boolean;
   isRedeeming: boolean;
   isAdjusting: boolean;
+  /** Whether the credit gate is checking/performing a credit-gated action */
+  isCreditGating: boolean;
 }
 
 export function usePointsMutations(): UsePointsMutationsReturn {
   const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
+  const { execute: executeCreditAction, isPerforming: isCreditGating } = useCreditGatedAction();
 
   // Award points mutation
   const awardMutation = useMutation({
@@ -814,13 +818,17 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
   const redeemPoints = useCallback(
     async (params: RedeemPointsParams): Promise<LoyaltyPointTransaction | null> => {
-      try {
-        return await redeemMutation.mutateAsync(params);
-      } catch {
-        return null;
-      }
+      const result = await executeCreditAction(
+        'loyalty_reward_issue',
+        () => redeemMutation.mutateAsync(params),
+        {
+          referenceId: params.orderId,
+          referenceType: 'loyalty_redemption',
+        }
+      );
+      return result ?? null;
     },
-    [redeemMutation]
+    [redeemMutation, executeCreditAction]
   );
 
   const adjustPoints = useCallback(
@@ -841,6 +849,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
     isAwarding: awardMutation.isPending,
     isRedeeming: redeemMutation.isPending,
     isAdjusting: adjustMutation.isPending,
+    isCreditGating,
   };
 }
 
@@ -879,6 +888,8 @@ export interface UseCustomerLoyaltyReturn {
   isRedeeming: boolean;
   isAdjusting: boolean;
   isUpdatingConfig: boolean;
+  /** Whether the credit gate is checking/performing a credit-gated action */
+  isCreditGating: boolean;
 
   // Helpers
   calculateEarnedPoints: (orderTotal: number) => number;
@@ -936,6 +947,7 @@ export function useCustomerLoyalty({
     isAwarding,
     isRedeeming,
     isAdjusting,
+    isCreditGating,
   } = usePointsMutations();
 
   // Helper functions
@@ -997,6 +1009,7 @@ export function useCustomerLoyalty({
     isRedeeming,
     isAdjusting,
     isUpdatingConfig,
+    isCreditGating,
 
     // Helpers
     calculateEarnedPoints,
