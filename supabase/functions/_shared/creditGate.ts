@@ -385,6 +385,7 @@ export const CREDIT_ACTIONS = {
 
   // Reports & Exports
   GENERATE_REPORT: 'generate_report',
+  REPORT_CUSTOM_GENERATE: 'report_custom_generate',
   EXPORT_CSV: 'export_csv',
   EXPORT_PDF: 'export_pdf',
 

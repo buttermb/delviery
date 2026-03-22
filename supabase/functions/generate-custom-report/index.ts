@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { escapePostgresLike } from '../_shared/searchSanitize.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 /**
  * Generate Custom Report Edge Function
@@ -82,7 +83,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
+  return withCreditGate(req, CREDIT_ACTIONS.REPORT_CUSTOM_GENERATE, async (creditTenantId, serviceClient) => {
     // Initialize Supabase client with user's auth
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -388,12 +389,5 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error) {
-    console.error('Error generating report:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error occurred';
-    return new Response(
-      JSON.stringify({ error: message, success: false }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
+  });
 });
