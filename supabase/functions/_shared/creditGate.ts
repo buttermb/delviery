@@ -25,7 +25,7 @@ import { withAutoRefund } from './creditRefund.ts';
 // Types
 // ============================================================================
 
-interface CreditCheckResult {
+export interface CreditCheckResult {
   success: boolean;
   newBalance: number;
   creditsCost: number;
@@ -298,7 +298,7 @@ async function getTenantInfo(
 /**
  * Consume credits for an action using the database function
  */
-async function consumeCreditsForAction(
+export async function consumeCreditsForAction(
   supabaseClient: SupabaseClient,
   tenantId: string,
   actionKey: string,
@@ -346,7 +346,7 @@ async function consumeCreditsForAction(
 /**
  * Track a credit-related event
  */
-async function trackCreditEvent(
+export async function trackCreditEvent(
   supabaseClient: SupabaseClient,
   tenantId: string,
   eventType: string,
