@@ -8,20 +8,36 @@
  * - Badge variant renders compact display
  * - Buy credits button opens purchase modal
  * - Tooltip shows burn rate and depletion date
+ * - "Credit Balance" heading
+ * - Credits remaining count
+ * - Daily burn rate (when usage data exists)
+ * - Depletion date estimate (when usage data exists)
+ * - "Click to buy more credits" CTA
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { CreditBalance } from '../CreditBalance';
 
-// Mock values
-let mockCredits = 5000;
+// --- Mutable mock state ---
+let mockCredits = 3000;
 let mockIsFreeTier = true;
-const mockSetIsPurchaseModalOpen = vi.fn();
+let mockSetIsPurchaseModalOpen = vi.fn();
+let mockTenantId: string | undefined = 'tenant-123';
+let mockUsageStats: {
+  avgDailyUsage: number;
+  daysUntilDepletion: number | null;
+  depletionDate: Date | null;
+} | null = null;
 
-// Mock CreditContext — the component MUST import from here, not from hooks/useCredits
+// --- Mocks ---
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(),
+  },
+}));
+
 vi.mock('@/contexts/CreditContext', () => ({
   useCredits: () => ({
     credits: mockCredits,
@@ -30,53 +46,44 @@ vi.mock('@/contexts/CreditContext', () => ({
   }),
 }));
 
-// Mock TenantAdminAuthContext
 vi.mock('@/contexts/TenantAdminAuthContext', () => ({
   useTenantAdminAuth: () => ({
-    tenant: { id: 'test-tenant-id' },
+    tenant: mockTenantId ? { id: mockTenantId } : null,
   }),
 }));
 
-// Mock supabase client
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            gte: () => Promise.resolve({ data: [], error: null }),
-          }),
-        }),
-      }),
-    }),
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({
+    data: mockUsageStats,
+    isLoading: false,
+  }),
+}));
+
+// Render tooltip content directly so we can assert on it
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip-content">{children}</div>
+  ),
+}));
+
+vi.mock('@/lib/formatters', () => ({
+  formatSmartDate: (date: Date) => {
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return `${month} ${day}`;
   },
 }));
-
-// Mock formatters
-vi.mock('@/lib/formatters', () => ({
-  formatSmartDate: (date: Date) => date.toLocaleDateString(),
-}));
-
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  return function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  };
-}
 
 describe('CreditBalance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCredits = 5000;
+    mockCredits = 3000;
     mockIsFreeTier = true;
+    mockSetIsPurchaseModalOpen = vi.fn();
+    mockTenantId = 'tenant-123';
+    mockUsageStats = null;
   });
 
   describe('Context usage', () => {
@@ -89,109 +96,210 @@ describe('CreditBalance', () => {
       expect(mod.CreditBalance).toBeDefined();
 
       // Render to confirm the context mock is being used
-      render(<CreditBalance />, { wrapper: createWrapper() });
-      expect(screen.getByText('5,000')).toBeInTheDocument();
+      render(<CreditBalance />);
+      expect(screen.getByText('3,000')).toBeInTheDocument();
     });
   });
 
-  describe('Default variant rendering', () => {
-    it('should render credit balance with formatted number', () => {
-      mockCredits = 3500;
-      render(<CreditBalance />, { wrapper: createWrapper() });
-
-      expect(screen.getByText('3,500')).toBeInTheDocument();
+  describe('Tooltip Content', () => {
+    it('should show "Credit Balance" heading', () => {
+      render(<CreditBalance />);
+      expect(screen.getByText('Credit Balance')).toBeInTheDocument();
     });
 
-    it('should render buy credits button', () => {
-      render(<CreditBalance />, { wrapper: createWrapper() });
-
-      const buyButton = screen.getByTitle('Buy Credits');
-      expect(buyButton).toBeInTheDocument();
+    it('should show credits remaining count', () => {
+      mockCredits = 1500;
+      render(<CreditBalance />);
+      expect(screen.getByText('1,500 credits remaining')).toBeInTheDocument();
     });
 
-    it('should open purchase modal when buy button is clicked', () => {
-      render(<CreditBalance />, { wrapper: createWrapper() });
+    it('should show formatted credit count with locale string', () => {
+      mockCredits = 12345;
+      render(<CreditBalance />);
+      expect(screen.getByText('12,345 credits remaining')).toBeInTheDocument();
+    });
 
-      fireEvent.click(screen.getByTitle('Buy Credits'));
-      expect(mockSetIsPurchaseModalOpen).toHaveBeenCalledWith(true);
+    it('should show "Click to buy more credits" CTA', () => {
+      render(<CreditBalance />);
+      expect(screen.getByText('Click to buy more credits')).toBeInTheDocument();
+    });
+
+    it('should show burn rate when usage stats are available', () => {
+      mockCredits = 1500;
+      mockUsageStats = {
+        avgDailyUsage: 50,
+        daysUntilDepletion: 30,
+        depletionDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      };
+      render(<CreditBalance />);
+      expect(screen.getByText('~50/day burn rate')).toBeInTheDocument();
+    });
+
+    it('should not show burn rate when avgDailyUsage is 0', () => {
+      mockUsageStats = {
+        avgDailyUsage: 0,
+        daysUntilDepletion: null,
+        depletionDate: null,
+      };
+      render(<CreditBalance />);
+      expect(screen.queryByText(/burn rate/)).not.toBeInTheDocument();
+    });
+
+    it('should not show burn rate when usage stats are null', () => {
+      mockUsageStats = null;
+      render(<CreditBalance />);
+      expect(screen.queryByText(/burn rate/)).not.toBeInTheDocument();
+    });
+
+    it('should show depletion estimate when data is available', () => {
+      const futureDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+      mockCredits = 750;
+      mockUsageStats = {
+        avgDailyUsage: 50,
+        daysUntilDepletion: 15,
+        depletionDate: futureDate,
+      };
+      render(<CreditBalance />);
+
+      // formatSmartDate is mocked to return "Mon DD" format
+      expect(screen.getByText(/Depletes/)).toBeInTheDocument();
+      expect(screen.getByText(/15 days/)).toBeInTheDocument();
+    });
+
+    it('should not show depletion date when depletionDate is null', () => {
+      mockUsageStats = {
+        avgDailyUsage: 50,
+        daysUntilDepletion: null,
+        depletionDate: null,
+      };
+      render(<CreditBalance />);
+      expect(screen.queryByText(/Depletes/)).not.toBeInTheDocument();
+    });
+
+    it('should not show depletion when daysUntilDepletion is 0', () => {
+      mockUsageStats = {
+        avgDailyUsage: 50,
+        daysUntilDepletion: 0,
+        depletionDate: new Date(),
+      };
+      render(<CreditBalance />);
+      expect(screen.queryByText(/Depletes/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Color Classes by Threshold', () => {
+    it('should use emerald (healthy) when credits > 2000', () => {
+      mockCredits = 2500;
+      const { container } = render(<CreditBalance />);
+      const badge = container.querySelector('.text-emerald-600');
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('should use yellow when credits > 1000 and <= 2000', () => {
+      mockCredits = 1500;
+      const { container } = render(<CreditBalance />);
+      const badge = container.querySelector('.text-yellow-600');
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('should use amber when credits > 500 and <= 1000', () => {
+      mockCredits = 750;
+      const { container } = render(<CreditBalance />);
+      const badge = container.querySelector('.text-amber-600');
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('should use orange when credits > 100 and <= 500', () => {
+      mockCredits = 200;
+      const { container } = render(<CreditBalance />);
+      const badge = container.querySelector('.text-orange-600');
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('should use red with pulse when credits <= 100', () => {
+      mockCredits = 50;
+      const { container } = render(<CreditBalance />);
+      const badge = container.querySelector('.text-red-600');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('animate-pulse');
+    });
+  });
+
+  describe('Variants', () => {
+    it('should render badge variant with compact styling', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="badge" />);
+      // Badge variant shows credits as number only
+      expect(screen.getByText('1,500')).toBeInTheDocument();
+      // Tooltip content still present
+      expect(screen.getByText('Credit Balance')).toBeInTheDocument();
+    });
+
+    it('should render default variant with label', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="default" showLabel />);
+      expect(screen.getByText('1,500')).toBeInTheDocument();
+      expect(screen.getByText('Buy Credits')).toBeInTheDocument();
     });
 
     it('should hide label when showLabel is false', () => {
-      mockCredits = 3500;
-      render(<CreditBalance showLabel={false} />, { wrapper: createWrapper() });
+      mockCredits = 1500;
+      render(<CreditBalance variant="default" showLabel={false} />);
+      // The tooltip still shows "1,500 credits remaining" but there should be
+      // no standalone "1,500" text in the trigger area
+      expect(screen.queryByText('1,500')).not.toBeInTheDocument();
+      // But the tooltip content should still be there
+      expect(screen.getByText('1,500 credits remaining')).toBeInTheDocument();
+    });
 
-      expect(screen.queryByText('3,500')).not.toBeInTheDocument();
+    it('should show Buy Credits button in default variant', () => {
+      render(<CreditBalance />);
+      expect(screen.getByTitle('Buy Credits')).toBeInTheDocument();
     });
   });
 
-  describe('Badge variant', () => {
-    it('should render compact badge variant', () => {
-      mockCredits = 2500;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      expect(screen.getByText('2,500')).toBeInTheDocument();
+  describe('Click Actions', () => {
+    it('should open purchase modal when badge variant is clicked', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="badge" />);
+      const badge = screen.getByText('1,500');
+      fireEvent.click(badge);
+      expect(mockSetIsPurchaseModalOpen).toHaveBeenCalledWith(true);
     });
 
-    it('should open purchase modal when badge is clicked', () => {
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
+    it('should open purchase modal when default variant is clicked', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="default" showLabel />);
+      const creditDisplay = screen.getByText('1,500');
+      fireEvent.click(creditDisplay);
+      expect(mockSetIsPurchaseModalOpen).toHaveBeenCalledWith(true);
+    });
 
-      fireEvent.click(screen.getByText('5,000'));
+    it('should open purchase modal when plus button is clicked', () => {
+      render(<CreditBalance />);
+      const buyButton = screen.getByTitle('Buy Credits');
+      fireEvent.click(buyButton);
       expect(mockSetIsPurchaseModalOpen).toHaveBeenCalledWith(true);
     });
   });
 
-  describe('Color thresholds', () => {
-    it('should apply emerald color when balance > 2000', () => {
-      mockCredits = 3000;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      const badge = screen.getByText('3,000').closest('div');
-      expect(badge?.className).toContain('text-emerald-600');
+  describe('Edge Cases', () => {
+    it('should handle zero credits', () => {
+      mockCredits = 0;
+      render(<CreditBalance />);
+      expect(screen.getByText('0 credits remaining')).toBeInTheDocument();
     });
 
-    it('should apply yellow color when balance > 1000 and <= 2000', () => {
-      mockCredits = 1500;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      const badge = screen.getByText('1,500').closest('div');
-      expect(badge?.className).toContain('text-yellow-600');
+    it('should handle very large credit balances', () => {
+      mockCredits = 999999;
+      render(<CreditBalance />);
+      expect(screen.getByText('999,999 credits remaining')).toBeInTheDocument();
     });
 
-    it('should apply amber color when balance > 500 and <= 1000', () => {
-      mockCredits = 750;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      const badge = screen.getByText('750').closest('div');
-      expect(badge?.className).toContain('text-amber-600');
-    });
-
-    it('should apply orange color when balance > 100 and <= 500', () => {
-      mockCredits = 200;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      const badge = screen.getByText('200').closest('div');
-      expect(badge?.className).toContain('text-orange-600');
-    });
-
-    it('should apply red color with pulse when balance <= 100', () => {
-      mockCredits = 50;
-      render(<CreditBalance variant="badge" />, { wrapper: createWrapper() });
-
-      const badge = screen.getByText('50').closest('div');
-      expect(badge?.className).toContain('text-red-600');
-      expect(badge?.className).toContain('animate-pulse');
-    });
-  });
-
-  describe('Custom className', () => {
-    it('should apply custom className to container', () => {
-      const { container } = render(
-        <CreditBalance className="my-custom-class" />,
-        { wrapper: createWrapper() }
-      );
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain('my-custom-class');
+    it('should apply custom className', () => {
+      const { container } = render(<CreditBalance className="custom-class" />);
+      const wrapper = container.firstElementChild;
+      expect(wrapper).toHaveClass('custom-class');
     });
   });
 });
