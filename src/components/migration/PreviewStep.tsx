@@ -27,7 +27,7 @@ interface PreviewStepProps {
   products: ParsedProduct[];
   onUpdateProduct: (index: number, updates: Partial<ParsedProduct>) => void;
   onRemoveProduct: (index: number) => void;
-  onStartImport: () => void;
+  onStartImport: () => void | Promise<void>;
   onBack: () => void;
 }
 

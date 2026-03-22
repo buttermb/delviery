@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -11,8 +13,11 @@ import {
   ArrowLeft,
   HelpCircle,
 } from 'lucide-react';
+
 import type { MigrationStep } from '@/types/migration';
+
 import { useMigration } from '@/hooks/useMigration';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { UploadStep } from './UploadStep';
 import { ParsingStep } from './ParsingStep';
 import { MappingStep } from './MappingStep';
@@ -42,10 +47,17 @@ function getStepProgress(step: MigrationStep): number {
 
 export function MigrationWizard() {
   const migration = useMigration();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const currentStepIndex = getStepIndex(migration.state.step);
 
-  const canGoBack = currentStepIndex > 0 && 
-    migration.state.step !== 'parsing' && 
+  const handleCreditGatedImport = useCallback(async () => {
+    await executeCreditAction('menu_import_catalog', async () => {
+      migration.startImport();
+    });
+  }, [executeCreditAction, migration]);
+
+  const canGoBack = currentStepIndex > 0 &&
+    migration.state.step !== 'parsing' &&
     migration.state.step !== 'importing' &&
     migration.state.step !== 'complete' &&
     migration.state.step !== 'questions'; // Questions step has its own back button
@@ -161,7 +173,7 @@ export function MigrationWizard() {
               products={migration.state.parsedProducts}
               onUpdateProduct={migration.updateProduct}
               onRemoveProduct={migration.removeProduct}
-              onStartImport={migration.startImport}
+              onStartImport={handleCreditGatedImport}
               onBack={handleBack}
             />
           )}
