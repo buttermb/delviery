@@ -1,7 +1,8 @@
 /**
  * BillingSettings Tests
  * Verifies the Manage Subscription button, plan card buttons,
- * upgrade dialog cancel button, and Add Payment Method button behavior.
+ * upgrade dialog cancel button, Add Payment Method button,
+ * and Update Payment Method button behavior.
  */
 
 import React from 'react';
@@ -75,6 +76,8 @@ vi.mock('@/hooks/useFeatureAccess', () => ({
       name: mockCurrentTier.charAt(0).toUpperCase() + mockCurrentTier.slice(1),
       price: { starter: 79, professional: 150, enterprise: 499 }[mockCurrentTier],
     }),
+    getRequiredTier: () => 'starter',
+    getUpgradeRequirement: () => null,
   }),
 }));
 
@@ -693,6 +696,115 @@ describe('BillingSettings', () => {
       await waitFor(() => {
         expect(screen.getByText(/no payment method added/i)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Update Payment Method button', () => {
+    it('renders the Update button when payment method is added', () => {
+      renderBillingSettings();
+
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      expect(updateButton).toBeInTheDocument();
+      expect(updateButton).toBeEnabled();
+    });
+
+    it('invokes stripe-customer-portal on click and opens URL', async () => {
+      const portalUrl = 'https://billing.stripe.com/session/test_portal';
+      mockInvoke.mockImplementation(async (fnName: string) => {
+        if (fnName === 'stripe-customer-portal') {
+          return { data: { url: portalUrl }, error: null };
+        }
+        return { data: null, error: null };
+      });
+
+      const mockOpen = vi.fn();
+      vi.stubGlobal('open', mockOpen);
+
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      await user.click(updateButton);
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith('stripe-customer-portal', {
+          body: { tenant_id: 'tenant-123' },
+        });
+      });
+
+      await waitFor(() => {
+        expect(mockOpen).toHaveBeenCalledWith(portalUrl, '_blank', 'noopener,noreferrer');
+      });
+
+      expect(mockToastSuccess).toHaveBeenCalledWith('Success', {
+        description: 'Opening Stripe Customer Portal...',
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it('shows error toast when stripe-customer-portal fails', async () => {
+      mockInvoke.mockImplementation(async (fnName: string) => {
+        if (fnName === 'stripe-customer-portal') {
+          return { data: null, error: new Error('Stripe unavailable') };
+        }
+        return { data: null, error: null };
+      });
+
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      await user.click(updateButton);
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalled();
+      });
+    });
+
+    it('shows error toast when response contains error field', async () => {
+      mockInvoke.mockImplementation(async (fnName: string) => {
+        if (fnName === 'stripe-customer-portal') {
+          return { data: { error: 'No Stripe customer found' }, error: null };
+        }
+        return { data: null, error: null };
+      });
+
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      await user.click(updateButton);
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith('Error', {
+          description: 'No Stripe customer found',
+        });
+      });
+    });
+
+    it('re-enables the button after request completes', async () => {
+      mockInvoke.mockImplementation(async (fnName: string) => {
+        if (fnName === 'stripe-customer-portal') {
+          return { data: { url: 'https://stripe.com/portal' }, error: null };
+        }
+        return { data: null, error: null };
+      });
+
+      const mockOpen = vi.fn();
+      vi.stubGlobal('open', mockOpen);
+
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      await user.click(updateButton);
+
+      await waitFor(() => {
+        expect(updateButton).toBeEnabled();
+      });
+
+      vi.unstubAllGlobals();
     });
   });
 });
