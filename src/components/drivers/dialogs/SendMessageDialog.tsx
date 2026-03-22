@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ export function SendMessageDialog({
   tenantId,
 }: SendMessageDialogProps) {
   const { token } = useTenantAdminAuth();
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
 
   const [channel, setChannel] = useState<Channel>('Email');
   const [subject, setSubject] = useState('');
@@ -240,11 +242,13 @@ export function SendMessageDialog({
             Cancel
           </Button>
           <Button
-            onClick={() => sendMessage.mutate()}
-            disabled={!canSubmit || sendMessage.isPending}
+            onClick={() =>
+              executeCreditAction('send_sms', () => sendMessage.mutateAsync())
+            }
+            disabled={!canSubmit || sendMessage.isPending || isPerforming}
             className="bg-emerald-500 text-white hover:bg-emerald-600"
           >
-            {sendMessage.isPending ? 'Sending...' : 'Send Message'}
+            {sendMessage.isPending || isPerforming ? 'Sending...' : 'Send Message'}
           </Button>
         </DialogFooter>
       </DialogContent>
