@@ -9,6 +9,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -22,6 +23,7 @@ export function BulkActions({
   onClearSelection,
 }: BulkActionsProps) {
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
 
   const bulkUpdate = useMutation({
     mutationFn: async ({ updates }: { updates: Record<string, unknown> }) => {
@@ -62,22 +64,26 @@ export function BulkActions({
     }
   });
 
-  const handleSetActive = () => {
-    bulkUpdate.mutate(
-      { updates: { in_stock: true } },
-      {
-        onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to active`),
-      }
-    );
+  const handleSetActive = async () => {
+    await executeCreditAction('stock_bulk_update', async () => {
+      await bulkUpdate.mutateAsync(
+        { updates: { in_stock: true } },
+        {
+          onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to active`),
+        }
+      );
+    });
   };
 
-  const handleSetInactive = () => {
-    bulkUpdate.mutate(
-      { updates: { in_stock: false } },
-      {
-        onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to inactive`),
-      }
-    );
+  const handleSetInactive = async () => {
+    await executeCreditAction('stock_bulk_update', async () => {
+      await bulkUpdate.mutateAsync(
+        { updates: { in_stock: false } },
+        {
+          onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to inactive`),
+        }
+      );
+    });
   };
 
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
@@ -116,12 +122,12 @@ export function BulkActions({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleSetActive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
-            {bulkUpdate.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleRight className="mr-2 h-4 w-4" />}
+          <Button onClick={handleSetActive} variant="outline" size="sm" disabled={bulkUpdate.isPending || isPerforming}>
+            {(bulkUpdate.isPending || isPerforming) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleRight className="mr-2 h-4 w-4" />}
             Set Active
           </Button>
-          <Button onClick={handleSetInactive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
-            {bulkUpdate.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleLeft className="mr-2 h-4 w-4" />}
+          <Button onClick={handleSetInactive} variant="outline" size="sm" disabled={bulkUpdate.isPending || isPerforming}>
+            {(bulkUpdate.isPending || isPerforming) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleLeft className="mr-2 h-4 w-4" />}
             Set Inactive
           </Button>
           <Button
