@@ -1,17 +1,10 @@
 /**
  * Credit Package Pricing Tests
- * Verifies the 4-tier credit package structure matches requirements
+ * Verifies the CREDIT_PACKAGES constant from lib/credits matches requirements
  */
 
 import { describe, it, expect } from 'vitest';
-
-// Package configuration that must match frontend and database
-const CREDIT_PACKAGES = [
-  { id: 'starter-pack', credits: 5000, priceCents: 999, priceDisplay: 9.99, label: 'Starter Pack', popular: false },
-  { id: 'growth-pack', credits: 15000, priceCents: 2499, priceDisplay: 24.99, label: 'Growth Pack', popular: true },
-  { id: 'power-pack', credits: 50000, priceCents: 4999, priceDisplay: 49.99, label: 'Power Pack', popular: false },
-  { id: 'enterprise-pack', credits: 150000, priceCents: 17999, priceDisplay: 179.99, label: 'Enterprise Pack', popular: false },
-];
+import { CREDIT_PACKAGES, getPricePerCredit } from '@/lib/credits/creditCosts';
 
 describe('Credit Package Pricing', () => {
   describe('Package Tiers', () => {
@@ -19,37 +12,34 @@ describe('Credit Package Pricing', () => {
       expect(CREDIT_PACKAGES).toHaveLength(4);
     });
 
-    it('starter pack: 5,000 credits for $9.99', () => {
+    it('quick boost: 500 credits for $19.99', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'quick-boost');
+      expect(pack).toBeDefined();
+      expect(pack?.credits).toBe(500);
+      expect(pack?.priceCents).toBe(1999);
+    });
+
+    it('starter pack: 1,500 credits for $49.99 (marked as POPULAR)', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
       expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(5000);
-      expect(pack?.priceDisplay).toBe(9.99);
-      expect(pack?.priceCents).toBe(999);
+      expect(pack?.credits).toBe(1500);
+      expect(pack?.priceCents).toBe(4999);
+      expect(pack?.badge).toBe('POPULAR');
     });
 
-    it('growth pack: 15,000 credits for $24.99 (marked as popular)', () => {
+    it('growth pack: 5,000 credits for $129.99 (marked as BEST VALUE)', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
       expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(15000);
-      expect(pack?.priceDisplay).toBe(24.99);
-      expect(pack?.priceCents).toBe(2499);
-      expect(pack?.popular).toBe(true);
+      expect(pack?.credits).toBe(5000);
+      expect(pack?.priceCents).toBe(12999);
+      expect(pack?.badge).toBe('BEST VALUE');
     });
 
-    it('power pack: 50,000 credits for $49.99', () => {
+    it('power pack: 15,000 credits for $299.99', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'power-pack');
       expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(50000);
-      expect(pack?.priceDisplay).toBe(49.99);
-      expect(pack?.priceCents).toBe(4999);
-    });
-
-    it('enterprise pack: 150,000 credits for $179.99', () => {
-      const pack = CREDIT_PACKAGES.find(p => p.id === 'enterprise-pack');
-      expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(150000);
-      expect(pack?.priceDisplay).toBe(179.99);
-      expect(pack?.priceCents).toBe(17999);
+      expect(pack?.credits).toBe(15000);
+      expect(pack?.priceCents).toBe(29999);
     });
   });
 
@@ -58,7 +48,7 @@ describe('Credit Package Pricing', () => {
       const firstThree = CREDIT_PACKAGES.slice(0, 3);
       const pricesPerCredit = firstThree.map(p => ({
         id: p.id,
-        pricePerCredit: p.priceCents / p.credits,
+        pricePerCredit: getPricePerCredit(p.priceCents, p.credits),
       }));
 
       for (let i = 1; i < pricesPerCredit.length; i++) {
@@ -68,51 +58,96 @@ describe('Credit Package Pricing', () => {
       }
     });
 
-    it('only growth pack is marked as popular', () => {
-      const popularPacks = CREDIT_PACKAGES.filter(p => p.popular);
-      expect(popularPacks).toHaveLength(1);
-      expect(popularPacks[0].id).toBe('growth-pack');
+    it('credits increase with each tier', () => {
+      for (let i = 1; i < CREDIT_PACKAGES.length; i++) {
+        expect(CREDIT_PACKAGES[i].credits).toBeGreaterThan(
+          CREDIT_PACKAGES[i - 1].credits
+        );
+      }
     });
   });
 
-  describe('Package Slug Format', () => {
-    it('all package slugs should be valid kebab-case', () => {
+  describe('Package Structure', () => {
+    it('all packages have required fields', () => {
       CREDIT_PACKAGES.forEach(pack => {
-        expect(pack.id).toMatch(/^[a-z]+-[a-z]+$/);
+        expect(pack.id).toBeTruthy();
+        expect(pack.name).toBeTruthy();
+        expect(pack.slug).toBeTruthy();
+        expect(pack.credits).toBeGreaterThan(0);
+        expect(pack.priceCents).toBeGreaterThan(0);
+        expect(pack.description).toBeTruthy();
       });
     });
 
+    it('all package slugs should be valid kebab-case', () => {
+      CREDIT_PACKAGES.forEach(pack => {
+        expect(pack.slug).toMatch(/^[a-z]+-[a-z]+$/);
+      });
+    });
+
+    it('all packages should have unique ids', () => {
+      const ids = CREDIT_PACKAGES.map(p => p.id);
+      const uniqueIds = [...new Set(ids)];
+      expect(ids.length).toBe(uniqueIds.length);
+    });
+
     it('all packages should have unique slugs', () => {
-      const slugs = CREDIT_PACKAGES.map(p => p.id);
+      const slugs = CREDIT_PACKAGES.map(p => p.slug);
       const uniqueSlugs = [...new Set(slugs)];
       expect(slugs.length).toBe(uniqueSlugs.length);
+    });
+
+    it('id matches slug for each package', () => {
+      CREDIT_PACKAGES.forEach(pack => {
+        expect(pack.id).toBe(pack.slug);
+      });
+    });
+  });
+
+  describe('Badge Labels', () => {
+    it('starter-pack has POPULAR badge', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
+      expect(pack?.badge).toBe('POPULAR');
+    });
+
+    it('growth-pack has BEST VALUE badge', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
+      expect(pack?.badge).toBe('BEST VALUE');
+    });
+
+    it('quick-boost and power-pack have no badge', () => {
+      const quickBoost = CREDIT_PACKAGES.find(p => p.id === 'quick-boost');
+      const powerPack = CREDIT_PACKAGES.find(p => p.id === 'power-pack');
+      expect(quickBoost?.badge).toBeUndefined();
+      expect(powerPack?.badge).toBeUndefined();
     });
   });
 });
 
 describe('Stripe Webhook Credit Purchase', () => {
+  it('should support all package slugs as valid metadata', () => {
+    const validSlugs = CREDIT_PACKAGES.map(p => p.slug);
+
+    CREDIT_PACKAGES.forEach(pack => {
+      expect(validSlugs).toContain(pack.slug);
+    });
+  });
+
   it('should have correct metadata structure for credit purchases', () => {
+    const firstPack = CREDIT_PACKAGES[0];
     const mockCheckoutSession = {
       metadata: {
         tenant_id: '123e4567-e89b-12d3-a456-426614174000',
-        package_slug: 'growth-pack',
-        credits: '15000',
+        package_slug: firstPack.slug,
+        credits: String(firstPack.credits),
         type: 'credit_purchase',
       },
       payment_intent: 'pi_test_123',
-      amount_total: 2499,
+      amount_total: firstPack.priceCents,
     };
 
     expect(mockCheckoutSession.metadata.type).toBe('credit_purchase');
-    expect(parseInt(mockCheckoutSession.metadata.credits)).toBe(15000);
-    expect(mockCheckoutSession.amount_total).toBe(2499);
-  });
-
-  it('should support all 4 package slugs', () => {
-    const validSlugs = ['starter-pack', 'growth-pack', 'power-pack', 'enterprise-pack'];
-
-    CREDIT_PACKAGES.forEach(pack => {
-      expect(validSlugs).toContain(pack.id);
-    });
+    expect(parseInt(mockCheckoutSession.metadata.credits)).toBe(firstPack.credits);
+    expect(mockCheckoutSession.amount_total).toBe(firstPack.priceCents);
   });
 });
