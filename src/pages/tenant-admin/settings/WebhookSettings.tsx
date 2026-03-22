@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -13,11 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Webhook, Plus, Trash2, TestTube } from 'lucide-react';
+import { Webhook, Plus, Trash2, TestTube, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { trackCreditEvent, getCreditCost } from '@/lib/credits';
+import { useCredits } from '@/hooks/useCredits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 
 interface WebhookConfig {
   id: string;
@@ -41,6 +44,15 @@ export default function WebhookSettings() {
   const queryClient = useQueryClient();
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [testingWebhook, setTestingWebhook] = useState<string | null>(null);
+  const { isFreeTier, balance } = useCredits();
+  const webhookFireCost = getCreditCost('webhook_fired');
+
+  // Track webhook configuration page view for analytics
+  useEffect(() => {
+    if (tenant?.id && isFreeTier) {
+      trackCreditEvent(tenant.id, 'webhook_config_viewed', balance);
+    }
+  }, [tenant?.id, isFreeTier, balance]);
 
   const { isLoading } = useQuery({
     queryKey: queryKeys.webhooks.list(tenant?.id),
@@ -224,6 +236,17 @@ export default function WebhookSettings() {
           Configure webhook URLs for real-time event notifications
         </p>
       </div>
+
+      {isFreeTier && webhookFireCost > 0 && (
+        <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+          <Info className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <span>Webhook configuration is free.</span>{' '}
+            <span>Each webhook trigger costs <strong>{webhookFireCost} credits</strong>.</span>
+          </div>
+          <CreditCostBadge actionKey="webhook_fired" showTooltip />
+        </div>
+      )}
 
       <SettingsSection
         title="Webhooks"
