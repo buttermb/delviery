@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Building2, Loader2 } from 'lucide-react';
-import { useVendors, Vendor, useCreateVendor } from '@/hooks/useVendors';
+import { useVendors, Vendor, useCreditGatedCreateVendor } from '@/hooks/useVendors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { humanizeError } from '@/lib/humanizeError';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 interface SmartVendorPickerProps {
     selectedVendor: Vendor | null;
@@ -119,60 +119,79 @@ function CreateVendorDialog({ open, onOpenChange, onSuccess }: { open: boolean, 
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
 
-    const { mutate, isPending } = useCreateVendor();
+    const {
+        createVendor,
+        isCreating,
+        showOutOfCreditsModal,
+        closeOutOfCreditsModal,
+        blockedAction,
+    } = useCreditGatedCreateVendor();
 
     const handleSubmit = () => {
         if (!name) return;
-        mutate({ name, contact_name: contact, email, phone }, {
-            onSuccess: (data) => {
-                toast.success("Vendor created");
-                onSuccess(data as unknown as Vendor);
-                setName('');
-                setContact('');
-                setEmail('');
-                setPhone('');
-            },
-            onError: (error: unknown) => toast.error("Failed to create vendor", { description: humanizeError(error) })
-        });
+        createVendor(
+            { name, contact_name: contact, email, phone },
+            {
+                onSuccess: (data) => {
+                    onSuccess(data as Vendor);
+                    setName('');
+                    setContact('');
+                    setEmail('');
+                    setPhone('');
+                },
+            }
+        );
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>
-                <Button variant="outline"><Plus className="h-4 w-4 mr-2" /> New Vendor</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add New Vendor</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label>Business Name</Label>
-                        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Vendor Business Name" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Contact Person</Label>
-                        <Input value={contact} onChange={e => setContact(e.target.value)} placeholder="Name" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Email</Label>
-                            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Phone</Label>
-                            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone" />
-                        </div>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isPending || !name}>
-                        {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        Create Vendor
+        <>
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="group">
+                        <Plus className="h-4 w-4 mr-2" /> New Vendor
+                        <CreditCostBadge actionKey="vendor_add" compact hoverMode className="ml-1" />
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add New Vendor</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Business Name</Label>
+                            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Vendor Business Name" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Contact Person</Label>
+                            <Input value={contact} onChange={e => setContact(e.target.value)} placeholder="Name" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Email</Label>
+                                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Phone</Label>
+                                <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone" />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                        <Button onClick={handleSubmit} disabled={isCreating || !name} className="group">
+                            {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Create Vendor
+                            <CreditCostBadge actionKey="vendor_add" compact hoverMode className="ml-1" />
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <OutOfCreditsModal
+                open={showOutOfCreditsModal}
+                onOpenChange={closeOutOfCreditsModal}
+                actionAttempted={blockedAction ?? undefined}
+            />
+        </>
     );
 }
