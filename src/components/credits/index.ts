@@ -90,6 +90,9 @@ export type { GracePeriodBannerProps, UseGracePeriodReturn } from './GracePeriod
 export { CreditAlertBanner } from './CreditAlertBanner';
 export type { CreditAlertBannerProps } from './CreditAlertBanner';
 
+export { FreeTierDailyLimitWarning } from './FreeTierDailyLimitWarning';
+export type { FreeTierDailyLimitWarningProps } from './FreeTierDailyLimitWarning';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';

@@ -36,6 +36,7 @@ import { logRouteState } from "@/utils/routeDebugger";
 import { useEffect } from "react";
 import { QuickActionsButton } from "@/components/QuickActionsButton";
 import { LowCreditWarning } from "@/components/credits/LowCreditWarning";
+import { FreeTierDailyLimitWarning } from "@/components/credits/FreeTierDailyLimitWarning";
 import { CreditToastContainer } from "@/components/credits/CreditDeductionToast";
 import { SubscriptionStatusBadge } from "@/components/credits/SubscriptionStatusBadge";
 import { useCredits } from "@/contexts/CreditContext";
@@ -164,6 +165,9 @@ const AdminLayout = () => {
         {/* Impersonation Banner */}
         <div className="print:hidden">
         <ImpersonationBanner />
+
+        {/* Free Tier Daily Limit Warning */}
+        <FreeTierDailyLimitWarning />
 
         {/* Low Credit Warning */}
         <LowCreditWarning
