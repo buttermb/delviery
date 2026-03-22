@@ -133,10 +133,10 @@ serve(async (req) => {
         .rpc('get_tenant_invoices', { tenant_id: tenantId });
 
       if (rpcError) {
-        // Fallback to direct query
+        // Fallback to direct query — select the same columns the RPC returns
         const { data: invoiceData, error: queryError } = await serviceClient
           .from('invoices')
-          .select('*')
+          .select('id, invoice_number, subtotal, tax, total, amount_paid, amount_due, line_items, billing_period_start, billing_period_end, issue_date, due_date, paid_at, status, stripe_invoice_id, stripe_payment_intent_id, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('issue_date', { ascending: false })
           .limit(100);
@@ -336,10 +336,10 @@ serve(async (req) => {
         .rpc('get_invoice', { invoice_id: invoice_id });
 
       if (rpcError) {
-        // Fallback to direct query
+        // Fallback to direct query — select the same columns the RPC returns
         const { data: invoiceData, error: queryError } = await serviceClient
           .from('invoices')
-          .select('*')
+          .select('id, tenant_id, invoice_number, subtotal, tax, total, amount_paid, amount_due, line_items, billing_period_start, billing_period_end, issue_date, due_date, paid_at, status, stripe_invoice_id, stripe_payment_intent_id, created_at, updated_at')
           .eq('id', invoice_id)
           .eq('tenant_id', tenantId)
           .single();
