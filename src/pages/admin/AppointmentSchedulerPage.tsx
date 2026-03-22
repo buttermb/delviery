@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { AppointmentCalendar } from "@/components/admin/appointments/Appointment
 import { AppointmentList } from "@/components/admin/appointments/AppointmentList";
 import { AppointmentForm } from "@/components/admin/appointments/AppointmentForm";
 import { AvailabilitySettings } from "@/components/admin/appointments/AvailabilitySettings";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
+import { useCreditGatedAction } from "@/hooks/useCreditGatedAction";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface Appointment {
@@ -35,6 +38,43 @@ export default function AppointmentSchedulerPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
+
+  const {
+    execute: executeCreditAction,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isExecuting: isSendingReminder,
+  } = useCreditGatedAction();
+
+  const handleSendReminder = useCallback(
+    async (appointment: Appointment) => {
+      setSendingReminderId(appointment.id);
+      await executeCreditAction({
+        actionKey: 'appointment_reminder',
+        action: async () => {
+          // Log the reminder send — actual messaging integration is a future TODO
+          logger.info('Appointment reminder sent', {
+            appointmentId: appointment.id,
+            scheduledAt: appointment.scheduled_at,
+            type: appointment.type,
+          });
+          toast.success('Appointment reminder sent');
+        },
+        referenceId: appointment.id,
+        referenceType: 'appointment',
+        onError: (error) => {
+          logger.error('Failed to send appointment reminder', error, {
+            appointmentId: appointment.id,
+          });
+          toast.error('Failed to send reminder');
+        },
+      });
+      setSendingReminderId(null);
+    },
+    [executeCreditAction]
+  );
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: queryKeys.appointments.lists(),
@@ -140,6 +180,9 @@ export default function AppointmentSchedulerPage() {
               setSelectedDate(new Date(appointment.scheduled_at));
               setIsFormOpen(true);
             }}
+            onSendReminder={handleSendReminder}
+            isSendingReminder={isSendingReminder}
+            sendingReminderId={sendingReminderId}
           />
         </TabsContent>
       </Tabs>
@@ -165,6 +208,13 @@ export default function AppointmentSchedulerPage() {
           onOpenChange={setIsSettingsOpen}
         />
       )}
+
+      {/* Out of Credits Modal */}
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
