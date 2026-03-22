@@ -1,66 +1,32 @@
 /**
  * Send SMS Edge Function
  * Integrates with Twilio to send SMS messages
+ * Credit-gated: deducts credits (action_key: send_sms) for free tier tenants
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders, type SupabaseClient } from '../_shared/deps.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+  return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (tenantId, serviceClient) => {
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER');
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Supabase configuration' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Twilio not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in environment variables.' 
+        JSON.stringify({
+          error: 'Twilio not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in environment variables.',
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { to, message, customerId, accountId } = await req.json();
+    const { to, message, customerId } = await req.json();
 
     if (!to || !message) {
       return new Response(
@@ -69,77 +35,136 @@ serve(async (req) => {
       );
     }
 
+    // Look up actual credit cost for accurate refunds
+    const creditCost = await getCreditCost(serviceClient, CREDIT_ACTIONS.SEND_SMS);
+
     // Format phone number (ensure it starts with +)
     const formattedPhone = to.startsWith('+') ? to : `+${to.replace(/\D/g, '')}`;
 
-    // Import Twilio SDK
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
-    
+
     const formData = new URLSearchParams();
     formData.append('From', TWILIO_PHONE_NUMBER);
     formData.append('To', formattedPhone);
     formData.append('Body', message);
 
-    const twilioResponse = await fetch(twilioUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
+    // Wrap Twilio call in try-catch to ensure refund on network errors
+    try {
+      const twilioResponse = await fetch(twilioUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
 
-    if (!twilioResponse.ok) {
-      const errorText = await twilioResponse.text();
-      console.error('Twilio API error:', errorText);
+      if (!twilioResponse.ok) {
+        const errorText = await twilioResponse.text();
+        console.error('Twilio API error:', errorText);
+
+        // Refund credits on Twilio failure
+        await refundCredits(serviceClient, tenantId, creditCost);
+
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to send SMS via Twilio',
+            details: errorText,
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const twilioData = await twilioResponse.json();
+
+      // Log message to database (non-critical — SMS already sent successfully)
+      try {
+        const { error: logError } = await serviceClient.from('message_history').insert({
+          tenant_id: tenantId,
+          customer_id: customerId,
+          phone_number: formattedPhone,
+          message: message,
+          direction: 'outbound',
+          method: 'sms',
+          status: 'sent',
+          external_id: twilioData.sid,
+          created_at: new Date().toISOString(),
+        });
+
+        if (logError && logError.code !== '42P01') {
+          console.error('Error logging message:', logError);
+        }
+      } catch (err) {
+        console.warn('Could not log message:', err);
+      }
+
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to send SMS via Twilio',
-          details: errorText 
+        JSON.stringify({
+          success: true,
+          sid: twilioData.sid,
+          message: 'SMS sent successfully',
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error: unknown) {
+      console.error('SMS sending failed:', error);
+
+      // Refund credits on network/unexpected errors
+      await refundCredits(serviceClient, tenantId, creditCost);
+
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to send SMS',
+          details: error instanceof Error ? error.message : 'Network error',
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const twilioData = await twilioResponse.json();
-
-    // Log message to database (if message_history table exists)
-    try {
-      const { error: logError } = await supabase.from('message_history').insert({
-        tenant_id: accountId,
-        customer_id: customerId,
-        phone_number: formattedPhone,
-        message: message,
-        direction: 'outbound',
-        method: 'sms',
-        status: 'sent',
-        external_id: twilioData.sid,
-        created_at: new Date().toISOString(),
-      });
-      
-      // Table might not exist or other error, just log it
-      if (logError && logError.code !== '42P01') {
-        console.error('Error logging message:', logError);
-      }
-    } catch (err) {
-      // Ignore logging errors
-      console.warn('Could not log message:', err);
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        sid: twilioData.sid,
-        message: 'SMS sent successfully' 
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error: unknown) {
-    console.error('Error sending SMS:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
+  });
 });
+
+/**
+ * Look up the credit cost for an action from the credit_costs table.
+ */
+async function getCreditCost(
+  supabaseClient: SupabaseClient,
+  actionKey: string
+): Promise<number> {
+  try {
+    const { data } = await supabaseClient
+      .from('credit_costs')
+      .select('credits')
+      .eq('action_key', actionKey)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    return data?.credits ?? 25;
+  } catch {
+    return 25; // Fallback if lookup fails
+  }
+}
+
+/**
+ * Refund credits after a failed action by inserting a positive credit adjustment.
+ * Uses admin_adjust_credits RPC to properly record the refund transaction.
+ */
+async function refundCredits(
+  supabaseClient: SupabaseClient,
+  tenantId: string,
+  amount: number
+): Promise<void> {
+  try {
+    const { error } = await supabaseClient.rpc('admin_adjust_credits', {
+      p_tenant_id: tenantId,
+      p_amount: amount,
+      p_reason: 'Refund: send_sms failed (Twilio delivery error)',
+      p_notes: 'Automatic refund after SMS delivery failure',
+    });
+
+    if (error) {
+      console.error('Failed to refund credits:', error);
+    }
+  } catch (err) {
+    console.error('Credit refund error:', err);
+  }
+}
