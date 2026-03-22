@@ -19,6 +19,7 @@
  */
 
 import { createClient, corsHeaders, type SupabaseClient } from './deps.ts';
+import { withAutoRefund } from './creditRefund.ts';
 
 // ============================================================================
 // Types
@@ -400,3 +401,141 @@ export const CREDIT_ACTIONS = {
   CREATE_MENU: 'create_menu',
   SHARE_MENU: 'share_menu',
 } as const;
+
+// ============================================================================
+// Credit Gate with Auto-Refund
+// ============================================================================
+
+/**
+ * Like withCreditGate, but automatically refunds credits if the handler
+ * throws or returns a 5xx response. Use this for expensive or unreliable
+ * actions (AI calls, external APIs) where failure after deduction is likely.
+ *
+ * Usage:
+ * ```typescript
+ * serve(async (req) => {
+ *   return withCreditGateAndRefund(req, 'menu_ocr', async (tenantId, supabase) => {
+ *     const result = await callExternalAI(data);
+ *     return new Response(JSON.stringify(result));
+ *   });
+ * });
+ * ```
+ */
+export async function withCreditGateAndRefund(
+  req: Request,
+  actionKey: string,
+  handler: (tenantId: string, supabaseClient: SupabaseClient) => Promise<Response>,
+  options?: {
+    referenceId?: string;
+    referenceType?: string;
+    description?: string;
+    skipForPaidTiers?: boolean;
+  }
+): Promise<Response> {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+
+  try {
+    const tenantInfo = await getTenantFromRequest(req, supabaseClient);
+
+    if (!tenantInfo) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - no tenant found' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Skip credit check for paid tiers (default behavior)
+    const skipForPaid = options?.skipForPaidTiers ?? true;
+    if (skipForPaid && !tenantInfo.isFreeTier) {
+      return handler(tenantInfo.id, supabaseClient);
+    }
+
+    // Check and consume credits
+    const creditResult = await consumeCreditsForAction(
+      supabaseClient,
+      tenantInfo.id,
+      actionKey,
+      options?.referenceId,
+      options?.referenceType,
+      options?.description
+    );
+
+    if (!creditResult.success) {
+      await trackCreditEvent(
+        supabaseClient,
+        tenantInfo.id,
+        'action_blocked_insufficient_credits',
+        creditResult.newBalance,
+        actionKey
+      );
+
+      return new Response(
+        JSON.stringify({
+          error: 'Insufficient credits',
+          code: 'INSUFFICIENT_CREDITS',
+          message: creditResult.errorMessage || 'You do not have enough credits to perform this action',
+          creditsRequired: creditResult.creditsCost,
+          currentBalance: creditResult.newBalance,
+          actionKey,
+        }),
+        {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Execute handler with auto-refund on failure
+    const response = await withAutoRefund(
+      supabaseClient,
+      tenantInfo.id,
+      creditResult.creditsCost,
+      actionKey,
+      () => handler(tenantInfo.id, supabaseClient)
+    );
+
+    // Add credit info to response headers
+    const newHeaders = new Headers(response.headers);
+    if (!newHeaders.has('X-Credits-Consumed')) {
+      newHeaders.set('X-Credits-Consumed', String(creditResult.creditsCost));
+    }
+    if (!newHeaders.has('X-Credits-Remaining') && !newHeaders.has('X-Credits-Refunded')) {
+      newHeaders.set('X-Credits-Remaining', String(creditResult.newBalance));
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      headers: newHeaders,
+    });
+
+  } catch (error) {
+    console.error('Credit gate (with refund) error:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Internal server error',
+        message: (error as Error).message
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+}
