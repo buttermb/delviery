@@ -649,7 +649,7 @@ const App = () => {
                                         <Route path="inventory-monitoring" element={<Navigate to="inventory-hub?tab=monitoring" replace />} />
                                         <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                                         {/* Billing redirects to Settings */}
-                                        <Route path="billing" element={<Navigate to="../settings?tab=payments" replace />} />
+                                        <Route path="billing" element={<Navigate to="../settings?tab=billing" replace />} />
                                         {/* Credit Routes */}
                                         <Route path="credits/analytics" element={<FeatureProtectedRoute feature="analytics_advanced"><CreditAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />

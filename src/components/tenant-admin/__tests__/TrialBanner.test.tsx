@@ -137,7 +137,13 @@ describe('TrialBanner', () => {
       renderBanner({ tenantSlug: 'my-dispensary' });
 
       const link = screen.getByRole('link', { name: /manage subscription/i });
-      expect(link).toHaveAttribute('href', '/my-dispensary/admin/billing');
+      expect(link).toHaveAttribute('href', '/my-dispensary/admin/settings?tab=billing');
+    });
+
+    it('includes tenant slug in the billing link', () => {
+      renderBanner({ tenantSlug: 'green-leaf' });
+      const link = screen.getByRole('link', { name: /manage subscription/i });
+      expect(link).toHaveAttribute('href', '/green-leaf/admin/settings?tab=billing');
     });
   });
 });
