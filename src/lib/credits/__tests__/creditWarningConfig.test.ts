@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   CREDIT_THRESHOLD_CONFIGS,
+  CREDIT_PURCHASE_EVENT,
   getCurrentThreshold,
   getBadgeColorClass,
   getAlertSeverityStyles,
@@ -24,6 +25,19 @@ describe('creditWarningConfig', () => {
         { threshold: 1000, severity: 'warning' },
         { threshold: 500, severity: 'critical' },
         { threshold: 100, severity: 'danger' },
+      ]);
+    });
+
+    it('should map thresholds to correct toast types', () => {
+      const mapping = CREDIT_THRESHOLD_CONFIGS.map((c) => ({
+        threshold: c.threshold,
+        toastType: c.toastType,
+      }));
+      expect(mapping).toEqual([
+        { threshold: 2000, toastType: 'info' },
+        { threshold: 1000, toastType: 'warning' },
+        { threshold: 500, toastType: 'warning' },
+        { threshold: 100, toastType: 'error' },
       ]);
     });
   });
@@ -185,6 +199,40 @@ describe('creditWarningConfig', () => {
 
     it('should return null for unknown threshold', () => {
       expect(getWarningMessage(9999, 100)).toBeNull();
+    });
+
+    it('should include toastType matching threshold config', () => {
+      for (const config of CREDIT_THRESHOLD_CONFIGS) {
+        const msg = getWarningMessage(config.threshold, config.threshold);
+        expect(msg?.toastType).toBe(config.toastType);
+      }
+    });
+
+    it('should use info toast at 2000 threshold', () => {
+      const msg = getWarningMessage(2000, 1900);
+      expect(msg?.toastType).toBe('info');
+    });
+
+    it('should use warning toast at 1000 threshold', () => {
+      const msg = getWarningMessage(1000, 900);
+      expect(msg?.toastType).toBe('warning');
+    });
+
+    it('should use warning toast at 500 threshold', () => {
+      const msg = getWarningMessage(500, 450);
+      expect(msg?.toastType).toBe('warning');
+    });
+
+    it('should use error toast at 100 threshold', () => {
+      const msg = getWarningMessage(100, 75);
+      expect(msg?.toastType).toBe('error');
+    });
+  });
+
+  describe('CREDIT_PURCHASE_EVENT', () => {
+    it('should be a non-empty string', () => {
+      expect(CREDIT_PURCHASE_EVENT).toBeTruthy();
+      expect(typeof CREDIT_PURCHASE_EVENT).toBe('string');
     });
   });
 });

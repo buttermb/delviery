@@ -22,6 +22,7 @@ import {
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
   getWarningMessage,
+  CREDIT_PURCHASE_EVENT,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -282,20 +283,28 @@ export function useCredits(): UseCreditsReturn {
         setShownWarningThresholds(prev => new Set(prev).add(threshold));
         trackCreditEvent(tenantId, `low_balance_warning_${threshold}`, balance);
 
-        // Show appropriate toast based on threshold severity
+        // Show severity-appropriate toast based on threshold config
         const warningMessage = getWarningMessage(threshold, balance);
         if (warningMessage) {
-          toast.warning(warningMessage.title, {
+          const toastOptions = {
             description: warningMessage.description,
-            duration: threshold <= 500 ? 8000 : 5000, // Longer duration for critical warnings
+            duration: threshold <= 500 ? 8000 : 5000,
             action: threshold <= 500 ? {
               label: 'Buy Credits',
               onClick: () => {
-                // This will be handled by the CreditContext opening the modal
-                logger.info('Low balance warning: Buy Credits clicked', { threshold, balance });
+                window.dispatchEvent(new CustomEvent(CREDIT_PURCHASE_EVENT));
               },
             } : undefined,
-          });
+          };
+
+          // Use severity-matched toast type: info, warning, or error
+          const toastFn = warningMessage.toastType === 'info'
+            ? toast.info
+            : warningMessage.toastType === 'error'
+              ? toast.error
+              : toast.warning;
+
+          toastFn(warningMessage.title, toastOptions);
         }
 
         // Only show one warning per balance check

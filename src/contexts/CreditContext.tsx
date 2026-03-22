@@ -5,9 +5,10 @@
  * This provides backwards compatibility while consolidating on the hook.
  */
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useCredits as useCreditsHook, type UseCreditsReturn } from '@/hooks/useCredits';
 import { toast } from 'sonner';
+import { CREDIT_PURCHASE_EVENT } from '@/lib/credits';
 
 interface CreditContextType extends UseCreditsReturn {
   // Legacy properties for backwards compatibility
@@ -36,6 +37,13 @@ export function CreditProvider({ children }: { children: React.ReactNode }) {
   const [showLowCreditWarning, setShowLowCreditWarning] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [hasShownWarning, setHasShownWarning] = useState(false);
+
+  // Listen for "Buy Credits" clicks from warning toasts (dispatched via custom event)
+  useEffect(() => {
+    const handleOpenPurchase = () => setIsPurchaseModalOpen(true);
+    window.addEventListener(CREDIT_PURCHASE_EVENT, handleOpenPurchase);
+    return () => window.removeEventListener(CREDIT_PURCHASE_EVENT, handleOpenPurchase);
+  }, []);
 
   // Show low credit warning once per session
   React.useEffect(() => {

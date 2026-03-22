@@ -15,9 +15,12 @@
 
 export type CreditWarningSeverity = 'info' | 'warning' | 'critical' | 'danger';
 
+export type CreditToastType = 'info' | 'warning' | 'error';
+
 export interface CreditThresholdConfig {
   threshold: number;
   severity: CreditWarningSeverity;
+  toastType: CreditToastType;
   title: string;
   description: string;
 }
@@ -44,24 +47,28 @@ export const CREDIT_THRESHOLD_CONFIGS: CreditThresholdConfig[] = [
   {
     threshold: 2000,
     severity: 'info',
+    toastType: 'info',
     title: 'Credits Running Low',
     description: 'You have {balance} credits remaining. Consider purchasing more to avoid interruptions.',
   },
   {
     threshold: 1000,
     severity: 'warning',
+    toastType: 'warning',
     title: 'Credit Balance Warning',
     description: 'Only {balance} credits left. Some features may become unavailable soon.',
   },
   {
     threshold: 500,
     severity: 'critical',
+    toastType: 'warning',
     title: 'Low Credit Balance',
     description: 'Only {balance} credits remaining. Purchase credits now to continue using premium features.',
   },
   {
     threshold: 100,
     severity: 'danger',
+    toastType: 'error',
     title: 'Critical Credit Balance',
     description: 'Only {balance} credits left! Actions will be blocked when credits run out.',
   },
@@ -170,7 +177,7 @@ export function getAlertSeverityStyles(severity: CreditWarningSeverity): AlertSe
 export function getWarningMessage(
   threshold: number,
   balance: number
-): { title: string; description: string } | null {
+): { title: string; description: string; toastType: CreditToastType } | null {
   const config = CREDIT_THRESHOLD_CONFIGS.find((c) => c.threshold === threshold);
   if (!config) return null;
 
@@ -178,5 +185,12 @@ export function getWarningMessage(
     title: config.title,
     description: config.description
       .replace('{balance}', balance.toLocaleString()),
+    toastType: config.toastType,
   };
 }
+
+/**
+ * Custom event name dispatched when a credit warning toast's "Buy Credits" button is clicked.
+ * Listened for by CreditContext to open the purchase modal.
+ */
+export const CREDIT_PURCHASE_EVENT = 'floraiq:open-credit-purchase';
