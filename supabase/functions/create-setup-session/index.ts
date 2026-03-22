@@ -62,7 +62,7 @@ serve(async (req) => {
         logStep('User authenticated', { userId: user.id, email: user.email });
 
         const rawBody = await req.json();
-        const { tenant_id } = validateSetupSession(rawBody);
+        const { tenant_id, return_url } = validateSetupSession(rawBody);
 
         logStep('Fetching tenant', { tenantId: tenant_id });
 
@@ -153,10 +153,26 @@ serve(async (req) => {
             logStep('Using existing Stripe customer', { customerId: stripeCustomerId });
         }
 
-        // Get site URL for return URL
+        // Build return URLs — prefer the client-provided return_url, fall back to billing page
         const siteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://app.example.com';
-        const successUrl = `${siteUrl}/${tenant.slug}/admin/billing?session_id={CHECKOUT_SESSION_ID}&setup_success=true`;
-        const cancelUrl = `${siteUrl}/${tenant.slug}/admin/billing?setup_canceled=true`;
+        const defaultUrl = `${siteUrl}/${tenant.slug}/admin/billing`;
+
+        // Validate return_url origin matches site URL to prevent open redirect
+        const safeBaseUrl = (() => {
+            if (!return_url) return defaultUrl;
+            try {
+                const allowedOrigin = siteUrl.replace(/\/$/, '');
+                const returnOrigin = new URL(return_url).origin;
+                if (returnOrigin === allowedOrigin) return return_url;
+                logStep('WARN: return_url origin mismatch, using default', { returnOrigin, allowedOrigin });
+            } catch { /* invalid URL, use default */ }
+            return defaultUrl;
+        })();
+
+        // Append query params to the base URL
+        const separator = safeBaseUrl.includes('?') ? '&' : '?';
+        const successUrl = `${safeBaseUrl}${separator}session_id={CHECKOUT_SESSION_ID}&setup_success=true`;
+        const cancelUrl = `${safeBaseUrl}${separator}setup_canceled=true`;
 
         logStep('Creating Checkout Session', { successUrl });
 
