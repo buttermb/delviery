@@ -2,7 +2,7 @@
  * BillingSettings Tests
  * Verifies the Manage Subscription button, plan card buttons,
  * upgrade dialog cancel button, Add Payment Method button,
- * and Update Payment Method button behavior.
+ * Update Payment Method button, and "Upgrade for Unlimited" button behavior.
  */
 
 import React from 'react';
@@ -34,6 +34,17 @@ const mockTenant: Record<string, unknown> = {
 };
 
 // --- Mocks (must be before component import) ---
+
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  };
+});
 
 const mockToastInfo = vi.fn();
 const mockToastSuccess = vi.fn();
@@ -805,6 +816,23 @@ describe('BillingSettings', () => {
       });
 
       vi.unstubAllGlobals();
+    });
+  });
+
+  describe('Upgrade for Unlimited button', () => {
+    it('navigates to select-plan when "Upgrade for Unlimited" is clicked', async () => {
+      // Set up free tier state for this test
+      mockCurrentTier = 'free' as SubscriptionTier;
+      mockTenant.subscription_plan = 'free';
+      mockTenant.is_free_tier = true;
+
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const button = await screen.findByRole('button', { name: /upgrade for unlimited/i });
+      await user.click(button);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/test-dispensary/admin/select-plan');
     });
   });
 });
