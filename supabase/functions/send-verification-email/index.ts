@@ -4,6 +4,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { consumeCreditsOrFail, CreditError, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 const verificationEmailSchema = z.object({
   customer_user_id: z.string().uuid(),
@@ -157,6 +158,21 @@ If you didn't create an account with ${businessName}, please ignore this email.
         code,
         verificationUrl,
       });
+    }
+
+    // Attempt credit deduction (security path: allow through if credits fail)
+    try {
+      await consumeCreditsOrFail(supabase, tenant_id, CREDIT_ACTIONS.SEND_EMAIL, {
+        description: `Verification email to ${email}`,
+        referenceId: customer_user_id,
+        referenceType: 'verification_email',
+      });
+    } catch (creditErr: unknown) {
+      if (creditErr instanceof CreditError) {
+        console.error('[SEND_VERIFICATION_EMAIL] Insufficient credits, allowing through (security path):', creditErr.message);
+      } else {
+        console.error('[SEND_VERIFICATION_EMAIL] Credit deduction failed, allowing through:', creditErr);
+      }
     }
 
     return new Response(
