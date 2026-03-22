@@ -5,7 +5,7 @@
 
 import { serve, corsHeaders, createClient } from '../_shared/deps.ts';
 import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
-import Stripe from 'https://esm.sh/stripe@18.5.0?target=deno';
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 // Helper logging function
 const logStep = (step: string, details?: unknown) => {
@@ -157,7 +157,7 @@ serve(async (req) => {
     logStep('Initializing Stripe client');
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: STRIPE_API_VERSION,
       httpClient: Stripe.createFetchHttpClient(),
     });
 

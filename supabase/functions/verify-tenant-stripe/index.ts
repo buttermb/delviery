@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,7 +46,7 @@ serve(async (req) => {
 
     // Test the key with a lightweight Stripe API call
     try {
-      const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
+      const stripe = new Stripe(stripeSecretKey, { apiVersion: STRIPE_API_VERSION });
       
       // Make a lightweight test call - just list customers with limit 1
       await stripe.customers.list({ limit: 1 });

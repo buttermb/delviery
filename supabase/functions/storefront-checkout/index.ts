@@ -30,7 +30,7 @@ import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { checkRateLimit } from '../_shared/rateLimiting.ts';
 import { sanitizeString } from '../_shared/validation.ts';
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 const logger = createLogger('storefront-checkout');
 
@@ -816,7 +816,7 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       try {
-        const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
+        const stripe = new Stripe(stripeSecretKey, { apiVersion: STRIPE_API_VERSION });
 
         // Build Stripe line items from server-side product data
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = body.items.map((item) => {

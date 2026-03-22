@@ -6,7 +6,7 @@
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
-import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 const RequestSchema = z.object({
   tenant_id: z.string().uuid(),
@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-08-27.basil',
+      apiVersion: STRIPE_API_VERSION,
     });
 
     // Verify authentication

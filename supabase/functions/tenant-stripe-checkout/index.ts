@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -80,7 +80,7 @@ serve(async (req) => {
 
     // Initialize Stripe with TENANT's credentials
     const stripe = new Stripe(tenantStripeSecretKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: STRIPE_API_VERSION,
     });
 
     // Get or create customer
