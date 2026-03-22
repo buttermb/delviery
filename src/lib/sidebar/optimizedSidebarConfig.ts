@@ -68,8 +68,7 @@ import {
     Wrench,
     type LucideIcon,
 } from 'lucide-react';
-
-export type SubscriptionTier = 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+export { type SubscriptionTier } from '@/lib/featureConfig';
 
 export interface NavItem {
     id: string;
@@ -105,7 +104,7 @@ const TODAY: NavItem[] = [
         path: '/admin/dashboard',
         icon: LayoutDashboard,
         shortcut: '⌘1',
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['home', 'overview', 'summary', 'main'],
     },
     {
@@ -115,7 +114,7 @@ const TODAY: NavItem[] = [
         icon: Flame,
         hot: true,
         shortcut: '⌘2',
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['urgent', 'attention', 'priority', 'live', 'alerts'],
     },
     {
@@ -123,7 +122,7 @@ const TODAY: NavItem[] = [
         name: 'Live Orders',
         path: '/admin/orders?tab=live',
         icon: Activity,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['realtime', 'active', 'current'],
     },
     {
@@ -131,7 +130,7 @@ const TODAY: NavItem[] = [
         name: 'Notifications',
         path: '/admin/notifications',
         icon: Bell,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['alerts', 'messages', 'updates'],
     },
 ];
@@ -148,7 +147,7 @@ const SELL: NavItem[] = [
         path: '/admin/orders',
         icon: ShoppingCart,
         shortcut: '⌘3',
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['orders', 'sales', 'transactions'],
     },
     {
@@ -156,7 +155,7 @@ const SELL: NavItem[] = [
         name: 'Menu Orders',
         path: '/admin/orders?tab=menu',
         icon: Menu,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['disposable', 'catalogs'],
     },
     {
@@ -164,7 +163,7 @@ const SELL: NavItem[] = [
         name: 'Pre-Orders',
         path: '/admin/pre-orders',
         icon: ClipboardList,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['future', 'scheduled', 'advance'],
         isNew: true,
     },
@@ -175,7 +174,7 @@ const SELL: NavItem[] = [
         path: '/admin/pos-system',
         icon: CreditCard,
         shortcut: '⌘P',
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['point of sale', 'register', 'checkout', 'cash'],
         featureFlag: 'pos',
     },
@@ -184,7 +183,7 @@ const SELL: NavItem[] = [
         name: 'Cash Register',
         path: '/admin/cash-register',
         icon: Calculator,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['till', 'drawer', 'cash'],
         featureFlag: 'pos',
     },
@@ -194,7 +193,7 @@ const SELL: NavItem[] = [
         name: 'Menus',
         path: '/admin/disposable-menus',
         icon: Menu,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['disposable menus', 'catalogs', 'price lists'],
     },
     // Storefront (Online Store)
@@ -203,7 +202,7 @@ const SELL: NavItem[] = [
         name: 'Storefront',
         path: '/admin/storefront-hub',
         icon: Store,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['online store', 'ecommerce', 'shop', 'website'],
     },
     {
@@ -211,7 +210,7 @@ const SELL: NavItem[] = [
         name: 'Store Orders',
         path: '/admin/storefront?tab=orders',
         icon: ShoppingCart,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['online orders', 'ecommerce'],
     },
     {
@@ -219,7 +218,7 @@ const SELL: NavItem[] = [
         name: 'Live Store Orders',
         path: '/admin/storefront?tab=live',
         icon: Activity,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['realtime', 'live'],
     },
     {
@@ -227,7 +226,7 @@ const SELL: NavItem[] = [
         name: 'Store Builder',
         path: '/admin/storefront?tab=builder',
         icon: Layers,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['customize', 'design', 'theme'],
         isNew: true,
     },
@@ -236,7 +235,7 @@ const SELL: NavItem[] = [
         name: 'Store Products',
         path: '/admin/storefront?tab=products',
         icon: Package,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['catalog', 'listings'],
     },
     {
@@ -244,7 +243,7 @@ const SELL: NavItem[] = [
         name: 'Store Settings',
         path: '/admin/storefront?tab=settings',
         icon: Settings,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['store config', 'delivery', 'payment methods'],
     },
     {
@@ -252,7 +251,7 @@ const SELL: NavItem[] = [
         name: 'Store Analytics',
         path: '/admin/storefront?tab=analytics',
         icon: BarChart3,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['store metrics', 'revenue', 'sales data'],
     },
     // Marketplace (B2B)
@@ -261,7 +260,7 @@ const SELL: NavItem[] = [
         name: 'Marketplace',
         path: '/admin/marketplace/dashboard',
         icon: Building,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['b2b', 'wholesale', 'marketplace'],
     },
     {
@@ -269,7 +268,7 @@ const SELL: NavItem[] = [
         name: 'B2B Orders',
         path: '/admin/marketplace/orders',
         icon: ShoppingCart,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['wholesale orders', 'b2b'],
     },
     {
@@ -277,7 +276,7 @@ const SELL: NavItem[] = [
         name: 'Product Sync',
         path: '/admin/marketplace/product-sync',
         icon: ArrowRightLeft,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['sync', 'import', 'export'],
     },
 ];
@@ -294,7 +293,7 @@ const MANAGE: NavItem[] = [
         path: '/admin/inventory-hub',
         icon: Package,
         shortcut: '⌘I',
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['products', 'stock', 'items', 'catalog'],
     },
     {
@@ -302,7 +301,7 @@ const MANAGE: NavItem[] = [
         name: 'Stock Levels',
         path: '/admin/inventory-hub?tab=stock',
         icon: Warehouse,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['quantity', 'available', 'low stock'],
     },
     {
@@ -310,7 +309,7 @@ const MANAGE: NavItem[] = [
         name: 'Stock Alerts',
         path: '/admin/inventory-hub?tab=monitoring',
         icon: AlertCircle,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['low stock', 'reorder', 'warnings'],
     },
     {
@@ -318,7 +317,7 @@ const MANAGE: NavItem[] = [
         name: 'Barcodes',
         path: '/admin/inventory-hub?tab=barcodes',
         icon: Barcode,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['scan', 'labels', 'print'],
     },
     // Customers
@@ -328,7 +327,7 @@ const MANAGE: NavItem[] = [
         path: '/admin/customer-hub',
         icon: Users,
         shortcut: '⌘C',
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['clients', 'contacts', 'crm', 'buyers'],
     },
     {
@@ -336,7 +335,7 @@ const MANAGE: NavItem[] = [
         name: 'CRM',
         path: '/admin/customer-hub?tab=crm',
         icon: Target,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['relationships', 'pipeline', 'leads'],
         featureFlag: 'crm_advanced',
     },
@@ -345,7 +344,7 @@ const MANAGE: NavItem[] = [
         name: 'Invoices',
         path: '/admin/customer-hub?tab=invoices',
         icon: Receipt,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['billing', 'payments', 'receipts'],
     },
     {
@@ -353,7 +352,7 @@ const MANAGE: NavItem[] = [
         name: 'Who Owes Me',
         path: '/admin/fronted-inventory',
         icon: CreditCard,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['credit', 'debt', 'outstanding'],
     },
     // Wholesale/B2B Clients
@@ -362,7 +361,7 @@ const MANAGE: NavItem[] = [
         name: 'B2B Clients',
         path: '/admin/customer-hub?tab=contacts',
         icon: Building2,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['wholesale', 'business', 'accounts'],
     },
     {
@@ -370,7 +369,7 @@ const MANAGE: NavItem[] = [
         name: 'Pricing Tiers',
         path: '/admin/wholesale/pricing-tiers',
         icon: Layers,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['volume', 'discounts', 'tiers'],
     },
     // Operations
@@ -379,7 +378,7 @@ const MANAGE: NavItem[] = [
         name: 'Suppliers',
         path: '/admin/operations-hub?tab=procurement&sub=vendors',
         icon: Building2,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['vendors', 'partners', 'procurement'],
     },
     {
@@ -387,7 +386,7 @@ const MANAGE: NavItem[] = [
         name: 'Team',
         path: '/admin/operations-hub?tab=team',
         icon: UserCog,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['staff', 'employees', 'members', 'roles'],
     },
     {
@@ -395,7 +394,7 @@ const MANAGE: NavItem[] = [
         name: 'Invites',
         path: '/admin/operations-hub?tab=team&sub=invites',
         icon: UserPlus,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['invite', 'add team', 'onboard'],
     },
 ];
@@ -409,7 +408,7 @@ const DELIVER: NavItem[] = [
         name: 'Fulfillment',
         path: '/admin/fulfillment-hub',
         icon: Truck,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['delivery', 'shipping', 'logistics', 'dispatch'],
         featureFlag: 'delivery_tracking',
     },
@@ -418,7 +417,7 @@ const DELIVER: NavItem[] = [
         name: 'Drivers',
         path: '/admin/drivers',
         icon: Users,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['drivers', 'couriers', 'runners', 'delivery team'],
         featureFlag: 'delivery_tracking',
     },
@@ -427,7 +426,7 @@ const DELIVER: NavItem[] = [
         name: 'Fleet Map',
         path: '/admin/fleet',
         icon: MapPinned,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['fleet', 'live map', 'gps', 'location', 'real-time', 'tracking'],
         featureFlag: 'delivery_tracking',
     },
@@ -436,7 +435,7 @@ const DELIVER: NavItem[] = [
         name: 'Couriers',
         path: '/admin/fulfillment-hub?tab=couriers',
         icon: Users,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['drivers', 'runners', 'delivery team'],
         featureFlag: 'courier_portal',
     },
@@ -445,7 +444,7 @@ const DELIVER: NavItem[] = [
         name: 'Live Tracking',
         path: '/admin/fulfillment-hub?tab=map',
         icon: MapPinned,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['live map', 'gps', 'location', 'real-time'],
         featureFlag: 'delivery_tracking',
     },
@@ -454,7 +453,7 @@ const DELIVER: NavItem[] = [
         name: 'Live Map',
         path: '/admin/live-map',
         icon: MapPin,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['map', 'locations', 'fleet'],
         featureFlag: 'live_map',
     },
@@ -469,7 +468,7 @@ const MONEY: NavItem[] = [
         name: 'Finance',
         path: '/admin/finance-hub',
         icon: DollarSign,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['money', 'revenue', 'expenses', 'accounting'],
     },
     {
@@ -477,7 +476,7 @@ const MONEY: NavItem[] = [
         name: 'Revenue',
         path: '/admin/finance-hub?tab=revenue',
         icon: TrendingUp,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['income', 'sales', 'earnings'],
     },
     {
@@ -485,7 +484,7 @@ const MONEY: NavItem[] = [
         name: 'Expenses',
         path: '/admin/finance-hub?tab=expenses',
         icon: Wallet,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['costs', 'spending', 'outgoing'],
     },
     {
@@ -493,7 +492,7 @@ const MONEY: NavItem[] = [
         name: 'Subscription',
         path: '/admin/billing',
         icon: CreditCard,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['subscription', 'plan', 'payment method'],
     },
     {
@@ -501,7 +500,7 @@ const MONEY: NavItem[] = [
         name: 'Taxes',
         path: '/admin/tax-management',
         icon: FileSpreadsheet,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['tax', 'rates', 'compliance'],
     },
 ];
@@ -516,7 +515,7 @@ const GROW: NavItem[] = [
         name: 'Analytics',
         path: '/admin/analytics-hub',
         icon: BarChart3,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['reports', 'metrics', 'data', 'insights'],
         featureFlag: 'analytics_advanced',
     },
@@ -525,7 +524,7 @@ const GROW: NavItem[] = [
         name: 'Reports',
         path: '/admin/reports',
         icon: FileSpreadsheet,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['exports', 'summaries', 'documents'],
     },
     {
@@ -533,7 +532,7 @@ const GROW: NavItem[] = [
         name: 'Advanced',
         path: '/admin/analytics-hub?tab=advanced',
         icon: PieChart,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['deep dive', 'charts', 'trends'],
         featureFlag: 'analytics_advanced',
     },
@@ -543,7 +542,7 @@ const GROW: NavItem[] = [
         name: 'Marketing',
         path: '/admin/marketing-hub',
         icon: Mail,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['campaigns', 'promotions', 'email'],
         featureFlag: 'marketing_hub',
     },
@@ -552,7 +551,7 @@ const GROW: NavItem[] = [
         name: 'Coupons',
         path: '/admin/storefront-hub?tab=coupons',
         icon: Tag,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['discounts', 'codes', 'promotions'],
         featureFlag: 'marketing_hub',
     },
@@ -561,7 +560,7 @@ const GROW: NavItem[] = [
         name: 'Reviews',
         path: '/admin/storefront-hub?tab=reviews',
         icon: Star,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['ratings', 'feedback', 'testimonials'],
     },
     {
@@ -569,7 +568,7 @@ const GROW: NavItem[] = [
         name: 'Loyalty',
         path: '/admin/customer-hub?tab=loyalty',
         icon: Star,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['rewards', 'points', 'retention'],
     },
     // Executive / Strategy (Enterprise)
@@ -578,7 +577,7 @@ const GROW: NavItem[] = [
         name: 'Strategy',
         path: '/admin/strategic-dashboard',
         icon: Target,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['strategy', 'planning', 'goals'],
         isNew: true,
     },
@@ -587,7 +586,7 @@ const GROW: NavItem[] = [
         name: 'Board Reports',
         path: '/admin/board-report',
         icon: Presentation,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['executive', 'summary', 'board'],
     },
     {
@@ -595,7 +594,7 @@ const GROW: NavItem[] = [
         name: 'Expansion',
         path: '/admin/expansion',
         icon: TrendingUp,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['growth', 'planning', 'markets'],
     },
 ];
@@ -609,7 +608,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Integrations',
         path: '/admin/integrations-hub',
         icon: FolderKanban,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['bulk operations', 'imports', 'exports'],
     },
     {
@@ -617,7 +616,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Automation',
         path: '/admin/workflow-automation',
         icon: Zap,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['workflows', 'triggers', 'rules'],
     },
     {
@@ -625,7 +624,7 @@ const AUTOMATE: NavItem[] = [
         name: 'API Access',
         path: '/admin/api-access',
         icon: Key,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['developer', 'api keys', 'tokens'],
     },
     {
@@ -633,7 +632,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Webhooks',
         path: '/admin/webhooks',
         icon: Zap,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['automation', 'events', 'triggers'],
     },
     {
@@ -641,7 +640,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Local AI',
         path: '/admin/local-ai',
         icon: Brain,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['ai', 'assistant', 'machine learning'],
     },
     {
@@ -649,7 +648,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Data Export',
         path: '/admin/analytics-hub?tab=export',
         icon: Download,
-        tier: 'PROFESSIONAL',
+        tier: 'professional',
         keywords: ['download', 'csv', 'backup'],
     },
     // Developer tools (Enterprise only)
@@ -658,7 +657,7 @@ const AUTOMATE: NavItem[] = [
         name: 'Dev Tools',
         path: '/admin/developer-tools',
         icon: Wrench,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['debug', 'console', 'testing'],
     },
 ];
@@ -672,7 +671,7 @@ const CONFIGURE: NavItem[] = [
         name: 'Settings',
         path: '/admin/settings-hub',
         icon: Settings,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['preferences', 'configuration', 'options'],
     },
     {
@@ -680,7 +679,7 @@ const CONFIGURE: NavItem[] = [
         name: 'Activity Logs',
         path: '/admin/operations-hub?tab=activity',
         icon: ScrollText,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['audit', 'history', 'changes'],
     },
     {
@@ -688,7 +687,7 @@ const CONFIGURE: NavItem[] = [
         name: 'Help Center',
         path: '/admin/help-hub',
         icon: HelpCircle,
-        tier: 'STARTER',
+        tier: 'starter',
         keywords: ['support', 'docs', 'faq', 'tutorials'],
     },
     {
@@ -696,7 +695,7 @@ const CONFIGURE: NavItem[] = [
         name: 'Priority Support',
         path: '/admin/help-hub?tab=support',
         icon: Headphones,
-        tier: 'ENTERPRISE',
+        tier: 'enterprise',
         keywords: ['chat', 'phone', 'ticket'],
     },
 ];
@@ -768,9 +767,9 @@ export const OPTIMIZED_SIDEBAR_SECTIONS: NavSection[] = [
 // ============================================================================
 export function filterItemsByTier(items: NavItem[], userTier: SubscriptionTier): NavItem[] {
     const tierHierarchy: Record<SubscriptionTier, number> = {
-        STARTER: 1,
-        PROFESSIONAL: 2,
-        ENTERPRISE: 3,
+        starter: 1,
+        professional: 2,
+        enterprise: 3,
     };
 
     const userTierLevel = tierHierarchy[userTier];
@@ -809,7 +808,7 @@ export function searchSidebarItems(query: string, userTier: SubscriptionTier): N
 // QUICK ACTIONS - Top features for dashboard widget
 // ============================================================================
 export const QUICK_ACTION_ITEMS: Record<SubscriptionTier, NavItem[]> = {
-    STARTER: [
+    starter: [
         TODAY[0],   // Dashboard
         SELL[0],    // All Orders
         SELL[5],    // Menus
@@ -818,7 +817,7 @@ export const QUICK_ACTION_ITEMS: Record<SubscriptionTier, NavItem[]> = {
         MANAGE[6],  // Invoices
         GROW[1],    // Reports
     ],
-    PROFESSIONAL: [
+    professional: [
         TODAY[0],   // Dashboard
         TODAY[1],   // Hotbox
         SELL[0],    // All Orders
@@ -828,7 +827,7 @@ export const QUICK_ACTION_ITEMS: Record<SubscriptionTier, NavItem[]> = {
         GROW[0],    // Analytics
         MONEY[0],   // Finance
     ],
-    ENTERPRISE: [
+    enterprise: [
         TODAY[0],   // Dashboard
         TODAY[1],   // Hotbox
         TODAY[2],   // Live Orders

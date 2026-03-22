@@ -45,7 +45,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/test-tenant/admin/dashboard']}>
           <LiveBadgeProvider>
-            <OptimizedSidebar userTier="PROFESSIONAL" {...props} />
+            <OptimizedSidebar userTier="professional" {...props} />
           </LiveBadgeProvider>
         </MemoryRouter>
       </QueryClientProvider>
@@ -245,7 +245,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
     });
 
     it('should handle multiple rapid rerenders', () => {
-      const { rerender } = renderSidebar({ userTier: 'STARTER' });
+      const { rerender } = renderSidebar({ userTier: 'starter' });
 
       // Rapidly change props
       for (let i = 0; i < 10; i++) {
@@ -254,7 +254,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
             <MemoryRouter initialEntries={['/test-tenant/admin/dashboard']}>
               <LiveBadgeProvider>
                 <OptimizedSidebar
-                  userTier={i % 2 === 0 ? 'STARTER' : 'PROFESSIONAL'}
+                  userTier={i % 2 === 0 ? 'starter' : 'professional'}
                 />
               </LiveBadgeProvider>
             </MemoryRouter>

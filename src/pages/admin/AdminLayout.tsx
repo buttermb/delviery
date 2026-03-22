@@ -193,7 +193,7 @@ const AdminLayout = () => {
             <SidebarErrorBoundary>
               <LiveBadgeProvider>
                 {isOptimized ? (
-                  <OptimizedSidebar userTier="PROFESSIONAL" />
+                  <OptimizedSidebar userTier="professional" />
                 ) : (
                   <AdaptiveSidebar collapsible="icon" />
                 )}
