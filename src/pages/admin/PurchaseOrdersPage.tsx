@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +81,7 @@ export default function PurchaseOrdersPage() {
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const { data: purchaseOrders, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
@@ -164,6 +166,18 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleStatusChange = async (po: PurchaseOrder, newStatus: string) => {
+    // Gate "submitted" (send) status with credit check (25 credits)
+    if (newStatus === 'submitted') {
+      await executeCreditAction('purchase_order_send', async () => {
+        await updateStatusMutation.mutateAsync({
+          id: po.id,
+          status: newStatus,
+          poNumber: po.po_number || undefined,
+        });
+      });
+      return;
+    }
+
     await updateStatusMutation.mutateAsync({
       id: po.id,
       status: newStatus,
