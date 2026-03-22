@@ -1,7 +1,7 @@
 /**
  * BillingSettings Tests
  * Verifies the Manage Subscription button, plan card buttons,
- * and upgrade dialog cancel button behavior.
+ * upgrade dialog cancel button, and Add Payment Method button behavior.
  */
 
 import React from 'react';
@@ -176,10 +176,6 @@ vi.mock('@/components/settings/SettingsSection', () => ({
   SettingsCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/components/billing/AddPaymentMethodDialog', () => ({
-  AddPaymentMethodDialog: () => null,
-}));
-
 vi.mock('@/components/credits', () => ({
   CreditBalance: () => null,
   CreditUsageStats: () => null,
@@ -187,6 +183,10 @@ vi.mock('@/components/credits', () => ({
 
 vi.mock('@/lib/credits', () => ({
   FREE_TIER_MONTHLY_CREDITS: 5000,
+}));
+
+vi.mock('@/utils/errorHandling/handlers', () => ({
+  handleError: vi.fn(),
 }));
 
 import BillingSettings from '../BillingSettings';
@@ -220,6 +220,7 @@ describe('BillingSettings', () => {
     vi.clearAllMocks();
     mockCurrentTier = 'starter';
     mockTenant.subscription_plan = 'starter';
+    mockTenant.payment_method_added = true;
     mockInvoke.mockResolvedValue({ data: { configured: true, valid: true }, error: null });
   });
 
@@ -606,6 +607,92 @@ describe('BillingSettings', () => {
       // Should show pricing info
       expect(screen.getByText(/New monthly price/i)).toBeInTheDocument();
       expect(screen.getByText(/Changes take effect immediately/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Add Payment Method button', () => {
+    beforeEach(() => {
+      mockTenant.payment_method_added = false;
+    });
+
+    it('renders the "Add Payment Method" button when no payment method is added', async () => {
+      renderBillingSettings();
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /add payment method/i })).toBeInTheDocument();
+      });
+    });
+
+    it('opens AddPaymentMethodDialog when "Add Payment Method" button is clicked', async () => {
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      // Wait for the button to appear
+      const addButton = await screen.findByRole('button', { name: /add payment method/i });
+
+      // Click the button
+      await user.click(addButton);
+
+      // The AddPaymentMethodDialog should be open — it renders a dialog with description about trial
+      await waitFor(() => {
+        expect(screen.getByText(/add a payment method to ensure uninterrupted service/i)).toBeInTheDocument();
+      });
+    });
+
+    it('shows dialog with trial benefits after clicking "Add Payment Method"', async () => {
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const addButton = await screen.findByRole('button', { name: /add payment method/i });
+      await user.click(addButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/full access to all features/i)).toBeInTheDocument();
+        expect(screen.getByText(/unlimited products & customers/i)).toBeInTheDocument();
+        expect(screen.getByText(/priority support/i)).toBeInTheDocument();
+      });
+    });
+
+    it('shows "Remind Me Later" button in the payment dialog', async () => {
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const addButton = await screen.findByRole('button', { name: /add payment method/i });
+      await user.click(addButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /remind me later/i })).toBeInTheDocument();
+      });
+    });
+
+    it('closes the dialog when "Remind Me Later" is clicked', async () => {
+      const user = userEvent.setup();
+      renderBillingSettings();
+
+      const addButton = await screen.findByRole('button', { name: /add payment method/i });
+      await user.click(addButton);
+
+      // Verify dialog is open
+      await waitFor(() => {
+        expect(screen.getByText(/add a payment method to ensure uninterrupted service/i)).toBeInTheDocument();
+      });
+
+      // Click "Remind Me Later"
+      const remindButton = screen.getByRole('button', { name: /remind me later/i });
+      await user.click(remindButton);
+
+      // Dialog content should be removed
+      await waitFor(() => {
+        expect(screen.queryByText(/add a payment method to ensure uninterrupted service/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('renders "No payment method added" text when payment_method_added is false', async () => {
+      renderBillingSettings();
+
+      await waitFor(() => {
+        expect(screen.getByText(/no payment method added/i)).toBeInTheDocument();
+      });
     });
   });
 });
