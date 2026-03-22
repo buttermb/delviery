@@ -4,6 +4,11 @@
  *
  * Prices MUST match TIER_PRICES in featureConfig.ts and PLAN_CONFIG in planPricing.ts.
  * Limits MUST match create_tenant_atomic() in 20260320000001_fix_subscription_pricing_consistency.sql.
+ *
+ * Canonical prices (from planPricing.ts / featureConfig.ts):
+ *   Starter:      $79/mo
+ *   Professional: $150/mo
+ *   Enterprise:   $499/mo
  */
 
 import { TIER_PRICES, TIER_NAMES } from '@/lib/featureConfig';
