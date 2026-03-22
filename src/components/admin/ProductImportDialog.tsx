@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Label } from "@/components/ui/label";
+import { useCreditGatedAction } from "@/hooks/useCreditGatedAction";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
 
 interface ProductImportDialogProps {
     open: boolean;
@@ -32,6 +34,14 @@ const SYSTEM_FIELDS = [
 
 export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
+    const {
+        execute: executeCreditGated,
+        isExecuting: isCreditChecking,
+        showOutOfCreditsModal,
+        closeOutOfCreditsModal,
+        blockedAction,
+        isFreeTier,
+    } = useCreditGatedAction();
     const [step, setStep] = useState<ImportStep>('upload');
     const [_file, _setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
@@ -143,6 +153,131 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         return String(value).trim();
     };
 
+    const performBatchImport = async (): Promise<number> => {
+        if (!tenant?.id) throw new Error('No tenant');
+
+        // Normalization and Validation
+        const validRecords: Record<string, unknown>[] = [];
+        const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
+
+        rawRecords.forEach((record, index) => {
+            const normalized: Record<string, unknown> = {};
+
+            // Map fields using user selection
+            Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
+                if (fileHeader) {
+                    let val = record[fileHeader];
+                    if (typeof val === 'string') val = val.trim();
+
+                    // Clean empty strings
+                    if (treatEmptyAsNull && val === '') {
+                        val = null;
+                    }
+
+                    normalized[systemKey] = val;
+                }
+            });
+
+            // Sanitize SKU specifically
+            if (normalized.sku !== undefined && normalized.sku !== null) {
+                const originalSku = normalized.sku;
+                normalized.sku = sanitizeSKU(originalSku);
+                if (normalized.sku !== String(originalSku).trim() && /e\+/i.test(String(originalSku))) {
+                    // We detected and strictly converted sci notation, but let's warn if it looks suspicious
+                    // e.g. "1.23E+10" -> "12300000000" (might be right)
+                }
+            }
+
+            // Check required fields (post-mapping)
+            const missing = SYSTEM_FIELDS.filter(f => f.required && (normalized[f.key] === null || normalized[f.key] === undefined || normalized[f.key] === '')).map(f => f.label);
+            if (missing.length > 0) {
+                invalidRecords.push({ row: index + 2, reason: `Missing: ${missing.join(', ')}`, data: record });
+                return;
+            }
+
+            // Category Validation
+            const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
+            if (normalized.category && !validCategories.includes(String(normalized.category).toLowerCase())) {
+                normalized.category = String(normalized.category).toLowerCase();
+                if (!validCategories.includes(String(normalized.category))) {
+                    invalidRecords.push({ row: index + 2, reason: `Invalid Category: ${normalized.category}. Must be one of: ${validCategories.join(', ')}`, data: record });
+                    return;
+                }
+            }
+
+            validRecords.push(normalized);
+        });
+
+        if (validRecords.length === 0) {
+            throw new Error(`All ${rawRecords.length} records failed validation.`);
+        }
+
+        // Batched Insert
+        const batchSize = 10;
+        let insertedCount = 0;
+        let insertFailures = 0;
+
+        for (let i = 0; i < validRecords.length; i += batchSize) {
+            const batch = validRecords.slice(i, i + batchSize);
+
+            const { error } = await supabase.from('products').insert(
+                batch.map(record => ({
+                    tenant_id: tenant.id,
+                    name: String(record.name || ''),
+                    sku: String(record.sku || ''),
+                    category: String(record.category || ''),
+                    wholesale_price: parseNumber(record.wholesale_price),
+                    retail_price: parseNumber(record.retail_price),
+                    available_quantity: parseNumber(record.available_quantity),
+                    description: record.description || null,
+                    total_quantity: parseNumber(record.available_quantity),
+                    price: parseNumber(record.wholesale_price),
+                    thc_percent: 0,
+                    cbd_percent: 0,
+                    thca_percentage: 0
+                }))
+            );
+
+            if (error) {
+                insertFailures += batch.length;
+                batch.forEach((r, batchIndex) => {
+                    let reason = `Database Error: ${error.message}`;
+                    if (error.code === '23505') reason = "Duplicate SKU or Barcode";
+                    invalidRecords.push({ row: i + batchIndex + 2, reason, data: r });
+                });
+            } else {
+                insertedCount += batch.length;
+            }
+
+            setProgress(Math.round(((i + batchSize) / validRecords.length) * 100));
+        }
+
+        if (insertFailures > 0 || invalidRecords.length > 0) {
+            const message = `Import complete: ${insertedCount} imported. ${invalidRecords.length} validation/database errors.`;
+            toast.warning(message, {
+                duration: 6000,
+                action: {
+                    label: "Download Report",
+                    onClick: () => {
+                        const blob = new Blob([JSON.stringify(invalidRecords, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `import-errors-${new Date().toISOString()}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                }
+            });
+        } else if (insertedCount > 0) {
+            toast.success(`Successfully imported ${insertedCount} products`);
+        }
+
+        return insertedCount;
+    };
+
     const handleImport = async () => {
         if (!tenant?.id) return;
 
@@ -158,134 +293,30 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         setProgress(0);
 
         try {
-            // Normalization and Validation
-            const validRecords: Record<string, unknown>[] = [];
-            const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
-
-            rawRecords.forEach((record, index) => {
-                const normalized: Record<string, unknown> = {};
-
-                // Map fields using user selection
-                Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
-                    if (fileHeader) {
-                        let val = record[fileHeader];
-                        if (typeof val === 'string') val = val.trim();
-
-                        // Clean empty strings
-                        if (treatEmptyAsNull && val === '') {
-                            val = null;
-                        }
-
-                        normalized[systemKey] = val;
+            const result = await executeCreditGated<number>({
+                actionKey: 'product_bulk_import',
+                action: performBatchImport,
+                referenceType: 'bulk_import',
+                onSuccess: (insertedCount) => {
+                    if (insertedCount > 0) {
+                        onSuccess?.();
+                        onOpenChange(false);
+                        resetState();
+                    } else {
+                        setLoading(false);
+                        setStep('map');
                     }
-                });
-
-                // Sanitize SKU specifically
-                if (normalized.sku !== undefined && normalized.sku !== null) {
-                    const originalSku = normalized.sku;
-                    normalized.sku = sanitizeSKU(originalSku);
-                    if (normalized.sku !== String(originalSku).trim() && /e\+/i.test(String(originalSku))) {
-                        // We detected and strictly converted sci notation, but let's warn if it looks suspicious
-                        // e.g. "1.23E+10" -> "12300000000" (might be right)
-                    }
-                }
-
-                // Check required fields (post-mapping)
-                const missing = SYSTEM_FIELDS.filter(f => f.required && (normalized[f.key] === null || normalized[f.key] === undefined || normalized[f.key] === '')).map(f => f.label);
-                if (missing.length > 0) {
-                    invalidRecords.push({ row: index + 2, reason: `Missing: ${missing.join(', ')}`, data: record });
-                    return;
-                }
-
-                // Category Validation
-                const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
-                if (normalized.category && !validCategories.includes(String(normalized.category).toLowerCase())) {
-                    // Try primitive fuzzy match or default?
-                    // Let's force lowercase at least
-                    normalized.category = String(normalized.category).toLowerCase();
-                    if (!validCategories.includes(String(normalized.category))) {
-                        invalidRecords.push({ row: index + 2, reason: `Invalid Category: ${normalized.category}. Must be one of: ${validCategories.join(', ')}`, data: record });
-                        return;
-                    }
-                }
-
-                validRecords.push(normalized);
+                },
+                onError: (error) => {
+                    logger.error('Import failed:', error, { component: 'ProductImportDialog' });
+                    toast.error(humanizeError(error, "Failed to import products"));
+                    setLoading(false);
+                    setStep('map');
+                },
             });
 
-            if (validRecords.length === 0) {
-                throw new Error(`All ${rawRecords.length} records failed validation.`);
-            }
-
-            // Batched Insert
-            const batchSize = 10;
-            let insertedCount = 0;
-            let insertFailures = 0;
-
-            for (let i = 0; i < validRecords.length; i += batchSize) {
-                const batch = validRecords.slice(i, i + batchSize);
-
-                const { error } = await supabase.from('products').insert(
-                    batch.map(record => ({
-                        tenant_id: tenant.id,
-                        name: String(record.name || ''),
-                        sku: String(record.sku || ''),
-                        category: String(record.category || ''),
-                        wholesale_price: parseNumber(record.wholesale_price),
-                        retail_price: parseNumber(record.retail_price),
-                        available_quantity: parseNumber(record.available_quantity),
-                        description: record.description || null,
-                        total_quantity: parseNumber(record.available_quantity), // Default total to available
-                        // Defaults
-                        price: parseNumber(record.wholesale_price), // Map base price to wholesale
-                        thc_percent: 0,
-                        cbd_percent: 0,
-                        thca_percentage: 0
-                    }))
-                );
-
-                if (error) {
-                    insertFailures += batch.length;
-                    batch.forEach((r, batchIndex) => {
-                        // Check for duplicate SKU
-                        let reason = `Database Error: ${error.message}`;
-                        if (error.code === '23505') reason = "Duplicate SKU or Barcode";
-                        invalidRecords.push({ row: i + batchIndex + 2, reason, data: r });
-                    });
-                } else {
-                    insertedCount += batch.length;
-                }
-
-                setProgress(Math.round(((i + batchSize) / validRecords.length) * 100));
-            }
-
-            if (insertFailures > 0 || invalidRecords.length > 0) {
-                const message = `Import complete: ${insertedCount} imported. ${invalidRecords.length} validation/database errors.`;
-                toast.warning(message, {
-                    duration: 6000,
-                    action: {
-                        label: "Download Report",
-                        onClick: () => {
-                            const blob = new Blob([JSON.stringify(invalidRecords, null, 2)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `import-errors-${new Date().toISOString()}.json`;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                        }
-                    }
-                });
-            } else {
-                toast.success(`Successfully imported ${insertedCount} products`);
-            }
-
-            if (insertedCount > 0) {
-                onSuccess?.();
-                onOpenChange(false);
-                resetState();
-            } else {
+            // If blocked by insufficient credits, revert to map step
+            if (result.wasBlocked) {
                 setLoading(false);
                 setStep('map');
             }
@@ -293,6 +324,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'ProductImportDialog' });
             toast.error(humanizeError(error, "Failed to import products"));
             setLoading(false);
+            setStep('map');
         }
     };
 
@@ -305,7 +337,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         setLoading(false);
     }
 
-    return (
+    return (<>
         <Dialog open={open} onOpenChange={(val) => {
             if (!val) resetState();
             onOpenChange(val);
@@ -452,12 +484,23 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                     )}
 
                     {step === 'map' && (
-                        <Button onClick={handleImport} disabled={loading}>
-                            Import Products <ArrowRight className="ml-2 h-4 w-4" />
+                        <Button onClick={handleImport} disabled={loading || isCreditChecking}>
+                            {isCreditChecking ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking credits...</>
+                            ) : (
+                                <>Import Products{isFreeTier ? ' (50 credits)' : ''} <ArrowRight className="ml-2 h-4 w-4" /></>
+                            )}
                         </Button>
                     )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <OutOfCreditsModal
+            open={showOutOfCreditsModal}
+            onOpenChange={closeOutOfCreditsModal}
+            actionAttempted={blockedAction || 'product_bulk_import'}
+        />
+    </>
     );
 }
