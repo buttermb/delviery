@@ -11,6 +11,7 @@ import { Upload, AlertCircle, Loader2, ArrowRight, ArrowLeft } from "lucide-reac
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { Label } from "@/components/ui/label";
 
 interface CustomerImportDialogProps {
@@ -32,6 +33,7 @@ const SYSTEM_FIELDS = [
 
 export function CustomerImportDialog({ open, onOpenChange, onSuccess }: CustomerImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
+    const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
     const [step, setStep] = useState<ImportStep>('upload');
     const [_file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
@@ -168,147 +170,150 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             return;
         }
 
-        setStep('importing');
-        setLoading(true);
-        setProgress(0);
+        await executeCreditAction('customer_import', async () => {
+            setStep('importing');
+            setLoading(true);
+            setProgress(0);
 
-        try {
-            // Normalization and Validation
-            const validRecords: Record<string, unknown>[] = [];
-            const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
+            try {
+                // Normalization and Validation
+                const validRecords: Record<string, unknown>[] = [];
+                const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
 
-            rawRecords.forEach((record, index) => {
-                const normalized: Record<string, unknown> = {};
+                rawRecords.forEach((record, index) => {
+                    const normalized: Record<string, unknown> = {};
 
-                // Map fields using user selection
-                Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
-                    if (fileHeader) {
-                        let val = record[fileHeader];
-                        if (typeof val === 'string') val = val.trim();
+                    // Map fields using user selection
+                    Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
+                        if (fileHeader) {
+                            let val = record[fileHeader];
+                            if (typeof val === 'string') val = val.trim();
 
-                        // Clean empty strings
-                        if (treatEmptyAsNull && val === '') {
-                            val = null;
+                            // Clean empty strings
+                            if (treatEmptyAsNull && val === '') {
+                                val = null;
+                            }
+
+                            normalized[systemKey] = val;
                         }
+                    });
 
-                        normalized[systemKey] = val;
+                    // Sanitize Phone specifically
+                    if (normalized.phone !== undefined && normalized.phone !== null) {
+                        normalized.phone = sanitizePhone(normalized.phone);
                     }
-                });
 
-                // Sanitize Phone specifically
-                if (normalized.phone !== undefined && normalized.phone !== null) {
-                    normalized.phone = sanitizePhone(normalized.phone);
-                }
+                    // Parse Date
+                    if (normalized.date_of_birth) {
+                        const parsed = parseDate(normalized.date_of_birth);
+                        if (!parsed) {
+                            invalidRecords.push({ row: index + 2, reason: `Invalid Date Format used for ${normalized.date_of_birth} (Expected ${dateFormat})`, data: record });
+                            return;
+                        }
+                        normalized.date_of_birth = parsed;
+                    }
 
-                // Parse Date
-                if (normalized.date_of_birth) {
-                    const parsed = parseDate(normalized.date_of_birth);
-                    if (!parsed) {
-                        invalidRecords.push({ row: index + 2, reason: `Invalid Date Format used for ${normalized.date_of_birth} (Expected ${dateFormat})`, data: record });
+                    // Check required fields (post-mapping)
+                    const missing = SYSTEM_FIELDS.filter(f => f.required && (normalized[f.key] === null || normalized[f.key] === undefined || normalized[f.key] === '')).map(f => f.label);
+                    if (missing.length > 0) {
+                        invalidRecords.push({ row: index + 2, reason: `Missing: ${missing.join(', ')}`, data: record });
                         return;
                     }
-                    normalized.date_of_birth = parsed;
+
+                    // Email validation
+                    if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(normalized.email))) {
+                        invalidRecords.push({ row: index + 2, reason: "Invalid email format", data: record });
+                        return;
+                    }
+
+                    validRecords.push(normalized);
+                });
+
+                if (validRecords.length === 0) {
+                    throw new Error(`All ${rawRecords.length} records failed validation.`);
                 }
 
-                // Check required fields (post-mapping)
-                const missing = SYSTEM_FIELDS.filter(f => f.required && (normalized[f.key] === null || normalized[f.key] === undefined || normalized[f.key] === '')).map(f => f.label);
-                if (missing.length > 0) {
-                    invalidRecords.push({ row: index + 2, reason: `Missing: ${missing.join(', ')}`, data: record });
-                    return;
+                // Batched Insert
+                const batchSize = 10;
+                let insertedCount = 0;
+                let insertFailures = 0;
+
+                for (let i = 0; i < validRecords.length; i += batchSize) {
+                    const batch = validRecords.slice(i, i + batchSize);
+
+                    const { error } = await supabase.from('customers').insert(
+                        batch.map(record => ({
+                            account_id: tenant.id,
+                            first_name: String(record.first_name || ''),
+                            last_name: String(record.last_name || ''),
+                            email: String(record.email || ''),
+                            phone: record.phone ? String(record.phone) : null,
+                            date_of_birth: record.date_of_birth ? String(record.date_of_birth) : null,
+                            customer_type: String(record.customer_type || 'retail').toLowerCase(),
+                            status: 'active',
+                            total_spent: 0,
+                            loyalty_points: 0,
+                            loyalty_tier: 'bronze'
+                        }))
+                    );
+
+                    if (error) {
+                        logger.error("Batch insert failed", error);
+                        insertFailures += batch.length;
+                        batch.forEach((r, batchIndex) => {
+                            invalidRecords.push({ row: i + batchIndex + 2, reason: `Database Error: ${error.message}`, data: r });
+                        });
+                    } else {
+                        insertedCount += batch.length;
+                    }
+
+                    setProgress(Math.round(((i + batchSize) / validRecords.length) * 100));
                 }
 
-                // Email validation
-                if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(normalized.email))) {
-                    invalidRecords.push({ row: index + 2, reason: "Invalid email format", data: record });
-                    return;
-                }
-
-                validRecords.push(normalized);
-            });
-
-            if (validRecords.length === 0) {
-                throw new Error(`All ${rawRecords.length} records failed validation.`);
-            }
-
-            // Batched Insert
-            const batchSize = 10;
-            let insertedCount = 0;
-            let insertFailures = 0;
-
-            for (let i = 0; i < validRecords.length; i += batchSize) {
-                const batch = validRecords.slice(i, i + batchSize);
-
-                const { error } = await supabase.from('customers').insert(
-                    batch.map(record => ({
-                        account_id: tenant.id,
-                        first_name: String(record.first_name || ''),
-                        last_name: String(record.last_name || ''),
-                        email: String(record.email || ''),
-                        phone: record.phone ? String(record.phone) : null,
-                        date_of_birth: record.date_of_birth ? String(record.date_of_birth) : null,
-                        customer_type: String(record.customer_type || 'retail').toLowerCase(),
-                        status: 'active',
-                        total_spent: 0,
-                        loyalty_points: 0,
-                        loyalty_tier: 'bronze'
-                    }))
-                );
-
-                if (error) {
-                    logger.error("Batch insert failed", error);
-                    insertFailures += batch.length;
-                    batch.forEach((r, batchIndex) => {
-                        invalidRecords.push({ row: i + batchIndex + 2, reason: `Database Error: ${error.message}`, data: r });
+                if (insertFailures > 0 || invalidRecords.length > 0) {
+                    const message = `Import complete: ${insertedCount} imported. ${invalidRecords.length} validation errors.`;
+                    toast.warning(message, {
+                        duration: 6000,
+                        action: {
+                            label: "Download Report",
+                            onClick: () => {
+                                const blob = new Blob([JSON.stringify(invalidRecords, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `import-errors-${new Date().toISOString()}.json`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                            }
+                        }
                     });
                 } else {
-                    insertedCount += batch.length;
+                    toast.success(`Successfully imported ${insertedCount} customers`);
                 }
 
-                setProgress(Math.round(((i + batchSize) / validRecords.length) * 100));
-            }
-
-            if (insertFailures > 0 || invalidRecords.length > 0) {
-                const message = `Import complete: ${insertedCount} imported. ${invalidRecords.length} validation errors.`;
-                toast.warning(message, {
-                    duration: 6000,
-                    action: {
-                        label: "Download Report",
-                        onClick: () => {
-                            const blob = new Blob([JSON.stringify(invalidRecords, null, 2)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `import-errors-${new Date().toISOString()}.json`;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                        }
-                    }
-                });
-            } else {
-                toast.success(`Successfully imported ${insertedCount} customers`);
-            }
-
-            if (insertedCount > 0) {
-                // Log audit event for bulk import
-                logAuditEvent({
-                    action: 'customer.bulk_imported',
-                    resourceType: 'customer',
-                    tenantId: tenant.id,
-                    changes: { count: insertedCount },
-                });
-                onSuccess?.();
-                onOpenChange(false);
-                resetState();
-            } else {
+                if (insertedCount > 0) {
+                    // Log audit event for bulk import
+                    logAuditEvent({
+                        action: 'customer.bulk_imported',
+                        resourceType: 'customer',
+                        tenantId: tenant.id,
+                        changes: { count: insertedCount },
+                    });
+                    onSuccess?.();
+                    onOpenChange(false);
+                    resetState();
+                } else {
+                    setLoading(false);
+                    setStep('map');
+                }
+            } catch (error) {
+                logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerImportDialog' });
+                toast.error(humanizeError(error, "Failed to import customers"));
                 setLoading(false);
-                setStep('map');
+                throw error;
             }
-        } catch (error) {
-            logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerImportDialog' });
-            toast.error(humanizeError(error, "Failed to import customers"));
-            setLoading(false);
-        }
+        });
     };
 
     const resetState = () => {
@@ -457,7 +462,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                     )}
 
                     {step === 'map' && (
-                        <Button onClick={handleImport} disabled={loading}>
+                        <Button onClick={handleImport} disabled={loading || isPerforming}>
                             Import Customers <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     )}
