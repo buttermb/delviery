@@ -1583,7 +1583,85 @@ export const FREE_TIER_LIMITS = {
 
 export type BlockedFeature = typeof FREE_TIER_LIMITS.blocked_features[number];
 
+/**
+ * Maps action_keys (used by consume_credits RPC) to free tier usage categories.
+ * This must stay in sync with the CASE statement in the consume_credits SQL function.
+ *
+ * Returns null for actions that are not limited on the free tier.
+ */
+export type FreeTierActionType =
+  | 'menu_create'
+  | 'order_create'
+  | 'sms_send'
+  | 'email_send'
+  | 'pos_sale'
+  | 'bulk_operation'
+  | 'invoice_create'
+  | 'custom_report'
+  | 'ai_feature';
 
+export const ACTION_KEY_TO_FREE_TIER_MAP: Record<string, FreeTierActionType> = {
+  // Menu actions
+  menu_create: 'menu_create',
+  menu_generate: 'menu_create',
+  // Order actions
+  order_create_manual: 'order_create',
+  menu_order_received: 'order_create',
+  order_create: 'order_create',
+  // SMS actions
+  send_sms: 'sms_send',
+  send_otp: 'sms_send',
+  send_verification_sms: 'sms_send',
+  send_klaviyo_sms: 'sms_send',
+  // Email actions
+  send_email: 'email_send',
+  send_welcome_email: 'email_send',
+  send_invitation_email: 'email_send',
+  send_verification_email: 'email_send',
+  send_klaviyo_email: 'email_send',
+  send_trial_reminder: 'email_send',
+  // POS actions
+  pos_process_sale: 'pos_sale',
+  pos_checkout: 'pos_sale',
+  // Bulk operations
+  product_bulk_import: 'bulk_operation',
+  stock_bulk_update: 'bulk_operation',
+  customer_import: 'bulk_operation',
+  marketplace_bulk_update: 'bulk_operation',
+  // Invoice actions
+  invoice_create: 'invoice_create',
+  invoice_send: 'invoice_create',
+  // Report actions (monthly limit)
+  report_custom_generate: 'custom_report',
+  report_advanced_generate: 'custom_report',
+  // AI actions (monthly limit)
+  ai_suggestions: 'ai_feature',
+  ai_insight_generate: 'ai_feature',
+  ai_task_run: 'ai_feature',
+  forecast_run: 'ai_feature',
+  menu_ocr: 'ai_feature',
+};
 
+/**
+ * Get the free tier limit for a given action type.
+ * Returns the maximum allowed per period, or null if not limited.
+ */
+export function getFreeTierLimit(actionKey: string): { limit: number; period: 'day' | 'month' } | null {
+  const freeTierAction = ACTION_KEY_TO_FREE_TIER_MAP[actionKey];
+  if (!freeTierAction) return null;
 
+  const limitMap: Record<FreeTierActionType, { limit: number; period: 'day' | 'month' }> = {
+    menu_create: { limit: FREE_TIER_LIMITS.max_menus_per_day, period: 'day' },
+    order_create: { limit: FREE_TIER_LIMITS.max_orders_per_day, period: 'day' },
+    sms_send: { limit: FREE_TIER_LIMITS.max_sms_per_day, period: 'day' },
+    email_send: { limit: FREE_TIER_LIMITS.max_emails_per_day, period: 'day' },
+    pos_sale: { limit: FREE_TIER_LIMITS.max_pos_sales_per_day, period: 'day' },
+    bulk_operation: { limit: FREE_TIER_LIMITS.max_bulk_operations_per_day, period: 'day' },
+    invoice_create: { limit: FREE_TIER_LIMITS.max_invoices_per_month, period: 'month' },
+    custom_report: { limit: FREE_TIER_LIMITS.max_custom_reports_per_month, period: 'month' },
+    ai_feature: { limit: FREE_TIER_LIMITS.max_ai_features_per_month, period: 'month' },
+  };
+
+  return limitMap[freeTierAction];
+}
 

@@ -26,10 +26,13 @@ export {
   getCategoryDisplayName,
   isActionFree,
   getPricePerCredit,
+  ACTION_KEY_TO_FREE_TIER_MAP,
+  getFreeTierLimit,
   type CreditCost,
   type CreditCategory,
   type CreditPackage,
   type BlockedFeature,
+  type FreeTierActionType,
 } from './creditCosts';
 
 // Credit service functions
