@@ -167,6 +167,12 @@ vi.mock('@/components/credits/CreditBalance', () => ({
   CreditBalance: () => <div data-testid="credit-balance">Credit Balance</div>,
 }));
 
+vi.mock('@/components/credits/CreditAlertBanner', () => ({
+  CreditAlertBanner: ({ onBuyCredits }: { onBuyCredits?: () => void }) => (
+    <div data-testid="credit-alert-banner" onClick={onBuyCredits}>Credit Alert Banner</div>
+  ),
+}));
+
 vi.mock('@/components/offline/OfflineStatus', () => ({
   OfflineStatusIndicator: () => <div data-testid="offline-status">Offline Status</div>,
 }));
@@ -357,6 +363,7 @@ describe('AdminLayout', () => {
       expect(screen.getByTestId('credit-purchase-modal')).toBeInTheDocument();
       expect(screen.getByTestId('credit-toast-container')).toBeInTheDocument();
       expect(screen.getByTestId('credit-balance')).toBeInTheDocument();
+      expect(screen.getByTestId('credit-alert-banner')).toBeInTheDocument();
     });
 
     it('should render command palette', () => {

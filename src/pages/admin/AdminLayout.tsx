@@ -41,6 +41,7 @@ import { SubscriptionStatusBadge } from "@/components/credits/SubscriptionStatus
 import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
+import { CreditAlertBanner } from '@/components/credits/CreditAlertBanner';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
 import { InventorySyncIndicator } from '@/components/admin/storefront/InventorySyncIndicator';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -305,6 +306,13 @@ const AdminLayout = () => {
                   </div>
                 </div>
               </header>
+              {/* Credit Alert Banner - shows at critical thresholds */}
+              <div className="print:hidden px-3 sm:px-4">
+                <CreditAlertBanner
+                  onBuyCredits={() => setIsPurchaseModalOpen(true)}
+                  className="mt-2"
+                />
+              </div>
               <main
                 id="main-content"
                 tabIndex={-1}
