@@ -128,8 +128,8 @@ serve(async (req) => {
 
     // Handle different actions
     if (action === 'list' || !action) {
-      // Call RPC function to get invoices
-      const { data: invoices, error: rpcError } = await serviceClient
+      // Call RPC function to get invoices (use user-authenticated client so auth.uid() works in the RPC)
+      const { data: invoices, error: rpcError } = await supabase
         .rpc('get_tenant_invoices', { tenant_id: tenantId });
 
       if (rpcError) {
