@@ -6,6 +6,9 @@
 
 export { CreditBalance } from './CreditBalance';
 
+export { CreditBalanceAnimation } from './CreditBalanceAnimation';
+export type { CreditBalanceAnimationProps } from './CreditBalanceAnimation';
+
 export { CreditPurchaseModal } from './CreditPurchaseModal';
 
 export { LowCreditWarning } from './LowCreditWarning';

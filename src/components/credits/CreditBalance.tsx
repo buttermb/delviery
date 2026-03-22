@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 import { getBadgeColorClass } from '@/lib/credits';
+import { CreditBalanceAnimation } from './CreditBalanceAnimation';
 
 interface CreditBalanceProps {
   className?: string;
@@ -107,7 +108,7 @@ export function CreditBalance({
             onClick={() => setIsPurchaseModalOpen(true)}
           >
             <Coins className="w-3.5 h-3.5" />
-            <span>{credits.toLocaleString()}</span>
+            <CreditBalanceAnimation value={credits} />
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end" className="w-56">
@@ -129,7 +130,7 @@ export function CreditBalance({
             onClick={() => setIsPurchaseModalOpen(true)}
           >
             <Coins className="w-4 h-4" />
-            {showLabel && <span>{credits.toLocaleString()}</span>}
+            {showLabel && <CreditBalanceAnimation value={credits} />}
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end" className="w-56">

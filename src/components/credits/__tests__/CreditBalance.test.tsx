@@ -76,6 +76,13 @@ vi.mock('@/lib/formatters', () => ({
   },
 }));
 
+// Mock CreditBalanceAnimation to render plain text for testing
+vi.mock('../CreditBalanceAnimation', () => ({
+  CreditBalanceAnimation: ({ value }: { value: number }) => (
+    <span data-testid="credit-balance-animation">{value.toLocaleString()}</span>
+  ),
+}));
+
 describe('CreditBalance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -280,6 +287,30 @@ describe('CreditBalance', () => {
       const buyButton = screen.getByTitle('Buy Credits');
       fireEvent.click(buyButton);
       expect(mockSetIsPurchaseModalOpen).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('Animation Integration', () => {
+    it('should use CreditBalanceAnimation in badge variant', () => {
+      mockCredits = 2500;
+      render(<CreditBalance variant="badge" />);
+      const animatedElement = screen.getByTestId('credit-balance-animation');
+      expect(animatedElement).toBeInTheDocument();
+      expect(animatedElement).toHaveTextContent('2,500');
+    });
+
+    it('should use CreditBalanceAnimation in default variant with showLabel', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="default" showLabel />);
+      const animatedElement = screen.getByTestId('credit-balance-animation');
+      expect(animatedElement).toBeInTheDocument();
+      expect(animatedElement).toHaveTextContent('1,500');
+    });
+
+    it('should not render CreditBalanceAnimation when showLabel is false in default variant', () => {
+      mockCredits = 1500;
+      render(<CreditBalance variant="default" showLabel={false} />);
+      expect(screen.queryByTestId('credit-balance-animation')).not.toBeInTheDocument();
     });
   });
 
