@@ -359,6 +359,7 @@ export async function checkCreditsAvailable(
 export const CREDIT_ACTIONS = {
   // Orders
   CREATE_ORDER: 'create_order',
+  ORDER_CREATE_MANUAL: 'order_create_manual',
   UPDATE_ORDER_STATUS: 'update_order_status',
   CANCEL_ORDER: 'cancel_order',
 
