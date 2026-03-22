@@ -97,11 +97,13 @@ export {
 // Credit warning configuration (shared thresholds, colors, severities)
 export {
   CREDIT_THRESHOLD_CONFIGS,
+  CREDIT_PURCHASE_EVENT,
   getCurrentThreshold,
   getBadgeColorClass,
   getAlertSeverityStyles,
   getWarningMessage,
   type CreditWarningSeverity,
+  type CreditToastType,
   type CreditThresholdConfig,
   type BadgeColorClasses,
   type AlertSeverityStyles,
