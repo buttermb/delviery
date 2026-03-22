@@ -1,9 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, corsHeaders } from '../_shared/deps.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 interface SmsRequest {
   phone: string;
@@ -12,17 +8,18 @@ interface SmsRequest {
 }
 
 serve(async (req) => {
+  // CORS preflight handled by withCreditGate, but keep explicit for clarity
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
+  return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, _serviceClient) => {
     const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
     if (!klaviyoApiKey) {
       throw new Error('KLAVIYO_API_KEY not configured');
     }
 
-    const { phone, message, metadata = {} }: SmsRequest = await req.json();
+    const { phone, message, metadata: _metadata = {} }: SmsRequest = await req.json();
 
     if (!phone || !message) {
       return new Response(
@@ -65,6 +62,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Klaviyo SMS API error:', errorText);
+      // TODO: Refund credits on API failure when refundCredits mechanism is available
       throw new Error(`Klaviyo API error: ${response.status} - ${errorText}`);
     }
 
@@ -75,12 +73,5 @@ serve(async (req) => {
       JSON.stringify({ success: true, messageId: result.data?.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
-  } catch (error: unknown) {
-    console.error('Error in send-klaviyo-sms function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
+  });
 });
