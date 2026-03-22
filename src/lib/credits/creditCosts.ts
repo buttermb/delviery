@@ -1391,44 +1391,43 @@ export interface CreditPackage {
 }
 
 /**
- * Credit packages designed to make subscription more attractive
- * Prices are intentionally higher per-credit than subscription value
- * With $79/mo subscription = unlimited, buying credits should feel expensive
+ * Credit packages — 4-tier structure matching database migration
+ * (20260122140000_update_credit_packages_tiers.sql)
  */
 export const CREDIT_PACKAGES: CreditPackage[] = [
-  {
-    id: 'quick-boost',
-    name: 'Quick Boost',
-    slug: 'quick-boost',
-    credits: 500,
-    priceCents: 1999, // $19.99 for 500 credits (~$0.04/credit)
-    description: 'Quick top-up for immediate needs',
-  },
   {
     id: 'starter-pack',
     name: 'Starter Pack',
     slug: 'starter-pack',
-    credits: 1500,
-    priceCents: 4999, // $49.99 for 1,500 credits (~$0.033/credit)
-    badge: 'POPULAR',
-    description: 'Most popular for growing businesses',
+    credits: 5000,
+    priceCents: 999, // $9.99 for 5,000 credits
+    description: '5,000 credits for $9.99',
   },
   {
     id: 'growth-pack',
     name: 'Growth Pack',
     slug: 'growth-pack',
-    credits: 5000,
-    priceCents: 12999, // $129.99 for 5,000 credits (~$0.026/credit)
-    badge: 'BEST VALUE',
-    description: 'Best value for heavy users',
+    credits: 15000,
+    priceCents: 2499, // $24.99 for 15,000 credits
+    badge: 'POPULAR',
+    description: '15,000 credits for $24.99 - Best for growing businesses',
   },
   {
     id: 'power-pack',
     name: 'Power Pack',
     slug: 'power-pack',
-    credits: 15000,
-    priceCents: 29999, // $299.99 for 15,000 credits (~$0.02/credit)
-    description: 'For high-volume operations',
+    credits: 50000,
+    priceCents: 4999, // $49.99 for 50,000 credits
+    description: '50,000 credits for $49.99',
+  },
+  {
+    id: 'enterprise-pack',
+    name: 'Enterprise Pack',
+    slug: 'enterprise-pack',
+    credits: 150000,
+    priceCents: 17999, // $179.99 for 150,000 credits
+    badge: 'BEST VALUE',
+    description: '150,000 credits for $179.99 - Maximum savings',
   },
 ];
 

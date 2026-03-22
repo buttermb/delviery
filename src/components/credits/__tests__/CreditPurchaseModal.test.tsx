@@ -8,8 +8,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CreditPurchaseModal } from '../CreditPurchaseModal';
-import { BrowserRouter } from 'react-router-dom';
 import { CREDIT_PACKAGES } from '@/lib/credits';
+import { BrowserRouter } from 'react-router-dom';
 
 // Use vi.hoisted so these are available inside vi.mock factories
 const { mockInvoke, mockToast, mockUseTenantAdminAuth } = vi.hoisted(() => ({

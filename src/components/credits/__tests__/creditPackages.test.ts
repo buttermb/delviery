@@ -22,38 +22,44 @@ describe('Credit Package Pricing', () => {
     it('starter pack: 1,500 credits for $49.99 (marked as POPULAR)', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
       expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(1500);
-      expect(pack?.priceCents).toBe(4999);
+      expect(pack?.credits).toBe(5000);
+      expect(pack?.priceCents).toBe(999);
+    });
+
+    it('growth pack: 15,000 credits for $24.99 (marked as POPULAR)', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
+      expect(pack).toBeDefined();
+      expect(pack?.credits).toBe(15000);
+      expect(pack?.priceCents).toBe(2499);
       expect(pack?.badge).toBe('POPULAR');
     });
 
-    it('growth pack: 5,000 credits for $129.99 (marked as BEST VALUE)', () => {
-      const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
-      expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(5000);
-      expect(pack?.priceCents).toBe(12999);
-      expect(pack?.badge).toBe('BEST VALUE');
-    });
-
-    it('power pack: 15,000 credits for $299.99', () => {
+    it('power pack: 50,000 credits for $49.99', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'power-pack');
       expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(15000);
-      expect(pack?.priceCents).toBe(29999);
+      expect(pack?.credits).toBe(50000);
+      expect(pack?.priceCents).toBe(4999);
+    });
+
+    it('enterprise pack: 150,000 credits for $179.99 (marked as BEST VALUE)', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'enterprise-pack');
+      expect(pack).toBeDefined();
+      expect(pack?.credits).toBe(150000);
+      expect(pack?.priceCents).toBe(17999);
+      expect(pack?.badge).toBe('BEST VALUE');
     });
   });
 
   describe('Value Progression', () => {
-    it('price per credit decreases from starter through power pack', () => {
-      const firstThree = CREDIT_PACKAGES.slice(0, 3);
-      const pricesPerCredit = firstThree.map(p => ({
+    it('all packages after starter are cheaper per-credit than starter', () => {
+      const pricesPerCredit = CREDIT_PACKAGES.map(p => ({
         id: p.id,
         pricePerCredit: getPricePerCredit(p.priceCents, p.credits),
       }));
 
       for (let i = 1; i < pricesPerCredit.length; i++) {
         expect(pricesPerCredit[i].pricePerCredit).toBeLessThan(
-          pricesPerCredit[i - 1].pricePerCredit
+          pricesPerCredit[0].pricePerCredit
         );
       }
     });
@@ -105,20 +111,20 @@ describe('Credit Package Pricing', () => {
   });
 
   describe('Badge Labels', () => {
-    it('starter-pack has POPULAR badge', () => {
-      const pack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
+    it('growth-pack has POPULAR badge', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
       expect(pack?.badge).toBe('POPULAR');
     });
 
-    it('growth-pack has BEST VALUE badge', () => {
-      const pack = CREDIT_PACKAGES.find(p => p.id === 'growth-pack');
+    it('enterprise-pack has BEST VALUE badge', () => {
+      const pack = CREDIT_PACKAGES.find(p => p.id === 'enterprise-pack');
       expect(pack?.badge).toBe('BEST VALUE');
     });
 
-    it('quick-boost and power-pack have no badge', () => {
-      const quickBoost = CREDIT_PACKAGES.find(p => p.id === 'quick-boost');
+    it('starter-pack and power-pack have no badge', () => {
+      const starterPack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
       const powerPack = CREDIT_PACKAGES.find(p => p.id === 'power-pack');
-      expect(quickBoost?.badge).toBeUndefined();
+      expect(starterPack?.badge).toBeUndefined();
       expect(powerPack?.badge).toBeUndefined();
     });
   });
@@ -150,4 +156,24 @@ describe('Stripe Webhook Credit Purchase', () => {
     expect(parseInt(mockCheckoutSession.metadata.credits)).toBe(firstPack.credits);
     expect(mockCheckoutSession.amount_total).toBe(firstPack.priceCents);
   });
+});
+
+describe('CREDIT_PACKAGES matches database migration', () => {
+  // These values must match supabase/migrations/20260122140000_update_credit_packages_tiers.sql
+  const DB_PACKAGES = [
+    { slug: 'starter-pack', credits: 5000, priceCents: 999 },
+    { slug: 'growth-pack', credits: 15000, priceCents: 2499 },
+    { slug: 'power-pack', credits: 50000, priceCents: 4999 },
+    { slug: 'enterprise-pack', credits: 150000, priceCents: 17999 },
+  ];
+
+  it.each(DB_PACKAGES)(
+    '$slug: $credits credits for $priceCents cents matches lib',
+    ({ slug, credits, priceCents }) => {
+      const libPkg = CREDIT_PACKAGES.find(p => p.slug === slug);
+      expect(libPkg).toBeDefined();
+      expect(libPkg?.credits).toBe(credits);
+      expect(libPkg?.priceCents).toBe(priceCents);
+    }
+  );
 });

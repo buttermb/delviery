@@ -75,9 +75,9 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 py-4">
           {CREDIT_PACKAGES.map((pkg) => {
             const priceDisplay = pkg.priceCents / 100;
-            const isPopular = pkg.badge === 'POPULAR';
+            const isHighlighted = !!pkg.badge;
             return (
-              <Card key={pkg.id} className={`relative ${isPopular ? 'border-primary ring-2 ring-primary/20' : ''}`}>
+              <Card key={pkg.id} className={`relative ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : ''}`}>
                 {pkg.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
                     {pkg.badge}
@@ -110,7 +110,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
                 <div className="p-4 pt-0">
                   <Button
                     className="w-full"
-                    variant={isPopular ? "default" : "outline"}
+                    variant={isHighlighted ? "default" : "outline"}
                     disabled={loadingId !== null}
                     onClick={() => handlePurchase(pkg.slug)}
                   >
