@@ -10,6 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { handleError } from "@/utils/errorHandling/handlers";
 import { Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ interface AddPaymentMethodDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenantId: string;
+    onSuccess?: () => void;
 }
 
 export function AddPaymentMethodDialog({
@@ -49,15 +51,14 @@ export function AddPaymentMethodDialog({
 
             if (data?.url) {
                 onSuccess?.();
+                // Keep loading=true during redirect to avoid UI flash
                 window.location.href = data.url;
             } else {
                 throw new Error("No setup URL received");
             }
         } catch (error) {
-            logger.error("Failed to create payment setup session", error, { component: "AddPaymentMethodDialog", tenantId });
-            toast.error("Error", { description: "Failed to set up payment method. Please try again." });
-        } finally {
             setLoading(false);
+            handleError(error, { component: "AddPaymentMethodDialog", toastTitle: "Error" });
         }
     };
 

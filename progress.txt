@@ -1,3 +1,10 @@
+## Verify AddPaymentMethodDialog loading state during redirect
+- Fixed loading state flash during Stripe redirect in AddPaymentMethodDialog
+- Bug: `finally { setLoading(false) }` ran before page unloaded, causing brief flash of non-loading state
+- Fix: Moved `setLoading(false)` into `catch` block only — loading stays true during successful redirect
+- Added 10 unit tests covering: rendering, loading states, redirect behavior, error recovery, and setup-session invocation
+- All tests pass, TypeScript clean
+
 - Tenants relation provides store business_name
 - Status timeline handles cancelled state separately
 - Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery

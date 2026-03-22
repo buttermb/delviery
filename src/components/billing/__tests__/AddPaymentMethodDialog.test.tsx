@@ -9,8 +9,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AddPaymentMethodDialog } from '../AddPaymentMethodDialog';
 
-// Mock supabase client
 const mockInvoke = vi.fn();
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     functions: {
@@ -19,7 +19,10 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-// Mock logger
+vi.mock('@/utils/errorHandling/handlers', () => ({
+  handleError: vi.fn(),
+}));
+
 vi.mock('@/lib/logger', () => ({
   logger: {
     error: vi.fn(),
@@ -29,7 +32,6 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-// Mock sonner toast
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
@@ -39,6 +41,13 @@ vi.mock('sonner', () => ({
 
 const TEST_TENANT_ID = 'test-tenant-uuid-1234';
 
+interface DialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  tenantId?: string;
+  onSuccess?: () => void;
+}
+
 const defaultProps = {
   open: true,
   onOpenChange: vi.fn(),
@@ -46,7 +55,7 @@ const defaultProps = {
   onSuccess: vi.fn(),
 };
 
-const renderDialog = (props = {}) => {
+const renderDialog = (props: DialogProps = {}) => {
   return render(
     <AddPaymentMethodDialog {...defaultProps} {...props} />
   );
@@ -171,9 +180,8 @@ describe('AddPaymentMethodDialog', () => {
   });
 
   describe('Error handling', () => {
-    it('should log error and show toast when edge function returns an error', async () => {
-      const { logger } = await import('@/lib/logger');
-      const { toast } = await import('sonner');
+    it('should call handleError when edge function returns an error', async () => {
+      const { handleError } = await import('@/utils/errorHandling/handlers');
       mockInvoke.mockResolvedValueOnce({
         data: null,
         error: { message: 'Edge function failed' },
@@ -185,13 +193,13 @@ describe('AddPaymentMethodDialog', () => {
       const addButton = screen.getByRole('button', { name: 'Add Payment Method' });
       await user.click(addButton);
 
-      expect(logger.error).toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(handleError).toHaveBeenCalled();
+      });
     });
 
-    it('should log error and show toast when no URL is returned', async () => {
-      const { logger } = await import('@/lib/logger');
-      const { toast } = await import('sonner');
+    it('should call handleError when no URL is returned', async () => {
+      const { handleError } = await import('@/utils/errorHandling/handlers');
       mockInvoke.mockResolvedValueOnce({
         data: { url: null },
         error: null,
@@ -203,13 +211,13 @@ describe('AddPaymentMethodDialog', () => {
       const addButton = screen.getByRole('button', { name: 'Add Payment Method' });
       await user.click(addButton);
 
-      expect(logger.error).toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(handleError).toHaveBeenCalled();
+      });
     });
 
-    it('should log error and show toast when invoke throws', async () => {
-      const { logger } = await import('@/lib/logger');
-      const { toast } = await import('sonner');
+    it('should call handleError when invoke throws', async () => {
+      const { handleError } = await import('@/utils/errorHandling/handlers');
       mockInvoke.mockRejectedValueOnce(new Error('Network error'));
 
       const user = userEvent.setup();
@@ -218,8 +226,9 @@ describe('AddPaymentMethodDialog', () => {
       const addButton = screen.getByRole('button', { name: 'Add Payment Method' });
       await user.click(addButton);
 
-      expect(logger.error).toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(handleError).toHaveBeenCalled();
+      });
     });
   });
 
@@ -239,21 +248,85 @@ describe('AddPaymentMethodDialog', () => {
     });
 
     it('should disable buttons during loading', async () => {
-      mockInvoke.mockReturnValue(new Promise(() => {}));
+      mockInvoke.mockImplementation(
+        () => new Promise(() => {
+          // Never resolves — simulates in-flight request
+        })
+      );
 
       renderDialog();
-
-      const buttons = screen.getAllByRole('button');
-      const addButton = buttons.find(b => b.textContent === 'Add Payment Method');
-      fireEvent.click(addButton!);
+      await userEvent.click(screen.getByRole('button', { name: 'Add Payment Method' }));
 
       await waitFor(() => {
-        const allButtons = screen.getAllByRole('button');
-        const remindButton = allButtons.find(b => b.textContent === 'Remind Me Later');
-        const processingButton = allButtons.find(b => b.textContent?.includes('Processing'));
-        expect(remindButton).toBeDisabled();
-        expect(processingButton).toBeDisabled();
+        expect(screen.getByText('Processing...')).toBeInTheDocument();
       });
+
+      expect(screen.getByRole('button', { name: 'Remind Me Later' })).toBeDisabled();
+    });
+
+    it('keeps loading state during redirect (does not flash back to idle)', async () => {
+      mockInvoke.mockResolvedValue({
+        data: { url: 'https://checkout.stripe.com/setup_session' },
+        error: null,
+      });
+
+      const originalLocation = window.location;
+      const mockLocation = { ...originalLocation, href: 'http://localhost:3000/billing' };
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: mockLocation,
+      });
+
+      renderDialog();
+      await userEvent.click(screen.getByRole('button', { name: 'Add Payment Method' }));
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalled();
+      });
+
+      // The button should still show "Processing..." — NOT "Add Payment Method"
+      // This verifies loading=true is maintained during redirect
+      expect(screen.getByText('Processing...')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Add Payment Method' })).not.toBeInTheDocument();
+
+      // Footer buttons should be disabled during redirect
+      expect(screen.getByRole('button', { name: 'Remind Me Later' })).toBeDisabled();
+      expect(screen.getByText('Processing...').closest('button')).toBeDisabled();
+
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('resets loading state on error', async () => {
+      mockInvoke.mockResolvedValue({
+        data: null,
+        error: new Error('Network error'),
+      });
+
+      renderDialog();
+      await userEvent.click(screen.getByRole('button', { name: 'Add Payment Method' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Add Payment Method' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'Add Payment Method' })).not.toBeDisabled();
+    });
+
+    it('resets loading state when no URL received', async () => {
+      mockInvoke.mockResolvedValue({
+        data: {},
+        error: null,
+      });
+
+      renderDialog();
+      await userEvent.click(screen.getByRole('button', { name: 'Add Payment Method' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Add Payment Method' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'Add Payment Method' })).not.toBeDisabled();
     });
   });
 
