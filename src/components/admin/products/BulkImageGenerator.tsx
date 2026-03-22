@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { useBulkGenerateImages } from "@/hooks/useProductImages";
+import { CreditCostBadge } from "@/components/credits/CreditCostBadge";
 import { Sparkles, X } from "lucide-react";
 
 interface Product {
@@ -52,9 +53,14 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
     }));
 
     generateImages(formattedProducts, {
-      onSuccess: () => {
+      onSuccess: (results) => {
         clearInterval(progressInterval);
-        setProgress(100);
+        const hasBlocked = results.some(r => r.creditBlocked);
+        if (hasBlocked) {
+          setProgress(Math.round((results.filter(r => r.success).length / results.length) * 100));
+        } else {
+          setProgress(100);
+        }
         setTimeout(() => {
           setIsOpen(false);
           setProgress(0);
@@ -75,6 +81,7 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
       >
         <Sparkles className="h-4 w-4" />
         Generate All Images ({productsWithoutImages.length})
+        <CreditCostBadge actionKey="ai_task_run" />
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -97,6 +104,7 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
 
             <div className="text-sm text-muted-foreground">
               <p>Generating images for {productsWithoutImages.length} products</p>
+              <p className="mt-1">50 credits per image ({productsWithoutImages.length * 50} total)</p>
               <p className="mt-2">This process includes:</p>
               <ul className="list-disc list-inside mt-1 space-y-1">
                 <li>AI image generation</li>
@@ -108,7 +116,7 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
 
             {!isPending && progress === 100 && (
               <div className="text-center text-success font-medium">
-                ✓ All images generated successfully!
+                All images generated successfully!
               </div>
             )}
           </div>
