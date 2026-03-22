@@ -14,13 +14,16 @@ import {
   TrendingUp,
   Plus,
   Calendar,
-  MoreHorizontal
+  MoreHorizontal,
+  Send,
+  Coins,
+  Loader2,
 } from "lucide-react";
 import { CampaignBuilder } from "@/components/admin/marketing/CampaignBuilder";
 import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
 import { queryKeys } from "@/lib/queryKeys";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -32,6 +35,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSendCampaign } from "@/hooks/useCreditGatedAction";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
+import { getCreditCost } from "@/lib/credits";
+import { callAdminFunction } from "@/utils/adminFunctionHelper";
 
 interface MarketingCampaign {
   id: string;
@@ -55,6 +62,37 @@ export default function MarketingAutomationPage() {
   const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [sendConfirmOpen, setSendConfirmOpen] = useState(false);
+  const [campaignToSend, setCampaignToSend] = useState<MarketingCampaign | null>(null);
+
+  const {
+    sendCampaign,
+    isSending,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    balance,
+    isFreeTier,
+  } = useSendCampaign();
+
+  // Query recipient count for the campaign being sent
+  const { data: recipientCount = 0, isLoading: isLoadingRecipients } = useQuery({
+    queryKey: [...queryKeys.marketing.campaigns(), 'recipients', campaignToSend?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return 0;
+      const { count, error } = await supabase
+        .from('wholesale_clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'active');
+      if (error) {
+        logger.error('Failed to count recipients', error, { component: 'MarketingAutomationPage' });
+        return 0;
+      }
+      return count ?? 0;
+    },
+    enabled: !!tenant?.id && !!campaignToSend,
+  });
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: queryKeys.marketing.campaigns(),
@@ -129,6 +167,63 @@ export default function MarketingAutomationPage() {
     setDeleteDialogOpen(true);
   };
 
+  const handleSendCampaign = (campaign: MarketingCampaign) => {
+    setCampaignToSend(campaign);
+    setSendConfirmOpen(true);
+  };
+
+  const confirmSendCampaign = async () => {
+    if (!campaignToSend || !tenant?.id) return;
+
+    const campaignType = campaignToSend.type === 'sms' ? 'sms' as const : 'email' as const;
+
+    const result = await sendCampaign(
+      async () => {
+        const { data, error } = await callAdminFunction<{
+          success: boolean;
+          sentCount: number;
+          campaignName: string;
+        }>({
+          functionName: 'send-marketing-campaign',
+          body: { campaignId: campaignToSend.id },
+          errorMessage: 'Failed to send campaign',
+          showToast: false,
+        });
+        if (error) throw error;
+        return data;
+      },
+      {
+        campaignId: campaignToSend.id,
+        campaignType,
+        recipientCount,
+        onInsufficientCredits: () => {
+          setSendConfirmOpen(false);
+        },
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.marketing.campaigns() });
+          toast.success('Campaign sent successfully', {
+            description: `Sent to ${recipientCount} recipients`,
+          });
+          setSendConfirmOpen(false);
+          setCampaignToSend(null);
+        },
+        onError: (error: Error) => {
+          logger.error('Failed to send campaign', error, { component: 'MarketingAutomationPage' });
+          toast.error('Failed to send campaign', { description: humanizeError(error) });
+        },
+      }
+    );
+
+    if (result.wasBlocked) {
+      setSendConfirmOpen(false);
+    }
+  };
+
+  const getEstimatedCost = (type: 'email' | 'sms' | 'push') => {
+    const actionKey = type === 'sms' ? 'send_bulk_sms' : 'send_bulk_email';
+    return recipientCount * getCreditCost(actionKey);
+  };
+
   const filteredCampaigns = campaigns.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.subject?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -201,6 +296,12 @@ export default function MarketingAutomationPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {row.status === 'draft' && (
+              <DropdownMenuItem onClick={() => handleSendCampaign(row)}>
+                <Send className="h-4 w-4 mr-2" />
+                Send Campaign
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => handleEditCampaign(row)}>Edit Campaign</DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleDuplicateCampaign(row)}>Duplicate</DropdownMenuItem>
             <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteCampaign(row.id)}>Delete</DropdownMenuItem>
@@ -354,6 +455,105 @@ export default function MarketingAutomationPage() {
         }}
         itemType="campaign"
         isLoading={deleteCampaignMutation.isPending}
+      />
+
+      {/* Send Campaign Confirmation Dialog */}
+      <Dialog open={sendConfirmOpen} onOpenChange={(open) => {
+        setSendConfirmOpen(open);
+        if (!open) setCampaignToSend(null);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5" />
+              Send Campaign
+            </DialogTitle>
+            <DialogDescription>
+              Review the estimated cost before sending.
+            </DialogDescription>
+          </DialogHeader>
+
+          {campaignToSend && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Campaign</span>
+                  <span className="font-medium">{campaignToSend.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Type</span>
+                  <Badge variant="outline" className="capitalize">{campaignToSend.type}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Recipients</span>
+                  <span className="font-medium">
+                    {isLoadingRecipients ? '...' : recipientCount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {isFreeTier && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Coins className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                      Estimated Credit Cost
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="text-muted-foreground">
+                      {recipientCount.toLocaleString()} x {getCreditCost(campaignToSend.type === 'sms' ? 'send_bulk_sms' : 'send_bulk_email')} credits
+                    </div>
+                    <div className="text-right font-bold text-amber-700 dark:text-amber-400">
+                      {getEstimatedCost(campaignToSend.type).toLocaleString()} credits
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs mt-2 pt-2 border-t border-amber-500/20">
+                    <span className="text-muted-foreground">Your balance</span>
+                    <span className={balance < getEstimatedCost(campaignToSend.type) ? 'text-red-500 font-medium' : 'text-emerald-600 font-medium'}>
+                      {balance.toLocaleString()} credits
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {recipientCount === 0 && !isLoadingRecipients && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-600">
+                  No active recipients found. The campaign cannot be sent.
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSendConfirmOpen(false);
+                setCampaignToSend(null);
+              }}
+              disabled={isSending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmSendCampaign}
+              disabled={isSending || isLoadingRecipients || recipientCount === 0}
+              className="gap-2"
+            >
+              {isSending && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Send className="h-4 w-4" />
+              {isSending ? 'Sending...' : 'Send Now'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Out of Credits Modal */}
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
       />
     </div>
   );

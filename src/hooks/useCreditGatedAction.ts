@@ -407,3 +407,61 @@ export function useCreateStorefront() {
   };
 }
 
+/**
+ * Pre-configured hook for sending marketing campaigns
+ * Uses 'send_bulk_email' (8 credits/recipient) or 'send_bulk_sms' (20 credits/recipient)
+ * Multiplies per-recipient cost by recipient count for total cost check
+ */
+export function useSendCampaign() {
+  const creditGated = useCreditGatedAction();
+
+  const sendCampaign = useCallback(
+    async <T>(
+      action: () => Promise<T>,
+      options: {
+        campaignId: string;
+        campaignType: 'email' | 'sms';
+        recipientCount: number;
+        onInsufficientCredits?: () => void;
+        onSuccess?: (result: T) => void;
+        onError?: (error: Error) => void;
+      }
+    ) => {
+      const actionKey = options.campaignType === 'sms' ? 'send_bulk_sms' : 'send_bulk_email';
+      const perRecipientCost = getCreditCost(actionKey);
+      const totalCost = options.recipientCount * perRecipientCost;
+
+      // For bulk sends, check total cost against balance before executing
+      if (creditGated.isFreeTier && creditGated.balance < totalCost) {
+        options.onInsufficientCredits?.();
+        return {
+          success: false,
+          creditsCost: totalCost,
+          wasBlocked: true,
+        } as CreditGatedActionResult<T>;
+      }
+
+      return creditGated.execute({
+        actionKey,
+        action,
+        referenceId: options.campaignId,
+        referenceType: 'marketing_campaign',
+        onInsufficientCredits: options.onInsufficientCredits,
+        onSuccess: options.onSuccess,
+        onError: options.onError,
+      });
+    },
+    [creditGated]
+  );
+
+  return {
+    sendCampaign,
+    isSending: creditGated.isExecuting,
+    showOutOfCreditsModal: creditGated.showOutOfCreditsModal,
+    closeOutOfCreditsModal: creditGated.closeOutOfCreditsModal,
+    blockedAction: creditGated.blockedAction,
+    balance: creditGated.balance,
+    isFreeTier: creditGated.isFreeTier,
+  };
+}
+
