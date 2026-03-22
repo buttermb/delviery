@@ -602,6 +602,7 @@ export const CREDIT_ACTIONS = {
   // Communication
   SEND_SMS: 'send_sms',
   SEND_EMAIL: 'send_email',
+  SEND_PUSH_NOTIFICATION: 'send_push_notification',
   SEND_MENU_LINK: 'send_menu_link',
   PURCHASE_ORDER_SEND: 'purchase_order_send',
 
