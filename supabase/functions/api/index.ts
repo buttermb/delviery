@@ -11,7 +11,8 @@
  * - Consistent error handling
  */
 
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, corsHeaders } from '../_shared/deps.ts';
+import { withApiCreditMeter } from '../_shared/apiCreditMeter.ts';
 import { ordersRouter } from './routes/orders.ts';
 import { contactsRouter } from './routes/contacts.ts';
 import { menusRouter } from './routes/menus.ts';
@@ -63,37 +64,6 @@ registerRoutes(menusRouter);
 registerRoutes(inventoryRouter);
 registerRoutes(posRouter);
 
-// Middleware: Extract user from JWT
-async function extractUser(req: Request): Promise<{ userId: string | null; tenantId: string | null }> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { userId: null, tenantId: null };
-  }
-
-  const token = authHeader.split(' ')[1];
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-  );
-
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return { userId: null, tenantId: null };
-  }
-
-  // Get tenant from tenant_users
-  const { data: tenantUser } = await supabase
-    .from('tenant_users')
-    .select('tenant_id')
-    .eq('user_id', user.id)
-    .single();
-
-  return {
-    userId: user.id,
-    tenantId: tenantUser?.tenant_id ?? null,
-  };
-}
-
 // Middleware: Rate limiting
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 100; // requests per minute
@@ -127,12 +97,7 @@ serve(async (req) => {
   const requestId = crypto.randomUUID();
 
   try {
-    // Extract path (remove /api prefix if present)
-    const url = new URL(req.url);
-    let path = url.pathname.replace(/^\/api/, '');
-    if (!path.startsWith('/')) path = '/' + path;
-
-    // Rate limiting
+    // Rate limiting runs BEFORE credit metering to avoid charging on rate-limited requests
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (!checkRateLimit(clientIp)) {
       return new Response(
@@ -144,68 +109,75 @@ serve(async (req) => {
       );
     }
 
-    // Find matching route
-    const methodRoutes = routes[req.method];
-    if (!methodRoutes) {
+    // Wrap the entire routing logic with API credit metering
+    return await withApiCreditMeter(req, async (_tenantId, _supabase) => {
+      // Extract path (remove /api prefix if present)
+      const url = new URL(req.url);
+      let path = url.pathname.replace(/^\/api/, '');
+      if (!path.startsWith('/')) path = '/' + path;
+
+      // Find matching route
+      const methodRoutes = routes[req.method];
+      if (!methodRoutes) {
+        return new Response(
+          JSON.stringify({ error: 'Method not allowed' }),
+          {
+            status: 405,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      for (const route of methodRoutes) {
+        const match = path.match(route.pattern);
+        if (match) {
+          // Extract path parameters
+          const params: Record<string, string> = {};
+          // This is a simplified param extraction - in real impl, map capture groups to param names
+          if (match.length > 1) {
+            params['id'] = match[1];
+          }
+
+          // Add request context
+          const enhancedReq = new Request(req.url, {
+            method: req.method,
+            headers: new Headers({
+              ...Object.fromEntries(req.headers),
+              'x-request-id': requestId,
+            }),
+            body: req.body,
+          });
+
+          // Execute handler
+          const response = await route.handler(enhancedReq, params);
+
+          // Add standard headers to response
+          const responseHeaders = new Headers(response.headers);
+          Object.entries(corsHeaders).forEach(([key, value]) => {
+            responseHeaders.set(key, value);
+          });
+          responseHeaders.set('x-request-id', requestId);
+          responseHeaders.set('x-response-time', `${Date.now() - startTime}ms`);
+
+          return new Response(response.body, {
+            status: response.status,
+            headers: responseHeaders,
+          });
+        }
+      }
+
+      // No route matched - return generic 404 without leaking route structure
       return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
+        JSON.stringify({ error: 'Not found' }),
         {
-          status: 405,
+          status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
-    }
-
-    for (const route of methodRoutes) {
-      const match = path.match(route.pattern);
-      if (match) {
-        // Extract path parameters
-        const params: Record<string, string> = {};
-        // This is a simplified param extraction - in real impl, map capture groups to param names
-        if (match.length > 1) {
-          params['id'] = match[1];
-        }
-
-        // Add request context
-        const enhancedReq = new Request(req.url, {
-          method: req.method,
-          headers: new Headers({
-            ...Object.fromEntries(req.headers),
-            'x-request-id': requestId,
-          }),
-          body: req.body,
-        });
-
-        // Execute handler
-        const response = await route.handler(enhancedReq, params);
-        
-        // Add standard headers to response
-        const responseHeaders = new Headers(response.headers);
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-          responseHeaders.set(key, value);
-        });
-        responseHeaders.set('x-request-id', requestId);
-        responseHeaders.set('x-response-time', `${Date.now() - startTime}ms`);
-
-        return new Response(response.body, {
-          status: response.status,
-          headers: responseHeaders,
-        });
-      }
-    }
-
-    // No route matched - return generic 404 without leaking route structure
-    console.error(`API 404: ${req.method} ${path}`);
-    return new Response(
-      JSON.stringify({ error: 'Not found' }),
-      {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    });
   } catch (error) {
     console.error('API Router Error:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: 'Internal server error',
