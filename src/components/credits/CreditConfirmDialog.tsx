@@ -1,8 +1,9 @@
 /**
  * CreditConfirmDialog Component
- * 
- * Confirmation dialog shown before high-cost actions (>100 credits).
+ *
+ * Confirmation dialog shown before high-cost actions (>=50 credits).
  * Shows current balance, cost, and remaining balance after action.
+ * Only shown for free-tier users; paid tier auto-confirms.
  */
 
 import { useState } from 'react';
