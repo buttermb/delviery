@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { getCreditCost } from '@/lib/credits';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,8 +16,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { BulkCreditCalculator, useBulkCreditCalculator } from '@/components/credits/BulkCreditCalculator';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -211,6 +215,8 @@ function ImportTab({
 
   const previewRows = useMemo(() => rows.slice(0, 5), [rows]);
 
+  const { execute: executeCreditAction, showOutOfCreditsModal, closeOutOfCreditsModal, blockedAction } = useCreditGatedAction();
+
   const importMutation = useMutation({
     mutationFn: async () => {
       const ALLOWED_FIELDS = new Set<string>(DB_FIELDS.map((f) => f.value).filter(Boolean));
@@ -224,13 +230,27 @@ function ImportTab({
         return mapped;
       });
 
-      const res = await supabase.functions.invoke('bulk-import-drivers', {
-        body: { drivers: body },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      const result = await executeCreditAction({
+        actionKey: 'customer_import',
+        action: async () => {
+          const res = await supabase.functions.invoke('bulk-import-drivers', {
+            body: { drivers: body },
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          });
+          if (res.error) throw res.error;
+          if (!res.data) throw new Error('Invalid response from server');
+          return res.data as { imported: number; skipped: number };
+        },
+        referenceType: 'driver_import',
       });
-      if (res.error) throw res.error;
-      if (!res.data) throw new Error('Invalid response from server');
-      return res.data as { imported: number; skipped: number };
+
+      if (result.wasBlocked) {
+        throw new Error('CREDIT_BLOCKED');
+      }
+      if (!result.success) {
+        throw result.error ?? new Error('Import failed');
+      }
+      return result.result!;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.couriersAdmin.byTenant(tenantId) });
@@ -238,6 +258,7 @@ function ImportTab({
       onClose();
     },
     onError: (err) => {
+      if (err instanceof Error && err.message === 'CREDIT_BLOCKED') return;
       logger.error('Bulk import failed', err);
       toast.error('Bulk import failed');
     },
@@ -391,11 +412,18 @@ function ImportTab({
           size="sm"
           onClick={() => importMutation.mutate()}
           disabled={importMutation.isPending}
-          className="h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
+          className="group h-7 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
         >
           {importMutation.isPending ? 'Importing...' : `Import ${rows.length} Drivers`}
+          <CreditCostBadge actionKey="customer_import" compact className="ml-1" />
         </Button>
       </div>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
@@ -421,29 +449,45 @@ function BulkUpdateTab({
 
   const count = selectedDriverIds.length;
 
+  const { execute: executeCreditAction, showOutOfCreditsModal, closeOutOfCreditsModal, blockedAction } = useCreditGatedAction();
+
   const updateMutation = useMutation({
     mutationFn: async () => {
-      // Verify all selected drivers belong to this tenant
-      const { data: validDrivers, error: checkError } = await supabase
-        .from('couriers')
-        .select('id')
-        .in('id', selectedDriverIds)
-        .eq('tenant_id', tenantId);
-      if (checkError) throw checkError;
-      if (validDrivers?.length !== selectedDriverIds.length) {
-        throw new Error('One or more drivers do not belong to this tenant');
+      const result = await executeCreditAction({
+        actionKey: 'stock_bulk_update',
+        action: async () => {
+          // Verify all selected drivers belong to this tenant
+          const { data: validDrivers, error: checkError } = await supabase
+            .from('couriers')
+            .select('id')
+            .in('id', selectedDriverIds)
+            .eq('tenant_id', tenantId);
+          if (checkError) throw checkError;
+          if (validDrivers?.length !== selectedDriverIds.length) {
+            throw new Error('One or more drivers do not belong to this tenant');
+          }
+
+          const updates: Record<string, unknown> = { [field]: value };
+
+          const { error, count: updated } = await supabase
+            .from('couriers')
+            .update(updates, { count: 'exact' })
+            .in('id', selectedDriverIds)
+            .eq('tenant_id', tenantId);
+
+          if (error) throw error;
+          return updated ?? 0;
+        },
+        referenceType: 'driver_bulk_update',
+      });
+
+      if (result.wasBlocked) {
+        throw new Error('CREDIT_BLOCKED');
       }
-
-      const updates: Record<string, unknown> = { [field]: value };
-
-      const { error, count: updated } = await supabase
-        .from('couriers')
-        .update(updates, { count: 'exact' })
-        .in('id', selectedDriverIds)
-        .eq('tenant_id', tenantId);
-
-      if (error) throw error;
-      return updated ?? 0;
+      if (!result.success) {
+        throw result.error ?? new Error('Update failed');
+      }
+      return result.result!;
     },
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.couriersAdmin.byTenant(tenantId) });
@@ -451,6 +495,7 @@ function BulkUpdateTab({
       onClose();
     },
     onError: (err) => {
+      if (err instanceof Error && err.message === 'CREDIT_BLOCKED') return;
       logger.error('Bulk update failed', err);
       toast.error('Bulk update failed');
     },
@@ -508,9 +553,10 @@ function BulkUpdateTab({
         <Button
           onClick={() => setConfirmOpen(true)}
           disabled={count === 0 || !value.trim()}
-          className="h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
+          className="group h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
         >
           Review Changes
+          <CreditCostBadge actionKey="stock_bulk_update" compact className="ml-1" />
         </Button>
       ) : (
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
@@ -524,9 +570,10 @@ function BulkUpdateTab({
               size="sm"
               onClick={() => updateMutation.mutate()}
               disabled={updateMutation.isPending}
-              className="h-7 bg-amber-500 text-xs text-white hover:bg-amber-600"
+              className="group h-7 bg-amber-500 text-xs text-white hover:bg-amber-600"
             >
               {updateMutation.isPending ? 'Updating...' : 'Confirm Update'}
+              <CreditCostBadge actionKey="stock_bulk_update" compact className="ml-1" />
             </Button>
             <Button
               variant="ghost"
@@ -539,6 +586,12 @@ function BulkUpdateTab({
           </div>
         </div>
       )}
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
@@ -646,6 +699,12 @@ function ExportTab({ tenantId }: { tenantId: string }) {
 // Notifications Tab
 // ===========================================================================
 
+/** Map notification channel to credit action key */
+const CHANNEL_ACTION_KEYS: Record<string, string> = {
+  email: 'send_bulk_email',
+  sms: 'send_bulk_sms',
+};
+
 function NotifyTab({
   tenantId,
   selectedDriverIds,
@@ -664,31 +723,100 @@ function NotifyTab({
   const channelCount = Object.values(channels).filter(Boolean).length;
   const canSend = count > 0 && channelCount > 0 && message.trim().length > 0;
 
+  const { execute: executeCreditAction, showOutOfCreditsModal, closeOutOfCreditsModal, blockedAction, isFreeTier } = useCreditGatedAction();
+
+  // Build item breakdown for credit calculator based on selected channels
+  const itemBreakdown = useMemo(() => {
+    const breakdown: Array<{ label: string; count: number; actionKey: string }> = [];
+    if (channels.email) {
+      breakdown.push({ label: 'Email notifications', count, actionKey: 'send_bulk_email' });
+    }
+    if (channels.sms) {
+      breakdown.push({ label: 'SMS notifications', count, actionKey: 'send_bulk_sms' });
+    }
+    // Push notifications have no credit cost
+    return breakdown;
+  }, [channels.email, channels.sms, count]);
+
+  // Calculate estimated total cost for display
+  const estimatedCost = useMemo(() => {
+    let total = 0;
+    if (channels.email) total += count * getCreditCost('send_bulk_email');
+    if (channels.sms) total += count * getCreditCost('send_bulk_sms');
+    return total;
+  }, [channels.email, channels.sms, count]);
+
+  // Determine the primary action key for the credit gate
+  const primaryActionKey = useMemo(() => {
+    if (channels.sms) return 'send_bulk_sms';
+    if (channels.email) return 'send_bulk_email';
+    return 'bulk_operation_execute'; // push-only is free
+  }, [channels.email, channels.sms]);
+
+  const doSend = useCallback(async () => {
+    const res = await supabase.functions.invoke('bulk-notify-drivers', {
+      body: {
+        driver_ids: selectedDriverIds,
+        channels: Object.entries(channels)
+          .filter(([, v]) => v)
+          .map(([k]) => k),
+        message: message.trim(),
+      },
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    if (res.error) throw res.error;
+    if (!res.data) throw new Error('Invalid response from server');
+    return res.data as { sent: number };
+  }, [selectedDriverIds, channels, message, token]);
+
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const res = await supabase.functions.invoke('bulk-notify-drivers', {
-        body: {
-          driver_ids: selectedDriverIds,
-          channels: Object.entries(channels)
-            .filter(([, v]) => v)
-            .map(([k]) => k),
-          message: message.trim(),
-        },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      // If no paid channels selected, just send directly
+      if (estimatedCost === 0) {
+        return doSend();
+      }
+
+      const result = await executeCreditAction({
+        actionKey: primaryActionKey,
+        action: doSend,
+        referenceType: 'driver_bulk_notify',
       });
-      if (res.error) throw res.error;
-      if (!res.data) throw new Error('Invalid response from server');
-      return res.data as { sent: number };
+
+      if (result.wasBlocked) {
+        throw new Error('CREDIT_BLOCKED');
+      }
+      if (!result.success) {
+        throw result.error ?? new Error('Send failed');
+      }
+      return result.result!;
     },
     onSuccess: (data) => {
       toast.success(`Notification sent to ${data.sent} drivers`);
       onClose();
     },
     onError: (err) => {
+      if (err instanceof Error && err.message === 'CREDIT_BLOCKED') return;
       logger.error('Bulk notify failed', err);
       toast.error('Failed to send notifications');
     },
   });
+
+  const calculator = useBulkCreditCalculator({
+    actionKey: primaryActionKey,
+    itemCount: count,
+    actionDescription: `Send notifications to ${count} driver${count !== 1 ? 's' : ''}`,
+    itemBreakdown: itemBreakdown.length > 0 ? itemBreakdown : undefined,
+    onConfirm: () => sendMutation.mutate(),
+  });
+
+  const handleSend = () => {
+    // If no paid channels, send directly without credit calculator
+    if (estimatedCost === 0) {
+      sendMutation.mutate();
+      return;
+    }
+    calculator.open();
+  };
 
   return (
     <div className="space-y-4 pt-2">
@@ -724,10 +852,24 @@ function NotifyTab({
                 className="border-border data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
               />
               <span className="text-sm capitalize text-muted-foreground">{ch}</span>
+              {CHANNEL_ACTION_KEYS[ch] && (
+                <CreditCostBadge actionKey={CHANNEL_ACTION_KEYS[ch]} compact showTooltip={false} />
+              )}
             </label>
           ))}
         </div>
       </div>
+
+      {/* Estimated Cost */}
+      {isFreeTier && estimatedCost > 0 && count > 0 && (
+        <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+          <span>
+            Estimated cost: <strong className="text-foreground">{estimatedCost.toLocaleString()} credits</strong>
+            {' '}({count} recipient{count !== 1 ? 's' : ''} &times;{' '}
+            {itemBreakdown.map((b) => `${getCreditCost(b.actionKey)} cr/${b.label.split(' ')[0].toLowerCase()}`).join(' + ')})
+          </span>
+        </div>
+      )}
 
       {/* Message */}
       <div>
@@ -744,12 +886,23 @@ function NotifyTab({
       </div>
 
       <Button
-        onClick={() => sendMutation.mutate()}
+        onClick={handleSend}
         disabled={!canSend || sendMutation.isPending}
-        className="h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
+        className="group h-8 bg-emerald-500 text-xs text-white hover:bg-emerald-600"
       >
         {sendMutation.isPending ? 'Sending...' : `Send to ${count} Driver${count !== 1 ? 's' : ''}`}
+        {estimatedCost > 0 && (
+          <CreditCostBadge cost={estimatedCost} compact className="ml-1" />
+        )}
       </Button>
+
+      <BulkCreditCalculator {...calculator.calculatorProps} />
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
