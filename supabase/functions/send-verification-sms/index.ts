@@ -10,6 +10,7 @@
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 // Request validation
 const RequestSchema = z.object({
@@ -170,6 +171,9 @@ serve(async (req) => {
       console.error('[SEND_VERIFICATION_SMS] DEV MODE - OTP:', otp, 'for', fullPhoneNumber);
     }
 
+    // Best-effort credit deduction — never blocks SMS delivery
+    await bestEffortCreditDeduction(req, supabase, verification.id);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -190,6 +194,75 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Best-effort credit deduction for SMS verification.
+ * Extracts tenant from JWT if present; skips if unauthenticated (signup flow).
+ * Never blocks SMS delivery — logs failures as warnings.
+ */
+async function bestEffortCreditDeduction(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  verificationId: string
+): Promise<void> {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return; // Unauthenticated request (signup flow) — no tenant to charge
+    }
+
+    const { data: { user } } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+    if (!user) {
+      return; // Invalid token — skip credit deduction
+    }
+
+    // Look up tenant from tenant_users
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return; // No tenant association — skip
+    }
+
+    // Check if tenant is free tier
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('is_free_tier')
+      .eq('id', tenantUser.tenant_id)
+      .maybeSingle();
+
+    if (!tenant?.is_free_tier) {
+      return; // Paid tier — no credit deduction needed
+    }
+
+    // Deduct credits (best-effort)
+    const { data, error } = await supabase.rpc('consume_credits', {
+      p_tenant_id: tenantUser.tenant_id,
+      p_amount: 25,
+      p_action_key: CREDIT_ACTIONS.SEND_SMS,
+      p_description: 'SMS verification code',
+      p_reference_id: verificationId,
+      p_metadata: { type: 'phone_verification' },
+    });
+
+    if (error) {
+      console.error('[SEND_VERIFICATION_SMS] Credit deduction failed (non-blocking):', error.message);
+      return;
+    }
+
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result && !result.success) {
+      console.error('[SEND_VERIFICATION_SMS] Insufficient credits (non-blocking):', result.error_message);
+    }
+  } catch (err) {
+    console.error('[SEND_VERIFICATION_SMS] Credit deduction error (non-blocking):', err);
+  }
+}
 
 // Generate random OTP
 function generateOTP(length: number): string {
