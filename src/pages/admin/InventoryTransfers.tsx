@@ -24,6 +24,8 @@ import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 
 interface TransferFormData {
   product_id: string;
@@ -60,6 +62,7 @@ export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: '',
@@ -192,7 +195,7 @@ export default function InventoryTransfers() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -217,7 +220,9 @@ export default function InventoryTransfers() {
       return;
     }
 
-    createTransferMutation.mutate(formData);
+    await executeCreditAction('transfer_create', async () => {
+      await createTransferMutation.mutateAsync(formData);
+    });
   };
 
   if (isLoading) {
@@ -388,9 +393,10 @@ export default function InventoryTransfers() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={createTransferMutation.isPending}>
-                {createTransferMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={createTransferMutation.isPending || isPerforming}>
+                {(createTransferMutation.isPending || isPerforming) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Create Transfer
+                <CreditCostBadge actionKey="transfer_create" compact />
               </Button>
             </DialogFooter>
           </form>
