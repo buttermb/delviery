@@ -1,3 +1,16 @@
+## Add credit deduction to marketplace-bulk-update (action_key: marketplace_bulk_update, 100 credits)
+- Added bulk select (checkboxes) to ProductVisibilityManager marketplace page
+- Added bulk action bar with "Set Public" and "Set Hidden" buttons when items are selected
+- Gated bulk visibility update behind useCreditGatedAction with marketplace_bulk_update action key (100 credits)
+- Added CreditCostBadge on both bulk action buttons showing 100 credit cost
+- Added OutOfCreditsModal integration when credits are insufficient
+- Added select-all header checkbox with indeterminate state support
+- Individual row checkboxes for per-product selection
+- Clear selection button to deselect all
+- Supabase bulk update filters by tenant_id for security
+- Created 10 tests covering: checkbox rendering, bulk action bar visibility, credit badge display, executeCreditAction calls with correct action key, OutOfCreditsModal on insufficient credits, select all, clear selection, and credit cost configuration verification
+- All tests pass, TypeScript clean
+
 ## Verify AddPaymentMethodDialog loading state during redirect
 - Fixed loading state flash during Stripe redirect in AddPaymentMethodDialog
 - Bug: `finally { setLoading(false) }` ran before page unloaded, causing brief flash of non-loading state
