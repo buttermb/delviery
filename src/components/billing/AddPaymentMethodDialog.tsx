@@ -19,7 +19,6 @@ interface AddPaymentMethodDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenantId: string;
-    onSuccess?: () => void;
 }
 
 export function AddPaymentMethodDialog({
