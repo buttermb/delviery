@@ -5,7 +5,9 @@
  */
 
 import { useState } from 'react';
+
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +29,13 @@ import {
   Save,
   Eye,
   ArrowLeft,
+  Loader2,
 } from 'lucide-react';
+import { OutOfCreditsModal } from '@/components/credits';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 import { InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 interface InvoiceItem {
   id: string;
   description: string;
@@ -59,6 +65,8 @@ interface InvoiceData {
 
 export function AdvancedInvoice() {
   const { navigateToAdmin } = useTenantNavigation();
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
+  const [showOutOfCreditsModal, setShowOutOfCreditsModal] = useState(false);
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: `INV-${Date.now()}`,
     issueDate: new Date().toISOString().split('T')[0],
@@ -131,8 +139,16 @@ export function AdvancedInvoice() {
     }));
   };
 
-  const handleSave = () => {
-    toast.success("Invoice has been saved as draft");
+  const handleSave = async () => {
+    await executeCreditAction('invoice_create', async () => {
+      logger.info('Invoice saved as draft', {
+        component: 'AdvancedInvoice',
+        invoiceNumber: invoice.invoiceNumber,
+      });
+      toast.success("Invoice has been saved as draft");
+    }, {
+      onInsufficientCredits: () => setShowOutOfCreditsModal(true),
+    });
   };
 
   const handleSend = () => {
@@ -199,9 +215,10 @@ ${invoice.companyName}
           <Badge className={getStatusColor(invoice.status)}>
             {invoice.status.toUpperCase()}
           </Badge>
-          <Button variant="outline" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={handleSave} disabled={isPerforming}>
+            {isPerforming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save
+            <CreditCostBadge actionKey="invoice_create" compact className="ml-1" />
           </Button>
           <Button variant="outline" onClick={handleSend}>
             <Send className="h-4 w-4 mr-2" />
@@ -442,6 +459,12 @@ ${invoice.companyName}
           </Card>
         </div>
       </div>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={setShowOutOfCreditsModal}
+        actionAttempted="invoice_create"
+      />
     </div>
   );
 }
