@@ -445,6 +445,7 @@ export const CREDIT_ACTIONS = {
   GENERATE_INVOICE: 'generate_invoice',
   SEND_INVOICE: 'send_invoice',
   RECORD_PAYMENT: 'record_payment',
+  COMMISSION_CALCULATE: 'commission_calculate',
 
   // Communication
   SEND_SMS: 'send_sms',
