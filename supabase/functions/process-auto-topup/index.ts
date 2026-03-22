@@ -19,10 +19,10 @@ import { errorResponse } from '../_shared/error-response.ts';
 
 // Credit package pricing (must match creditCosts.ts CREDIT_PACKAGES)
 const CREDIT_PACKAGES = [
-  { credits: 500, priceCents: 1999 },    // Quick Boost
-  { credits: 1500, priceCents: 4999 },   // Starter Pack
-  { credits: 5000, priceCents: 12999 },  // Growth Pack
-  { credits: 15000, priceCents: 29999 }, // Power Pack
+  { credits: 5000, priceCents: 999 },      // Starter Pack
+  { credits: 15000, priceCents: 2499 },    // Growth Pack
+  { credits: 50000, priceCents: 4999 },    // Power Pack
+  { credits: 150000, priceCents: 17999 },  // Enterprise Pack
 ];
 
 // Rate limiting: max top-ups per hour

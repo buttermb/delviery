@@ -122,7 +122,7 @@ function simulateAtomicCreditInit(
 
   switch (plan) {
     case 'free':
-      initialCredits = 10000;
+      initialCredits = 500;
       isFreeTier = true;
       break;
     case 'starter':
@@ -143,7 +143,7 @@ function simulateAtomicCreditInit(
       isFreeTier = false;
       break;
     default:
-      initialCredits = 10000;
+      initialCredits = 500;
       isFreeTier = true;
       break;
   }
@@ -205,11 +205,11 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
 
       expect(result.creditsUpsert).toBe('inserted');
       expect(result.transactionInserted).toBe(true);
-      expect(result.initialCredits).toBe(10000);
+      expect(result.initialCredits).toBe(500);
 
       const credits = store.getTenantCredits('tenant-1');
-      expect(credits?.balance).toBe(10000);
-      expect(credits?.freeCreditsBalance).toBe(10000);
+      expect(credits?.balance).toBe(500);
+      expect(credits?.freeCreditsBalance).toBe(500);
     });
 
     it('should NOT create duplicate transaction on second call', () => {
@@ -237,8 +237,8 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
 
       // Balance should be same (overwritten, not accumulated)
       const credits = store.getTenantCredits('tenant-1');
-      expect(credits?.balance).toBe(10000);
-      expect(credits?.lifetimeEarned).toBe(10000);
+      expect(credits?.balance).toBe(500);
+      expect(credits?.lifetimeEarned).toBe(500);
     });
 
     it('should be idempotent after 3+ calls', () => {
@@ -253,7 +253,7 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
 
       // Balance unchanged
       const credits = store.getTenantCredits('tenant-1');
-      expect(credits?.balance).toBe(10000);
+      expect(credits?.balance).toBe(500);
     });
   });
 
@@ -293,7 +293,7 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
 
       expect(store.getTransactionCount()).toBe(3);
 
-      expect(store.getTenantCredits('tenant-1')?.balance).toBe(10000);
+      expect(store.getTenantCredits('tenant-1')?.balance).toBe(500);
       expect(store.getTenantCredits('tenant-2')?.balance).toBe(25000);
       expect(store.getTenantCredits('tenant-3')?.balance).toBe(500000);
     });
@@ -305,7 +305,7 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
 
   describe('plan-specific credit amounts are stable across retries', () => {
     const plans = [
-      { plan: 'free', expected: 10000 },
+      { plan: 'free', expected: 500 },
       { plan: 'starter', expected: 25000 },
       { plan: 'pro', expected: 100000 },
       { plan: 'professional', expected: 100000 },
@@ -373,8 +373,8 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
       const grantResult = store.insertCreditTransaction({
         id: crypto.randomUUID(),
         tenantId: 'tenant-1',
-        amount: 10000,
-        balanceAfter: 20000,
+        amount: 500,
+        balanceAfter: 1000,
         transactionType: 'free_grant',
         actionType: 'monthly_refresh',
         referenceId: `free_grant:tenant-1:2024-01-15`,
@@ -394,8 +394,8 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
       store.insertCreditTransaction({
         id: crypto.randomUUID(),
         tenantId: 'tenant-1',
-        amount: 10000,
-        balanceAfter: 20000,
+        amount: 500,
+        balanceAfter: 1000,
         transactionType: 'free_grant',
         actionType: 'monthly_refresh',
         referenceId: `free_grant:tenant-1:2024-01-15`,
@@ -407,8 +407,8 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
       const duplicateResult = store.insertCreditTransaction({
         id: crypto.randomUUID(),
         tenantId: 'tenant-1',
-        amount: 10000,
-        balanceAfter: 30000,
+        amount: 500,
+        balanceAfter: 1500,
         transactionType: 'free_grant',
         actionType: 'monthly_refresh',
         referenceId: `free_grant:tenant-1:2024-01-15`,
@@ -429,18 +429,18 @@ describe('create_tenant_atomic Credit Transaction Idempotency', () => {
     it('should handle unknown plan defaulting to free tier credits', () => {
       const result = simulateAtomicCreditInit(store, 'tenant-unknown', 'nonexistent_plan');
 
-      expect(result.initialCredits).toBe(10000);
+      expect(result.initialCredits).toBe(500);
       expect(result.transactionInserted).toBe(true);
     });
 
     it('should not accumulate balance on upsert (overwrite, not add)', () => {
-      // First call: balance = 10000
+      // First call: balance = 500
       simulateAtomicCreditInit(store, 'tenant-1', 'free');
-      expect(store.getTenantCredits('tenant-1')?.balance).toBe(10000);
+      expect(store.getTenantCredits('tenant-1')?.balance).toBe(500);
 
-      // Second call: balance should still be 10000 (overwritten), not 20000
+      // Second call: balance should still be 500 (overwritten), not 1000
       simulateAtomicCreditInit(store, 'tenant-1', 'free');
-      expect(store.getTenantCredits('tenant-1')?.balance).toBe(10000);
+      expect(store.getTenantCredits('tenant-1')?.balance).toBe(500);
     });
 
     it('should handle concurrent-like calls for same tenant', () => {
@@ -522,8 +522,8 @@ describe('SQL Idempotency Constraint Verification', () => {
     // 1. The tenant was just created, so no prior usage
     // 2. Retrying should reset to the same initial state
 
-    const initialBalance = 10000;
-    const retryBalance = 10000;
+    const initialBalance = 500;
+    const retryBalance = 500;
 
     // Overwrite semantics: final balance = retry value
     expect(retryBalance).toBe(initialBalance);

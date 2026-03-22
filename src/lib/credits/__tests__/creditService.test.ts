@@ -129,7 +129,7 @@ describe('Credit Threshold Configuration', () => {
   it('should have consistent threshold values', () => {
     expect(LOW_CREDIT_WARNING_THRESHOLD).toBe(2000);
     expect(CRITICAL_CREDIT_THRESHOLD).toBe(100);
-    expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
+    expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
   });
 });
 
