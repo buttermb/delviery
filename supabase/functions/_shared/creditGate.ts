@@ -594,6 +594,8 @@ export const CREDIT_ACTIONS = {
   GENERATE_INVOICE: 'generate_invoice',
   INVOICE_CREATE: 'invoice_create',
   SEND_INVOICE: 'send_invoice',
+  INVOICE_CREATE: 'invoice_create',
+  INVOICE_SEND: 'invoice_send',
   RECORD_PAYMENT: 'record_payment',
   COMMISSION_CALCULATE: 'commission_calculate',
 
