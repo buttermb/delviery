@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { checkCreditsAvailable, CREDIT_ACTIONS } from "../_shared/creditGate.ts";
 
 /**
  * SECURITY FIX: Added internal API key authentication.
@@ -61,6 +62,47 @@ serve(async (req) => {
 
     if (!tenant) {
       throw new Error("Tenant not found");
+    }
+
+    // ========================
+    // Credit deduction for send_email action (10 credits)
+    // Trial reminders are system-initiated but still cost credits.
+    // We proceed with the reminder even if credits are insufficient
+    // (critical system communication should not be blocked).
+    // ========================
+    let creditDeducted = false;
+    try {
+      const creditCheck = await checkCreditsAvailable(
+        supabaseClient,
+        tenant_id,
+        CREDIT_ACTIONS.SEND_EMAIL
+      );
+
+      if (creditCheck.isFreeTier && creditCheck.hasCredits) {
+        const { error: creditError } = await supabaseClient.rpc("consume_credits", {
+          p_tenant_id: tenant_id,
+          p_action_key: CREDIT_ACTIONS.SEND_EMAIL,
+          p_reference_type: "trial_reminder",
+          p_description: `Trial reminder email (${days_remaining} days remaining)`,
+        });
+
+        if (creditError) {
+          console.error("[TRIAL REMINDER] Credit deduction failed:", creditError.message);
+        } else {
+          creditDeducted = true;
+        }
+      } else if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        console.error(
+          `[TRIAL REMINDER] Insufficient credits for tenant ${tenant_id}. ` +
+          `Balance: ${creditCheck.balance}, Cost: ${creditCheck.cost}. ` +
+          `Proceeding with reminder anyway (critical system notification).`
+        );
+      }
+    } catch (creditErr: unknown) {
+      console.error(
+        "[TRIAL REMINDER] Credit check error (proceeding anyway):",
+        creditErr instanceof Error ? creditErr.message : "Unknown error"
+      );
     }
 
     // Email content based on days remaining and payment method status
@@ -129,7 +171,7 @@ serve(async (req) => {
     // For now, just log the email
 
     return new Response(
-      JSON.stringify({ success: true, message: "Reminder sent" }),
+      JSON.stringify({ success: true, message: "Reminder sent", creditDeducted }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
