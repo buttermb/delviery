@@ -38,6 +38,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCreditGatedAction } from "@/hooks/useCredits";
+import { CreditCostBadge } from '@/components/credits';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/formatters';
@@ -316,7 +317,7 @@ export default function NewWholesaleOrder() {
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 2;
 
-  const { execute: executeCreditAction } = useCreditGatedAction();
+  const { execute: executeCreditAction, isFreeTier } = useCreditGatedAction();
   const attemptIdRef = useRef<string>('');
 
   const handleSubmit = async (isRetry = false) => {
@@ -1246,6 +1247,7 @@ export default function NewWholesaleOrder() {
                   <>
                     <CheckCircle2 className="h-4 w-4" />
                     Create Order
+                    {isFreeTier && <CreditCostBadge actionKey="wholesale_order_place" className="ml-1" showTooltip={false} />}
                   </>
                 )}
               </Button>
