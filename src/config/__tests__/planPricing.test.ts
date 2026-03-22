@@ -3,10 +3,12 @@
  *
  * Verifies that PLAN_CONFIG is the single source of truth for all plan pricing
  * and that both SaaS and tenant-admin SelectPlanPage derive prices from it.
+ * Also verifies consistency with TIER_NAMES and TIER_PRICES.
  */
 
 import { describe, it, expect } from 'vitest';
 import { PLAN_CONFIG, getPlanConfig, isValidPlan, type PlanKey } from '@/config/planPricing';
+import { TIER_NAMES, TIER_PRICES } from '@/lib/featureConfig';
 
 describe('PLAN_CONFIG', () => {
   it('defines exactly four plans: free, starter, professional, enterprise', () => {
@@ -69,6 +71,39 @@ describe('PLAN_CONFIG', () => {
     expect(PLAN_CONFIG.professional.priceYearly).toBe(1500);
     expect(PLAN_CONFIG.enterprise.priceMonthly).toBe(499);
     expect(PLAN_CONFIG.enterprise.priceYearly).toBe(4990);
+  });
+});
+
+describe('Plan pricing consistency', () => {
+  it('PLAN_CONFIG plan names match TIER_NAMES', () => {
+    expect(PLAN_CONFIG.starter.name).toBe(TIER_NAMES.starter);
+    expect(PLAN_CONFIG.professional.name).toBe(TIER_NAMES.professional);
+    expect(PLAN_CONFIG.enterprise.name).toBe(TIER_NAMES.enterprise);
+  });
+
+  it('PLAN_CONFIG monthly prices match TIER_PRICES', () => {
+    expect(PLAN_CONFIG.starter.priceMonthly).toBe(TIER_PRICES.starter);
+    expect(PLAN_CONFIG.professional.priceMonthly).toBe(TIER_PRICES.professional);
+    expect(PLAN_CONFIG.enterprise.priceMonthly).toBe(TIER_PRICES.enterprise);
+  });
+
+  it('PLAN_CONFIG covers all paid tiers in TIER_NAMES', () => {
+    const tierKeys = Object.keys(TIER_NAMES);
+    const paidPlanKeys = Object.keys(PLAN_CONFIG).filter((k) => k !== 'free');
+    expect(paidPlanKeys).toEqual(expect.arrayContaining(tierKeys));
+    expect(tierKeys).toEqual(expect.arrayContaining(paidPlanKeys));
+  });
+
+  it('yearly savings are in the 15-20% range for all paid plans', () => {
+    const paidPlans = Object.entries(PLAN_CONFIG).filter(([key]) => key !== 'free');
+    for (const [, config] of paidPlans) {
+      const annualAtMonthly = config.priceMonthly * 12;
+      expect(config.priceYearly).toBeLessThan(annualAtMonthly);
+      expect(config.priceYearly).toBeGreaterThan(0);
+      const savingsPercent = ((annualAtMonthly - config.priceYearly) / annualAtMonthly) * 100;
+      expect(savingsPercent).toBeGreaterThanOrEqual(15);
+      expect(savingsPercent).toBeLessThanOrEqual(20);
+    }
   });
 });
 
