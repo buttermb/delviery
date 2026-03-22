@@ -36,9 +36,9 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     logStep('Authenticating user');
-    
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
+
     if (authError || !user) {
       logStep('ERROR: Authentication failed', { error: authError?.message });
       return new Response(
@@ -59,12 +59,13 @@ serve(async (req) => {
       );
     }
 
-    // Resolve caller's tenant_id from tenant_users — never trust client-supplied value
+    // Verify user belongs to the requested tenant and has admin/owner role
+    // never trust client-supplied value — verify membership via tenant_users
     const { data: tenantUser, error: tenantUserError } = await supabaseClient
       .from("tenant_users")
       .select("tenant_id, role")
-      .eq("user_id", user.id)
       .eq("tenant_id", clientTenantId)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (tenantUserError || !tenantUser) {
@@ -125,7 +126,7 @@ serve(async (req) => {
     logStep('Plan found', { planName: plan.name, stripePriceId: plan.stripe_price_id });
 
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    
+
     if (!STRIPE_SECRET_KEY) {
       logStep('ERROR: Stripe not configured');
       return new Response(
@@ -152,7 +153,7 @@ serve(async (req) => {
 
     // Get or create Stripe customer
     let customerId = tenant.stripe_customer_id;
-    
+
     if (!customerId) {
       logStep('Creating new Stripe customer');
       const customer = await stripe.customers.create({
@@ -167,7 +168,7 @@ serve(async (req) => {
         .from("tenants")
         .update({ stripe_customer_id: customerId })
         .eq("id", tenant_id);
-      
+
       logStep('Tenant updated with Stripe customer ID');
     } else {
       logStep('Using existing Stripe customer', { customerId });
@@ -175,7 +176,7 @@ serve(async (req) => {
 
     // Create checkout session
     logStep('Creating checkout session', { priceId: plan.stripe_price_id });
-    
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
