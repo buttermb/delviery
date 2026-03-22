@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useProductMutations } from "@/hooks/useProductMutations";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { sanitizeFormInput } from "@/lib/utils/sanitize";
 import { humanizeError } from "@/lib/humanizeError";
 
@@ -79,6 +80,7 @@ export function QuickAddProductDialog({
 }: QuickAddProductDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const { invalidateProductCaches } = useProductMutations();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -195,52 +197,55 @@ export function QuickAddProductDialog({
         low_stock_alert: 10,
       };
 
-      const { data: newProduct, error } = await supabase
-        .from("products")
-        .insert(productData)
-        .select()
-        .maybeSingle();
+      // Gate product creation behind credits (10 credits)
+      await executeCreditAction('product_add', async () => {
+        const { data: newProduct, error } = await supabase
+          .from("products")
+          .insert(productData)
+          .select()
+          .maybeSingle();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Sync to marketplace if store exists
-      if (storeId && newProduct) {
-        const { error: syncError } = await (
-          supabase.rpc as (
-            fn: string,
-            params: Record<string, string>
-          ) => ReturnType<typeof supabase.rpc>
-        )("sync_product_to_marketplace", {
-          p_product_id: newProduct.id,
-          p_store_id: storeId,
-        });
-        if (syncError) {
-          logger.warn("Product sync to marketplace failed", {
-            error: syncError,
-            productId: newProduct.id,
+        // Sync to marketplace if store exists
+        if (storeId && newProduct) {
+          const { error: syncError } = await (
+            supabase.rpc as (
+              fn: string,
+              params: Record<string, string>
+            ) => ReturnType<typeof supabase.rpc>
+          )("sync_product_to_marketplace", {
+            p_product_id: newProduct.id,
+            p_store_id: storeId,
           });
+          if (syncError) {
+            logger.warn("Product sync to marketplace failed", {
+              error: syncError,
+              productId: newProduct.id,
+            });
+          }
         }
-      }
 
-      // Invalidate caches
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: storeId || undefined,
-        productId: newProduct?.id,
-        category: data.category,
+        // Invalidate caches
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: storeId || undefined,
+          productId: newProduct?.id,
+          category: data.category,
+        });
+
+        toast.success(`"${data.name}" created successfully`);
+        onSuccess?.();
+
+        if (addAnother) {
+          // Reset form but keep dialog open for quick sequential adds
+          form.reset();
+          cleanupImage();
+          form.setFocus("name");
+        } else {
+          onOpenChange(false);
+        }
       });
-
-      toast.success(`"${data.name}" created successfully`);
-      onSuccess?.();
-
-      if (addAnother) {
-        // Reset form but keep dialog open for quick sequential adds
-        form.reset();
-        cleanupImage();
-        form.setFocus("name");
-      } else {
-        onOpenChange(false);
-      }
     } catch (error: unknown) {
       logger.error("Failed to create product", error instanceof Error ? error : new Error(String(error)));
       toast.error(humanizeError(error, "Failed to create product"));
