@@ -17,7 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCostBadge, CreditCostIndicator } from '@/components/credits';
-import { useCredits } from '@/hooks/useCredits';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 
 interface SendAccessLinkDialogProps {
   open: boolean;
@@ -39,52 +40,51 @@ export function SendAccessLinkDialog({
   menuTitle: _menuTitle,
 }: SendAccessLinkDialogProps) {
   const [method, setMethod] = useState<'email' | 'sms'>('email');
-  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<{ message?: string; [key: string]: unknown } | null>(null);
   const [copied, setCopied] = useState(false);
-  const { isFreeTier, performAction } = useCredits();
+  const {
+    execute: executeCreditAction,
+    isExecuting: loading,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isFreeTier,
+  } = useCreditGatedAction();
 
   const accessUrl = `${window.location.origin}/menu/${whitelistEntry.unique_access_token}`;
 
   const handleSend = async () => {
-    setLoading(true);
-    try {
-      // Consume credits for the action
-      const actionKey = method === 'email' ? 'send_email' : 'send_sms';
-      if (isFreeTier) {
-        const creditResult = await performAction(actionKey, whitelistEntry.id, 'menu_access');
-        if (!creditResult.success) {
-          toast.error("Insufficient Credits");
-          setLoading(false);
-          return;
+    const actionKey = method === 'email' ? 'send_email' : 'send_sms';
+
+    await executeCreditAction({
+      actionKey,
+      referenceId: whitelistEntry.id,
+      referenceType: 'menu_access',
+      action: async () => {
+        const { data, error } = await supabase.functions.invoke('send-menu-access-link', {
+          body: {
+            whitelistId: whitelistEntry.id,
+            method,
+          },
+        });
+
+        if (error) throw error;
+
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send access link';
+          throw new Error(errorMessage);
         }
-      }
 
-      const { data, error } = await supabase.functions.invoke('send-menu-access-link', {
-        body: {
-          whitelistId: whitelistEntry.id,
-          method,
-        },
-      });
-
-      if (error) throw error;
-
-      // Check for error in response body (some edge functions return 200 with error)
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send access link';
-        throw new Error(errorMessage);
-      }
-
-      setPreview(data.preview);
-      
-      toast.success("Link sent via ${method} to ${whitelistEntry.customer_name}");
-    } catch (error: unknown) {
-      logger.error('Error sending access link', error, { component: 'SendAccessLinkDialog' });
-      const _errorMessage = error instanceof Error ? error.message : 'Could not send access link';
-      toast.error("Failed to Send");
-    } finally {
-      setLoading(false);
-    }
+        setPreview(data.preview);
+        toast.success(`Link sent via ${method} to ${whitelistEntry.customer_name}`);
+        return data;
+      },
+      onError: (error) => {
+        logger.error('Error sending access link', error, { component: 'SendAccessLinkDialog' });
+        toast.error("Failed to Send");
+      },
+    });
   };
 
   const handleCopyLink = () => {
@@ -204,9 +204,9 @@ export function SendAccessLinkDialog({
                 <>
                   Send via {method === 'email' ? 'Email' : 'SMS'}
                   {isFreeTier && (
-                    <CreditCostBadge 
-                      actionKey={method === 'email' ? 'send_email' : 'send_sms'} 
-                      className="ml-2" 
+                    <CreditCostBadge
+                      actionKey={method === 'email' ? 'send_email' : 'send_sms'}
+                      className="ml-2"
                       showTooltip={false}
                     />
                   )}
@@ -216,6 +216,13 @@ export function SendAccessLinkDialog({
           )}
         </DialogFooter>
       </DialogContent>
+
+      {/* Out of Credits Modal */}
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </Dialog>
   );
 }
