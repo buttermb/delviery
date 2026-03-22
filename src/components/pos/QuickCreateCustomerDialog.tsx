@@ -36,6 +36,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Loader2, UserPlus } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 import { encryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
@@ -69,6 +70,7 @@ export function QuickCreateCustomerDialog({
 }: QuickCreateCustomerDialogProps) {
   const queryClient = useQueryClient();
   const { isReady: encryptionIsReady } = useEncryption();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   // Parse initial name into first/last
   const parseInitialName = (name: string) => {
@@ -192,8 +194,10 @@ export function QuickCreateCustomerDialog({
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    createCustomer.mutate(values);
+  const onSubmit = async (values: FormValues) => {
+    await executeCreditAction('customer_add', async () => {
+      await createCustomer.mutateAsync(values);
+    });
   };
 
   return (
