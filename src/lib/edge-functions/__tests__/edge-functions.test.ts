@@ -455,6 +455,191 @@ describe('Edge Functions Integration Tests', () => {
     });
   });
 
+  describe('update-subscription', () => {
+    const endpoint = `${FUNCTIONS_URL}/update-subscription`;
+
+    it('should return 500 when STRIPE_SECRET_KEY is missing', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Stripe not configured. Please set STRIPE_SECRET_KEY.' },
+          500
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Stripe not configured. Please set STRIPE_SECRET_KEY.');
+    });
+
+    it('should return 500 when STRIPE_SECRET_KEY has invalid prefix (not sk_)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: "Invalid STRIPE_SECRET_KEY configured. A Stripe secret key starting with 'sk_' is required." },
+          500
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toContain("starting with 'sk_'");
+    });
+
+    it('should reject publishable key (pk_) with clear error message', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: "Invalid STRIPE_SECRET_KEY configured. A Stripe secret key starting with 'sk_' is required." },
+          500
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toContain('sk_');
+      expect(data.error).not.toContain('pk_test_');
+    });
+
+    it('should create checkout session with valid Stripe key', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          url: 'https://checkout.stripe.com/c/pay/cs_test_abc123',
+        })
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.ok).toBe(true);
+      expect(data.url).toContain('checkout.stripe.com');
+    });
+
+    it('should require authentication', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Missing authorization header' }, 401)
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.error).toBe('Missing authorization header');
+    });
+
+    it('should return 400 when tenant_id or plan_id is missing', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({}),
+      });
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe('Missing tenant_id or plan_id');
+    });
+
+    it('should return 403 when tenant_id does not match caller', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Not authorized for this tenant' }, 403)
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'other-tenant-id',
+          plan_id: 'plan-123',
+        }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toBe('Not authorized for this tenant');
+    });
+
+    it('should handle CORS preflight requests', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        }),
+      });
+
+      const response = await fetch(endpoint, {
+        method: 'OPTIONS',
+      });
+
+      expect(response.ok).toBe(true);
+    });
+  });
+
   describe('process-payment', () => {
     const endpoint = `${FUNCTIONS_URL}/process-payment`;
 
@@ -1179,6 +1364,7 @@ describe('Edge Functions Integration Tests', () => {
         '/validate-tenant',
         '/tenant-admin-auth',
         '/check-stripe-config',
+        '/update-subscription',
         '/process-payment',
         '/send-notification',
         '/menu-generate',
@@ -1237,6 +1423,23 @@ describe('Edge Function Security Tests', () => {
           order_id: '550e8400-e29b-41d4-a716-446655440000',
           payment_method: 'card',
           amount: 100,
+        }),
+      });
+
+      expect(response.status).toBe(401);
+    });
+
+    it('update-subscription should require auth (protected endpoint)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Missing authorization header' }, 401)
+      );
+
+      const response = await fetch(`${FUNCTIONS_URL}/update-subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: '550e8400-e29b-41d4-a716-446655440000',
+          plan_id: 'plan-123',
         }),
       });
 
