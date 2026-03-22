@@ -768,6 +768,228 @@ describe('useCreateStorefront', () => {
 });
 
 // ============================================================================
+// Free Action Pass-Through (cost = 0)
+// ============================================================================
+
+describe('Free Action Pass-Through', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCanPerformAction.mockResolvedValue(true);
+    mockPerformAction.mockResolvedValue({
+      success: true,
+      newBalance: 0,
+      creditsCost: 0,
+    });
+  });
+
+  it('should pass through when action cost is 0 on free tier', async () => {
+    vi.mocked(useCredits).mockReturnValue({
+      balance: 500,
+      isFreeTier: true,
+      isLoading: false,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      isOutOfCredits: false,
+      lifetimeEarned: 500,
+      lifetimeSpent: 0,
+      nextFreeGrantAt: null,
+      percentUsed: 0,
+      canPerformAction: mockCanPerformAction,
+      performAction: mockPerformAction,
+      refetch: vi.fn(),
+      lifetimeStats: { earned: 500, spent: 0, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 500, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn().mockReturnValue(true),
+      invalidate: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCreditGatedAction(), {
+      wrapper: createWrapper(),
+    });
+
+    const mockAction = vi.fn().mockResolvedValue({ viewed: true });
+    const onSuccess = vi.fn();
+
+    let executeResult: Awaited<ReturnType<typeof result.current.execute>>;
+
+    await act(async () => {
+      executeResult = await result.current.execute({
+        actionKey: 'free_action',
+        action: mockAction,
+        onSuccess,
+      });
+    });
+
+    expect(executeResult!.success).toBe(true);
+    expect(executeResult!.wasBlocked).toBe(false);
+    expect(executeResult!.creditsCost).toBe(0);
+    expect(mockAction).toHaveBeenCalled();
+    expect(onSuccess).toHaveBeenCalledWith({ viewed: true });
+  });
+
+  it('should pass through free action even with zero balance', async () => {
+    vi.mocked(useCredits).mockReturnValue({
+      balance: 0,
+      isFreeTier: true,
+      isLoading: false,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      isOutOfCredits: true,
+      lifetimeEarned: 500,
+      lifetimeSpent: 500,
+      nextFreeGrantAt: null,
+      percentUsed: 100,
+      canPerformAction: mockCanPerformAction,
+      performAction: mockPerformAction,
+      refetch: vi.fn(),
+      lifetimeStats: { earned: 500, spent: 500, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 500, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn().mockReturnValue(false),
+      invalidate: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCreditGatedAction(), {
+      wrapper: createWrapper(),
+    });
+
+    const mockAction = vi.fn().mockResolvedValue({ data: 'dashboard' });
+
+    let executeResult: Awaited<ReturnType<typeof result.current.execute>>;
+
+    await act(async () => {
+      executeResult = await result.current.execute({
+        actionKey: 'free_action',
+        action: mockAction,
+      });
+    });
+
+    expect(executeResult!.success).toBe(true);
+    expect(executeResult!.wasBlocked).toBe(false);
+    expect(mockAction).toHaveBeenCalled();
+    expect(result.current.showOutOfCreditsModal).toBe(false);
+  });
+
+  it('should not show OutOfCreditsModal for free actions', async () => {
+    vi.mocked(useCredits).mockReturnValue({
+      balance: 0,
+      isFreeTier: true,
+      isLoading: false,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      isOutOfCredits: true,
+      lifetimeEarned: 500,
+      lifetimeSpent: 500,
+      nextFreeGrantAt: null,
+      percentUsed: 100,
+      canPerformAction: mockCanPerformAction,
+      performAction: mockPerformAction,
+      refetch: vi.fn(),
+      lifetimeStats: { earned: 500, spent: 500, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 500, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn().mockReturnValue(false),
+      invalidate: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCreditGatedAction(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.execute({
+        actionKey: 'free_action',
+        action: vi.fn().mockResolvedValue({}),
+      });
+    });
+
+    expect(result.current.showOutOfCreditsModal).toBe(false);
+    expect(result.current.blockedAction).toBe(null);
+  });
+
+  it('should report creditsCost as 0 for free actions', async () => {
+    vi.mocked(useCredits).mockReturnValue({
+      balance: 1000,
+      isFreeTier: true,
+      isLoading: false,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      isOutOfCredits: false,
+      lifetimeEarned: 1000,
+      lifetimeSpent: 0,
+      nextFreeGrantAt: null,
+      percentUsed: 0,
+      canPerformAction: mockCanPerformAction,
+      performAction: mockPerformAction,
+      refetch: vi.fn(),
+      lifetimeStats: { earned: 1000, spent: 0, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn().mockReturnValue(true),
+      invalidate: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCreditGatedAction(), {
+      wrapper: createWrapper(),
+    });
+
+    let executeResult: Awaited<ReturnType<typeof result.current.execute>>;
+
+    await act(async () => {
+      executeResult = await result.current.execute({
+        actionKey: 'free_action',
+        action: vi.fn().mockResolvedValue({ ok: true }),
+      });
+    });
+
+    expect(executeResult!.creditsCost).toBe(0);
+    expect(executeResult!.success).toBe(true);
+  });
+
+  it('should not deduct balance for free actions (optimistic update deducts 0)', async () => {
+    vi.mocked(useCredits).mockReturnValue({
+      balance: 100,
+      isFreeTier: true,
+      isLoading: false,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      isOutOfCredits: false,
+      lifetimeEarned: 500,
+      lifetimeSpent: 400,
+      nextFreeGrantAt: null,
+      percentUsed: 80,
+      canPerformAction: mockCanPerformAction,
+      performAction: mockPerformAction,
+      refetch: vi.fn(),
+      lifetimeStats: { earned: 500, spent: 400, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'none', isFreeTier: true, creditsPerPeriod: 500, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn().mockReturnValue(true),
+      invalidate: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCreditGatedAction(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.execute({
+        actionKey: 'free_action',
+        action: vi.fn().mockResolvedValue({}),
+      });
+    });
+
+    // Verify the optimistic update function deducts 0 (balance stays the same)
+    const optimisticUpdateCall = mockSetQueryData.mock.calls[0];
+    expect(optimisticUpdateCall).toBeDefined();
+    const updater = optimisticUpdateCall[1] as (old: unknown) => unknown;
+    const updatedData = updater({ balance: 100 });
+    expect(updatedData).toEqual({ balance: 100 }); // 100 - 0 = 100
+  });
+});
+
+// ============================================================================
 // Test Flow: Complete User Journey
 // ============================================================================
 
