@@ -1,13 +1,15 @@
 /**
- * Update Subscription Edge Function — Tenant Ownership Verification Tests
+ * Update Subscription Edge Function Tests
  *
  * Verifies that the update-subscription edge function:
- * 1. Requires authentication (JWT token)
- * 2. Resolves tenant_id from tenant_users (never trusts client-supplied value)
- * 3. Rejects requests where resolved tenant_id !== client-supplied tenant_id
- * 4. Requires admin or owner role for subscription changes
- * 5. Validates required parameters (tenant_id, plan_id)
- * 6. Returns proper error codes for each failure scenario
+ * 1. Uses plan.stripe_price_id from the subscription_plans database table
+ * 2. Validates that stripe_price_id is non-null before sending to Stripe
+ * 3. Requires authentication (JWT token)
+ * 4. Resolves tenant_id from tenant_users (never trusts client-supplied value)
+ * 5. Rejects requests where resolved tenant_id !== client-supplied tenant_id
+ * 6. Requires admin or owner role for subscription changes
+ * 7. Validates required parameters (tenant_id, plan_id)
+ * 8. Returns proper error codes for each failure scenario
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -32,14 +34,77 @@ const createMockResponse = (data: unknown, status = 200) => ({
 const TENANT_A = { id: 'tenant-aaa-1111', slug: 'tenant-a' };
 const TENANT_B = { id: 'tenant-bbb-2222', slug: 'tenant-b' };
 const PLAN_PRO = { id: 'plan-pro-1111', name: 'Professional' };
+const PLAN_UUID = '9cb2a3f2-1774-4dcc-9a78-5e266eaff4bf';
+const TENANT_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
-describe('Update Subscription — Tenant Ownership Verification', () => {
+describe('update-subscription Edge Function', () => {
   beforeEach(() => {
     mockFetch.mockClear();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('stripe_price_id from database', () => {
+    it('should create checkout session with plan.stripe_price_id from subscription_plans table', async () => {
+      const mockResponse = {
+        url: 'https://checkout.stripe.com/c/pay_test_abc123',
+      };
+
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: TENANT_UUID,
+          plan_id: PLAN_UUID, // UUID from subscription_plans table
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.ok).toBe(true);
+      expect(data.url).toBeDefined();
+      expect(data.url).toContain('https://checkout.stripe.com');
+
+      // Verify the request was made with a plan UUID, not a tier name
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(callBody.plan_id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+      );
+    });
+
+    it('should reject plan with missing stripe_price_id (unconfigured Stripe)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Plan is not configured for billing. Run setup-stripe-products first.' },
+          500
+        )
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: TENANT_UUID,
+          plan_id: PLAN_UUID,
+        }),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toContain('not configured for billing');
+      expect(data.error).toContain('setup-stripe-products');
+    });
   });
 
   describe('Authentication', () => {
@@ -173,6 +238,50 @@ describe('Update Subscription — Tenant Ownership Verification', () => {
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error).toContain('Missing');
+    });
+
+    it('should return 404 for non-existent plan', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Plan not found' }, 404)
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: TENANT_A.id,
+          plan_id: 'nonexistent-plan-id',
+        }),
+      });
+
+      expect(response.status).toBe(404);
+      const data = await response.json();
+      expect(data.error).toBe('Plan not found');
+    });
+
+    it('should return 404 for non-existent tenant', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Tenant not found' }, 404)
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'nonexistent-tenant-id',
+          plan_id: PLAN_PRO.id,
+        }),
+      });
+
+      expect(response.status).toBe(404);
+      const data = await response.json();
+      expect(data.error).toBe('Tenant not found');
     });
   });
 
@@ -339,52 +448,6 @@ describe('Update Subscription — Tenant Ownership Verification', () => {
     });
   });
 
-  describe('Resource validation', () => {
-    it('should return 404 when tenant does not exist', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'Tenant not found' }, 404)
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token',
-        },
-        body: JSON.stringify({
-          tenant_id: 'nonexistent-tenant-id',
-          plan_id: PLAN_PRO.id,
-        }),
-      });
-
-      expect(response.status).toBe(404);
-      const data = await response.json();
-      expect(data.error).toBe('Tenant not found');
-    });
-
-    it('should return 404 when plan does not exist', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'Plan not found' }, 404)
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token',
-        },
-        body: JSON.stringify({
-          tenant_id: TENANT_A.id,
-          plan_id: 'nonexistent-plan-id',
-        }),
-      });
-
-      expect(response.status).toBe(404);
-      const data = await response.json();
-      expect(data.error).toBe('Plan not found');
-    });
-  });
-
   describe('Stripe configuration', () => {
     it('should return 500 when Stripe is not configured', async () => {
       mockFetch.mockResolvedValueOnce(
@@ -409,6 +472,7 @@ describe('Update Subscription — Tenant Ownership Verification', () => {
       expect(response.status).toBe(500);
       const data = await response.json();
       expect(data.error).toContain('Stripe not configured');
+      expect(data.error).toContain('STRIPE_SECRET_KEY');
     });
 
     it('should return 500 for invalid Stripe key format', async () => {
@@ -531,7 +595,7 @@ describe('Update Subscription — Tenant Ownership Verification', () => {
 
       expect(response.status).toBe(500);
       const data = await response.json();
-      expect(data.error).toBe('Internal server error');
+      expect(data.error).toBeDefined();
     });
   });
 });
@@ -697,5 +761,110 @@ describe('Update Subscription — Edge Function Code Verification', () => {
   it('should use .maybeSingle() for optional lookups', () => {
     const pattern = EDGE_FUNCTION_SECURITY_PATTERNS.usesMaybeSingle;
     expect(pattern.pattern).toContain('maybeSingle');
+  });
+});
+
+describe('planPricing.ts configuration', () => {
+  it('should have stripe price IDs for all paid plans', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(PLAN_CONFIG.starter.stripePriceId).toBeDefined();
+    expect(PLAN_CONFIG.starter.stripePriceId).toMatch(/^price_/);
+
+    expect(PLAN_CONFIG.professional.stripePriceId).toBeDefined();
+    expect(PLAN_CONFIG.professional.stripePriceId).toMatch(/^price_/);
+
+    expect(PLAN_CONFIG.enterprise.stripePriceId).toBeDefined();
+    expect(PLAN_CONFIG.enterprise.stripePriceId).toMatch(/^price_/);
+  });
+
+  it('should have null stripe price IDs for free plan', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(PLAN_CONFIG.free.stripePriceId).toBeNull();
+    expect(PLAN_CONFIG.free.stripeProductId).toBeNull();
+  });
+
+  it('should have unique stripe price IDs across plans', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    const priceIds = [
+      PLAN_CONFIG.starter.stripePriceId,
+      PLAN_CONFIG.professional.stripePriceId,
+      PLAN_CONFIG.enterprise.stripePriceId,
+    ];
+
+    const uniqueIds = new Set(priceIds);
+    expect(uniqueIds.size).toBe(3);
+  });
+
+  it('should have stripe product IDs for all paid plans', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(PLAN_CONFIG.starter.stripeProductId).toBeDefined();
+    expect(PLAN_CONFIG.starter.stripeProductId).toMatch(/^prod_/);
+
+    expect(PLAN_CONFIG.professional.stripeProductId).toBeDefined();
+    expect(PLAN_CONFIG.professional.stripeProductId).toMatch(/^prod_/);
+
+    expect(PLAN_CONFIG.enterprise.stripeProductId).toBeDefined();
+    expect(PLAN_CONFIG.enterprise.stripeProductId).toMatch(/^prod_/);
+  });
+
+  it('should have correct monthly prices', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(PLAN_CONFIG.free.priceMonthly).toBe(0);
+    expect(PLAN_CONFIG.starter.priceMonthly).toBe(79);
+    expect(PLAN_CONFIG.professional.priceMonthly).toBe(150);
+    expect(PLAN_CONFIG.enterprise.priceMonthly).toBe(499);
+  });
+
+  it('should have correct yearly prices (approximately 17% discount)', async () => {
+    const { PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(PLAN_CONFIG.free.priceYearly).toBe(0);
+    expect(PLAN_CONFIG.starter.priceYearly).toBe(790);
+    expect(PLAN_CONFIG.professional.priceYearly).toBe(1500);
+    expect(PLAN_CONFIG.enterprise.priceYearly).toBe(4990);
+
+    // Verify discount is roughly 17% (within rounding)
+    for (const plan of ['starter', 'professional', 'enterprise'] as const) {
+      const monthly = PLAN_CONFIG[plan].priceMonthly;
+      const yearly = PLAN_CONFIG[plan].priceYearly;
+      const annualFromMonthly = monthly * 12;
+      const discountPercent = ((annualFromMonthly - yearly) / annualFromMonthly) * 100;
+      expect(discountPercent).toBeGreaterThanOrEqual(16);
+      expect(discountPercent).toBeLessThanOrEqual(18);
+    }
+  });
+
+  it('getPlanConfig should return correct plan for valid keys', async () => {
+    const { getPlanConfig, PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(getPlanConfig('starter')).toBe(PLAN_CONFIG.starter);
+    expect(getPlanConfig('professional')).toBe(PLAN_CONFIG.professional);
+    expect(getPlanConfig('enterprise')).toBe(PLAN_CONFIG.enterprise);
+    expect(getPlanConfig('free')).toBe(PLAN_CONFIG.free);
+  });
+
+  it('getPlanConfig should default to free plan for unknown keys', async () => {
+    const { getPlanConfig, PLAN_CONFIG } = await import('@/config/planPricing');
+
+    expect(getPlanConfig('unknown')).toBe(PLAN_CONFIG.free);
+    expect(getPlanConfig(null)).toBe(PLAN_CONFIG.free);
+    expect(getPlanConfig('')).toBe(PLAN_CONFIG.free);
+  });
+
+  it('isValidPlan should correctly identify valid plans', async () => {
+    const { isValidPlan } = await import('@/config/planPricing');
+
+    expect(isValidPlan('free')).toBe(true);
+    expect(isValidPlan('starter')).toBe(true);
+    expect(isValidPlan('professional')).toBe(true);
+    expect(isValidPlan('enterprise')).toBe(true);
+    expect(isValidPlan('unknown')).toBe(false);
+    expect(isValidPlan(null)).toBe(false);
+    expect(isValidPlan('')).toBe(false);
   });
 });

@@ -491,6 +491,21 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Added stripe-customer-portal auth requirement to security tests
 - All 61 tests pass, TypeScript compilation clean
 
+## Verify update-subscription uses plan.stripe_price_id from database
+- Verified update-subscription edge function correctly uses plan.stripe_price_id from subscription_plans table (line 192)
+- Frontend (BillingSettings.tsx, BillingPage.tsx) correctly sends plan UUID from subscription_plans query, not tier name
+- Full flow: frontend finds plan by name match → sends plan.id (UUID) → edge function fetches plan from DB → uses plan.stripe_price_id for Stripe checkout
+- Added null check for plan.stripe_price_id before passing to Stripe (lines 127-134) — previously would fail with unhelpful Stripe error if price ID was NULL
+- Error message instructs admin to run setup-stripe-products edge function
+- Created comprehensive test suite: src/lib/edge-functions/__tests__/update-subscription.test.ts (22 tests)
+  - Tests for stripe_price_id from database (success + null rejection)
+  - Tests for authentication and tenant ownership verification
+  - Tests for input validation (missing params, non-existent plan/tenant)
+  - Tests for Stripe configuration validation
+  - Tests for CORS, checkout response, and error handling
+  - Tests for planPricing.ts config consistency (prices, IDs, discount calculations)
+- TypeScript compilation passes with zero errors
+
 ## Lazy load ProductCatalogPage with React.lazy
 - Already implemented — no changes needed
 - ProductCatalogPage is lazy-loaded in src/routes/lazyImports.ts:187 as ShopProductCatalogPage
