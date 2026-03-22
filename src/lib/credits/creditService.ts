@@ -14,6 +14,36 @@ import {
 } from './creditCosts';
 
 // ============================================================================
+// Errors
+// ============================================================================
+
+/**
+ * Custom error thrown when credit consumption fails due to insufficient balance.
+ */
+export class CreditError extends Error {
+  readonly code = 'INSUFFICIENT_CREDITS' as const;
+  readonly actionKey: string;
+  readonly creditsRequired: number;
+  readonly currentBalance: number;
+
+  constructor(options: {
+    actionKey: string;
+    creditsRequired: number;
+    currentBalance: number;
+    message?: string;
+  }) {
+    super(
+      options.message ??
+        `Insufficient credits for ${options.actionKey}: need ${options.creditsRequired}, have ${options.currentBalance}`
+    );
+    this.name = 'CreditError';
+    this.actionKey = options.actionKey;
+    this.creditsRequired = options.creditsRequired;
+    this.currentBalance = options.currentBalance;
+  }
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -249,6 +279,34 @@ export async function consumeCredits(
       errorMessage: (err as Error).message,
     };
   }
+}
+
+/**
+ * Consume credits for an action, throwing CreditError if insufficient.
+ * Use this when the caller wants exception-based flow control.
+ */
+export async function consumeCreditsOrFail(
+  tenantId: string,
+  actionKey: string,
+  referenceId?: string,
+  description?: string,
+  metadata?: Record<string, unknown>
+): Promise<{ newBalance: number; creditsCost: number }> {
+  const result = await consumeCredits(tenantId, actionKey, referenceId, description, metadata);
+
+  if (!result.success) {
+    throw new CreditError({
+      actionKey,
+      creditsRequired: result.creditsCost || getCreditCost(actionKey),
+      currentBalance: result.newBalance,
+      message: result.errorMessage,
+    });
+  }
+
+  return {
+    newBalance: result.newBalance,
+    creditsCost: result.creditsCost,
+  };
 }
 
 // ============================================================================
