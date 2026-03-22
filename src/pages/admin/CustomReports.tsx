@@ -17,6 +17,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 interface CustomReport {
   id: string;
@@ -33,6 +34,7 @@ export default function CustomReports() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction, isPerforming: isGenerating } = useCreditGatedAction();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<CustomReport | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -240,8 +242,8 @@ export default function CustomReports() {
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(report)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={async () => {
-                      try {
+                    <Button variant="ghost" size="sm" disabled={isGenerating} onClick={async () => {
+                      await executeCreditAction('report_custom_generate', async () => {
                         toast.loading('Generating report, please wait...');
 
                         const { data, error } = await supabase.functions.invoke('generate-custom-report', {
@@ -282,10 +284,7 @@ export default function CustomReports() {
                             toast.info('No data found for this report configuration');
                           }
                         }
-                      } catch (error) {
-                        logger.error('Download failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomReports' });
-                        toast.error('Failed to generate report', { description: humanizeError(error) });
-                      }
+                      }, { referenceId: report.id, referenceType: 'custom_report' });
                     }}>
                       <Download className="h-4 w-4" />
                     </Button>
