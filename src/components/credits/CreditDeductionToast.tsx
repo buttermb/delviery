@@ -1,14 +1,21 @@
 /**
  * CreditDeductionToast Component
- * 
+ *
  * Shows a brief, non-intrusive toast notification when credits are deducted.
- * Auto-dismisses after 2 seconds. Clicking opens purchase modal.
+ * Auto-dismisses after 3 seconds. Clicking opens purchase modal.
+ * Rendered inside CreditToastContainer which handles positioning.
  */
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Coins, TrendingDown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditPurchaseModal } from './CreditPurchaseModal';
+
+/** Auto-dismiss duration in milliseconds */
+const TOAST_DISMISS_MS = 3000;
+/** Extra buffer for cleanup after fade-out animation */
+const TOAST_CLEANUP_BUFFER_MS = 500;
 
 export interface CreditDeductionToastProps {
   amount: number;
@@ -26,16 +33,25 @@ export function CreditDeductionToast({
   className,
 }: CreditDeductionToastProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
-  // Auto-dismiss after 2 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Start fade-out animation before dismiss
+    const fadeTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, TOAST_DISMISS_MS);
+
+    // Remove from DOM after fade-out completes
+    const dismissTimer = setTimeout(() => {
       setIsVisible(false);
       onDismiss?.();
-    }, 2000);
+    }, TOAST_DISMISS_MS + 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(dismissTimer);
+    };
   }, [onDismiss]);
 
   const handleClick = () => {
@@ -51,8 +67,9 @@ export function CreditDeductionToast({
     <>
       <div
         className={cn(
-          'fixed bottom-20 right-4 z-50 animate-in slide-in-from-right-5 fade-in duration-200',
-          'cursor-pointer transition-transform hover:scale-105',
+          'animate-in slide-in-from-right-5 fade-in duration-200',
+          'cursor-pointer transition-all hover:scale-105',
+          isFadingOut && 'animate-out fade-out slide-out-to-right-5 duration-300',
           className
         )}
         onClick={handleClick}
@@ -159,10 +176,10 @@ class CreditToastManager {
     this.toasts.push(toast);
     this.notifyListeners();
 
-    // Auto-remove after animation completes
+    // Auto-remove after toast dismiss + fade-out animation completes
     setTimeout(() => {
       this.dismiss(toast.id);
-    }, 2500);
+    }, TOAST_DISMISS_MS + TOAST_CLEANUP_BUFFER_MS);
   }
 
   dismiss(id: string) {
@@ -193,8 +210,6 @@ export const creditToastManager = new CreditToastManager();
 export interface CreditToastContainerProps {
   className?: string;
 }
-
-import { createPortal } from 'react-dom';
 
 export function CreditToastContainer({ className }: CreditToastContainerProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
@@ -238,10 +253,4 @@ export function showCreditDeductionToast(
 ) {
   creditToastManager.show(amount, action, newBalance);
 }
-
-
-
-
-
-
 
