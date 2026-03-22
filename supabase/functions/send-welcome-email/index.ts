@@ -5,6 +5,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { checkCreditsAvailable, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 const WelcomeEmailSchema = z.object({
   user_id: z.string().uuid(),
@@ -106,7 +107,26 @@ Getting Started:
 If you didn't create this account, please contact our support team.
     `.trim();
 
+    // Check credits before sending (free tier only)
+    if (tenant_id) {
+      const creditCheck = await checkCreditsAvailable(supabase, tenant_id, CREDIT_ACTIONS.SEND_EMAIL);
+      if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        console.error('[WELCOME-EMAIL] Insufficient credits, skipping email for:', email);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Insufficient credits',
+            code: 'INSUFFICIENT_CREDITS',
+            creditsRequired: creditCheck.cost,
+            currentBalance: creditCheck.balance,
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Send email via Klaviyo if available, otherwise log
+    let emailSent = false;
     const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
     if (klaviyoApiKey) {
       const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
@@ -136,6 +156,7 @@ If you didn't create this account, please contact our support team.
         console.error('[WELCOME-EMAIL] Failed to send via Klaviyo:', errorText);
       } else {
         console.error('[WELCOME-EMAIL] Sent successfully to:', email);
+        emailSent = true;
       }
     } else {
       // Log email for development
@@ -144,6 +165,19 @@ If you didn't create this account, please contact our support team.
         subject,
         dashboard_url: dashboardUrl,
       });
+      emailSent = true; // Count as "sent" for dev mode
+    }
+
+    // Consume credits after successful send (free tier only)
+    if (emailSent && tenant_id) {
+      const creditCheck = await checkCreditsAvailable(supabase, tenant_id, CREDIT_ACTIONS.SEND_EMAIL);
+      if (creditCheck.isFreeTier) {
+        await supabase.rpc('consume_credits', {
+          p_tenant_id: tenant_id,
+          p_action_key: CREDIT_ACTIONS.SEND_EMAIL,
+          p_description: `Welcome email sent to ${email}`,
+        });
+      }
     }
 
     return new Response(
