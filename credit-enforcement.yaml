@@ -1,0 +1,1865 @@
+# FloraIQ Credit Enforcement — Ralphy PRD
+# 250 tasks across 13 parallel groups
+# Run: ralphy --yaml credit-enforcement.yaml --parallel --max-parallel 5
+#
+# Group dependencies:
+#   1 → 2,3 → 4,5 → 6,7 → 8,9 → 10,11 → 12 → 13
+
+tasks:
+  # ============================================================================
+  # GROUP 1: Infrastructure & Shared Utilities (must run first)
+  # ============================================================================
+
+  - title: "Create withCreditGate helper that accepts actionKey and wraps edge function handlers"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/creditGate.ts, ensure the withCreditGate middleware:
+      1. Extracts tenant_id from the authenticated user's tenant_users record
+      2. Looks up credit cost from the credit_costs table using actionKey
+      3. Calls consume_credits RPC with p_tenant_id, p_amount, p_action_key
+      4. Returns 402 with { error: 'Insufficient credits', credits_required, credits_available } if balance < cost
+      5. Adds X-Credits-Consumed and X-Credits-Remaining response headers
+      6. Passes through to the wrapped handler on success
+      7. If actionKey cost is 0, skip deduction and pass through immediately
+      Verify existing implementation matches this spec; fix any gaps.
+
+  - title: "Create consumeCreditsOrFail utility for edge functions that don't use middleware pattern"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/creditGate.ts, add a standalone function:
+      export async function consumeCreditsOrFail(supabase, tenantId, actionKey, referenceId?, metadata?)
+      that calls consume_credits RPC and throws a CreditError if insufficient.
+      Return { success, newBalance, creditsCost }.
+      This is for edge functions where withCreditGate wrapper doesn't fit (e.g., functions with multiple credit actions).
+
+  - title: "Create useCreditGate React hook for frontend mutation credit gating"
+    completed: false
+    parallel_group: 1
+    description: >
+      In src/hooks/useCreditGate.ts, create a hook that wraps any async action with credit checking:
+      const { execute, isChecking } = useCreditGate('action_key');
+      execute(() => actualMutation()) — checks credits first via useCredits().canPerformAction,
+      shows OutOfCreditsModal if insufficient, calls performAction on success.
+      Re-export from src/hooks/index.ts. This simplifies credit gating across 100+ frontend actions.
+
+  - title: "Create CreditGatedButton component that shows cost badge and blocks when insufficient"
+    completed: false
+    parallel_group: 1
+    description: >
+      In src/components/credits/CreditGatedButton.tsx, create a button wrapper:
+      <CreditGatedButton actionKey="menu_create" onClick={handleCreate} label="Create Menu" />
+      Shows CreditCostBadge next to label. Disables button + shows tooltip when credits insufficient.
+      Uses useCredits() hook internally. Falls back to regular button if credits system unavailable.
+
+  - title: "Create CreditCostBadge component showing credit cost next to action labels"
+    completed: false
+    parallel_group: 1
+    description: >
+      In src/components/credits/CreditCostBadge.tsx (may already exist), ensure it:
+      1. Accepts actionKey prop, looks up cost via getCreditCost()
+      2. Shows nothing if cost is 0 (free actions)
+      3. Shows small badge like "25 cr" next to the label
+      4. Color-codes: green if balance > cost, yellow if close, red if insufficient
+      5. Has compact variant for table rows and full variant for buttons
+
+  - title: "Sync credit_costs database table with all 170+ action keys from creditCosts.ts"
+    completed: false
+    parallel_group: 1
+    description: >
+      Create a Supabase migration that upserts all action keys from CREDIT_COSTS array in
+      src/lib/credits/creditCosts.ts into the credit_costs database table. Use ON CONFLICT
+      (action_key) DO UPDATE to sync costs. This ensures the consume_credits RPC function
+      can look up costs server-side. Include all 23 categories and 170+ action keys.
+
+  - title: "Add credit deduction response headers to all edge function CORS config"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/deps.ts, update corsHeaders to include:
+      'Access-Control-Expose-Headers': 'X-Credits-Consumed, X-Credits-Remaining'
+      This allows the frontend to read credit deduction info from response headers.
+
+  - title: "Create edge function test helper for credit gate testing"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/test-helpers.ts, create mockCreditGate() that:
+      1. Mocks the consume_credits RPC call
+      2. Returns configurable success/failure responses
+      3. Tracks which action keys were consumed
+      4. Provides assertion helpers: expectCreditConsumed('action_key')
+      This speeds up testing credit gates across 50+ edge functions.
+
+  - title: "Create frontend test utility for credit-gated component testing"
+    completed: false
+    parallel_group: 1
+    description: >
+      In src/test-utils/creditMocks.ts, create helpers:
+      1. mockUseCredits({ balance: 1000 }) — mocks the useCredits hook
+      2. mockInsufficientCredits() — mocks 0 balance
+      3. renderWithCredits(component, { balance }) — render wrapper
+      4. expectCreditGateShown() — asserts OutOfCreditsModal appeared
+
+  - title: "Add credit consumption tracking to the credit_analytics table for all actions"
+    completed: false
+    parallel_group: 1
+    description: >
+      Ensure the consume_credits RPC function inserts into credit_analytics with:
+      event_type='credit_consumed', action_attempted=actionKey, credits_at_event=newBalance.
+      Also insert event_type='action_blocked_insufficient_credits' when balance is insufficient.
+      This provides analytics on which features consume the most credits and where users get blocked.
+
+  - title: "Create credit consumption rate limiter to prevent abuse"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/creditGate.ts, add rate limiting:
+      - Max 100 credit-consuming actions per minute per tenant
+      - Max 1000 per hour
+      - Return 429 with retry-after header when exceeded
+      Use the credits_used_today counter on tenant_credits for daily limits.
+      Track per-minute/hour in-memory or via a simple Redis-like counter.
+
+  - title: "Create credit refund helper for edge functions where the main action fails after deduction"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/creditGate.ts, add:
+      export async function refundCredits(supabase, tenantId, amount, actionKey, reason)
+      Calls a refund_credits RPC that adds credits back, creates a refund transaction.
+      Use in edge functions where credit is deducted pre-action but the action fails
+      (e.g., Stripe call fails after credit deduction).
+
+  - title: "Update consume_credits RPC to return structured response with all needed fields"
+    completed: false
+    parallel_group: 1
+    description: >
+      Verify the consume_credits RPC returns: { success, new_balance, credits_cost, error_message }.
+      If it doesn't return credits_cost, update the migration. The frontend and edge functions
+      need credits_cost to show deduction toasts and set response headers.
+
+  - title: "Create batch credit consumption helper for bulk operations"
+    completed: false
+    parallel_group: 1
+    description: >
+      In supabase/functions/_shared/creditGate.ts, add:
+      export async function consumeBatchCredits(supabase, tenantId, actions: Array<{actionKey, count}>)
+      Calculates total cost across all actions, does a single deduction, creates one transaction
+      with metadata listing all actions. Use for bulk imports, bulk SMS, etc.
+
+  - title: "Add free tier daily limit enforcement to consume_credits RPC"
+    completed: false
+    parallel_group: 1
+    description: >
+      Update consume_credits RPC to check FREE_TIER_LIMITS from creditCosts.ts:
+      - max_menus_per_day: 1
+      - max_orders_per_day: 3
+      - max_sms_per_day: 2
+      - max_emails_per_day: 5
+      - max_pos_sales_per_day: 5
+      Track counts in tenant_credits.credits_used_today (already exists).
+      Return specific error: 'Daily limit reached for free tier' with limit details.
+
+  # ============================================================================
+  # GROUP 2: Edge Functions — Orders & Sales
+  # ============================================================================
+
+  - title: "Add withCreditGate to create-order edge function with action_key order_create_manual (50 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/create-order/index.ts, wrap the handler with withCreditGate:
+      serve(withCreditGate('order_create_manual', async (req, creditResult) => { ... }))
+      The creditResult contains { tenantId, newBalance, creditsCost }.
+      If credit deduction fails, the function returns 402 automatically.
+
+  - title: "Add withCreditGate to create-marketplace-order with action_key marketplace_order_created (100 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/create-marketplace-order/index.ts, wrap handler with
+      withCreditGate('marketplace_order_created', handler). This charges the TENANT
+      (seller) when a marketplace order is placed, not the buyer.
+
+  - title: "Add withCreditGate to wholesale-order-create with action_key wholesale_order_place (100 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/wholesale-order-create/index.ts, wrap with
+      withCreditGate('wholesale_order_place', handler). Charges 100 credits
+      for placing a wholesale order.
+
+  - title: "Add credit deduction to forward-order-telegram with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/forward-order-telegram/index.ts, add consumeCreditsOrFail
+      call before sending the Telegram notification. Use action_key 'send_sms' (25 credits)
+      as it's an outbound notification. Refund if Telegram API call fails.
+
+  - title: "Add credit deduction to notify-order-placed with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/notify-order-placed/index.ts, add consumeCreditsOrFail
+      before sending notification. Charge send_email (10) or send_sms (25) based on
+      notification channel. If both email+SMS, charge both.
+
+  - title: "Add credit deduction to notify-order-ready with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/notify-order-ready/index.ts, add credit deduction
+      before sending the ready notification. Charge per channel (SMS/email/push).
+
+  - title: "Add credit deduction to send-order-confirmation with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/send-order-confirmation/index.ts, add consumeCreditsOrFail
+      before sending confirmation email. Refund on send failure.
+
+  - title: "Add credit deduction to send-order-cancellation with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/send-order-cancellation/index.ts, add consumeCreditsOrFail
+      before sending cancellation notice. Refund on send failure.
+
+  - title: "Add withCreditGate to convert-menu-order-to-invoice with action_key invoice_create (50 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/convert-menu-order-to-invoice/index.ts, wrap with
+      withCreditGate('invoice_create', handler). Converting a menu order to invoice
+      is an invoice creation action.
+
+  - title: "Add withCreditGate to pos-process-sale edge function with action_key pos_process_sale (25 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      If supabase/functions/pos-process-sale/ exists, wrap with withCreditGate.
+      If POS sales go through create-order, ensure the POS path uses pos_process_sale (25 credits)
+      instead of order_create_manual (50 credits) — POS is cheaper because it's high-frequency.
+
+  # ============================================================================
+  # GROUP 2: Edge Functions — Menus
+  # ============================================================================
+
+  - title: "Add withCreditGate to menu-generate with action_key menu_create (100 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/menu-generate/index.ts, wrap with withCreditGate('menu_create', handler).
+      Menu generation is a core premium action at 100 credits.
+
+  - title: "Add withCreditGate to create-encrypted-menu with action_key menu_create (100 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/create-encrypted-menu/index.ts, wrap with
+      withCreditGate('menu_create', handler). Same cost as regular menu creation.
+
+  - title: "Verify menu-ocr already has credit check for menu_ocr action (250 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/menu-ocr/index.ts, verify it uses checkCreditsAvailable
+      or withCreditGate with action_key 'menu_ocr' (250 credits). If using older
+      pattern, migrate to withCreditGate. Ensure refund on OCR processing failure.
+
+  - title: "Add credit deduction to menu-order-place with action_key menu_order_received (75 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/menu-order-place/index.ts, add withCreditGate('menu_order_received', handler).
+      This charges the menu OWNER when a customer places an order through their disposable menu.
+
+  - title: "Add credit deduction to send-menu-access-link with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/send-menu-access-link/index.ts, add consumeCreditsOrFail
+      before sending the SMS with the menu link. Refund on SMS delivery failure.
+
+  - title: "Add passive credit drain for menu-access-validate with action_key menu_view (2 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/menu-access-validate/index.ts (or serve-menu-page), add
+      consumeCreditsOrFail('menu_view', 2). This is a passive drain — each menu view
+      costs the tenant 2 credits. Skip if tenant has no credits (don't block customer access,
+      just log the debt). Use a 'soft' mode that allows negative balance for menu views.
+
+  - title: "Add withCreditGate to menu-parse with action_key menu_import_catalog (50 credits)"
+    completed: false
+    parallel_group: 2
+    description: >
+      In supabase/functions/menu-parse/index.ts, wrap with
+      withCreditGate('menu_import_catalog', handler). Parsing a menu catalog costs 50 credits.
+
+  # ============================================================================
+  # GROUP 3: Edge Functions — Communication (SMS, Email, Push)
+  # ============================================================================
+
+  - title: "Add credit deduction to send-sms edge function with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-sms/index.ts, add consumeCreditsOrFail('send_sms')
+      before calling Twilio/SMS provider. Refund on delivery failure.
+      This is the primary SMS sending endpoint.
+
+  - title: "Add credit deduction to send-klaviyo-sms with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-klaviyo-sms/index.ts, add consumeCreditsOrFail('send_sms')
+      before calling Klaviyo API. Refund on API failure.
+
+  - title: "Add credit deduction to send-otp with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-otp/index.ts, add consumeCreditsOrFail('send_sms')
+      before sending OTP via SMS. OTP is a critical path — if credit deduction fails,
+      log warning but still send OTP (security > credits).
+
+  - title: "Add credit deduction to send-verification-sms with action_key send_sms (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-verification-sms/index.ts, add consumeCreditsOrFail('send_sms').
+      Same security consideration as OTP — allow through if credits fail.
+
+  - title: "Add credit deduction to send-email edge function with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-email/index.ts, add consumeCreditsOrFail('send_email')
+      before calling SendGrid/email provider. Refund on delivery failure.
+
+  - title: "Add credit deduction to send-klaviyo-email with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-klaviyo-email/index.ts, add consumeCreditsOrFail('send_email')
+      before calling Klaviyo API. Refund on API failure.
+
+  - title: "Add credit deduction to send-invitation-email with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-invitation-email/index.ts, add consumeCreditsOrFail('send_email').
+      Team invitations cost 10 credits per email sent.
+
+  - title: "Add credit deduction to send-welcome-email with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-welcome-email/index.ts, add consumeCreditsOrFail('send_email').
+      Welcome emails to new customers/users cost 10 credits.
+
+  - title: "Add credit deduction to send-verification-email with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-verification-email/index.ts, add consumeCreditsOrFail('send_email').
+      Verification emails cost 10 credits. Allow through if credits fail (security path).
+
+  - title: "Add credit deduction to send-trial-reminder with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-trial-reminder/index.ts, add consumeCreditsOrFail('send_email').
+      Trial reminders are system-initiated but still cost credits.
+
+  - title: "Add credit deduction to send-trial-expiration-notice with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-trial-expiration-notice/index.ts, add credit deduction.
+
+  - title: "Add credit deduction to send-trial-expired-notice with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-trial-expired-notice/index.ts, add credit deduction.
+
+  - title: "Add credit deduction to send-push-notification with action_key send_push_notification (15 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-push-notification/index.ts (if exists), add
+      consumeCreditsOrFail before sending push notification via FCM/Expo.
+
+  - title: "Add credit deduction to send-notification with variable action_key based on channel"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-notification/index.ts, add credit deduction that
+      varies by channel: email=10, sms=25, push=15. Read channel from request body
+      and use appropriate action_key.
+
+  - title: "Add bulk credit deduction to send-marketing-campaign with action_key send_bulk_email (8 credits per recipient)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/send-marketing-campaign/index.ts, calculate total credits
+      as recipientCount * 8 (bulk email rate). Use consumeBatchCredits helper.
+      Show estimated cost before sending. Block if insufficient credits for full batch.
+
+  - title: "Add credit deduction to low-stock-email-digest with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/low-stock-email-digest/index.ts, add credit deduction
+      before sending the digest email. This is a system-triggered notification.
+
+  - title: "Add credit deduction to process-delivery-notifications with action_key based on type"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/process-delivery-notifications/index.ts, add credit deduction
+      per notification sent. Use tracking_send_link (15 credits) for tracking links,
+      send_sms (25) for SMS notifications.
+
+  - title: "Add credit deduction to customer-chat with action_key live_chat_message (5 credits per message)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/customer-chat/index.ts (if exists), add
+      consumeCreditsOrFail('live_chat_message') per outbound message from tenant to customer.
+      Inbound messages from customers are free.
+
+  - title: "Add credit deduction to tenant-invite with action_key send_email (10 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/tenant-invite/index.ts, add consumeCreditsOrFail('send_email')
+      before sending team invitation email.
+
+  - title: "Add credit deduction to who-owes-me-reminder with action_key who_owes_me_reminder (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In the who-owes-me reminder edge function (or inline in send-notification),
+      charge 25 credits per reminder sent. This is a payment reminder feature.
+
+  # ============================================================================
+  # GROUP 3: Edge Functions — Invoices & Purchase Orders
+  # ============================================================================
+
+  - title: "Verify invoice-management has credit gate for invoice_create (50 credits) and invoice_send (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/invoice-management/index.ts, verify it uses withCreditGate
+      or consumeCreditsOrFail for both create and send actions. If using a single handler
+      for multiple operations, check the action type and charge accordingly.
+
+  - title: "Add credit deduction to generate-recurring-invoices with action_key invoice_create (50 credits per invoice)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/generate-recurring-invoices/index.ts, use consumeBatchCredits
+      to charge 50 credits per recurring invoice generated. Pre-calculate total cost
+      and block if insufficient. Log each invoice generation as a separate transaction.
+
+  - title: "Add withCreditGate to create-purchase-order with action_key purchase_order_create (30 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/create-purchase-order/index.ts, wrap with
+      withCreditGate('purchase_order_create', handler).
+
+  - title: "Add credit deduction to receive-purchase-order with action_key wholesale_order_receive (75 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In supabase/functions/receive-purchase-order/index.ts, add
+      withCreditGate('wholesale_order_receive', handler).
+
+  - title: "Add credit deduction to send-purchase-order with action_key purchase_order_send (25 credits)"
+    completed: false
+    parallel_group: 3
+    description: >
+      In the PO sending function, add consumeCreditsOrFail('purchase_order_send')
+      before emailing the PO to the supplier.
+
+  # ============================================================================
+  # GROUP 4: Edge Functions — Inventory & Products
+  # ============================================================================
+
+  - title: "Add credit deduction to product-add edge function with action_key product_add (10 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the product creation edge function or admin-api-operations handler,
+      add consumeCreditsOrFail('product_add') when action=create and resource=products.
+
+  - title: "Add batch credit deduction to product-bulk-import with action_key product_bulk_import (50 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the bulk product import edge function, charge 50 credits per batch
+      using consumeBatchCredits. Block import if insufficient credits.
+
+  - title: "Add credit deduction to stock-update operations with action_key stock_update (3 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the inventory update edge function, add consumeCreditsOrFail('stock_update')
+      per stock level change. Individual updates cost 3 credits.
+
+  - title: "Add batch credit deduction to stock-bulk-update with action_key stock_bulk_update (25 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the bulk stock update handler, charge 25 credits total for a bulk
+      stock update operation using consumeCreditsOrFail('stock_bulk_update').
+
+  - title: "Add credit deduction to inventory-transfer-create with action_key transfer_create (20 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the inventory transfer creation function, add consumeCreditsOrFail('transfer_create').
+
+  - title: "Add credit deduction to dispatch-create with action_key dispatch_create (20 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the dispatch creation function, add consumeCreditsOrFail('dispatch_create').
+
+  - title: "Add credit deduction to receiving-log with action_key receiving_log (10 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the receiving log function, add consumeCreditsOrFail('receiving_log').
+
+  - title: "Add credit deduction to barcode-generate with action_key barcode_generate (5 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/generate-product-barcode/index.ts, add
+      consumeCreditsOrFail('barcode_generate') before generating the barcode.
+
+  - title: "Add batch credit deduction to barcode-print-batch with action_key barcode_print_batch (25 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the batch barcode printing function, charge 25 credits total
+      using consumeCreditsOrFail('barcode_print_batch').
+
+  - title: "Add credit deduction to barcode-lookup with action_key barcode_lookup (1 credit)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/barcode-lookup/index.ts, add consumeCreditsOrFail
+      with 1 credit cost for each barcode lookup query.
+
+  - title: "Add credit deduction to vendor-add with action_key vendor_add (5 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the vendor/supplier creation handler, add consumeCreditsOrFail('vendor_add').
+
+  - title: "Add credit deduction to customer-add with action_key customer_add (5 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the customer creation handler, add consumeCreditsOrFail('customer_add').
+
+  - title: "Add batch credit deduction to customer-import with action_key customer_import (50 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the customer bulk import function, charge 50 credits per batch import.
+
+  # ============================================================================
+  # GROUP 4: Edge Functions — Delivery & Fleet
+  # ============================================================================
+
+  - title: "Add withCreditGate to assign-courier with action_key courier_assign_delivery (10 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/assign-courier/index.ts, wrap with
+      withCreditGate('courier_assign_delivery', handler).
+
+  - title: "Add withCreditGate to optimize-route with action_key route_optimize (50 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/optimize-route/index.ts, wrap with
+      withCreditGate('route_optimize', handler). Route optimization is a premium AI feature.
+
+  - title: "Add credit deduction to delivery-create with action_key delivery_create (30 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the delivery creation function, add consumeCreditsOrFail('delivery_create').
+
+  - title: "Add credit deduction to tracking-send-link with action_key tracking_send_link (15 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the tracking link sending function, add consumeCreditsOrFail('tracking_send_link').
+
+  - title: "Add micro credit deduction to tracking-ping with action_key tracking_ping (1 credit)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/realtime-tracking/index.ts or runner-location-update,
+      add 1 credit deduction per location ping. Use soft mode — don't block tracking
+      if credits are exhausted, just log the debt. Cap at 100 pings/hour per tenant.
+
+  - title: "Add credit deduction to calculate-eta with action_key route_optimization (1 credit)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In supabase/functions/calculate-eta/index.ts, charge 1 credit per ETA calculation.
+
+  - title: "Add credit deduction to wholesale-delivery-assign with action_key courier_assign_delivery (10 credits)"
+    completed: false
+    parallel_group: 4
+    description: >
+      In the wholesale delivery assignment function, charge 10 credits.
+
+  # ============================================================================
+  # GROUP 5: Edge Functions — Reports, AI, Marketing, Misc
+  # ============================================================================
+
+  - title: "Add withCreditGate to generate-custom-report with action_key report_custom_generate (75 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/generate-custom-report/index.ts, wrap with
+      withCreditGate('report_custom_generate', handler).
+
+  - title: "Add withCreditGate to generate-report with action_key report_custom_generate (75 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/generate-report/index.ts, wrap with
+      withCreditGate('report_custom_generate', handler).
+
+  - title: "Add withCreditGate to reports edge function with action_key report_standard_view or report_custom_generate"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/reports/index.ts, check the report type:
+      standard reports = FREE, custom/advanced = 75-100 credits.
+      Use conditional credit charging based on report_type parameter.
+
+  - title: "Add credit deduction to send-scheduled-report with action_key report_schedule (100 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/send-scheduled-report/index.ts, charge 100 credits
+      per scheduled report execution. This runs automatically — if credits insufficient,
+      skip the report and notify the tenant.
+
+  - title: "Add credit deduction to compliance-report with action_key compliance_report_generate (100 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the compliance report generation function, charge 100 credits.
+
+  - title: "Add credit deduction to process-data-export with action_key data_warehouse_export (200 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/process-data-export/index.ts, charge 200 credits
+      for large data exports. Block if insufficient.
+
+  - title: "Add credit deduction to export-customer-data with action_key data_warehouse_export (200 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/export-customer-data/index.ts, add consumeCreditsOrFail
+      for 200 credits before processing the GDPR data export.
+
+  - title: "Add withCreditGate to ai-suggestions with action_key ai_suggestions (100 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/ai-suggestions/index.ts, wrap with
+      withCreditGate('ai_suggestions', handler). AI features are premium.
+
+  - title: "Add withCreditGate to leafly-suggestions with action_key ai_suggestions (100 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/leafly-suggestions/index.ts, wrap with
+      withCreditGate('ai_suggestions', handler).
+
+  - title: "Add withCreditGate to predict-revenue with action_key forecast_run (75 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/predict-revenue/index.ts, wrap with
+      withCreditGate('forecast_run', handler).
+
+  - title: "Add withCreditGate to pricing-advisor with action_key ai_insight_generate (50 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/pricing-advisor/index.ts, wrap with
+      withCreditGate('ai_insight_generate', handler).
+
+  - title: "Add withCreditGate to generate-product-images with action_key ai_task_run (50 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/generate-product-images/index.ts, wrap with
+      withCreditGate('ai_task_run', handler). AI image generation costs 50 credits.
+
+  - title: "Add withCreditGate to process-product-image with action_key ai_task_run (50 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/process-product-image/index.ts, wrap with
+      withCreditGate('ai_task_run', handler).
+
+  - title: "Add credit deduction to execute-marketing-workflow with variable cost based on actions"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/execute-marketing-workflow/index.ts, calculate total
+      credit cost based on workflow actions (each SMS=25, email=8, etc.).
+      Pre-calculate and deduct total before executing workflow.
+
+  - title: "Add credit deduction to run-automation with variable cost based on actions"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/run-automation/index.ts, calculate total credit cost
+      from automation steps and deduct before execution.
+
+  - title: "Add credit deduction to send-webhook with action_key webhook_fired (5 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/send-webhook/index.ts, charge 5 credits per webhook fire.
+
+  - title: "Add withCreditGate to storefront-create with action_key storefront_create (500 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the storefront creation function, charge 500 credits. This is a one-time
+      premium setup action. Show confirmation dialog on frontend before charging.
+
+  - title: "Add credit deduction to marketplace-list-product with action_key marketplace_list_product (25 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      When a product is listed on the marketplace, charge 25 credits.
+
+  - title: "Add credit deduction to marketplace-bulk-update with action_key marketplace_bulk_update (100 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      For bulk marketplace product updates, charge 100 credits.
+
+  - title: "Add credit deduction to marketplace-coupon-created with action_key marketplace_coupon_created (25 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      When a marketplace coupon is created, charge 25 credits.
+
+  - title: "Add credit deduction to marketplace-notification-sent with action_key marketplace_notification_sent (50 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      When a marketplace notification is sent, charge 50 credits.
+
+  - title: "Add credit deduction to redeem-loyalty-reward with action_key loyalty_reward_issue (15 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the loyalty reward redemption function, charge 15 credits.
+
+  - title: "Add credit deduction to process-return with action_key return_process (15 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/process-return/index.ts, charge 15 credits.
+
+  - title: "Add credit deduction to validate-email with 1 credit per validation"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/validate-email/index.ts, charge 1 credit for email validation lookups.
+
+  - title: "Add credit deduction to validate-phone with 1 credit per validation"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/validate-phone/index.ts, charge 1 credit for phone validation lookups.
+
+  - title: "Add credit deduction to currency-convert with 1 credit per conversion"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/currency-convert/index.ts, charge 1 credit per conversion.
+
+  - title: "Add credit deduction to appointment-create with action_key appointment_create (10 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the appointment creation handler, charge 10 credits.
+
+  - title: "Add credit deduction to appointment-reminder with action_key appointment_reminder (25 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the appointment reminder function, charge 25 credits per reminder sent.
+
+  - title: "Add credit deduction to qc-log-check with action_key qc_log_check (10 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the quality control logging function, charge 10 credits per QC entry.
+
+  - title: "Add credit deduction to expense-add with action_key expense_add (5 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the expense creation handler, charge 5 credits per expense entry.
+
+  - title: "Add credit deduction to commission-calculate with action_key commission_calculate (30 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the commission calculation function, charge 30 credits.
+
+  - title: "Add credit deduction to data-warehouse-query with action_key data_warehouse_query (25 credits)"
+    completed: false
+    parallel_group: 5
+    description: >
+      In the data warehouse query function, charge 25 credits per query execution.
+
+  - title: "Add credit check to admin-api-operations for CRUD actions based on resource type"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/admin-api-operations/index.ts, add credit deduction
+      based on action+resource: create customers=5cr, create products=10cr,
+      create orders=50cr, update inventory=3cr, etc. Map resource names to action keys.
+
+  - title: "Add credit metering to the api edge function with withApiCreditMeter"
+    completed: false
+    parallel_group: 5
+    description: >
+      In supabase/functions/api/index.ts, wrap with withApiCreditMeter middleware
+      that charges based on HTTP method and endpoint pattern.
+
+  # ============================================================================
+  # GROUP 6: Frontend Credit Gates — Orders & Menus
+  # ============================================================================
+
+  - title: "Add useCreditGate to CreateOrderPage manual order creation (50 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/pages/admin/CreateOrderPage.tsx, wrap the order submission handler
+      with useCreditGate('order_create_manual'). Show CreditCostBadge on submit button.
+
+  - title: "Add useCreditGate to CreatePreOrderPage pre-order creation (50 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/pages/admin/CreatePreOrderPage.tsx, wrap the pre-order form submission
+      with useCreditGate('order_create_manual').
+
+  - title: "Add useCreditGate to PointOfSale sale processing (25 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/pages/admin/PointOfSale.tsx or CashRegister.tsx, wrap the process sale
+      button with useCreditGate('pos_process_sale'). Show cost badge on checkout button.
+
+  - title: "Add useCreditGate to POS receipt printing (5 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In the POS receipt print action, gate with useCreditGate('pos_print_receipt').
+
+  - title: "Add useCreditGate to GenerateMenuPageDialog menu creation (100 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/components/admin/menus/GenerateMenuPageDialog.tsx, wrap the generate
+      button with useCreditGate('menu_create'). Show prominent 100 credit cost badge.
+
+  - title: "Add useCreditGate to SendAccessLinkDialog SMS sending (25 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/components/admin/menus/SendAccessLinkDialog.tsx, wrap the send button
+      with useCreditGate('send_sms'). Show 25 credit cost badge.
+
+  - title: "Add useCreditGate to ConvertToInvoiceDialog invoice creation (50 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In src/components/admin/menus/ConvertToInvoiceDialog.tsx, wrap with
+      useCreditGate('invoice_create'). Show 50 credit cost badge.
+
+  - title: "Add useCreditGate to MenuShareDialogEnhanced link sharing (FREE but track)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In MenuShareDialogEnhanced, menu link sharing is FREE but track the event
+      using trackCreditEvent for analytics. No blocking needed.
+
+  - title: "Add useCreditGate to menu OCR scan action (250 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In the menu OCR scanning component, wrap with useCreditGate('menu_ocr').
+      Show prominent warning: "This AI feature costs 250 credits" with confirmation.
+
+  - title: "Add useCreditGate to menu import catalog action (50 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In the catalog import component, wrap with useCreditGate('menu_import_catalog').
+
+  - title: "Add useCreditGate to NewWholesaleOrder wholesale order placement (100 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In the wholesale order creation component, wrap the submit handler
+      with useCreditGate('wholesale_order_place'). Show 100 credit cost badge.
+
+  - title: "Add useCreditGate to wholesale portal link sending (25 credits)"
+    completed: false
+    parallel_group: 6
+    description: >
+      In SendPortalLinkDialog.tsx, wrap with useCreditGate('send_email').
+
+  # ============================================================================
+  # GROUP 7: Frontend Credit Gates — Customers, Inventory, Invoices
+  # ============================================================================
+
+  - title: "Add useCreditGate to customer add form (5 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the customer creation form/dialog, wrap submit with useCreditGate('customer_add').
+
+  - title: "Add useCreditGate to customer import dialog (50 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the customer bulk import component, wrap with useCreditGate('customer_import').
+
+  - title: "Add useCreditGate to CRM send SMS button (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the CRM message sending interface, wrap SMS send with useCreditGate('send_sms').
+
+  - title: "Add useCreditGate to CRM send email button (10 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the CRM email sending interface, wrap with useCreditGate('send_email').
+
+  - title: "Add useCreditGate to CRM log interaction (5 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the CRM interaction logging form, wrap with useCreditGate('crm_log_interaction').
+
+  - title: "Add useCreditGate to live chat message sending (5 credits per message)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the LiveChatWidget, wrap outbound message sending with useCreditGate('live_chat_message').
+
+  - title: "Add useCreditGate to who-owes-me payment reminder (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the who-owes-me reminder action, wrap with useCreditGate('who_owes_me_reminder').
+
+  - title: "Add useCreditGate to product add form (10 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the product creation form, wrap submit with useCreditGate('product_add').
+
+  - title: "Add useCreditGate to product bulk import (50 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the product bulk import component, wrap with useCreditGate('product_bulk_import').
+
+  - title: "Add useCreditGate to stock update form (3 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the inventory stock update form, wrap with useCreditGate('stock_update').
+
+  - title: "Add useCreditGate to bulk stock update (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the bulk stock update component, wrap with useCreditGate('stock_bulk_update').
+
+  - title: "Add useCreditGate to inventory transfer creation (20 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the inventory transfer form, wrap with useCreditGate('transfer_create').
+
+  - title: "Add useCreditGate to barcode generation (5 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the barcode generation UI, wrap with useCreditGate('barcode_generate').
+
+  - title: "Add useCreditGate to barcode batch printing (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the batch barcode printing action, wrap with useCreditGate('barcode_print_batch').
+
+  - title: "Add useCreditGate to vendor/supplier add (5 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the vendor creation form, wrap with useCreditGate('vendor_add').
+
+  - title: "Add useCreditGate to CreateInvoicePage invoice creation (50 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In src/pages/admin/CreateInvoicePage.tsx, wrap the create button
+      with useCreditGate('invoice_create'). Show 50 credit cost badge.
+
+  - title: "Add useCreditGate to AdvancedInvoicePage invoice creation (50 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In src/pages/admin/AdvancedInvoicePage.tsx, wrap with useCreditGate('invoice_create').
+
+  - title: "Add useCreditGate to invoice send action (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the invoice send button/action, wrap with useCreditGate('invoice_send').
+
+  - title: "Add useCreditGate to purchase order creation (30 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the purchase order creation form, wrap with useCreditGate('purchase_order_create').
+
+  - title: "Add useCreditGate to purchase order send (25 credits)"
+    completed: false
+    parallel_group: 7
+    description: >
+      In the PO send action, wrap with useCreditGate('purchase_order_send').
+
+  # ============================================================================
+  # GROUP 8: Frontend Credit Gates — Delivery, Reports, Marketing
+  # ============================================================================
+
+  - title: "Add useCreditGate to courier assignment dialog (10 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the courier assignment UI, wrap with useCreditGate('courier_assign_delivery').
+
+  - title: "Add useCreditGate to route optimization button (50 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the route optimization UI, wrap with useCreditGate('route_optimize').
+      Show prominent cost warning for this expensive action.
+
+  - title: "Add useCreditGate to delivery creation form (30 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the delivery creation UI, wrap with useCreditGate('delivery_create').
+
+  - title: "Add useCreditGate to tracking link send (15 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the tracking link sending action, wrap with useCreditGate('tracking_send_link').
+
+  - title: "Add useCreditGate to driver message sending (25 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In SendMessageDialog for drivers, wrap with useCreditGate('send_sms').
+
+  - title: "Add useCreditGate to custom report generation (75 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In src/pages/admin/CustomReports.tsx, wrap generate button with
+      useCreditGate('report_custom_generate').
+
+  - title: "Add useCreditGate to advanced report generation (100 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In src/pages/admin/AdvancedReportingPage.tsx, wrap generate button
+      with useCreditGate('report_advanced_generate').
+
+  - title: "Add useCreditGate to report scheduling (50 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the report scheduling UI, wrap with useCreditGate('report_schedule').
+
+  - title: "Add useCreditGate to forecast run (75 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the forecasting UI, wrap with useCreditGate('forecast_run').
+
+  - title: "Add useCreditGate to compliance report generation (100 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In ComplianceReports page, wrap generate with useCreditGate('compliance_report_generate').
+
+  - title: "Add useCreditGate to commission calculation (30 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the commission calculation UI, wrap with useCreditGate('commission_calculate').
+
+  - title: "Add useCreditGate to data warehouse query (25 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the data warehouse query UI, wrap with useCreditGate('data_warehouse_query').
+
+  - title: "Add useCreditGate to data warehouse export (200 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the data warehouse export action, wrap with useCreditGate('data_warehouse_export').
+      Show confirmation dialog for this expensive action.
+
+  - title: "Add useCreditGate to large data export (200 credits)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In src/pages/admin/DataExport.tsx, wrap large exports with
+      useCreditGate('data_warehouse_export'). Standard CSV exports remain FREE.
+
+  - title: "Add useCreditGate to marketing campaign send with estimated cost"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the marketing campaign send UI, calculate estimated cost
+      (recipientCount * 8 for email, * 20 for SMS), show it in the confirmation dialog,
+      then use useCreditGate with the total cost.
+
+  - title: "Add useCreditGate to bulk SMS sending (20 credits per recipient)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the bulk SMS sending UI, show total estimated cost before sending.
+      Gate with useCreditGate using total=recipientCount*20.
+
+  - title: "Add useCreditGate to bulk email sending (8 credits per recipient)"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the bulk email sending UI, show total estimated cost before sending.
+      Gate with useCreditGate using total=recipientCount*8.
+
+  - title: "Add useCreditGate to workflow execution with pre-calculated cost"
+    completed: false
+    parallel_group: 8
+    description: >
+      In the WorkflowCanvas execution trigger, pre-calculate total workflow
+      credit cost from its action nodes, show in confirmation, then gate.
+
+  # ============================================================================
+  # GROUP 9: Frontend Credit Gates — Marketplace, Loyalty, Misc
+  # ============================================================================
+
+  - title: "Add useCreditGate to storefront creation (500 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the storefront creation flow, wrap with useCreditGate('storefront_create').
+      Show very prominent confirmation: "Creating a storefront costs 500 credits."
+
+  - title: "Add useCreditGate to marketplace product listing (25 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the marketplace product listing action, wrap with useCreditGate('marketplace_list_product').
+
+  - title: "Add useCreditGate to marketplace bulk update (100 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the marketplace bulk product update, wrap with useCreditGate('marketplace_bulk_update').
+
+  - title: "Add useCreditGate to marketplace coupon creation (25 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the marketplace coupon creation form, wrap with useCreditGate('marketplace_coupon_created').
+
+  - title: "Add useCreditGate to loyalty reward creation (25 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the loyalty reward creation form, wrap with useCreditGate('loyalty_reward_create').
+
+  - title: "Add useCreditGate to loyalty reward issuance (15 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the loyalty reward issuance action, wrap with useCreditGate('loyalty_reward_issue').
+
+  - title: "Add useCreditGate to coupon creation (20 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the coupon creation form, wrap with useCreditGate('coupon_create').
+
+  - title: "Add useCreditGate to return processing (15 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the return processing form, wrap with useCreditGate('return_process').
+
+  - title: "Add useCreditGate to QC check logging (10 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the quality control logging form, wrap with useCreditGate('qc_log_check').
+
+  - title: "Add useCreditGate to appointment creation (10 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the appointment creation form, wrap with useCreditGate('appointment_create').
+
+  - title: "Add useCreditGate to appointment reminder (25 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the appointment reminder action, wrap with useCreditGate('appointment_reminder').
+
+  - title: "Add useCreditGate to expense entry creation (5 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the expense entry form, wrap with useCreditGate('expense_add').
+
+  - title: "Add useCreditGate to AI suggestions trigger (100 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the AI suggestions trigger button, wrap with useCreditGate('ai_suggestions').
+      Show prominent "AI Feature — 100 credits" badge.
+
+  - title: "Add useCreditGate to AI insight generation (50 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the AI insight generation trigger, wrap with useCreditGate('ai_insight_generate').
+
+  - title: "Add useCreditGate to AI product image generation (50 credits)"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the AI image generation UI, wrap with useCreditGate('ai_task_run').
+
+  - title: "Add useCreditGate to webhook configuration (track only, FREE)"
+    completed: false
+    parallel_group: 9
+    description: >
+      Webhook configuration is FREE but each fire costs 5 credits. Show info text:
+      "Each webhook trigger costs 5 credits" in the webhook setup UI.
+
+  - title: "Add useCreditGate to API key usage display showing per-call costs"
+    completed: false
+    parallel_group: 9
+    description: >
+      In the API Access page, show credit costs per API endpoint:
+      GET=1, POST=5-25, PUT=3, DELETE=1. Help users estimate API costs.
+
+  - title: "Add credit pre-check to BulkOperationsDialog for multi-action bulk ops"
+    completed: false
+    parallel_group: 9
+    description: >
+      In BulkOperationsDialog.tsx, calculate total credit cost for all selected
+      bulk actions, show estimated cost, and block if insufficient.
+
+  # ============================================================================
+  # GROUP 10: Credit Cost Badges & UI Integration
+  # ============================================================================
+
+  - title: "Add CreditCostBadge to all order creation buttons across admin pages"
+    completed: false
+    parallel_group: 10
+    description: >
+      Search for order creation buttons in CreateOrderPage, OrdersHubPage, etc.
+      Add CreditCostBadge with actionKey='order_create_manual' next to each.
+
+  - title: "Add CreditCostBadge to all menu creation and sharing buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      In menu-related pages, add CreditCostBadge to: Create Menu (100cr),
+      Send Link (25cr), OCR Scan (250cr), Import Catalog (50cr).
+
+  - title: "Add CreditCostBadge to all invoice action buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Create Invoice (50cr), Send Invoice (25cr) buttons.
+
+  - title: "Add CreditCostBadge to all communication action buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Send SMS (25cr), Send Email (10cr), Send Push (15cr) buttons
+      across CRM, customer detail, and notification pages.
+
+  - title: "Add CreditCostBadge to all inventory action buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Add Product (10cr), Update Stock (3cr), Generate Barcode (5cr),
+      Bulk Import (50cr) buttons.
+
+  - title: "Add CreditCostBadge to all delivery and fleet buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Create Delivery (30cr), Assign Courier (10cr),
+      Optimize Route (50cr), Send Tracking (15cr) buttons.
+
+  - title: "Add CreditCostBadge to all report generation buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Custom Report (75cr), Advanced Report (100cr),
+      Schedule Report (50cr), Compliance Report (100cr) buttons.
+
+  - title: "Add CreditCostBadge to all AI feature triggers"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: AI Suggestions (100cr), OCR (250cr), Forecast (75cr),
+      Pricing Advisor (50cr), Image Gen (50cr) buttons. Use distinctive AI badge style.
+
+  - title: "Add CreditCostBadge to POS checkout button"
+    completed: false
+    parallel_group: 10
+    description: >
+      In the POS interface, add CreditCostBadge showing 25cr next to the
+      Process Sale button. Keep it subtle to not slow down POS flow.
+
+  - title: "Add CreditCostBadge to wholesale order buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Place Order (100cr), Receive Order (75cr) wholesale buttons.
+
+  - title: "Add CreditCostBadge to marketplace action buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: List Product (25cr), Bulk Update (100cr),
+      Create Storefront (500cr) buttons.
+
+  - title: "Add CreditCostBadge to loyalty and coupon creation buttons"
+    completed: false
+    parallel_group: 10
+    description: >
+      Add badges to: Create Reward (25cr), Issue Reward (15cr), Create Coupon (20cr).
+
+  - title: "Add estimated credit cost calculator to bulk action dialogs"
+    completed: false
+    parallel_group: 10
+    description: >
+      In all bulk action dialogs (bulk SMS, bulk email, bulk import), add a
+      real-time calculator: "Estimated cost: X items × Y credits = Z total credits"
+      with current balance comparison. Use BulkCreditCalculator component.
+
+  - title: "Add credit cost summary to marketing campaign preview"
+    completed: false
+    parallel_group: 10
+    description: >
+      In the marketing campaign preview/confirmation step, show total estimated
+      credit cost: "Sending to X recipients via email (8cr each) = Y total credits"
+
+  - title: "Add credit cost summary to automation workflow preview"
+    completed: false
+    parallel_group: 10
+    description: >
+      In the workflow execution preview, show a breakdown of credit costs
+      per workflow step and total. Block execution if insufficient credits.
+
+  # ============================================================================
+  # GROUP 11: Warning & Blocking UX
+  # ============================================================================
+
+  - title: "Implement progressive credit warning toasts at 2000, 1000, 500, 100 thresholds"
+    completed: false
+    parallel_group: 11
+    description: >
+      Verify useCredits hook shows progressive warnings via toast:
+      - 2000: Info toast "Credits running low"
+      - 1000: Warning toast "Consider buying credits"
+      - 500: Yellow badge in header + toast
+      - 100: Modal warning + red badge
+      Ensure warnings only show once per threshold per session.
+
+  - title: "Implement CreditAlertBanner in admin layout at critical thresholds"
+    completed: false
+    parallel_group: 11
+    description: >
+      In the admin layout, show CreditAlertBanner when credits < LOW_CREDIT_WARNING_THRESHOLD.
+      Banner should be dismissible but re-appear on page navigation.
+      Include "Buy Credits" CTA button that opens CreditPurchaseModal.
+
+  - title: "Implement OutOfCreditsModal blocking modal when balance reaches 0"
+    completed: false
+    parallel_group: 11
+    description: >
+      Verify OutOfCreditsModal appears when any credit-gated action is attempted
+      with 0 balance. Modal should show: current balance, action cost, and
+      "Buy Credits" button opening purchase flow. Cannot be dismissed without
+      buying credits or canceling the action.
+
+  - title: "Add credit balance display to admin header/sidebar"
+    completed: false
+    parallel_group: 11
+    description: >
+      Ensure the admin layout header shows current credit balance using CreditBalance
+      component. Color-code: green (>2000), yellow (500-2000), orange (100-500), red (<100).
+      Clicking opens credit management page.
+
+  - title: "Implement GracePeriodBanner for free tier users approaching limits"
+    completed: false
+    parallel_group: 11
+    description: >
+      For free tier users, show GracePeriodBanner when daily limits are approaching
+      or credits are low. Include upgrade CTA with comparison to paid plans.
+
+  - title: "Add credit deduction animation feedback using CreditBalanceAnimation"
+    completed: false
+    parallel_group: 11
+    description: >
+      When credits are consumed, show a brief animation on the credit balance display:
+      the number decreasing with a visual effect. Use CreditBalanceAnimation component.
+
+  - title: "Show CreditDeductionToast after each credit-consuming action"
+    completed: false
+    parallel_group: 11
+    description: >
+      After performAction() succeeds, show a toast: "-25 credits (Menu Order)"
+      with remaining balance. Use CreditDeductionToast component.
+      Toast should be subtle and auto-dismiss in 3 seconds.
+
+  - title: "Add confirmation dialog for high-cost actions (>50 credits)"
+    completed: false
+    parallel_group: 11
+    description: >
+      For actions costing >50 credits, show CreditConfirmDialog before executing:
+      "This action costs X credits. Your balance: Y. Continue?"
+      This prevents accidental expensive actions. Configurable threshold.
+
+  - title: "Add credit optimization tips when credits are low"
+    completed: false
+    parallel_group: 11
+    description: >
+      When credits < 500, show CreditOptimizationTips in the credits page:
+      suggest bulk packages, highlight free alternatives, show usage patterns
+      with suggestions to reduce costs.
+
+  - title: "Add LowCreditNudge component for upgrade prompts at key moments"
+    completed: false
+    parallel_group: 11
+    description: >
+      Show LowCreditNudge when user tries a premium action with low credits.
+      "You have X credits left. Upgrade to a plan for more credits and features."
+      Target free tier users specifically.
+
+  - title: "Implement free tier daily limit warnings in the UI"
+    completed: false
+    parallel_group: 11
+    description: >
+      For free tier tenants, show daily limit counters: "1/1 menus today",
+      "2/3 orders today", "0/2 SMS today". When limit reached, show
+      "Daily limit reached — upgrade to remove limits" message.
+
+  - title: "Add credit usage breakdown to the Credits page"
+    completed: false
+    parallel_group: 11
+    description: >
+      In the Credits management page, show CreditUsageStats and CreditUsageChart
+      with breakdown by category: "Orders: 500cr, Menus: 300cr, SMS: 200cr..."
+      Include daily/weekly/monthly views using CreditBurnRateDisplay.
+
+  # ============================================================================
+  # GROUP 12: Integration Tests
+  # ============================================================================
+
+  - title: "Test withCreditGate middleware returns 402 when balance is 0"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test in supabase/functions/__tests__/creditGate.test.ts:
+      - Mock consume_credits RPC returning failure
+      - Verify wrapped handler returns 402 with correct error body
+      - Verify X-Credits-Consumed and X-Credits-Remaining headers
+
+  - title: "Test withCreditGate passes through when action cost is 0 (free actions)"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: when action_key has 0 cost, verify handler executes without
+      calling consume_credits RPC. Free actions should never be blocked.
+
+  - title: "Test withCreditGate deducts correct amount and passes creditResult to handler"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: mock consume_credits returning success with newBalance=975.
+      Verify handler receives { tenantId, newBalance, creditsCost }.
+      Verify response headers show correct values.
+
+  - title: "Test consumeCreditsOrFail throws CreditError on insufficient balance"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: mock consume_credits returning { success: false, error_message }.
+      Verify CreditError is thrown with correct properties.
+
+  - title: "Test consumeBatchCredits calculates correct total for multiple actions"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: consumeBatchCredits with [{ actionKey: 'send_sms', count: 5 }]
+      should calculate 5*25=125 credits total. Verify single RPC call with total.
+
+  - title: "Test refundCredits adds credits back after failed action"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: refundCredits(supabase, tenantId, 25, 'send_sms', 'SMS delivery failed')
+      should call refund RPC and return updated balance.
+
+  - title: "Test credit rate limiter blocks after 100 actions per minute"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: simulate 101 consumeCreditsOrFail calls in rapid succession.
+      Verify the 101st call returns 429 rate limit error.
+
+  - title: "Test free tier daily limits block actions after limit reached"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: for a free tier tenant, simulate 3 order creations.
+      The 4th (exceeding max_orders_per_day=3) should be blocked with
+      specific error message about daily limits.
+
+  - title: "Test useCreditGate hook blocks action and shows modal when insufficient"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write React test: render a component using useCreditGate('menu_create')
+      with mockUseCredits({ balance: 50 }). Execute the action.
+      Verify OutOfCreditsModal is shown and action callback is NOT called.
+
+  - title: "Test useCreditGate hook allows action when sufficient credits"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write React test: render component with useCreditGate('menu_create')
+      and mockUseCredits({ balance: 1000 }). Execute action.
+      Verify action callback IS called and deduction toast appears.
+
+  - title: "Test CreditGatedButton disables when balance insufficient"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: render CreditGatedButton with actionKey='route_optimize'
+      and balance=30 (cost=50). Verify button is disabled with tooltip.
+
+  - title: "Test CreditCostBadge shows correct cost for each action key"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: render CreditCostBadge for 10 different action keys.
+      Verify each shows the correct credit cost from getCreditCost().
+      Verify 0-cost actions show nothing (no badge).
+
+  - title: "Test credit deduction flow end-to-end for order creation"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write integration test: create order via edge function with valid auth.
+      Verify: 1) credits deducted, 2) transaction created, 3) response headers set,
+      4) balance updated, 5) analytics event logged.
+
+  - title: "Test credit deduction flow end-to-end for SMS sending"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write integration test: send SMS via edge function with valid auth.
+      Verify 25 credits deducted, transaction logged, and if SMS fails,
+      credits are refunded.
+
+  - title: "Test credit deduction flow end-to-end for menu creation"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write integration test: create menu via edge function.
+      Verify 100 credits deducted, transaction logged.
+
+  - title: "Test credit deduction flow end-to-end for bulk email campaign"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write integration test: send campaign to 10 recipients.
+      Verify 80 credits (10*8) deducted in single batch transaction.
+
+  - title: "Test that paid tier tenants are not charged credits for basic actions"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: for a paid tier tenant (subscription active), verify that
+      withCreditGate skips deduction for actions where skipForPaidTier=true.
+      Verify premium features still deduct even for paid tiers.
+
+  - title: "Test progressive warning thresholds trigger correct UI responses"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: simulate balance decreasing through 2000, 1000, 500, 100, 0.
+      At each threshold, verify the correct warning mechanism activates
+      (toast, badge color, banner, modal).
+
+  - title: "Test credit analytics tracks consumed, blocked, and refunded events"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: verify credit_analytics table receives entries for:
+      1) credit_consumed with correct action_key
+      2) action_blocked_insufficient_credits when blocked
+      3) credit_refunded when refund is processed
+
+  - title: "Test double-execution prevention in useCredits.performAction"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: call performAction twice simultaneously for the same action.
+      Verify only one deduction occurs and the second call is rejected
+      with 'Action already in progress' error.
+
+  - title: "Test soft credit mode for menu views doesn't block customer access"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: tenant has 0 credits. Customer accesses menu.
+      Verify: menu is served (not blocked), but credit debt is logged.
+      Customer experience is never degraded by tenant credit balance.
+
+  - title: "Test all 170+ action keys have valid entries in credit_costs table"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: iterate all entries in CREDIT_COSTS from creditCosts.ts.
+      For each, verify a matching row exists in the credit_costs database table
+      with the same cost value. Flag any mismatches.
+
+  - title: "Test credit cost badge rendering for all major action categories"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write snapshot tests for CreditCostBadge rendering across all 23 categories:
+      orders, menus, SMS, email, invoices, POS, inventory, delivery, reports, AI, etc.
+
+  - title: "Test CreditConfirmDialog appears for actions costing more than 50 credits"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: trigger actions at cost boundaries: 49cr (no dialog), 50cr (dialog),
+      100cr (dialog), 250cr (dialog). Verify dialog appears with correct cost info.
+
+  - title: "Test batch operation credit calculator accuracy"
+    completed: false
+    parallel_group: 12
+    description: >
+      Write test: BulkCreditCalculator component with various inputs:
+      10 emails (80cr), 5 SMS (125cr), 100 product imports (50cr total).
+      Verify calculations match expected values.
+
+  # ============================================================================
+  # GROUP 13: Monitoring, Analytics & Documentation
+  # ============================================================================
+
+  - title: "Create credit consumption dashboard for super admins"
+    completed: false
+    parallel_group: 13
+    description: >
+      In the super admin area, create a dashboard showing:
+      - Total credits consumed platform-wide (daily/weekly/monthly)
+      - Top credit-consuming tenants
+      - Most expensive action categories
+      - Revenue from credit purchases vs consumption rate
+      - Tenants at risk of running out (projected depletion <7 days)
+
+  - title: "Add credit consumption alerts for system monitoring"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create edge function credit-threshold-alerts that runs on a schedule:
+      - Sends email to tenants when credits < 100
+      - Sends internal alert when a tenant's burn rate suggests depletion within 48 hours
+      - Logs all alerts to credit_analytics table
+
+  - title: "Add credit deduction logging to all edge functions for audit trail"
+    completed: false
+    parallel_group: 13
+    description: >
+      Ensure every edge function that deducts credits logs the deduction to
+      credit_transactions with: action_key, reference_id (order ID, invoice ID, etc.),
+      reference_type (order, invoice, sms, etc.), and full metadata.
+
+  - title: "Create credit usage reporting endpoint for tenant admins"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create edge function credits-usage-report that returns:
+      - Credit consumption by category (last 7/30/90 days)
+      - Top 10 most expensive actions
+      - Daily burn rate
+      - Projected depletion date
+      - Comparison to similar tenants (anonymized)
+
+  - title: "Add credit consumption metrics to admin dashboard widgets"
+    completed: false
+    parallel_group: 13
+    description: >
+      On the admin dashboard, add a credit widget showing:
+      - Current balance with color indicator
+      - Today's consumption
+      - Projected days remaining
+      - Quick link to buy credits if below threshold
+
+  - title: "Create credit cost reference page accessible from admin sidebar"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create a page at /{slug}/admin/credits/pricing that shows all action costs
+      in a searchable, filterable table. Group by category. Show cost per action,
+      estimated monthly usage, and total monthly cost. Help tenants budget credits.
+
+  - title: "Add credit deduction webhook notifications for tenant integrations"
+    completed: false
+    parallel_group: 13
+    description: >
+      When credits are consumed, if the tenant has a webhook configured for
+      credit events, fire webhook with: action_key, credits_consumed, new_balance.
+      This lets tenants build their own credit monitoring dashboards.
+
+  - title: "Verify all edge function credit gates handle network errors gracefully"
+    completed: false
+    parallel_group: 13
+    description: >
+      Review all withCreditGate and consumeCreditsOrFail implementations.
+      If the credit system is down (RPC call fails), the action should:
+      1. Log the error
+      2. Allow the action through (fail open for non-premium features)
+      3. Queue a deferred deduction for reconciliation later
+      Premium/AI features should fail closed (block if credit check fails).
+
+  - title: "Create credit reconciliation job for deferred deductions"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create edge function credit-reconciliation that runs daily:
+      - Finds any deferred deductions (from fail-open scenarios)
+      - Attempts to deduct them from current balance
+      - Logs reconciliation results
+      - Alerts if a tenant has significant unreconciled debt
+
+  - title: "Add credit system health check endpoint"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create edge function credits-health that tests:
+      1. consume_credits RPC is responsive
+      2. credit_costs table has all expected entries
+      3. tenant_credits table is consistent (no negative balances except soft mode)
+      4. credit_transactions ledger balances match tenant_credits balances
+      Return health status for monitoring.
+
+  - title: "Document credit enforcement architecture in ARCHITECTURE.md"
+    completed: false
+    parallel_group: 13
+    description: >
+      Create docs/CREDIT_ENFORCEMENT.md documenting:
+      - How withCreditGate works (server-side flow)
+      - How useCreditGate works (client-side flow)
+      - Credit cost matrix overview (link to creditCosts.ts)
+      - How to add credit gating to a new feature
+      - Testing approach for credit-gated features
+      - Monitoring and alerting setup
+
+  - title: "Final audit: grep for supabase.functions.invoke calls missing credit gates"
+    completed: false
+    parallel_group: 13
+    description: >
+      Run comprehensive grep across src/ for all supabase.functions.invoke calls.
+      Cross-reference with the CREDIT_COSTS action keys. Flag any invoke calls
+      that should have credit gating but don't. Create follow-up tasks for any gaps.
+
+  - title: "Final audit: grep for edge function handlers missing withCreditGate"
+    completed: false
+    parallel_group: 13
+    description: >
+      Run grep across supabase/functions/ for all serve() handlers.
+      Cross-reference with the list of functions that should have credit gates.
+      Flag any that are missing. Exclude functions that should be FREE.
+
+  - title: "Final audit: verify all CreditCostBadges show correct costs"
+    completed: false
+    parallel_group: 13
+    description: >
+      Run grep for all CreditCostBadge usages. Verify each actionKey prop
+      matches the correct action from creditCosts.ts. Flag any incorrect or
+      missing badges on action buttons.
+
+  - title: "Final audit: verify credit_transactions ledger integrity"
+    completed: false
+    parallel_group: 13
+    description: >
+      Write a SQL query that verifies for each tenant:
+      SUM(amount) from credit_transactions == tenant_credits.lifetime_earned - tenant_credits.lifetime_spent.
+      Run against production data. Flag any discrepancies for investigation.
+
+  - title: "Performance test: verify credit gate adds less than 50ms latency to edge functions"
+    completed: false
+    parallel_group: 13
+    description: >
+      Benchmark withCreditGate overhead across 10 different edge functions.
+      Measure: time for credit check, time for RPC call, total added latency.
+      Target: <50ms average added latency. Optimize if exceeded.
