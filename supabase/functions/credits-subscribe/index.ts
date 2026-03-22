@@ -103,10 +103,11 @@ serve(async (req) => {
       .maybeSingle();
 
     const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
+    const isAdmin = tenantUser?.role === 'admin' || tenantUser?.role === 'owner';
 
-    if (!isOwner && !tenantUser) {
+    if (!isOwner && !isAdmin) {
       return new Response(
-        JSON.stringify({ error: 'Not authorized for this tenant' }),
+        JSON.stringify({ error: 'Insufficient permissions — admin or owner access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
