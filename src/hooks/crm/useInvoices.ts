@@ -133,6 +133,16 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
+                // Verify invoice is in draft status before deleting
+                const { data: invoice, error: fetchError } = await supabase
+                    .from('crm_invoices')
+                    .select('status')
+                    .eq('id', invoiceId)
+                    .eq('account_id', accountId)
+                    .maybeSingle();
+                if (fetchError) throw fetchError;
+                if (!invoice) throw new Error('Invoice not found');
+                if (invoice.status !== 'draft') throw new Error('Only draft invoices can be deleted');
                 const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
                 if (error) throw error;
             },
