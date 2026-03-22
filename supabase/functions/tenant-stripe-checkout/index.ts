@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +16,7 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     // Authenticate user
@@ -29,11 +30,35 @@ serve(async (req) => {
 
     const { line_items, success_url, cancel_url } = await req.json();
 
-    if (!line_items || !Array.isArray(line_items)) {
+    if (!line_items || !Array.isArray(line_items) || line_items.length === 0) {
       return new Response(
         JSON.stringify({ error: "Missing or invalid line_items" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Validate line_items structure and cap quantity
+    const MAX_LINE_ITEMS = 20;
+    const MAX_QUANTITY = 100;
+    if (line_items.length > MAX_LINE_ITEMS) {
+      return new Response(
+        JSON.stringify({ error: `Too many line items (max ${MAX_LINE_ITEMS})` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    for (const item of line_items) {
+      if (!item.price || typeof item.price !== 'string') {
+        return new Response(
+          JSON.stringify({ error: "Each line_item must have a valid 'price' string" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (item.quantity != null && (typeof item.quantity !== 'number' || item.quantity < 1 || item.quantity > MAX_QUANTITY)) {
+        return new Response(
+          JSON.stringify({ error: `Quantity must be between 1 and ${MAX_QUANTITY}` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Get tenant_id from tenant_users
@@ -83,19 +108,20 @@ serve(async (req) => {
       apiVersion: STRIPE_API_VERSION,
     });
 
-    // Get or create customer
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    } else {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { tenant_id: tenantUser.tenant_id },
-      });
-      customerId = customer.id;
-    }
+    // Get tenant record for shared customer creation
+    const { data: tenant } = await supabaseClient
+      .from("tenants")
+      .select("id, slug, stripe_customer_id, owner_email, business_name")
+      .eq("id", tenantUser.tenant_id)
+      .maybeSingle();
+
+    // Get or create customer (idempotent)
+    const customerId = await getOrCreateStripeCustomer({
+      stripe,
+      supabase: supabaseClient,
+      tenant: tenant || { id: tenantUser.tenant_id, slug: null, stripe_customer_id: null, owner_email: user.email ?? null, business_name: null },
+      email: user.email,
+    });
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
