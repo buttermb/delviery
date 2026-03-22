@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { checkUserPermission } from '../_shared/permissions.ts';
+import { checkCreditsAvailable, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 import { validateTenantInvite, type TenantInviteInput } from './validation.ts';
 
 serve(async (req) => {
@@ -191,6 +192,25 @@ serve(async (req) => {
         }
       }
 
+      // Check credits before creating invitation (send_email = 10 credits)
+      const creditCheck = await checkCreditsAvailable(
+        serviceClient,
+        tenantId,
+        CREDIT_ACTIONS.SEND_EMAIL
+      );
+      if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        return new Response(
+          JSON.stringify({
+            error: 'Insufficient credits',
+            code: 'INSUFFICIENT_CREDITS',
+            message: 'You do not have enough credits to send an invitation email',
+            creditsRequired: creditCheck.cost,
+            currentBalance: creditCheck.balance,
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Set expiration (default 7 days)
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
@@ -215,7 +235,16 @@ serve(async (req) => {
         );
       }
 
-      // Invitation created successfully
+      // Deduct credits for sending invitation email (free tier only)
+      if (creditCheck.isFreeTier) {
+        await serviceClient.rpc('consume_credits', {
+          p_tenant_id: tenantId,
+          p_action_key: CREDIT_ACTIONS.SEND_EMAIL,
+          p_reference_id: invitation.id,
+          p_reference_type: 'tenant_invitation',
+          p_description: `Invitation email sent to ${email}`,
+        });
+      }
 
       // Send email with invitation link
       const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || 'https://app.example.com';
