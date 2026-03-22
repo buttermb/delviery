@@ -11,13 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Store, AlertCircle, CheckCircle2, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Store, AlertCircle, CheckCircle2, Loader2, ArrowLeft, ArrowRight, Coins } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
 import { logger } from '@/lib/logger';
 import { PresetPackSelector } from '@/components/admin/storefront/PresetPackSelector';
 import { getPresetById, getPresetTheme } from '@/lib/storefrontPresets';
 import { cn } from '@/lib/utils';
+import { CreditCostIndicator } from '@/components/credits/CreditCostBadge';
 
 export interface CreateStoreSubmitData {
   storeName: string;
@@ -372,6 +373,9 @@ export function CreateStoreDialog({
                 disabled={isCreating}
               />
             </div>
+            {/* Credit cost warning */}
+            <CreditCostIndicator actionKey="storefront_create" className="rounded-lg" />
+
             <DialogFooter>
               <Button
                 type="button"
@@ -386,7 +390,14 @@ export function CreateStoreDialog({
                 type="submit"
                 disabled={!storeName.trim() || !slug.trim() || !!slugError || isSlugChecking || isCreating}
               >
-                {isCreating ? 'Creating...' : 'Create Store'}
+                {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isCreating ? 'Creating...' : (
+                  <span className="inline-flex items-center gap-1.5">
+                    Create Store
+                    <Coins className="h-3.5 w-3.5" />
+                    <span className="text-xs opacity-80">500</span>
+                  </span>
+                )}
               </Button>
             </DialogFooter>
           </form>
