@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
-import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     ArrowRight,
@@ -45,6 +45,8 @@ export default function NewPurchaseOrder() {
     const { navigateToAdmin } = useTenantNavigation();
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
+    const { execute: executeCreditAction } = useCreditGatedAction();
+    const [showOutOfCreditsModal, setShowOutOfCreditsModal] = useState(false);
 
     // Products for PO (All products, regardless of stock)
     const { data: allProducts = [] } = useQuery({
@@ -137,7 +139,8 @@ export default function NewPurchaseOrder() {
         if (!poData.vendor || poData.items.length === 0 || !tenant?.id) return;
 
         setIsSubmitting(true);
-        try {
+
+        await executeCreditAction('purchase_order_create', async () => {
             // 1. Create Purchase Order
             const poNumber = `PO-${format(new Date(), 'yyMMdd')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
@@ -145,7 +148,7 @@ export default function NewPurchaseOrder() {
                 .from('purchase_orders')
                 .insert({
                     tenant_id: tenant.id,
-                    vendor_id: poData.vendor.id,
+                    vendor_id: poData.vendor!.id,
                     po_number: poNumber,
                     status: 'ordered',
                     total: totalAmount,
@@ -176,11 +179,10 @@ export default function NewPurchaseOrder() {
             // 3. Log vendor price changes for items with different costs
             for (const item of poData.items) {
                 if (item.unitCost !== item.originalCost) {
-                    // Call the RPC to log vendor price change
                     await supabase.rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
-                        p_vendor_id: poData.vendor.id,
+                        p_vendor_id: poData.vendor!.id,
                         p_cost_old: item.originalCost,
                         p_cost_new: item.unitCost,
                         p_changed_by: null,
@@ -188,7 +190,6 @@ export default function NewPurchaseOrder() {
                         p_source: 'purchase_order'
                     });
 
-                    // Also update the product's cost_per_unit to reflect the new vendor cost
                     await supabase
                         .from('products')
                         .update({ cost_per_unit: item.unitCost })
@@ -199,14 +200,12 @@ export default function NewPurchaseOrder() {
 
             toast.success("Purchase Order created successfully");
             queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.all });
-            navigateToAdmin('wholesale-orders'); // Back to main list
+            navigateToAdmin('wholesale-orders');
+        }, {
+            onInsufficientCredits: () => setShowOutOfCreditsModal(true),
+        });
 
-        } catch (error: unknown) {
-            logger.error('Failed to create PO', error);
-            toast.error(humanizeError(error, 'Failed to create purchase order'));
-        } finally {
-            setIsSubmitting(false);
-        }
+        setIsSubmitting(false);
     };
 
     const filteredProducts = useMemo(() => {
@@ -412,6 +411,12 @@ export default function NewPurchaseOrder() {
                     </Card>
                 </div>
             </div>
+
+            <OutOfCreditsModal
+                open={showOutOfCreditsModal}
+                onOpenChange={setShowOutOfCreditsModal}
+                actionAttempted="purchase_order_create"
+            />
         </div>
     );
 }
