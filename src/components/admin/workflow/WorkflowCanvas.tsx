@@ -48,6 +48,7 @@ import { VisualWorkflowEditor } from './VisualWorkflowEditor';
 import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
 import { useWorkflowVersionStats } from '@/hooks/useWorkflowVersions';
+import { WorkflowCreditCostSummary } from './WorkflowCreditCostSummary';
 import { Node, Edge } from 'reactflow';
 
 interface WorkflowAction {
@@ -486,14 +487,17 @@ export function WorkflowCanvas() {
           <CardContent>
             {selectedWorkflow ? (
               viewMode === 'visual' ? (
-                <div className="flex gap-4" ref={reactFlowWrapper}>
-                  <NodePalette onNodeDragStart={handleNodeDragStart} />
-                  <div className="flex-1">
-                    <VisualWorkflowEditor
-                      workflow={selectedWorkflow as unknown as Parameters<typeof VisualWorkflowEditor>[0]['workflow']}
-                      onSave={handleVisualWorkflowSave}
-                    />
+                <div className="space-y-4">
+                  <div className="flex gap-4" ref={reactFlowWrapper}>
+                    <NodePalette onNodeDragStart={handleNodeDragStart} />
+                    <div className="flex-1">
+                      <VisualWorkflowEditor
+                        workflow={selectedWorkflow as unknown as Parameters<typeof VisualWorkflowEditor>[0]['workflow']}
+                        onSave={handleVisualWorkflowSave}
+                      />
+                    </div>
                   </div>
+                  <WorkflowCreditCostSummary actions={selectedWorkflow.actions} />
                 </div>
               ) : (
               <div className="space-y-6">
@@ -679,6 +683,9 @@ export function WorkflowCanvas() {
                     ))}
                   </div>
                 </div>
+
+                {/* Credit Cost Summary */}
+                <WorkflowCreditCostSummary actions={selectedWorkflow.actions} />
               </div>
               )
             ) : (
