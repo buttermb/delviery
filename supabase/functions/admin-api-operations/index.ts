@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { validateAdminApiOperation, type AdminApiOperationInput } from './validation.ts';
+import { checkCreditsAvailable, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,6 +88,37 @@ serve(async (req) => {
       }
 
       case 'create': {
+        // Deduct credits for product creation (free tier only)
+        if (resource === 'products') {
+          const creditCheck = await checkCreditsAvailable(
+            supabaseAdmin,
+            tokenData.tenant_id,
+            CREDIT_ACTIONS.ADD_PRODUCT
+          );
+
+          if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+            return new Response(
+              JSON.stringify({
+                error: 'Insufficient credits',
+                code: 'INSUFFICIENT_CREDITS',
+                message: 'You do not have enough credits to add a product',
+                creditsRequired: creditCheck.cost,
+                currentBalance: creditCheck.balance,
+              }),
+              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          if (creditCheck.isFreeTier) {
+            await supabaseAdmin.rpc('consume_credits', {
+              p_tenant_id: tokenData.tenant_id,
+              p_action_key: CREDIT_ACTIONS.ADD_PRODUCT,
+              p_reference_type: 'product',
+              p_description: 'Product creation via admin API',
+            });
+          }
+        }
+
         const { data: record, error } = await supabaseAdmin
           .from(resource)
           .insert({
