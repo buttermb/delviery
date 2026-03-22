@@ -47,6 +47,7 @@ import {
   X,
 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { useReportDataSources, useDataSourceFields } from "@/hooks/useReportDataSources";
 import {
   DATE_RANGE_PRESETS,
@@ -113,6 +114,7 @@ export function ReportBuilder({
 }: ReportBuilderProps) {
   const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction, isPerforming: isCreditChecking } = useCreditGatedAction();
   const [formData, setFormData] = useState<ReportFormData>(initialFormData);
   const [activeStep, setActiveStep] = useState<string>("data-sources");
 
@@ -262,7 +264,9 @@ export function ReportBuilder({
       return;
     }
 
-    await createMutation.mutateAsync(formData);
+    await executeCreditAction('report_advanced_generate', async () => {
+      await createMutation.mutateAsync(formData);
+    });
   };
 
   const resetForm = () => {
@@ -741,17 +745,17 @@ export function ReportBuilder({
                 resetForm();
                 onOpenChange(false);
               }}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || isCreditChecking}
               className="min-h-[44px] touch-manipulation"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createMutation.isPending || formData.data_sources.length === 0}
+              disabled={createMutation.isPending || isCreditChecking || formData.data_sources.length === 0}
               className="min-h-[44px] touch-manipulation"
             >
-              {createMutation.isPending && (
+              {(createMutation.isPending || isCreditChecking) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               Create Report
