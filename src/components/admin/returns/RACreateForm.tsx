@@ -26,6 +26,7 @@ import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { humanizeError } from '@/lib/humanizeError';
+import { useCreditGatedAction } from "@/hooks/useCredits";
 
 interface ReturnItem {
   product_name: string;
@@ -58,6 +59,7 @@ interface RACreateFormProps {
 export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACreateFormProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const [formData, setFormData] = useState({
     order_id: "",
     order_number: "",
@@ -217,14 +219,16 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
       return;
     }
 
-    await createMutation.mutateAsync({
-      order_id: formData.order_id,
-      reason: formData.reason,
-      items: items.map(item => ({
-        product_id: '',
-        quantity: item.quantity,
-        reason: formData.reason
-      }))
+    await executeCreditAction('return_process', async () => {
+      await createMutation.mutateAsync({
+        order_id: formData.order_id,
+        reason: formData.reason,
+        items: items.map(item => ({
+          product_id: '',
+          quantity: item.quantity,
+          reason: formData.reason
+        }))
+      });
     });
   };
 
