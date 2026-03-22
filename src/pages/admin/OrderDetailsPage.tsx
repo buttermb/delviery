@@ -98,9 +98,11 @@ import Printer from "lucide-react/dist/esm/icons/printer";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Save from "lucide-react/dist/esm/icons/save";
+import Send from "lucide-react/dist/esm/icons/send";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { FeatureGate } from '@/components/admin/FeatureGate';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -240,6 +242,9 @@ export function OrderDetailsPage() {
   // Delivery notes editing state
   const [deliveryNotesValue, setDeliveryNotesValue] = useState<string>('');
   const [isEditingDeliveryNotes, setIsEditingDeliveryNotes] = useState(false);
+
+  // Credit gating for tracking link send
+  const { execute: executeCreditAction, isPerforming: isSendingTrackingLink } = useCreditGatedAction();
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -511,6 +516,47 @@ export function OrderDetailsPage() {
     } catch (error) {
       toast.error('Failed to copy', { description: humanizeError(error) });
     }
+  };
+
+  // Send tracking link via SMS (credit-gated: 15 credits)
+  const handleSendTrackingLink = async () => {
+    if (!order?.tracking_token || !tenant?.id) return;
+
+    const phone = order.customer?.phone || order.user?.phone;
+    if (!phone) {
+      toast.error('No phone number available', {
+        description: 'Customer does not have a phone number on file.',
+      });
+      return;
+    }
+
+    const trackingUrl = `${window.location.origin}/shop/${tenantSlug}/track/${order.tracking_token}`;
+    const message = `Your order #${order.order_number} is on its way! Track it here: ${trackingUrl}`;
+
+    await executeCreditAction('tracking_send_link', async () => {
+      const { error: smsError } = await supabase.functions.invoke('send-sms', {
+        body: {
+          to: phone,
+          message,
+          accountId: tenant.id,
+        },
+      });
+
+      if (smsError) {
+        logger.error('Failed to send tracking link SMS', smsError, {
+          component: 'OrderDetailsPage',
+          orderId,
+        });
+        throw new Error('Failed to send tracking link');
+      }
+
+      toast.success('Tracking link sent!', {
+        description: `SMS sent to ${phone}`,
+      });
+    }, {
+      referenceId: orderId,
+      referenceType: 'order',
+    });
   };
 
   // Save delivery notes mutation
@@ -862,6 +908,18 @@ export function OrderDetailsPage() {
               <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} disabled={updateStatusMutation.isPending}>
                 {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Copy className="w-4 h-4 mr-1" />}
                 {updateStatusMutation.isPending ? 'Sharing...' : 'Share Tracking'}
+              </Button>
+            )}
+
+            {order.tracking_token && (order.customer?.phone || order.user?.phone) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSendTrackingLink}
+                disabled={isSendingTrackingLink || updateStatusMutation.isPending}
+              >
+                {isSendingTrackingLink ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
+                {isSendingTrackingLink ? 'Sending...' : 'Send Tracking'}
               </Button>
             )}
 
