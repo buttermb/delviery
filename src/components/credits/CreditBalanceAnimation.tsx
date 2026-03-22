@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface CreditBalanceAnimationProps {
+export interface CreditBalanceAnimationProps {
     value: number;
     className?: string;
     prefix?: string;
