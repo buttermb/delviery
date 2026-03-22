@@ -1,73 +1,19 @@
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { withZenProtection } from '../_shared/zen-firewall.ts';
+import { corsHeaders, z } from '../_shared/deps.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 const convertSchema = z.object({
   menu_order_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),
 });
 
-serve(
-  withZenProtection(async (req) => {
-    // Handle OPTIONS request
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
+Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
+  return withCreditGate(req, CREDIT_ACTIONS.INVOICE_CREATE, async (tenantId, supabase) => {
     try {
-      // Validate environment variables
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-      if (!supabaseUrl || !supabaseKey) {
-        return new Response(
-          JSON.stringify({ error: 'Server configuration error' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      // Verify authentication
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-      if (authError || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Resolve tenant from JWT via tenant_users
-      const { data: tenantUser, error: tenantError } = await supabase
-        .from('tenant_users')
-        .select('tenant_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (tenantError || !tenantUser) {
-        return new Response(
-          JSON.stringify({ error: 'Tenant not found for user' }),
-          {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
-      const tenantId = tenantUser.tenant_id;
-
       // Parse and validate request body
       const body = await req.json();
       const { menu_order_id, client_id: providedClientId } = convertSchema.parse(body);
@@ -83,9 +29,9 @@ serve(
       if (orderError || !order) {
         return new Response(
           JSON.stringify({ error: 'Order not found' }),
-          { 
-            status: 404, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -93,9 +39,9 @@ serve(
       if (order.converted_to_invoice_id) {
         return new Response(
           JSON.stringify({ error: 'Order already converted to invoice' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -106,9 +52,9 @@ serve(
       if (!clientId) {
         return new Response(
           JSON.stringify({ error: 'Client ID required. Order is not linked to a client.' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -118,15 +64,15 @@ serve(
         .from('wholesale_clients')
         .select('id, tenant_id')
         .eq('id', clientId)
-        .eq('tenant_id', order.tenant_id)
+        .eq('tenant_id', tenantId)
         .maybeSingle();
 
       if (clientError || !client) {
         return new Response(
           JSON.stringify({ error: 'Invalid client or client does not belong to this tenant' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -134,7 +80,7 @@ serve(
       // 3. Map order_data to invoice line items
       const orderData = order.order_data || {};
       const items = orderData.items || [];
-      
+
       const lineItems = items.map((item: Record<string, unknown>) => ({
         product_name: item.name || item.product_name || 'Unknown Product',
         quantity: Number(item.quantity || 1),
@@ -153,16 +99,16 @@ serve(
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({
-          tenant_id: order.tenant_id,
+          tenant_id: tenantId,
           client_id: clientId,
           invoice_number: invoiceNumber,
           total: total,
           subtotal: subtotal,
           tax: tax,
           amount_due: total,
-          status: 'draft', // Admin can update to 'sent' later
+          status: 'draft',
           issue_date: new Date().toISOString().split('T')[0],
-          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
+          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           line_items: lineItems,
         })
         .select()
@@ -171,9 +117,9 @@ serve(
       if (invoiceError || !invoice) {
         return new Response(
           JSON.stringify({ error: 'Failed to create invoice', details: invoiceError?.message }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -189,17 +135,15 @@ serve(
         .eq('tenant_id', tenantId);
 
       if (updateError) {
-        // Invoice created but tracking update failed - log but don't fail
-        // Could implement rollback here if needed
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Invoice created but failed to update order tracking',
             invoice_id: invoice.id,
             invoice_number: invoice.invoice_number,
           }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -211,8 +155,8 @@ serve(
           invoice_number: invoice.invoice_number,
           success: true,
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     } catch (error) {
@@ -220,9 +164,9 @@ serve(
       if (error instanceof z.ZodError) {
         return new Response(
           JSON.stringify({ error: 'Invalid request format', details: error.errors }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -230,12 +174,11 @@ serve(
       // Handle other errors
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
-  })
-);
-
+  });
+});
