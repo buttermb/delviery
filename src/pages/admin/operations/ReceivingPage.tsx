@@ -42,12 +42,14 @@ import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import { useLocationOptions } from '@/hooks/useLocations';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 export default function ReceivingPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const { options: locationOptions, isLoading: locationsLoading, isError: locationsError } = useLocationOptions();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'qc_passed' | 'qc_failed'>('all');
@@ -637,12 +639,14 @@ export default function ReceivingPage() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
+              onClick={async () => {
                 if (selectedReceipt) {
-                  updateReceiptStatus.mutate({
-                    id: selectedReceipt.id as string,
-                    status: qcData.qc_status === 'passed' ? 'qc_passed' : 'qc_failed',
-                    qcData
+                  await executeCreditAction('qc_log_check', async () => {
+                    await updateReceiptStatus.mutateAsync({
+                      id: selectedReceipt.id as string,
+                      status: qcData.qc_status === 'passed' ? 'qc_passed' : 'qc_failed',
+                      qcData
+                    });
                   });
                 }
               }}
