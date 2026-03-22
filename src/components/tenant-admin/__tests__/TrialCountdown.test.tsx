@@ -7,6 +7,9 @@
  * - Returns null when trial has expired
  * - Handles future dates with proper unit breakdown
  * - Cleans up interval on unmount
+ * - Clears interval when trial expires during countdown
+ * - Does not start interval when trial is already expired
+ * - Restarts interval when trialEndsAt prop changes
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -175,6 +178,54 @@ describe('TrialCountdown', () => {
 
       expect(clearIntervalSpy).toHaveBeenCalled();
       clearIntervalSpy.mockRestore();
+    });
+
+    it('should clear interval when trial expires during countdown', () => {
+      const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+      setNow(new Date('2026-03-21T00:00:00Z'));
+
+      renderCountdown('2026-03-21T00:00:02Z');
+
+      const callsBefore = clearIntervalSpy.mock.calls.length;
+
+      // Advance past the trial end
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      // clearInterval should have been called when diff <= 0
+      expect(clearIntervalSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+      clearIntervalSpy.mockRestore();
+    });
+
+    it('should not start interval when trial is already expired', () => {
+      const setIntervalSpy = vi.spyOn(globalThis, 'setInterval');
+      setNow(new Date('2026-03-21T00:00:00Z'));
+
+      renderCountdown('2026-03-20T00:00:00Z');
+
+      expect(setIntervalSpy).not.toHaveBeenCalled();
+      setIntervalSpy.mockRestore();
+    });
+
+    it('should restart interval when trialEndsAt prop changes', () => {
+      const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+      const setIntervalSpy = vi.spyOn(globalThis, 'setInterval');
+
+      setNow(new Date('2026-03-21T00:00:00Z'));
+
+      const { rerender } = render(<TrialCountdown trialEndsAt="2026-03-22T00:00:00Z" />);
+
+      const setIntervalCallsAfterMount = setIntervalSpy.mock.calls.length;
+
+      rerender(<TrialCountdown trialEndsAt="2026-03-23T00:00:00Z" />);
+
+      // Old interval should be cleared, new one started
+      expect(clearIntervalSpy).toHaveBeenCalled();
+      expect(setIntervalSpy.mock.calls.length).toBeGreaterThan(setIntervalCallsAfterMount);
+
+      clearIntervalSpy.mockRestore();
+      setIntervalSpy.mockRestore();
     });
   });
 

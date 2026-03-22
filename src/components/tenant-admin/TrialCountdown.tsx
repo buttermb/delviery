@@ -15,6 +15,8 @@ export function TrialCountdown({ trialEndsAt }: TrialCountdownProps) {
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+
     const calculateTimeRemaining = () => {
       const now = new Date().getTime();
       const end = new Date(trialEndsAt).getTime();
@@ -22,6 +24,10 @@ export function TrialCountdown({ trialEndsAt }: TrialCountdownProps) {
 
       if (diff <= 0) {
         setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
         return;
       }
 
@@ -34,9 +40,17 @@ export function TrialCountdown({ trialEndsAt }: TrialCountdownProps) {
     };
 
     calculateTimeRemaining();
-    const interval = setInterval(calculateTimeRemaining, 1000);
+    // Only start the interval if the trial hasn't already expired
+    const end = new Date(trialEndsAt).getTime();
+    if (end > Date.now()) {
+      interval = setInterval(calculateTimeRemaining, 1000);
+    }
 
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [trialEndsAt]);
 
   if (timeRemaining.days === 0 && timeRemaining.hours === 0 && timeRemaining.minutes === 0 && timeRemaining.seconds === 0) {
