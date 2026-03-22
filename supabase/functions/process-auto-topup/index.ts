@@ -15,6 +15,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { errorResponse } from '../_shared/error-response.ts';
 
 // Credit package pricing (must match creditCosts.ts CREDIT_PACKAGES)
 const CREDIT_PACKAGES = [
@@ -107,20 +108,14 @@ serve(async (req) => {
     // --- Auth check ---
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(401, 'Unauthorized');
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(401, 'Invalid token');
     }
 
     // Resolve tenant from authenticated user
@@ -131,10 +126,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!tenantUser?.tenant_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Forbidden: no tenant membership' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(403, 'Forbidden: no tenant membership');
     }
     // --- End auth check ---
 
@@ -142,18 +134,12 @@ serve(async (req) => {
     const { tenant_id, force = false } = body;
 
     if (!tenant_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'tenant_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'tenant_id is required');
     }
 
     // Verify the request tenant_id matches the authenticated user's tenant
     if (tenant_id !== tenantUser.tenant_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Forbidden: tenant mismatch' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(403, 'Forbidden: tenant mismatch');
     }
 
     console.error(`[AUTO_TOPUP] Processing for tenant: ${tenant_id}`);
@@ -166,50 +152,33 @@ serve(async (req) => {
       .maybeSingle();
 
     if (configError || !config) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Auto top-up not configured' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Auto top-up not configured');
     }
 
     const topupConfig = config as AutoTopUpConfig;
 
     // Validate config
     if (!topupConfig.enabled) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Auto top-up is disabled' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Auto top-up is disabled');
     }
 
     if (!topupConfig.payment_method_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'No payment method configured' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'No payment method configured');
     }
 
     // Check monthly limit
     if (topupConfig.topups_this_month >= topupConfig.max_per_month) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Monthly top-up limit reached' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Monthly top-up limit reached');
     }
 
     // Check hourly rate limit (max 3 top-ups per hour)
     const topUpsInLastHour = await getTopUpsInLastHour(supabase, tenant_id);
     if (topUpsInLastHour >= MAX_TOPUPS_PER_HOUR) {
       console.error(`[AUTO_TOPUP] Hourly rate limit reached for tenant ${tenant_id}: ${topUpsInLastHour} top-ups in last hour`);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Hourly rate limit reached',
-          topups_this_hour: topUpsInLastHour,
-          max_per_hour: MAX_TOPUPS_PER_HOUR,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(429, 'Hourly rate limit reached', 'RATE_LIMITED', {
+        topups_this_hour: topUpsInLastHour,
+        max_per_hour: MAX_TOPUPS_PER_HOUR,
+      });
     }
 
     // Get current balance
@@ -220,23 +189,15 @@ serve(async (req) => {
       .maybeSingle();
 
     if (creditsError || !credits) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Credits record not found' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Credits record not found');
     }
 
     // Check if below threshold (unless forced)
     if (!force && credits.balance > topupConfig.trigger_threshold) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Above threshold',
-          balance: credits.balance,
-          threshold: topupConfig.trigger_threshold,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Above threshold', undefined, {
+        balance: credits.balance,
+        threshold: topupConfig.trigger_threshold,
+      });
     }
 
     // Find the package matching the configured amount
@@ -295,35 +256,22 @@ serve(async (req) => {
           },
         });
 
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Payment failed - auto top-up disabled',
-            stripe_error: errorMessage,
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse(200, 'Payment failed - auto top-up disabled', undefined, {
+          stripe_error: errorMessage,
+        });
       }
 
       paymentIntent = await stripeResponse.json();
     } catch (stripeErr) {
       console.error('[AUTO_TOPUP] Stripe request failed:', stripeErr);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Payment processing error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(500, 'Payment processing error');
     }
 
     if (paymentIntent.status !== 'succeeded') {
       console.error('[AUTO_TOPUP] Payment not succeeded:', paymentIntent.status);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Payment not completed',
-          status: paymentIntent.status,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(200, 'Payment not completed', undefined, {
+        payment_status: paymentIntent.status,
+      });
     }
 
     console.error(`[AUTO_TOPUP] Payment succeeded: ${paymentIntent.id}`);
@@ -358,13 +306,7 @@ serve(async (req) => {
           },
         });
 
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Payment succeeded but balance update failed - support notified',
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(500, 'Payment succeeded but balance update failed - support notified');
     }
 
     // Log the transaction
@@ -439,13 +381,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[AUTO_TOPUP] Error:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: (error as Error).message,
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(500, (error as Error).message || 'Internal server error');
   }
 });
 

@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { errorResponse } from "../_shared/error-response.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
 
 /**
@@ -18,10 +19,7 @@ serve(async (req) => {
     // ========================
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Missing authorization" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
-      );
+      return errorResponse(401, "Missing authorization");
     }
 
     const jwt = authHeader.replace("Bearer ", "");
@@ -38,10 +36,7 @@ serve(async (req) => {
     // Get authenticated user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Invalid or expired token" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
-      );
+      return errorResponse(401, "Invalid or expired token");
     }
 
     // ========================
@@ -61,27 +56,18 @@ serve(async (req) => {
 
     if (tenantUserError || !tenantUser) {
       console.error("Tenant lookup failed:", tenantUserError);
-      return new Response(
-        JSON.stringify({ success: false, error: "User not associated with a tenant" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
-      );
+      return errorResponse(403, "User not associated with a tenant");
     }
 
     // SECURITY: Only admins/owners can retry payments
     if (!["admin", "owner"].includes(tenantUser.role)) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Insufficient permissions - admin or owner required" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
-      );
+      return errorResponse(403, "Insufficient permissions - admin or owner required");
     }
 
     const tenant = tenantUser.tenants as unknown as { id: string; stripe_customer_id: string | null; name: string };
 
     if (!tenant.stripe_customer_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "No Stripe customer linked to this tenant" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-      );
+      return errorResponse(400, "No Stripe customer linked to this tenant");
     }
 
     const customerId = tenant.stripe_customer_id;
@@ -112,10 +98,7 @@ serve(async (req) => {
       pastDueInvoices.data.find((inv: Stripe.Invoice) => inv.status === "open" || inv.status === "past_due");
 
     if (!unpaidInvoice) {
-      return new Response(
-        JSON.stringify({ success: false, error: "No unpaid invoice found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
-      );
+      return errorResponse(404, "No unpaid invoice found");
     }
 
     // Retry the payment
@@ -160,9 +143,6 @@ serve(async (req) => {
       errorMessage = error.message;
     }
 
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-    );
+    return errorResponse(500, errorMessage);
   }
 });

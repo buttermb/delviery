@@ -12,6 +12,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { errorResponse } from '../_shared/error-response.ts';
 
 const requestSchema = z.object({
   subscription_id: z.string().uuid('subscription_id must be a valid UUID'),
@@ -29,19 +30,13 @@ serve(async (req) => {
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Stripe is not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(500, 'Stripe is not configured');
     }
 
     // Authenticate user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(401, 'Missing authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
@@ -49,10 +44,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(401, 'Unauthorized');
     }
 
     // Validate input
@@ -60,13 +52,11 @@ serve(async (req) => {
     const parseResult = requestSchema.safeParse(body);
 
     if (!parseResult.success) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Validation failed',
-          details: (parseResult as { success: false; error: { issues: { message: string }[] } }).error.issues.map(i => i.message),
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return errorResponse(
+        400,
+        'Validation failed',
+        'VALIDATION_ERROR',
+        (parseResult as { success: false; error: { issues: { message: string }[] } }).error.issues.map(i => i.message),
       );
     }
 
@@ -82,32 +72,20 @@ serve(async (req) => {
 
     if (subError) {
       console.error('[CREDITS_CANCEL_SUB] Error fetching subscription:', subError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to fetch subscription' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(500, 'Failed to fetch subscription');
     }
 
     if (!subscription) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Subscription not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(404, 'Subscription not found');
     }
 
     // Check subscription is in a cancellable state
     if (subscription.status === 'cancelled') {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Subscription is already cancelled' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'Subscription is already cancelled');
     }
 
     if (!subscription.stripe_subscription_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'No Stripe subscription associated' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'No Stripe subscription associated');
     }
 
     console.error(`[CREDITS_CANCEL_SUB] Cancelling subscription ${subscription_id} for user ${user.id}, immediately: ${cancel_immediately}`);
@@ -129,14 +107,9 @@ serve(async (req) => {
       if (!stripeResponse.ok) {
         const stripeError = await stripeResponse.json();
         console.error('[CREDITS_CANCEL_SUB] Stripe cancel error:', stripeError);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Failed to cancel Stripe subscription',
-            stripe_error: stripeError.error?.message,
-          }),
-          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse(502, 'Failed to cancel Stripe subscription', undefined, {
+          stripe_error: stripeError.error?.message,
+        });
       }
     } else {
       // Cancel at period end - update subscription
@@ -157,14 +130,9 @@ serve(async (req) => {
       if (!stripeResponse.ok) {
         const stripeError = await stripeResponse.json();
         console.error('[CREDITS_CANCEL_SUB] Stripe update error:', stripeError);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Failed to update Stripe subscription',
-            stripe_error: stripeError.error?.message,
-          }),
-          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse(502, 'Failed to update Stripe subscription', undefined, {
+          stripe_error: stripeError.error?.message,
+        });
       }
     }
 
@@ -251,13 +219,7 @@ serve(async (req) => {
     if (updateError) {
       console.error('[CREDITS_CANCEL_SUB] Error updating subscription record:', updateError);
       // Stripe was already updated, log the inconsistency
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Stripe cancelled but local update failed - please contact support',
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(500, 'Stripe cancelled but local update failed - please contact support');
     }
 
     // Log cancellation event to credit_analytics
@@ -319,12 +281,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[CREDITS_CANCEL_SUB] Unexpected error:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: (error as Error).message || 'Internal server error',
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(500, (error as Error).message || 'Internal server error');
   }
 });

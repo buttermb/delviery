@@ -17,6 +17,7 @@
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { createLogger } from '../_shared/logger.ts';
+import { errorResponse } from '../_shared/error-response.ts';
 
 const logger = createLogger('low-stock-email-digest');
 
@@ -248,16 +249,7 @@ serve(async (req) => {
       error: (error as Error).message
     });
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: (error as Error).message,
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return errorResponse(500, (error as Error).message || 'Internal server error');
   }
 });
 
