@@ -367,6 +367,47 @@ export function useGenerateMenu() {
 }
 
 /**
+ * Pre-configured hook for AI suggestions actions
+ * Uses 'ai_suggestions' action key (100 credits)
+ */
+export function useAISuggestions() {
+  const creditGated = useCreditGatedAction();
+
+  const triggerAISuggestions = useCallback(
+    async <T>(
+      action: () => Promise<T>,
+      options?: {
+        referenceId?: string;
+        onInsufficientCredits?: () => void;
+        onSuccess?: (result: T) => void;
+        onError?: (error: Error) => void;
+      }
+    ) => {
+      return creditGated.execute({
+        actionKey: 'ai_suggestions',
+        action,
+        referenceId: options?.referenceId,
+        referenceType: 'ai_suggestion',
+        onInsufficientCredits: options?.onInsufficientCredits,
+        onSuccess: options?.onSuccess,
+        onError: options?.onError,
+      });
+    },
+    [creditGated]
+  );
+
+  return {
+    triggerAISuggestions,
+    isTriggering: creditGated.isExecuting,
+    showOutOfCreditsModal: creditGated.showOutOfCreditsModal,
+    closeOutOfCreditsModal: creditGated.closeOutOfCreditsModal,
+    blockedAction: creditGated.blockedAction,
+    balance: creditGated.balance,
+    isFreeTier: creditGated.isFreeTier,
+  };
+}
+
+/**
  * Pre-configured hook for storefront creation actions
  * Uses 'storefront_create' action key (500 credits)
  */
