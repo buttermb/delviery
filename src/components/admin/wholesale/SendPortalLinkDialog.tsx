@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import type { Database } from '@/integrations/supabase/types';
+import { useCredits } from '@/hooks/useCredits';
+import { CreditCostBadge, OutOfCreditsModal } from '@/components/credits';
 
 type WholesaleClient = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -22,6 +24,9 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
   const [copied, setCopied] = useState(false);
   const [sendingSMS, setSendingSMS] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showOutOfCredits, setShowOutOfCredits] = useState(false);
+  const [blockedAction, setBlockedAction] = useState<string | null>(null);
+  const { isFreeTier, performAction } = useCredits();
 
   const portalUrl = `${window.location.origin}/p/${client.portal_token}`;
   const message = `Your client portal is ready! View your invoices and order history: ${portalUrl}`;
@@ -46,6 +51,15 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
 
     try {
       setSendingSMS(true);
+
+      if (isFreeTier) {
+        const creditResult = await performAction('send_sms', client.id, 'wholesale_portal_link');
+        if (!creditResult.success) {
+          setBlockedAction('send_sms');
+          setShowOutOfCredits(true);
+          return;
+        }
+      }
 
       const { data, error } = await supabase.functions.invoke('send-sms', {
         body: {
@@ -73,7 +87,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
     } finally {
       setSendingSMS(false);
     }
-  }, [client.phone, message, client.id]);
+  }, [client.phone, message, client.id, isFreeTier, performAction]);
 
   const handleSendEmail = useCallback(async () => {
     if (!client.email) {
@@ -83,6 +97,15 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
 
     try {
       setSendingEmail(true);
+
+      if (isFreeTier) {
+        const creditResult = await performAction('send_email', client.id, 'wholesale_portal_link');
+        if (!creditResult.success) {
+          setBlockedAction('send_email');
+          setShowOutOfCredits(true);
+          return;
+        }
+      }
 
       // Use send-notification with email channel
       const { data: _data, error } = await supabase.functions.invoke('send-notification', {
@@ -109,7 +132,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
     } finally {
       setSendingEmail(false);
     }
-  }, [client.email, message, client.id]);
+  }, [client.email, message, client.id, isFreeTier, performAction, portalUrl]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -184,6 +207,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
                   <>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Send via SMS
+                    {isFreeTier && <CreditCostBadge actionKey="send_sms" compact className="ml-2" />}
                   </>
                 )}
               </Button>
@@ -204,6 +228,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
                   <>
                     <Mail className="h-4 w-4 mr-2" />
                     Send via Email
+                    {isFreeTier && <CreditCostBadge actionKey="send_email" compact className="ml-2" />}
                   </>
                 )}
               </Button>
@@ -222,6 +247,15 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
           </Button>
         </div>
       </DialogContent>
+
+      <OutOfCreditsModal
+        open={showOutOfCredits}
+        onOpenChange={(isOpen) => {
+          setShowOutOfCredits(isOpen);
+          if (!isOpen) setBlockedAction(null);
+        }}
+        actionAttempted={blockedAction ?? 'send_email'}
+      />
     </Dialog>
   );
 }
