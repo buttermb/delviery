@@ -42,13 +42,39 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { getCreditCost } from '@/lib/credits';
 import { VisualWorkflowEditor } from './VisualWorkflowEditor';
 import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
 import { useWorkflowVersionStats } from '@/hooks/useWorkflowVersions';
 import { Node, Edge } from 'reactflow';
+
+/**
+ * Maps workflow node action types to credit action keys.
+ * Types without a mapping are treated as free (0 credits).
+ */
+const WORKFLOW_ACTION_CREDIT_MAP: Record<string, string> = {
+  send_email: 'send_email',
+  send_sms: 'send_sms',
+  call_webhook: 'webhook_fired',
+  assign_courier: 'courier_assign_delivery',
+  update_inventory: 'stock_update',
+  notification: 'send_email', // push notifications billed as email
+};
+
+/**
+ * Calculate total credit cost for all actions in a workflow.
+ */
+function calculateWorkflowCreditCost(actions: WorkflowAction[]): number {
+  return actions.reduce((total, action) => {
+    const creditKey = WORKFLOW_ACTION_CREDIT_MAP[action.type];
+    if (!creditKey) return total;
+    return total + getCreditCost(creditKey);
+  }, 0);
+}
 
 interface WorkflowAction {
   id: string;
@@ -71,6 +97,7 @@ interface Workflow {
 
 export function WorkflowCanvas() {
   const { tenant } = useTenantAdminAuth();
+  const { execute: executeCreditAction, isFreeTier } = useCreditGatedAction();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<Workflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
@@ -268,13 +295,19 @@ export function WorkflowCanvas() {
     });
   };
 
+  // Pre-calculated credit cost for the selected workflow
+  const workflowCreditCost = selectedWorkflow
+    ? calculateWorkflowCreditCost(selectedWorkflow.actions)
+    : 0;
+
   const handleTestWorkflow = async () => {
     if (!selectedWorkflow?.id) {
       toast.error("Please save the workflow before testing");
       return;
     }
 
-    try {
+    // Gate workflow execution behind credit check with pre-calculated cost
+    await executeCreditAction('webhook_fired', async () => {
       // Create a test execution
       const { data: execution, error } = await supabase
         .from('workflow_executions')
@@ -303,10 +336,16 @@ export function WorkflowCanvas() {
         throw new Error(errorMessage);
       }
 
-      toast.success("Status: ${result?.status || ");
-    } catch (error: unknown) {
-      toast.error("Execution failed", { description: humanizeError(error) });
-    }
+      toast.success(`Workflow executed. Status: ${(result as Record<string, unknown>)?.status ?? 'completed'}`);
+    }, {
+      referenceId: selectedWorkflow.id,
+      referenceType: 'workflow_execution',
+      onInsufficientCredits: () => {
+        toast.error('Insufficient credits', {
+          description: `This workflow costs ~${workflowCreditCost} credits to execute.`,
+        });
+      },
+    });
   };
 
   const handleVisualWorkflowSave = useCallback(async (nodes: Node[], _edges: Edge[]) => {
@@ -474,6 +513,11 @@ export function WorkflowCanvas() {
                   <Button variant="outline" size="sm" onClick={handleTestWorkflow}>
                     <Play className="w-4 h-4 mr-2" />
                     Test
+                    {isFreeTier && workflowCreditCost > 0 && (
+                      <Badge variant="secondary" className="ml-1 text-xs">
+                        {workflowCreditCost} cr
+                      </Badge>
+                    )}
                   </Button>
                   <Button size="sm" onClick={handleSaveWorkflow}>
                     <Save className="w-4 h-4 mr-2" />
