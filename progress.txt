@@ -487,3 +487,17 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Imported in src/App.tsx:124 from @/routes/lazyImports
 - Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
 - No direct (non-lazy) imports of ProductCatalogPage exist in routing files
+
+## Verify invoice type compatibility between pages
+- Identified 3 parallel invoice type systems with incompatible status enums:
+  - CRMInvoice (src/types/crm.ts): draft|sent|paid|partially_paid|overdue|cancelled
+  - CustomerInvoice (src/hooks/useCustomerInvoices.ts): draft|unpaid|paid|overdue|cancelled
+  - PortalInvoice (src/types/portal.ts): was missing partially_paid and cancelled
+- Created shared `CRMInvoiceStatus` type in crm.ts, updated CRMInvoice and InvoiceFormValues to use it
+- Created `CustomerInvoiceStatus` type in useCustomerInvoices.ts (intentionally separate, uses 'unpaid' instead of 'sent')
+- Updated PortalInvoice to import and use CRMInvoiceStatus
+- Fixed InvoicePublicPage.tsx: replaced inline line item type with proper LineItem import from crm types
+- Fixed CustomerInvoices.tsx: removed unused _LineItem interface, tightened local Invoice.status from string to CustomerInvoiceStatus
+- Fixed InvoicesPage.tsx: removed unnecessary `as any` type assertion on balance column
+- Created 12 type compatibility tests in src/types/__tests__/invoiceTypeCompatibility.test.ts — all pass
+- TypeScript compilation passes with zero errors

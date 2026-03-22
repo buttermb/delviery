@@ -83,6 +83,11 @@ export interface CRMPreOrder {
 }
 
 /**
+ * Shared invoice status type used across CRM invoice types
+ */
+export type CRMInvoiceStatus = 'draft' | 'sent' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled';
+
+/**
  * CRM Invoice record
  */
 export interface CRMInvoice {
@@ -111,7 +116,7 @@ export interface CRMInvoice {
     payment_history: unknown[] | null;
 
     // Status
-    status: 'draft' | 'sent' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled';
+    status: CRMInvoiceStatus;
     paid_at: string | null;
 
     // Sharing
@@ -333,7 +338,7 @@ export interface InvoiceFormValues {
     subtotal?: number;
     tax_amount?: number;
     total?: number;
-    status?: 'draft' | 'sent' | 'paid' | 'overdue';
+    status?: CRMInvoiceStatus;
     notes?: string;
     currency?: string;
     exchange_rate?: number;

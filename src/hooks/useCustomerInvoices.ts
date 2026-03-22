@@ -16,12 +16,18 @@ export interface CustomerInvoiceLineItem {
   total: number;
 }
 
+/**
+ * Customer invoice status values.
+ * Note: 'unpaid' is the customer-invoice equivalent of CRM's 'sent' status.
+ */
+export type CustomerInvoiceStatus = 'draft' | 'unpaid' | 'paid' | 'overdue' | 'cancelled';
+
 export interface CustomerInvoice {
   id: string;
   tenant_id: string;
   customer_id: string;
   invoice_number: string;
-  status: 'draft' | 'unpaid' | 'paid' | 'overdue' | 'cancelled';
+  status: CustomerInvoiceStatus;
   subtotal: number;
   tax: number;
   total: number;

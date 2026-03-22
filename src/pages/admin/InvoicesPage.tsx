@@ -780,7 +780,6 @@ export function InvoicesPage() {
         },
         {
             header: <div className="text-right"><SortableHeader field="balance" label="Balance" /></div>,
-            accessorKey: "balance" as any,
             className: "text-right",
             cell: (invoice) => formatCurrency(invoice.total - (invoice.amount_paid ?? 0))
         },

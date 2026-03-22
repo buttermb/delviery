@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 // Customer Invoices page with pagination support
 import { useState, useEffect } from 'react';
+import type { CustomerInvoiceStatus } from '@/hooks/useCustomerInvoices';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { InvoiceLink } from '@/components/admin/cross-links';
@@ -31,13 +32,6 @@ import { displayName, displayValue } from '@/lib/formatters';
 
 const PAGE_SIZE = 25;
 
-interface _LineItem {
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
-
 interface Customer {
   id: string;
   first_name: string;
@@ -49,7 +43,7 @@ interface Invoice {
   id: string;
   invoice_number: string;
   customer_id: string;
-  status: string;
+  status: CustomerInvoiceStatus;
   total: number;
   due_date?: string;
   created_at: string;
