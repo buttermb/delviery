@@ -502,9 +502,113 @@ export function getActionCreditInfo(actionKey: string): {
   };
 }
 
+// ============================================================================
+// Batch Credit Consumption
+// ============================================================================
 
+export interface BatchAction {
+  actionKey: string;
+  count: number;
+}
 
+export interface ConsumeBatchCreditsResult {
+  success: boolean;
+  newBalance: number;
+  creditsCost: number;
+  breakdown: Array<{ actionKey: string; count: number; costPerAction: number; subtotal: number }>;
+  errorMessage?: string;
+}
 
+/**
+ * Consume credits for multiple actions in a single transaction.
+ * Calculates total cost across all actions, does a single deduction,
+ * and creates one transaction with metadata listing all actions.
+ * Use for bulk imports, bulk SMS, etc.
+ */
+export async function consumeBatchCredits(
+  tenantId: string,
+  actions: BatchAction[],
+  description?: string,
+  referenceId?: string,
+): Promise<ConsumeBatchCreditsResult> {
+  try {
+    const breakdown = actions.map((action) => {
+      const costPerAction = getCreditCost(action.actionKey);
+      return {
+        actionKey: action.actionKey,
+        count: action.count,
+        costPerAction,
+        subtotal: costPerAction * action.count,
+      };
+    });
+
+    const totalCost = breakdown.reduce((sum, item) => sum + item.subtotal, 0);
+
+    const metadata: Record<string, unknown> = {
+      batch: true,
+      actions: breakdown,
+      totalActions: actions.reduce((sum, a) => sum + a.count, 0),
+    };
+
+    const { data, error } = await supabase
+      .rpc('consume_credits', {
+        p_tenant_id: tenantId,
+        p_amount: totalCost,
+        p_action_key: 'batch_operation',
+        p_description: description || `Batch: ${actions.map((a) => `${a.count}x ${a.actionKey}`).join(', ')}`,
+        p_reference_id: referenceId || null,
+        p_metadata: metadata,
+      });
+
+    if (error) {
+      logger.error('Failed to consume batch credits', error, { tenantId, actions });
+      return {
+        success: false,
+        newBalance: 0,
+        creditsCost: totalCost,
+        breakdown,
+        errorMessage: error.message,
+      };
+    }
+
+    if (!data) {
+      return {
+        success: false,
+        newBalance: 0,
+        creditsCost: totalCost,
+        breakdown,
+        errorMessage: 'No response from credit consumption',
+      };
+    }
+
+    const result = data as { success: boolean; consumed?: number; balance?: number; error?: string };
+
+    if (!result.success) {
+      logger.warn('Batch credit consumption failed', {
+        tenantId,
+        totalCost,
+        error: result.error,
+      });
+    }
+
+    return {
+      success: result.success,
+      newBalance: result.balance ?? 0,
+      creditsCost: result.consumed ?? totalCost,
+      breakdown,
+      errorMessage: result.error || undefined,
+    };
+  } catch (err) {
+    logger.error('Error consuming batch credits', err as Error, { tenantId, actions });
+    return {
+      success: false,
+      newBalance: 0,
+      creditsCost: 0,
+      breakdown: [],
+      errorMessage: (err as Error).message,
+    };
+  }
+}
 
 
 
