@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +14,9 @@ import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
-import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
+import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog, OutOfCreditsModal } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { queryKeys } from '@/lib/queryKeys';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
@@ -25,6 +26,16 @@ export default function DataExport() {
   const [exportType, setExportType] = useState<string>('');
   const [format, setFormat] = useState<string>('csv');
   const { isFreeTier, performAction } = useCredits();
+  const queryClient = useQueryClient();
+  const {
+    execute: executeCreditGatedAction,
+    isExecuting: isWarehouseExporting,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useCreditGatedAction();
+
+  const isWarehouseExport = exportType === 'data_warehouse';
 
   const { data: exportHistory, isLoading: historyLoading } = useQuery({
     queryKey: queryKeys.dataExport.history(tenantId),
@@ -51,15 +62,52 @@ export default function DataExport() {
     retry: 2,
   });
 
-  const handleExport = async () => {
-    if (!exportType) {
-      toast.error("Please select a data type to export");
-      return;
-    }
-
+  /** Core export logic: creates job record and invokes edge function */
+  const executeExport = async () => {
     if (!tenantId) return;
 
-    // Consume credits for export action
+    toast.success(`Preparing ${exportType === 'data_warehouse' ? 'full warehouse' : exportType} export...`);
+
+    // 1. Create Job Record
+    const { data: job, error: dbError } = await supabase
+      .from('data_exports')
+      .insert({
+        tenant_id: tenantId,
+        data_type: exportType,
+        format: format,
+        status: 'pending'
+      })
+      .select()
+      .maybeSingle();
+
+    if (dbError) throw dbError;
+
+    // 2. Invoke Edge Function (Async Trigger)
+    const { data: invokeData, error: invokeError } = await supabase.functions.invoke('process-data-export', {
+      body: { exportId: job?.id }
+    });
+
+    if (invokeError) {
+      logger.error("Failed to trigger export function", invokeError);
+      toast.success("Export job created but processing might be delayed.");
+    } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
+      const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
+      logger.error("Export function returned error in response", { error: errorMessage });
+      toast.error("Export Failed");
+    } else {
+      toast.success("Your export is running in the background. It will appear in the history list below when complete.");
+    }
+
+    // Refresh history
+    queryClient.invalidateQueries({ queryKey: queryKeys.dataExport.history(tenantId) });
+
+    return job;
+  };
+
+  /** Handle regular (non-warehouse) exports with existing credit flow */
+  const handleRegularExport = async () => {
+    if (!exportType || !tenantId) return;
+
     const actionKey = format === 'csv' ? 'export_csv' : 'export_pdf';
     if (isFreeTier) {
       const result = await performAction(actionKey, undefined, 'export');
@@ -70,56 +118,57 @@ export default function DataExport() {
     }
 
     try {
-      toast.success(`Preparing ${exportType} export...`);
-
-      // 1. Create Job Record
-      const { data: job, error: dbError } = await supabase
-        .from('data_exports')
-        .insert({
-          tenant_id: tenantId,
-          // user_id: auth.user.id, // need auth context but let's rely on RLS/defaults or ignore if not critical
-          data_type: exportType,
-          format: format,
-          status: 'pending'
-        })
-        .select()
-        .maybeSingle();
-
-      if (dbError) throw dbError;
-
-      // 2. Invoke Edge Function (Async Trigger)
-      const { data: invokeData, error: invokeError } = await supabase.functions.invoke('process-data-export', {
-        body: { exportId: job.id }
-      });
-
-      if (invokeError) {
-        logger.error("Failed to trigger export function", invokeError);
-        toast.success("Export job created but processing might be delayed.");
-      } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
-        // Check for error in response body (edge functions can return 200 with error)
-        const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
-        logger.error("Export function returned error in response", { error: errorMessage });
-        toast.error("Export Failed");
-      } else {
-        toast.success("Your export is running in the background. It will appear in the history list below when complete.");
-      }
-
-      // Refresh history
-      /* refetch() if we had the query handle handy, but react-query will re-fetch on window focus 
-         or we can invalidate queries */
-
+      await executeExport();
     } catch (error: unknown) {
       logger.error("Export initiation failed", error);
       toast.error("Export Failed");
     }
   };
 
-  // Credit confirmation for exports
-  const { trigger: triggerExport, dialogProps } = useCreditConfirm({
+  /** Handle data warehouse export with useCreditGatedAction (200 credits) */
+  const handleWarehouseExport = async () => {
+    if (!tenantId) return;
+
+    await executeCreditGatedAction({
+      actionKey: 'data_warehouse_export',
+      action: executeExport,
+      referenceType: 'data_export',
+      onSuccess: () => {
+        logger.info('Data warehouse export initiated successfully');
+      },
+      onError: (error) => {
+        logger.error('Data warehouse export failed', error);
+        toast.error("Export Failed");
+      },
+    });
+  };
+
+  const handleExport = () => {
+    if (!exportType) {
+      toast.error("Please select a data type to export");
+      return;
+    }
+    if (!tenantId) return;
+
+    if (isWarehouseExport) {
+      handleWarehouseExport();
+    } else {
+      // Regular exports go through credit confirm dialog
+      triggerRegularExport();
+    }
+  };
+
+  // Credit confirmation for regular exports
+  const { trigger: triggerRegularExport, dialogProps } = useCreditConfirm({
     actionKey: format === 'csv' ? 'export_csv' : 'export_pdf',
     actionDescription: `Export ${exportType || 'data'} as ${format.toUpperCase()}`,
-    onConfirm: handleExport,
+    onConfirm: handleRegularExport,
   });
+
+  /** Resolve the correct credit action key based on export type */
+  const creditActionKey = isWarehouseExport
+    ? 'data_warehouse_export'
+    : format === 'csv' ? 'export_csv' : 'export_pdf';
 
   return (
     <PermissionGuard required="data:export">
@@ -148,6 +197,7 @@ export default function DataExport() {
                   <SelectItem value="products">Products</SelectItem>
                   <SelectItem value="inventory">Inventory</SelectItem>
                   <SelectItem value="deliveries">Deliveries</SelectItem>
+                  <SelectItem value="data_warehouse">Data Warehouse (All Data)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -166,21 +216,32 @@ export default function DataExport() {
             </div>
             {/* Credit cost indicator for free tier users */}
             {isFreeTier && exportType && (
-              <CreditCostIndicator actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} />
+              <CreditCostIndicator actionKey={creditActionKey} />
             )}
 
             <DisabledTooltip disabled={!exportType} reason="Select a data type to export">
-              <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
+              <Button
+                onClick={handleExport}
+                className="w-full"
+                disabled={!exportType || isWarehouseExporting}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Export Data
-                {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
+                {isWarehouseExporting ? 'Exporting...' : 'Export Data'}
+                {isFreeTier && <CreditCostBadge actionKey={creditActionKey} className="ml-2" />}
               </Button>
             </DisabledTooltip>
           </CardContent>
         </Card>
 
-        {/* Credit confirmation dialog */}
+        {/* Credit confirmation dialog for regular exports */}
         <CreditConfirmDialog {...dialogProps} />
+
+        {/* Out of credits modal for warehouse export */}
+        <OutOfCreditsModal
+          open={showOutOfCreditsModal}
+          onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+          actionAttempted={blockedAction ?? undefined}
+        />
 
         <Card>
           <CardHeader>
