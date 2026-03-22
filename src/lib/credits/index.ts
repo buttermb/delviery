@@ -94,6 +94,19 @@ export {
   type RedeemResult,
 } from './referralService';
 
+// Credit warning configuration (shared thresholds, colors, severities)
+export {
+  CREDIT_THRESHOLD_CONFIGS,
+  getCurrentThreshold,
+  getBadgeColorClass,
+  getAlertSeverityStyles,
+  getWarningMessage,
+  type CreditWarningSeverity,
+  type CreditThresholdConfig,
+  type BadgeColorClasses,
+  type AlertSeverityStyles,
+} from './creditWarningConfig';
+
 // Promo code functions
 export {
   validatePromoCode,

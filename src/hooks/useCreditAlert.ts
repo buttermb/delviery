@@ -7,62 +7,15 @@
 
 import { useMemo } from 'react';
 import { useCredits } from '@/hooks/useCredits';
-import { LOW_BALANCE_WARNING_LEVELS } from '@/lib/credits';
-
-interface ThresholdConfig {
-  threshold: number;
-  severity: 'info' | 'warning' | 'critical' | 'danger';
-  title: string;
-  description: string;
-}
-
-const THRESHOLD_CONFIGS: ThresholdConfig[] = [
-  {
-    threshold: 2000,
-    severity: 'info',
-    title: 'Credits Running Low',
-    description: 'Your credit balance is getting low. Consider purchasing more to avoid interruptions.',
-  },
-  {
-    threshold: 1000,
-    severity: 'warning',
-    title: 'Credit Balance Warning',
-    description: 'You have less than 1,000 credits. Some features may become unavailable soon.',
-  },
-  {
-    threshold: 500,
-    severity: 'critical',
-    title: 'Low Credit Balance',
-    description: 'Only {balance} credits remaining. Purchase credits now to continue using premium features.',
-  },
-  {
-    threshold: 100,
-    severity: 'danger',
-    title: 'Critical Credit Balance',
-    description: 'Only {balance} credits left! Actions will be blocked when credits run out.',
-  },
-];
-
-/**
- * Determine the current warning threshold based on balance
- */
-function getCurrentThreshold(balance: number): ThresholdConfig | null {
-  // Find the most specific (lowest) threshold that the balance is at or below
-  // Sort thresholds in ascending order so we match the tightest threshold first
-  const sortedThresholds = [...THRESHOLD_CONFIGS].sort((a, b) => a.threshold - b.threshold);
-
-  for (const config of sortedThresholds) {
-    if (balance <= config.threshold && balance > 0) {
-      return config;
-    }
-  }
-
-  return null;
-}
+import {
+  LOW_BALANCE_WARNING_LEVELS,
+  getCurrentThreshold,
+  type CreditThresholdConfig,
+} from '@/lib/credits';
 
 export interface UseCreditAlertReturn {
   shouldShowAlert: boolean;
-  currentThreshold: ThresholdConfig | null;
+  currentThreshold: CreditThresholdConfig | null;
   balance: number;
   isFreeTier: boolean;
 }

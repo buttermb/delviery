@@ -21,6 +21,7 @@ import {
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
+  getWarningMessage,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -118,36 +119,6 @@ const RATE_LIMIT = {
   maxOperations: 30,
   windowMs: 60 * 1000, // 1 minute
 };
-
-/**
- * Get warning message based on threshold level
- */
-function getWarningMessage(threshold: number, balance: number): { title: string; description: string } | null {
-  switch (threshold) {
-    case 2000:
-      return {
-        title: 'Credits Running Low',
-        description: `You have ${balance.toLocaleString()} credits remaining. Consider purchasing more to avoid interruptions.`,
-      };
-    case 1000:
-      return {
-        title: 'Credit Balance Warning',
-        description: `Only ${balance.toLocaleString()} credits left. Some features may become unavailable soon.`,
-      };
-    case 500:
-      return {
-        title: 'Low Credit Balance',
-        description: `${balance.toLocaleString()} credits remaining. Purchase credits now to continue using premium features.`,
-      };
-    case 100:
-      return {
-        title: 'Critical Credit Balance',
-        description: `Only ${balance.toLocaleString()} credits left! Actions will be blocked when credits run out.`,
-      };
-    default:
-      return null;
-  }
-}
 
 // Safe wrapper to get tenant and auth state
 // Note: useTenantAdminAuth must be called unconditionally per React hooks rules

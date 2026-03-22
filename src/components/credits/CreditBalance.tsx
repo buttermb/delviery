@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { getBadgeColorClass } from '@/lib/credits';
 
 interface CreditBalanceProps {
   className?: string;
@@ -62,14 +63,8 @@ export function CreditBalance({
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Color logic based on warning thresholds: 2000, 1000, 500, 100
-  const getColorClass = (amount: number) => {
-    if (amount > 2000) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-    if (amount > 1000) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    if (amount > 500) return "text-amber-600 bg-amber-50 border-amber-200";
-    if (amount > 100) return "text-orange-600 bg-orange-50 border-orange-200";
-    return "text-red-600 bg-red-50 border-red-200 animate-pulse";
-  };
+  // Color logic aligned with alert severity levels from shared config
+  // info (blue) -> warning (amber) -> critical (orange) -> danger (red)
 
   const tooltipContent = (
     <div className="space-y-2 text-xs">
@@ -106,7 +101,7 @@ export function CreditBalance({
           <div
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-medium transition-colors cursor-pointer hover:opacity-80",
-              getColorClass(credits),
+              getBadgeColorClass(credits),
               className
             )}
             onClick={() => setIsPurchaseModalOpen(true)}
@@ -129,7 +124,7 @@ export function CreditBalance({
           <div
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors cursor-pointer",
-              getColorClass(credits)
+              getBadgeColorClass(credits)
             )}
             onClick={() => setIsPurchaseModalOpen(true)}
           >
