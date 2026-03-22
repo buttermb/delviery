@@ -49,6 +49,7 @@ import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
 import { detectAdvancedCustomizations } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { CreditCostIndicator } from '@/components/credits/CreditCostBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
@@ -1390,6 +1391,7 @@ export function StorefrontBuilder({
                             )}
                         </div>
                     </div>
+                    <CreditCostIndicator actionKey="storefront_create" className="rounded-lg" />
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                             Cancel
