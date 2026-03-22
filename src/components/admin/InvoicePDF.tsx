@@ -244,6 +244,7 @@ export function InvoiceDownloadButton({ invoice }: { invoice: InvoiceData }) {
       document={<InvoicePDF invoice={invoice} />}
       fileName={`invoice-${invoice.invoiceNumber}.pdf`}
       className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+      aria-label="Download invoice"
     >
       {({ loading }) =>
         loading ? 'Generating PDF...' : 'Download Invoice PDF'

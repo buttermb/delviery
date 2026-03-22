@@ -657,6 +657,7 @@ export function OrderInvoiceDownloadButton({
       className={className}
       onClick={handleDownload}
       disabled={isGenerating}
+      aria-label={label}
     >
       {isGenerating ? (
         <>
@@ -730,6 +731,7 @@ export function OrderInvoicePrintButton({
       className={className}
       onClick={handlePrint}
       disabled={isGenerating}
+      aria-label={label}
     >
       {isGenerating ? (
         <>
@@ -1026,6 +1028,7 @@ export function GenerateAndSaveInvoiceButton({
       className={className}
       onClick={handleGenerateInvoice}
       disabled={isLoading || !resolvedCustomerId}
+      aria-label={label}
     >
       {isLoading ? (
         <>
