@@ -335,14 +335,15 @@ UPDATE public.tenants SET mrr = 499
   WHERE subscription_plan = 'enterprise' AND (mrr = 999 OR mrr = 799);
 
 -- 3. Sync subscription_plans table prices to canonical values
+-- Update both `price` (original NOT NULL column) and `price_monthly` (added later)
 UPDATE public.subscription_plans
-  SET price_monthly = 79, price_yearly = 790
-  WHERE name = 'starter' AND price_monthly != 79;
+  SET price = 79, price_monthly = 79, price_yearly = 790
+  WHERE name = 'starter' AND (price != 79 OR price_monthly IS DISTINCT FROM 79);
 
 UPDATE public.subscription_plans
-  SET price_monthly = 150, price_yearly = 1500
-  WHERE name = 'professional' AND price_monthly != 150;
+  SET price = 150, price_monthly = 150, price_yearly = 1500
+  WHERE name = 'professional' AND (price != 150 OR price_monthly IS DISTINCT FROM 150);
 
 UPDATE public.subscription_plans
-  SET price_monthly = 499, price_yearly = 4990
-  WHERE name = 'enterprise' AND price_monthly != 499;
+  SET price = 499, price_monthly = 499, price_yearly = 4990
+  WHERE name = 'enterprise' AND (price != 499 OR price_monthly IS DISTINCT FROM 499);

@@ -1,7 +1,12 @@
 /**
  * Subscription Plan Constants
- * Central source of truth for subscription plan identifiers and features
+ * Central source of truth for subscription plan identifiers and features.
+ *
+ * Prices MUST match TIER_PRICES in featureConfig.ts and PLAN_CONFIG in planPricing.ts.
+ * Limits MUST match create_tenant_atomic() in 20260320000001_fix_subscription_pricing_consistency.sql.
  */
+
+import { TIER_PRICES, TIER_NAMES } from '@/lib/featureConfig';
 
 export const SUBSCRIPTION_PLANS = {
     STARTER: 'starter',
@@ -13,32 +18,32 @@ export type SubscriptionPlan = typeof SUBSCRIPTION_PLANS[keyof typeof SUBSCRIPTI
 
 export const PLAN_FEATURES = {
     [SUBSCRIPTION_PLANS.STARTER]: {
-        displayName: 'Starter',
-        price: 0, // or whatever the price is
+        displayName: TIER_NAMES.starter,
+        price: TIER_PRICES.starter,
         limits: {
-            customers: 50,
-            menus: 3,
-            products: 100,
-            locations: 2,
-            users: 3,
+            customers: 200,
+            menus: 10,
+            products: 500,
+            locations: 5,
+            users: 10,
         },
         features: {
             api_access: false,
             custom_branding: false,
             white_label: false,
-            advanced_analytics: false,
+            advanced_analytics: true,
             sms_enabled: false,
         }
     },
     [SUBSCRIPTION_PLANS.PROFESSIONAL]: {
-        displayName: 'Professional',
-        price: 299,
+        displayName: TIER_NAMES.professional,
+        price: TIER_PRICES.professional,
         limits: {
-            customers: 500,
-            menus: -1, // Unlimited
-            products: -1,
-            locations: 10,
-            users: 10,
+            customers: 1000,
+            menus: 50,
+            products: 2000,
+            locations: 20,
+            users: 50,
         },
         features: {
             api_access: true,
@@ -49,8 +54,8 @@ export const PLAN_FEATURES = {
         }
     },
     [SUBSCRIPTION_PLANS.ENTERPRISE]: {
-        displayName: 'Enterprise',
-        price: 799,
+        displayName: TIER_NAMES.enterprise,
+        price: TIER_PRICES.enterprise,
         limits: {
             customers: -1,
             menus: -1,
