@@ -427,6 +427,9 @@ export const CREDIT_ACTIONS = {
   UPDATE_ORDER_STATUS: 'update_order_status',
   CANCEL_ORDER: 'cancel_order',
 
+  // Purchase Orders
+  CREATE_PURCHASE_ORDER: 'purchase_order_create',
+
   // Products
   ADD_PRODUCT: 'add_product',
   EDIT_PRODUCT: 'edit_product',
