@@ -39,7 +39,8 @@ import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
 import { useCurrencyConvert, useSupportedCurrencies } from "@/hooks/useCurrencyConvert";
 import { useAccount } from "@/contexts/AccountContext";
-import { useCreditGatedAction } from "@/hooks/useCredits";
+import { useCreditGatedAction } from "@/hooks/useCreditGatedAction";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
 import { logger } from '@/lib/logger';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
@@ -101,7 +102,13 @@ export default function CreateInvoicePage() {
     });
 
 
-    const { execute: executeCreditAction } = useCreditGatedAction();
+    const {
+        execute: executeCreditAction,
+        isExecuting,
+        showOutOfCreditsModal,
+        closeOutOfCreditsModal,
+        blockedAction,
+    } = useCreditGatedAction();
 
     const onSubmit = async (values: FormValues) => {
         // Validate CSRF token
@@ -120,8 +127,10 @@ export default function CreateInvoicePage() {
             return;
         }
 
-        await executeCreditAction('invoice_create', async () => {
-            try {
+        await executeCreditAction({
+            actionKey: 'invoice_create',
+            referenceType: 'invoice',
+            action: async () => {
                 const invoicePayload: Parameters<typeof createInvoice.mutateAsync>[0] = {
                     account_id: accountId,
                     client_id: values.client_id,
@@ -142,7 +151,6 @@ export default function CreateInvoicePage() {
                 }
                 const invoice = await createInvoice.mutateAsync(invoicePayload);
 
-                // Log activity
                 logActivity.mutate({
                     client_id: values.client_id,
                     activity_type: "invoice_created",
@@ -155,16 +163,14 @@ export default function CreateInvoicePage() {
                 if (tenant?.slug) {
                     navigate(`/${tenant.slug}/admin/crm/invoices/${invoice.id}`);
                 }
-            } catch (error: unknown) {
+                return invoice;
+            },
+            onError: (error) => {
                 logger.error('Failed to create invoice', error, {
                     component: 'CreateInvoicePage',
-                    clientId: values.client_id
+                    clientId: values.client_id,
                 });
-                throw error; // Re-throw to be handled by executeCreditAction if desired, though hook handles generic errors, we might want to let toast propagate from here?
-                // Actually the existing code had a try/catch logging error.
-                // useCreditGatedAction catches unexpected errors.
-                // But createInvoice hook might throw specific errors.
-            }
+            },
         });
     };
 
@@ -436,9 +442,9 @@ export default function CreateInvoicePage() {
                         <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/invoices')}>
                             Cancel
                         </Button>
-                        <DisabledTooltip disabled={!isAccountReady && !accountLoading && !createInvoice.isPending} reason="Account context not available">
-                            <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
-                                {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <DisabledTooltip disabled={!isAccountReady && !accountLoading && !createInvoice.isPending && !isExecuting} reason="Account context not available">
+                            <Button type="submit" disabled={createInvoice.isPending || isExecuting || !isAccountReady || accountLoading}>
+                                {(createInvoice.isPending || isExecuting || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <Save className="mr-2 h-4 w-4" />
                                 {accountLoading ? 'Loading...' : 'Create Invoice'}
                             </Button>
@@ -451,6 +457,12 @@ export default function CreateInvoicePage() {
                 open={showBlockerDialog}
                 onConfirmLeave={confirmLeave}
                 onCancelLeave={cancelLeave}
+            />
+
+            <OutOfCreditsModal
+                open={showOutOfCreditsModal}
+                onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+                actionAttempted={blockedAction ?? undefined}
             />
         </div>
     );
