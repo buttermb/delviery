@@ -23,6 +23,9 @@ import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { PageErrorState } from '@/components/admin/shared/PageErrorState';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 interface VendorFormData {
   name: string;
@@ -72,6 +75,8 @@ export function VendorManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState<VendorFormData>(initialFormData);
+
+  const creditGated = useCreditGatedAction();
 
   const { data: vendors = [], isLoading: loading, isError: loadError, refetch: loadVendors } = useQuery({
     queryKey: queryKeys.vendors.byTenant(tenantId ?? ''),
@@ -157,7 +162,22 @@ export function VendorManagement() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate({ vendor: formData, isEdit: !!editingVendor });
+    if (editingVendor) {
+      saveMutation.mutate({ vendor: formData, isEdit: true });
+    } else {
+      creditGated.execute({
+        actionKey: 'vendor_add',
+        action: async () => {
+          return new Promise<void>((resolve, reject) => {
+            saveMutation.mutate(
+              { vendor: formData, isEdit: false },
+              { onSuccess: () => resolve(), onError: (err) => reject(err) }
+            );
+          });
+        },
+        referenceType: 'vendor',
+      });
+    }
   };
 
   const handleEdit = (vendor: Vendor) => {
@@ -238,12 +258,13 @@ export function VendorManagement() {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
+            <Button className="group" onClick={() => {
               setEditingVendor(null);
               setFormData(initialFormData);
             }}>
               <Plus className="w-4 h-4 mr-2" />
               Add Vendor
+              <CreditCostBadge actionKey="vendor_add" compact hoverMode className="ml-1" />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
@@ -340,14 +361,23 @@ export function VendorManagement() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? (
+                <Button
+                  type="submit"
+                  disabled={saveMutation.isPending || creditGated.isExecuting}
+                  className="group"
+                >
+                  {(saveMutation.isPending || creditGated.isExecuting) ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
                     </>
                   ) : (
-                    <>{editingVendor ? 'Update' : 'Create'} Vendor</>
+                    <>
+                      {editingVendor ? 'Update' : 'Create'} Vendor
+                      {!editingVendor && (
+                        <CreditCostBadge actionKey="vendor_add" compact hoverMode className="ml-1" />
+                      )}
+                    </>
                   )}
                 </Button>
               </div>
@@ -440,6 +470,12 @@ export function VendorManagement() {
         itemName={vendorToDelete?.name}
         itemType="vendor"
         isLoading={deleteMutation.isPending}
+      />
+
+      <OutOfCreditsModal
+        open={creditGated.showOutOfCreditsModal}
+        onOpenChange={creditGated.closeOutOfCreditsModal}
+        actionAttempted={creditGated.blockedAction ?? undefined}
       />
     </div>
   );
