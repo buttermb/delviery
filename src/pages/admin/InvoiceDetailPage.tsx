@@ -5,6 +5,7 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useInvoices } from "@/hooks/crm/useInvoices";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { InvoicePaymentDialog } from "@/components/admin/invoices/InvoicePaymentDialog";
 import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
 import { useRelatedInvoicePreOrders } from "@/hooks/useRelatedEntities";
@@ -78,6 +79,7 @@ export default function InvoiceDetailPage() {
     const { data: invoice, isLoading, error } = useInvoiceQuery(invoiceId ?? '');
     const relatedPreOrders = useRelatedInvoicePreOrders(invoice?.client_id, invoiceId);
     const markAsSent = useMarkInvoiceSent();
+    const { execute: executeCreditAction, isPerforming: isCreditActionPending } = useCreditGatedAction();
     const voidInvoiceMutation = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
@@ -111,15 +113,10 @@ export default function InvoiceDetailPage() {
         );
     }
 
-    const handleMarkAsSent = () => {
-        markAsSent.mutate(invoice.id, {
-            onSuccess: () => {
-                toast.success("Invoice marked as sent");
-            },
-            onError: (error: unknown) => {
-                toast.error("Update failed", { description: humanizeError(error) });
-                logger.error('Failed to mark invoice as sent', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
-            },
+    const handleMarkAsSent = async () => {
+        await executeCreditAction('invoice_send', async () => {
+            await markAsSent.mutateAsync(invoice.id);
+            toast.success("Invoice marked as sent");
         });
     };
 
@@ -163,7 +160,7 @@ export default function InvoiceDetailPage() {
         toast.success("Public link copied to clipboard");
     };
 
-    const isAnyPending = markAsSent.isPending || voidInvoiceMutation.isPending || duplicateInvoice.isPending || deleteInvoice.isPending;
+    const isAnyPending = markAsSent.isPending || isCreditActionPending || voidInvoiceMutation.isPending || duplicateInvoice.isPending || deleteInvoice.isPending;
     const isVoided = invoice.status === 'cancelled';
     const isOverdue = invoice.due_date
         && new Date(invoice.due_date) < new Date()
