@@ -21,7 +21,17 @@ import { errorResponse } from '../_shared/error-response.ts';
 
 const logger = createLogger('low-stock-email-digest');
 
+const CREDIT_ACTION_KEY = 'send_email';
+
 // Types
+
+interface CreditDeductionResult {
+  success: boolean;
+  newBalance: number;
+  creditsCost: number;
+  errorMessage: string | null;
+}
+
 interface LowStockProduct {
   id: string;
   product_name: string;
@@ -100,6 +110,8 @@ serve(async (req) => {
       tenants_checked: 0,
       emails_sent: 0,
       total_products_flagged: 0,
+      credits_deducted: 0,
+      skipped_insufficient_credits: 0,
       errors: [] as string[],
     };
 
@@ -161,6 +173,29 @@ serve(async (req) => {
           ? alertSettings.digest_recipients
           : [tenant.owner_email];
 
+        // Deduct credits before sending email
+        const creditResult = await deductCredits(supabase, tenant.id);
+
+        if (!creditResult.success) {
+          logger.warn('Insufficient credits for low stock digest', {
+            tenantId: tenant.id,
+            slug: tenant.slug,
+            errorMessage: creditResult.errorMessage,
+          });
+          summary.skipped_insufficient_credits++;
+
+          results.push({
+            tenant_id: tenant.id,
+            tenant_slug: tenant.slug,
+            products_count: lowStockProducts.length,
+            email_sent: false,
+            error: `Insufficient credits: ${creditResult.errorMessage}`,
+          });
+          continue;
+        }
+
+        summary.credits_deducted += creditResult.creditsCost;
+
         // Send email digest
         const emailResult = await sendDigestEmail(
           supabase,
@@ -186,6 +221,7 @@ serve(async (req) => {
               event_data: {
                 products_count: lowStockProducts.length,
                 recipients,
+                credits_deducted: creditResult.creditsCost,
                 products: lowStockProducts.map(p => ({
                   id: p.id,
                   name: p.product_name,
@@ -194,6 +230,15 @@ serve(async (req) => {
                 })),
               },
             });
+        } else {
+          // Email send failed — refund the credits
+          await refundCredits(
+            supabase,
+            tenant.id,
+            creditResult.creditsCost,
+            `Low stock digest email failed: ${emailResult.error}`
+          );
+          summary.credits_deducted -= creditResult.creditsCost;
         }
 
         results.push({
@@ -209,6 +254,7 @@ serve(async (req) => {
           slug: tenant.slug,
           productsCount: lowStockProducts.length,
           emailSent: emailResult.success,
+          creditsDeducted: creditResult.creditsCost,
         });
 
       } catch (err) {
@@ -252,6 +298,95 @@ serve(async (req) => {
     return errorResponse(500, (error as Error).message || 'Internal server error');
   }
 });
+
+/**
+ * Deduct credits for sending a digest email.
+ * Calls the consume_credits RPC directly since this is a system-triggered function
+ * (no JWT/user context — runs as cron with service role).
+ */
+async function deductCredits(
+  supabase: ReturnType<typeof createClient>,
+  tenantId: string
+): Promise<CreditDeductionResult> {
+  try {
+    const { data, error } = await supabase
+      .rpc('consume_credits', {
+        p_tenant_id: tenantId,
+        p_action_key: CREDIT_ACTION_KEY,
+        p_reference_id: null,
+        p_reference_type: 'low_stock_digest',
+        p_description: 'Low stock email digest',
+      });
+
+    if (error) {
+      logger.error('Credit deduction RPC error', { tenantId, error: error.message });
+      return {
+        success: false,
+        newBalance: 0,
+        creditsCost: 0,
+        errorMessage: error.message,
+      };
+    }
+
+    if (!data || data.length === 0) {
+      logger.error('No response from consume_credits', { tenantId });
+      return {
+        success: false,
+        newBalance: 0,
+        creditsCost: 0,
+        errorMessage: 'No response from credit check',
+      };
+    }
+
+    const result = data[0];
+    return {
+      success: result.success,
+      newBalance: result.new_balance,
+      creditsCost: result.credits_cost,
+      errorMessage: result.error_message,
+    };
+  } catch (err) {
+    logger.error('Credit deduction failed', { tenantId, error: (err as Error).message });
+    return {
+      success: false,
+      newBalance: 0,
+      creditsCost: 0,
+      errorMessage: (err as Error).message,
+    };
+  }
+}
+
+/**
+ * Refund credits when the email send fails after deduction.
+ */
+async function refundCredits(
+  supabase: ReturnType<typeof createClient>,
+  tenantId: string,
+  amount: number,
+  reason: string
+): Promise<void> {
+  try {
+    await supabase
+      .rpc('refund_credits', {
+        p_tenant_id: tenantId,
+        p_amount: amount,
+        p_action_key: CREDIT_ACTION_KEY,
+        p_reason: reason,
+      });
+
+    logger.info('Credits refunded after failed digest send', {
+      tenantId,
+      amount,
+      reason,
+    });
+  } catch (err) {
+    logger.error('Failed to refund credits', {
+      tenantId,
+      amount,
+      error: (err as Error).message,
+    });
+  }
+}
 
 /**
  * Get low stock products for a tenant
