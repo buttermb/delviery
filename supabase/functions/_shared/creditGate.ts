@@ -619,6 +619,7 @@ export const CREDIT_ACTIONS = {
 
   // Menus
   CREATE_MENU: 'create_menu',
+  MENU_CREATE: 'menu_create',
   SHARE_MENU: 'share_menu',
 
   // Marketplace
