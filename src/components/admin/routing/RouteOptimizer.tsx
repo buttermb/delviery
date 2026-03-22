@@ -1,10 +1,10 @@
 /**
  * Route Optimization Visual Builder
- * 
+ *
  * Features:
  * - Interactive Map (Mapbox)
  * - Drag & Drop Stop Reordering
- * - Credit System Integration (1 Credit per Optimization)
+ * - Credit System Integration (50 Credits per Optimization via useCreditGatedAction)
  * - Nearest Neighbor Optimization
  * - Visual Route Display
  */
@@ -32,9 +32,9 @@ import {
   Send
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
-import { consumeCredits } from '@/lib/credits/creditService';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Reorder, useDragControls } from 'framer-motion';
 import { AssignRouteDialog } from './AssignRouteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -75,7 +75,7 @@ const INITIAL_VIEW_STATE = {
 // ----------------------------------------------------------------------------
 
 export function RouteOptimizer() {
-  const { session } = useAuth(); // Assuming useAuth gives us the session/tenant
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
 
   // State
   const [stops, setStops] = useState<DeliveryStop[]>([]);
@@ -84,6 +84,7 @@ export function RouteOptimizer() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [mapRef, _setMapRef] = useState<unknown>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [showOutOfCredits, setShowOutOfCredits] = useState(false);
 
   // Mapbox Token
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -146,96 +147,80 @@ export function RouteOptimizer() {
       return;
     }
 
-    if (!session?.user?.id) {
-      toast.error("You must be logged in to optimize routes.");
-      return;
-    }
-
     setIsOptimizing(true);
 
     try {
-      // 1. Deduct Credit
-      // NOTE: In a real integration, ensure tenantId is available.
-      const tenantId = session?.user?.id || 'demo-tenant';
+      await executeCreditAction('route_optimize', async () => {
+        // Perform Optimization (Nearest Neighbor)
+        const startNode = stops[0];
+        const unvisited = stops.slice(1);
+        const optimizedOrder: DeliveryStop[] = [startNode];
 
-      const creditResult = await consumeCredits(tenantId, 'route_optimization', undefined, 'Optimized delivery route');
+        let currentNode = startNode;
 
-      if (!creditResult.success && creditResult.errorMessage !== 'No response from credit consumption') {
-        toast.error("Credit limit reached");
-        setIsOptimizing(false);
-        return;
-      }
+        while (unvisited.length > 0) {
+          let nearestIndex = -1;
+          let minDist = Infinity;
 
-      // 2. Perform Optimization (Nearest Neighbor)
-      const startNode = stops[0];
-      const unvisited = stops.slice(1);
-      const optimizedOrder: DeliveryStop[] = [startNode];
+          for (let i = 0; i < unvisited.length; i++) {
+            const target = unvisited[i];
+            const dx = target.lat - currentNode.lat;
+            const dy = target.lng - currentNode.lng;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-      let currentNode = startNode;
+            if (dist < minDist) {
+              minDist = dist;
+              nearestIndex = i;
+            }
+          }
 
-      while (unvisited.length > 0) {
-        let nearestIndex = -1;
-        let minDist = Infinity;
-
-        for (let i = 0; i < unvisited.length; i++) {
-          const target = unvisited[i];
-          const dx = target.lat - currentNode.lat;
-          const dy = target.lng - currentNode.lng;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < minDist) {
-            minDist = dist;
-            nearestIndex = i;
+          if (nearestIndex !== -1) {
+            const nextNode = unvisited[nearestIndex];
+            optimizedOrder.push(nextNode);
+            currentNode = nextNode;
+            unvisited.splice(nearestIndex, 1);
           }
         }
 
-        if (nearestIndex !== -1) {
-          const nextNode = unvisited[nearestIndex];
-          optimizedOrder.push(nextNode);
-          currentNode = nextNode;
-          unvisited.splice(nearestIndex, 1);
-        }
-      }
+        // Update Stops Order
+        setStops(optimizedOrder);
 
-      // 3. Update Stops Order
-      setStops(optimizedOrder);
+        // Fetch Route Geometry from Mapbox
+        if (mapboxToken) {
+          const coordinates = optimizedOrder.map(s => `${s.lng},${s.lat}`).join(';');
+          const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${mapboxToken}`;
 
-      // 4. Fetch Route Geometry from Mapbox
-      if (mapboxToken) {
-        const coordinates = optimizedOrder.map(s => `${s.lng},${s.lat}`).join(';');
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${mapboxToken}`;
+          const res = await fetch(url);
+          const data = await res.json();
 
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.routes && data.routes[0]) {
-          const route = data.routes[0];
-          setOptimizedRoute({
-            stops: optimizedOrder,
-            totalDistance: Math.round((route.distance / 1609.34) * 10) / 10, // meters to miles
-            totalTime: Math.round(route.duration / 60), // seconds to minutes
-            geometry: route.geometry
-          });
+          if (data.routes && data.routes[0]) {
+            const route = data.routes[0];
+            setOptimizedRoute({
+              stops: optimizedOrder,
+              totalDistance: Math.round((route.distance / 1609.34) * 10) / 10,
+              totalTime: Math.round(route.duration / 60),
+              geometry: route.geometry
+            });
+          } else {
+            setOptimizedRoute({
+              stops: optimizedOrder,
+              totalDistance: 0,
+              totalTime: 0
+            });
+            logger.warn('Mapbox did not return a route', data);
+          }
         } else {
-          // If mapbox fails to find route, still show the optimized stops but with 0 distance
           setOptimizedRoute({
             stops: optimizedOrder,
             totalDistance: 0,
             totalTime: 0
           });
-          logger.warn('Mapbox did not return a route', data);
         }
-      } else {
-        // Fallback if no token
-        setOptimizedRoute({
-          stops: optimizedOrder,
-          totalDistance: 0,
-          totalTime: 0
-        });
-      }
 
-      toast.success("Stops reordered for efficiency. 1 Credit utilized.");
-
+        toast.success("Route optimized successfully. 50 credits used.");
+      }, {
+        onInsufficientCredits: () => setShowOutOfCredits(true),
+      });
     } catch (error) {
       logger.error('Optimization failed', error as Error);
       toast.error("Could not calculate optimal route. Please try again.");
@@ -269,11 +254,11 @@ export function RouteOptimizer() {
             <div className="flex gap-2">
               <Button
                 onClick={handleOptimize}
-                disabled={isOptimizing || stops.length < 2}
+                disabled={isOptimizing || isPerforming || stops.length < 2}
                 className="flex-1"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                {isOptimizing ? 'Optimizing...' : 'Optimize (1 Credit)'}
+                {isOptimizing || isPerforming ? 'Optimizing...' : 'Optimize (50 Credits)'}
               </Button>
               <Button variant="outline" onClick={addStop}>
                 <MapPin className="h-4 w-4 mr-2" />
@@ -408,6 +393,12 @@ export function RouteOptimizer() {
         onOpenChange={setIsAssignDialogOpen}
         onAssign={handleAssignRoute}
         stopCount={stops.length}
+      />
+
+      <OutOfCreditsModal
+        open={showOutOfCredits}
+        onOpenChange={setShowOutOfCredits}
+        actionAttempted="route_optimize"
       />
     </div>
   );
