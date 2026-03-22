@@ -14,12 +14,18 @@ import {
   Mail,
   Phone,
   Loader2,
+  Coins,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { toast } from 'sonner';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { BulkCreditCalculator, useBulkCreditCalculator } from '@/components/credits/BulkCreditCalculator';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
 import { formatPhoneNumber } from '@/lib/formatters';
+import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -37,6 +43,16 @@ export const CustomerMessaging = () => {
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
   const [channel, setChannel] = useState<'email' | 'sms'>('email');
+
+  // Credit gating for bulk SMS (20 credits per recipient)
+  const {
+    execute: executeCreditAction,
+    isExecuting: isCreditExecuting,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isFreeTier,
+  } = useCreditGatedAction();
 
   interface Customer {
     name: string;
@@ -69,32 +85,16 @@ export const CustomerMessaging = () => {
     return acc;
   }, []);
 
-  const filteredCustomers = filterStatus === 'all' 
-    ? customers 
+  const filteredCustomers = filterStatus === 'all'
+    ? customers
     : customers.filter((c: Customer) => c.status === filterStatus);
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) {
-      toast.error("Please enter a message to send.");
-      return;
-    }
+  // Estimated total credit cost for bulk SMS
+  const smsCreditCostPerRecipient = 20;
+  const totalSmsCreditCost = filteredCustomers.length * smsCreditCostPerRecipient;
 
-    if (channel === 'email' && !subject.trim()) {
-      toast.error("Please enter an email subject.");
-      return;
-    }
-
-    // Check free tier SMS/email limits (users with purchased credits bypass limits)
-    if (limitsApply) {
-      const limitType = channel === 'sms' ? 'sms_per_month' : 'emails_per_month';
-      const messageCount = filteredCustomers.length;
-      const limitCheck = checkLimit(limitType, messageCount);
-      if (!limitCheck.allowed) {
-        toast.error("Monthly ${channel.toUpperCase()} Limit Reached");
-        return;
-      }
-    }
-
+  // Perform the actual send (called after credit gate passes or for non-SMS channels)
+  const performSend = async () => {
     setSending(true);
     try {
       // Simulate sending (would call edge function in production)
@@ -107,15 +107,78 @@ export const CustomerMessaging = () => {
         }
       }
 
-      toast.success("Successfully sent ${filteredCustomers.length} ${channel} messages.");
+      toast.success(`Successfully sent ${filteredCustomers.length} ${channel} messages.`);
 
       setMessage('');
       setSubject('');
-    } catch {
-      toast.error("Send Failed");
+    } catch (error: unknown) {
+      logger.error('Failed to send bulk messages', error, {
+        component: 'CustomerMessaging',
+        channel,
+        recipientCount: filteredCustomers.length,
+      });
+      toast.error('Send Failed');
     } finally {
       setSending(false);
     }
+  };
+
+  // Bulk credit calculator for SMS cost confirmation
+  const bulkCalculator = useBulkCreditCalculator({
+    actionKey: 'send_bulk_sms',
+    itemCount: filteredCustomers.length,
+    actionDescription: `Send SMS to ${filteredCustomers.length} recipient${filteredCustomers.length !== 1 ? 's' : ''}`,
+    onConfirm: async () => {
+      // After cost confirmation, gate with credit consumption
+      await executeCreditAction({
+        actionKey: 'send_bulk_sms',
+        action: performSend,
+        referenceType: 'bulk_sms',
+        onSuccess: () => {
+          logger.info('Bulk SMS sent with credit gate', {
+            recipientCount: filteredCustomers.length,
+            totalCost: totalSmsCreditCost,
+          });
+        },
+        onError: (err) => {
+          logger.error('Bulk SMS credit-gated action failed', err, {
+            component: 'CustomerMessaging',
+          });
+        },
+      });
+    },
+  });
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) {
+      toast.error('Please enter a message to send.');
+      return;
+    }
+
+    if (channel === 'email' && !subject.trim()) {
+      toast.error('Please enter an email subject.');
+      return;
+    }
+
+    // Check free tier SMS/email limits (users with purchased credits bypass limits)
+    if (limitsApply) {
+      const limitType = channel === 'sms' ? 'sms_per_month' : 'emails_per_month';
+      const messageCount = filteredCustomers.length;
+      const limitCheck = checkLimit(limitType, messageCount);
+      if (!limitCheck.allowed) {
+        toast.error(`Monthly ${channel.toUpperCase()} Limit Reached`);
+        return;
+      }
+    }
+
+    // For SMS: show bulk credit calculator for cost confirmation
+    if (channel === 'sms') {
+      bulkCalculator.open();
+      return;
+    }
+
+    // For email: send directly (no credit gate for email in this task)
+    await performSend();
   };
 
   return (
@@ -172,9 +235,19 @@ export const CustomerMessaging = () => {
             </Select>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>{filteredCustomers.length} recipients selected</span>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>{filteredCustomers.length} recipients selected</span>
+            </div>
+            {channel === 'sms' && filteredCustomers.length > 0 && isFreeTier && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <Coins className="h-3.5 w-3.5" />
+                <span>Est. {totalSmsCreditCost.toLocaleString()} credits</span>
+                <CreditCostBadge cost={smsCreditCostPerRecipient} compact showTooltip={false} />
+                <span className="text-muted-foreground/60">/ each</span>
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -201,13 +274,13 @@ export const CustomerMessaging = () => {
             />
           </div>
 
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={sending || filteredCustomers.length === 0}
+          <Button
+            onClick={handleSendMessage}
+            disabled={sending || isCreditExecuting || filteredCustomers.length === 0}
             className="w-full"
             size="lg"
           >
-            {sending ? (
+            {sending || isCreditExecuting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Sending...
@@ -216,6 +289,11 @@ export const CustomerMessaging = () => {
               <>
                 <Send className="h-4 w-4 mr-2" />
                 Send to {filteredCustomers.length} Customer{filteredCustomers.length !== 1 ? 's' : ''}
+                {channel === 'sms' && filteredCustomers.length > 0 && isFreeTier && (
+                  <span className="ml-1 text-xs opacity-80">
+                    ({totalSmsCreditCost} credits)
+                  </span>
+                )}
               </>
             )}
           </Button>
@@ -268,6 +346,18 @@ export const CustomerMessaging = () => {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Bulk SMS Credit Cost Calculator */}
+      <BulkCreditCalculator {...bulkCalculator.calculatorProps} />
+
+      {/* Out of Credits Modal */}
+      {showOutOfCreditsModal && (
+        <OutOfCreditsModal
+          open={showOutOfCreditsModal}
+          onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+          actionAttempted={blockedAction ?? undefined}
+        />
+      )}
     </div>
   );
 };
