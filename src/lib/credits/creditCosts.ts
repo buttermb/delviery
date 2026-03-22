@@ -1043,6 +1043,45 @@ export const CREDIT_COSTS: Record<string, CreditCost> = {
   },
 
   // ============================================================================
+  // AUTOMATION
+  // ============================================================================
+  automation_run: {
+    actionKey: 'automation_run',
+    actionName: 'Run Automation',
+    credits: 10,
+    category: 'integrations',
+    description: 'Base cost per automation rule execution',
+  },
+  automation_action_send_email: {
+    actionKey: 'automation_action_send_email',
+    actionName: 'Automation: Send Email',
+    credits: 10,
+    category: 'integrations',
+    description: 'Automation action: send email notification',
+  },
+  automation_action_send_sms: {
+    actionKey: 'automation_action_send_sms',
+    actionName: 'Automation: Send SMS',
+    credits: 25,
+    category: 'integrations',
+    description: 'Automation action: send SMS notification',
+  },
+  automation_action_create_task: {
+    actionKey: 'automation_action_create_task',
+    actionName: 'Automation: Create Task',
+    credits: 5,
+    category: 'integrations',
+    description: 'Automation action: create a task',
+  },
+  automation_action_update_status: {
+    actionKey: 'automation_action_update_status',
+    actionName: 'Automation: Update Status',
+    credits: 0,
+    category: 'integrations',
+    description: 'Automation action: update status (free)',
+  },
+
+  // ============================================================================
   // INTEGRATIONS & API
   // ============================================================================
   webhook_view: {
@@ -1366,6 +1405,7 @@ export const FREE_ACTIONS = [
   'locations_manage',
   'order_update_status',
   'order_cancel',
+  'automation_action_update_status',
 ] as const;
 
 /**
@@ -1375,6 +1415,35 @@ export type FreeAction = typeof FREE_ACTIONS[number];
 
 export function isActionFree(actionKey: string): boolean {
   return FREE_ACTIONS.includes(actionKey as FreeAction) || getCreditCost(actionKey) === 0;
+}
+
+/**
+ * Map automation action_type to credit action key
+ * Used by both the automation_rules table (action_type field)
+ * and legacy tenant_settings automation rules
+ */
+export const AUTOMATION_ACTION_CREDIT_MAP: Record<string, string> = {
+  // automation_rules table action types
+  send_email: 'automation_action_send_email',
+  send_sms: 'automation_action_send_sms',
+  create_task: 'automation_action_create_task',
+  update_status: 'automation_action_update_status',
+  // Legacy tenant_settings rule identifiers
+  low_stock_alert: 'alert_triggered',
+  daily_revenue_summary: 'automation_run',
+};
+
+/**
+ * Calculate total credit cost for an automation rule based on its actions
+ * Returns base cost (automation_run) + sum of action costs
+ */
+export function calculateAutomationCreditCost(actionTypes: string[]): number {
+  const baseCost = getCreditCost('automation_run');
+  const actionCost = actionTypes.reduce((sum, actionType) => {
+    const creditKey = AUTOMATION_ACTION_CREDIT_MAP[actionType];
+    return sum + (creditKey ? getCreditCost(creditKey) : 0);
+  }, 0);
+  return baseCost + actionCost;
 }
 
 /**
