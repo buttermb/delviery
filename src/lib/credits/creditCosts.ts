@@ -1481,9 +1481,10 @@ export const BEHAVIORAL_TRIGGERS = {
 
 /**
  * High cost threshold (requires confirmation dialog)
- * Lowered so users see confirmations more often
+ * Actions costing >= this many credits show CreditConfirmDialog
+ * before executing for free-tier users
  */
-export const HIGH_COST_THRESHOLD = 75;
+export const HIGH_COST_THRESHOLD = 50;
 
 /**
  * Grace period configuration
