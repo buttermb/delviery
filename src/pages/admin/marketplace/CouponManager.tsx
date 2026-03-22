@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { formatCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 type Coupon = {
     id: string;
@@ -46,6 +47,7 @@ type Coupon = {
 export default function CouponManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
+    const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Form state
@@ -127,12 +129,14 @@ export default function CouponManager() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         if (!newCoupon.code || !newCoupon.amount) {
             toast.error("Please fill in required fields (Code and Value)");
             return;
         }
-        createCoupon.mutate(newCoupon);
+        await executeCreditAction('marketplace_coupon_created', async () => {
+            await createCoupon.mutateAsync(newCoupon);
+        });
     };
 
     if (isLoading) return <EnhancedLoadingState variant="table" message="Loading coupons..." />;
@@ -220,8 +224,8 @@ export default function CouponManager() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={handleCreate} disabled={createCoupon.isPending}>
-                                {createCoupon.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Button onClick={handleCreate} disabled={createCoupon.isPending || isPerforming}>
+                                {(createCoupon.isPending || isPerforming) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Create Coupon
                             </Button>
                         </DialogFooter>
