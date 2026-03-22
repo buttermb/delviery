@@ -19,6 +19,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { humanizeError } from '@/lib/humanizeError';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 interface FrontedItem {
   id: string;
@@ -55,6 +57,13 @@ export default function FrontedInventory() {
   const [frontedItems, setFrontedItems] = useState<FrontedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const {
+    execute: executeCreditAction,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+    isExecuting: isSendingReminder,
+  } = useCreditGatedAction();
 
   // Enable realtime sync for inventory changes
   useRealtimeSync({
@@ -103,7 +112,6 @@ export default function FrontedInventory() {
       }
 
       setFrontedItems(data ?? []);
-      setFrontedItems(data ?? []);
     } catch (error) {
       handleError(error, { component: 'FrontedInventory', toastTitle: 'Error loading fronted inventory' });
     } finally {
@@ -137,6 +145,31 @@ export default function FrontedInventory() {
   };
 
   const overview = calculateOverview();
+
+  const handleSendReminder = async (item: FrontedItem) => {
+    await executeCreditAction({
+      actionKey: 'who_owes_me_reminder',
+      action: async () => {
+        // TODO: integrate with actual SMS/notification edge function
+        logger.info('Payment reminder sent', {
+          itemId: item.id,
+          customerName: item.fronted_to_customer_name,
+        });
+        return { sent: true };
+      },
+      referenceId: item.id,
+      referenceType: 'fronted_inventory',
+      onSuccess: () => {
+        toast.success('Payment reminder sent', {
+          description: `Reminder sent to ${item.fronted_to_customer_name || 'customer'}`,
+        });
+      },
+      onError: (error) => {
+        logger.error('Failed to send payment reminder', error, { itemId: item.id });
+        toast.error('Failed to send reminder');
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -300,9 +333,14 @@ export default function FrontedInventory() {
                         <CreditCard className="h-4 w-4 mr-1" />
                         Record Payment
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSendingReminder}
+                        onClick={() => handleSendReminder(item)}
+                      >
                         <MessageCircle className="h-4 w-4 mr-1" />
-                        Contact
+                        Send Reminder
                       </Button>
                     </div>
                   </CardContent>
@@ -312,6 +350,12 @@ export default function FrontedInventory() {
           )}
         </div>
       </div>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </div>
   );
 }
