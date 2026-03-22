@@ -146,7 +146,7 @@ export default function SelectPlanPage() {
           tenantId,
         });
         toast.info("You already have an active subscription. Redirecting to billing...");
-        navigate(`/${tenant.slug}/admin/settings/billing`, { replace: true });
+        navigate(`/${tenant.slug}/admin/settings?tab=payments`, { replace: true });
       }
     }
 
