@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import { formatMenuUrl } from '@/utils/menuHelpers';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { cn } from '@/lib/utils';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { formatSmartDate } from '@/lib/formatters';
@@ -86,6 +87,7 @@ export const MenuShareDialogEnhanced = ({
 
   const { data: customers } = useWholesaleClients();
   const { data: whitelist } = useMenuWhitelist(menu?.id);
+  const { execute: executeCreditGated } = useCreditGatedAction();
 
   const menuUrl = formatMenuUrl(
     menu?.encrypted_url_token,
@@ -132,11 +134,28 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
     }
   }, [activeTab, menuUrl, accessCode, menu?.expiration_date, smsMessage, isForumMenu]);
 
+  // Track share actions through credit gate (FREE, 0 credits - tracking only)
+  const trackShareAction = useCallback(
+    async (shareMethod: string, action: () => void) => {
+      await executeCreditGated({
+        actionKey: 'menu_share_link',
+        action: async () => {
+          action();
+        },
+        referenceId: menu?.id,
+        referenceType: `menu_share_${shareMethod}`,
+      });
+    },
+    [executeCreditGated, menu?.id]
+  );
+
   const handleCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    showSuccessToast(`${label} Copied`, 'Copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
+    void trackShareAction('copy', () => {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      showSuccessToast(`${label} Copied`, 'Copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   const handleDownloadQR = async () => {
@@ -241,38 +260,42 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
   };
 
   const handleWhatsApp = () => {
-    const message = isForumMenu
-      ? `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
-      `You've been granted access to our community forum.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
-      `Join the discussion, share reviews, and connect with other customers!\n\n` +
-      `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`
-      : `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
-      `You've been granted access to our wholesale catalog.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `Access Code: ${accessCode}\n\n` +
-      `This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+    void trackShareAction('whatsapp', () => {
+      const message = isForumMenu
+        ? `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
+        `You've been granted access to our community forum.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+        `Join the discussion, share reviews, and connect with other customers!\n\n` +
+        `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`
+        : `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
+        `You've been granted access to our wholesale catalog.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `Access Code: ${accessCode}\n\n` +
+        `This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+    });
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Access to ${menu?.name}`);
-    const body = isForumMenu
-      ? `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
-      `You've been granted access to our community forum.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
-      `Join the discussion, share reviews, and connect with other customers!\n\n` +
-      `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
-      `Best regards`
-      : `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
-      `You've been granted access to our wholesale catalog.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `Access Code: ${accessCode}\n\n` +
-      `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
-      `Best regards`;
-    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank', 'noopener,noreferrer');
+    void trackShareAction('email', () => {
+      const subject = encodeURIComponent(`Access to ${menu?.name}`);
+      const body = isForumMenu
+        ? `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
+        `You've been granted access to our community forum.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+        `Join the discussion, share reviews, and connect with other customers!\n\n` +
+        `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
+        `Best regards`
+        : `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
+        `You've been granted access to our wholesale catalog.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `Access Code: ${accessCode}\n\n` +
+        `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
+        `Best regards`;
+      window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank', 'noopener,noreferrer');
+    });
   };
 
   return (
