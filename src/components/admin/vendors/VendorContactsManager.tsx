@@ -79,9 +79,12 @@ import {
   type ContactDepartment,
   type ContactHistoryAction,
 } from '@/hooks/useVendorContacts';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { CreditCostBadge } from '@/components/credits/CreditCostBadge';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { formatSmartDate } from '@/lib/formatters';
 
 // ============================================================================
@@ -138,6 +141,9 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
     isDeleting,
     isSettingPrimary,
   } = useVendorContacts(vendorId);
+
+  const { execute: executeCreditAction, isFreeTier } = useCreditGatedAction();
+  const [showOutOfCreditsModal, setShowOutOfCreditsModal] = useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -254,22 +260,28 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
   const handleCall = (contact: VendorContact) => {
     if (contact.phone) {
       window.open(`tel:${contact.phone}`, '_self');
-      logInteraction({
-        vendor_contact_id: contact.id,
-        action: 'call',
-        summary: `Called ${contact.name}`,
-      }).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
+      executeCreditAction('crm_log_interaction', () =>
+        logInteraction({
+          vendor_contact_id: contact.id,
+          action: 'call',
+          summary: `Called ${contact.name}`,
+        }),
+        { onInsufficientCredits: () => setShowOutOfCreditsModal(true) }
+      ).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
     }
   };
 
   const handleEmail = (contact: VendorContact) => {
     if (contact.email) {
       window.open(`mailto:${contact.email}`, '_blank', 'noopener,noreferrer');
-      logInteraction({
-        vendor_contact_id: contact.id,
-        action: 'email',
-        summary: `Emailed ${contact.name}`,
-      }).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
+      executeCreditAction('crm_log_interaction', () =>
+        logInteraction({
+          vendor_contact_id: contact.id,
+          action: 'email',
+          summary: `Emailed ${contact.name}`,
+        }),
+        { onInsufficientCredits: () => setShowOutOfCreditsModal(true) }
+      ).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
     }
   };
 
@@ -301,13 +313,18 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
   const handleLogInteraction = async (values: HistoryFormValues) => {
     if (!selectedContactForHistory) return;
     try {
-      await logInteraction({
-        vendor_contact_id: selectedContactForHistory.id,
-        action: values.action as ContactHistoryAction,
-        summary: values.summary || undefined,
-      });
-      toast.success('Interaction logged');
-      historyForm.reset();
+      const result = await executeCreditAction('crm_log_interaction', () =>
+        logInteraction({
+          vendor_contact_id: selectedContactForHistory.id,
+          action: values.action as ContactHistoryAction,
+          summary: values.summary || undefined,
+        }),
+        { onInsufficientCredits: () => setShowOutOfCreditsModal(true) }
+      );
+      if (result !== null) {
+        toast.success('Interaction logged');
+        historyForm.reset();
+      }
     } catch (error) {
       logger.error('Failed to log interaction', error, { component: 'VendorContactsManager' });
       toast.error('Failed to log interaction', { description: humanizeError(error) });
@@ -561,6 +578,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
         }}
         form={historyForm}
         onSubmit={handleLogInteraction}
+        isFreeTier={isFreeTier}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -572,6 +590,13 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
         description="Are you sure you want to delete this contact? This action cannot be undone."
         itemType="contact"
         isLoading={isDeleting}
+      />
+
+      {/* Out of Credits Modal */}
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={setShowOutOfCreditsModal}
+        actionAttempted="Log Interaction"
       />
     </>
   );
@@ -732,6 +757,7 @@ interface ContactHistoryDialogProps {
   onClose: () => void;
   form: ReturnType<typeof useForm<HistoryFormValues>>;
   onSubmit: (values: HistoryFormValues) => Promise<void>;
+  isFreeTier: boolean;
 }
 
 function ContactHistoryDialog({
@@ -740,6 +766,7 @@ function ContactHistoryDialog({
   onClose,
   form,
   onSubmit,
+  isFreeTier,
 }: ContactHistoryDialogProps) {
   const { data: history, isLoading } = useVendorContactHistory(contact?.id ?? '');
 
@@ -814,10 +841,13 @@ function ContactHistoryDialog({
                 )}
               />
 
-              <Button type="submit" size="sm" disabled={!form.watch('action')}>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Log Interaction
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button type="submit" size="sm" disabled={!form.watch('action')}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Log Interaction
+                </Button>
+                {isFreeTier && <CreditCostBadge actionKey="crm_log_interaction" />}
+              </div>
             </form>
           </Form>
         </div>
