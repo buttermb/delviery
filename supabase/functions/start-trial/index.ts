@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { validateStartTrial } from './validation.ts';
 import { validateStripeSecretKey } from '../_shared/validation.ts';
@@ -126,22 +127,12 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Get or create Stripe customer
-    let customerId = tenant.stripe_customer_id;
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: tenant.owner_email,
-        name: tenant.business_name,
-        metadata: { tenant_id: tenant.id },
-      });
-      customerId = customer.id;
-
-      await supabaseClient
-        .from("tenants")
-        .update({ stripe_customer_id: customerId })
-        .eq("id", tenant_id);
-    }
+    // Get or create Stripe customer (idempotent)
+    const customerId = await getOrCreateStripeCustomer({
+      stripe,
+      supabase: supabaseClient,
+      tenant,
+    });
 
     // Build checkout session options
     const origin = req.headers.get("origin") || 'https://app.floraiq.com';

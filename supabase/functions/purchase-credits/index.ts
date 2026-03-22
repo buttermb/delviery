@@ -5,6 +5,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 
 const RequestSchema = z.object({
@@ -114,26 +115,13 @@ serve(async (req) => {
       );
     }
 
-    // Get or create Stripe customer
-    let stripeCustomerId = tenant.stripe_customer_id;
-
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          tenant_id: tenant_id,
-          tenant_slug: tenant.slug,
-        },
-      });
-
-      stripeCustomerId = customer.id;
-
-      // Update tenant with Stripe customer ID
-      await supabase
-        .from('tenants')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', tenant_id);
-    }
+    // Get or create Stripe customer (idempotent)
+    const stripeCustomerId = await getOrCreateStripeCustomer({
+      stripe,
+      supabase,
+      tenant,
+      email: user.email,
+    });
 
     // Get or create Stripe price for this package
     let stripePriceId = creditPackage.stripe_price_id;
