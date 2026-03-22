@@ -1,20 +1,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { withCreditGate, CREDIT_ACTIONS } from "../_shared/creditGate.ts";
 import { errorResponse } from "../_shared/error-response.ts";
+import { corsHeaders } from "../_shared/deps.ts";
 
 /**
  * Order Ready SMS Notification Edge Function
  * Sends SMS/Email to customer when their order is ready for pickup
- * 
- * Note: This function provides the structure for SMS sending.
- * In production, integrate with Twilio, AWS SNS, or similar service.
+ *
+ * Credit cost: 25 credits (action_key: send_sms)
  */
-
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 interface NotificationRequest {
     order_id: string;
@@ -30,12 +24,7 @@ Deno.serve(async (req: Request) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
-    try {
-        const supabase = createClient(
-            Deno.env.get("SUPABASE_URL") ?? "",
-            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-        );
-
+    return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, supabase) => {
         const body: NotificationRequest = await req.json();
         const { order_id, phone, email, store_name, order_number } = body;
 
@@ -60,7 +49,7 @@ Deno.serve(async (req: Request) => {
         const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
         const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
         const twilioFromNumber = Deno.env.get("TWILIO_FROM_NUMBER");
-    
+
         if (twilioAccountSid && twilioAuthToken && twilioFromNumber) {
           const twilioResponse = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
@@ -77,7 +66,7 @@ Deno.serve(async (req: Request) => {
               }),
             }
           );
-    
+
           if (!twilioResponse.ok) {
             const errorText = await twilioResponse.text();
             console.error("Twilio error:", errorText);
@@ -119,9 +108,9 @@ Deno.serve(async (req: Request) => {
                 headers: { ...corsHeaders, "Content-Type": "application/json" }
             }
         );
-
-    } catch (error) {
-        console.error("Error sending notification:", error);
-        return errorResponse(500, error instanceof Error ? error.message : "Internal server error");
-    }
+    }, {
+        referenceId: undefined,
+        referenceType: 'order_notification',
+        description: 'Order ready SMS notification',
+    });
 });
