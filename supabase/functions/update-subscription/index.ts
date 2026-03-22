@@ -85,6 +85,16 @@ serve(async (req) => {
       );
     }
 
+    // Verify caller has admin or owner role — viewers/staff cannot modify subscriptions
+    const userRole = tenantUser?.role;
+    if (userRole !== 'admin' && userRole !== 'owner') {
+      logStep('ERROR: Insufficient permissions — admin or owner role required', { role: userRole });
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions - admin or owner access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const tenant_id = resolvedTenantId;
 
     logStep('Fetching tenant', { tenantId: tenant_id });
@@ -112,7 +122,7 @@ serve(async (req) => {
       .from("subscription_plans")
       .select("*")
       .eq("id", plan_id)
-      .single();
+      .maybeSingle();
 
     if (planError || !plan) {
       logStep('ERROR: Plan not found', { error: planError?.message });
