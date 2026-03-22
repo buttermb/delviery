@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Mail, Loader2, Users, CheckCircle2 } from "lucide-react";
+import { Mail, Loader2, Users, CheckCircle2, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -29,6 +29,9 @@ import { logger } from "@/lib/logger";
 import { humanizeError } from "@/lib/humanizeError";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { useCreditGatedAction } from "@/hooks/useCredits";
+import { getCreditCost } from "@/lib/credits";
+import { OutOfCreditsModal } from "@/components/credits/OutOfCreditsModal";
 
 interface BulkEmailDialogProps {
   open: boolean;
@@ -66,6 +69,7 @@ export function BulkEmailDialog({
   preSelectedCustomerIds = [],
 }: BulkEmailDialogProps) {
   const { tenant } = useTenantAdminAuth();
+  const { execute: executeCreditAction, isPerforming } = useCreditGatedAction();
   const [template, setTemplate] = useState<EmailTemplate>("custom");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -74,6 +78,10 @@ export function BulkEmailDialog({
   );
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [showOutOfCredits, setShowOutOfCredits] = useState(false);
+
+  const perRecipientCost = getCreditCost("send_bulk_email");
+  const totalCreditCost = selectedCustomers.length * perRecipientCost;
 
   // Fetch customers
   const { data: customers = [] } = useQuery({
@@ -130,14 +138,11 @@ export function BulkEmailDialog({
 
     setIsSending(true);
 
-    try {
-      // In a real implementation, this would call an email service
-      // For now, we'll just log the emails that would be sent
+    const result = await executeCreditAction("send_bulk_email", async () => {
       const selectedCustomerData = customers.filter((c) =>
         selectedCustomers.includes(c.id)
       );
 
-      // Simulate sending emails
       const emailPromises = selectedCustomerData.map(async (customer) => {
         const personalizedSubject = subject
           .replace("{business_name}", tenant.business_name)
@@ -153,7 +158,6 @@ export function BulkEmailDialog({
             `${customer.first_name} ${customer.last_name}`
           );
 
-        // Log email (in production, would call email service API)
         logger.info("Sending email", {
           to: customer.email,
           subject: personalizedSubject,
@@ -161,7 +165,6 @@ export function BulkEmailDialog({
           component: "BulkEmailDialog",
         });
 
-        // Store in database for record keeping
         await supabase.from("email_logs").insert({
           tenant_id: tenant.id,
           customer_id: customer.id,
@@ -173,31 +176,31 @@ export function BulkEmailDialog({
       });
 
       await Promise.all(emailPromises);
+    }, {
+      onInsufficientCredits: () => setShowOutOfCredits(true),
+    });
 
-      setIsSent(true);
-      toast.success("Emails queued successfully!", {
-        description: `${selectedCustomers.length} email${selectedCustomers.length > 1 ? "s" : ""} will be sent shortly.`,
-      });
-
-      // Reset after delay
-      setTimeout(() => {
-        setIsSent(false);
-        setSelectedCustomers([]);
-        setSubject("");
-        setBody("");
-        setTemplate("custom");
-        onOpenChange(false);
-      }, 2000);
-    } catch (error: unknown) {
-      logger.error("Failed to send bulk emails", error, {
-        component: "BulkEmailDialog",
-      });
-      toast.error("Failed to send emails", {
-        description: humanizeError(error),
-      });
-    } finally {
+    if (result === null) {
+      // Credit gate blocked or action failed
       setIsSending(false);
+      return;
     }
+
+    setIsSent(true);
+    toast.success("Emails queued successfully!", {
+      description: `${selectedCustomers.length} email${selectedCustomers.length > 1 ? "s" : ""} will be sent shortly.`,
+    });
+
+    setTimeout(() => {
+      setIsSent(false);
+      setSelectedCustomers([]);
+      setSubject("");
+      setBody("");
+      setTemplate("custom");
+      onOpenChange(false);
+    }, 2000);
+
+    setIsSending(false);
   };
 
   return (
@@ -272,6 +275,19 @@ export function BulkEmailDialog({
               />
             </div>
 
+            {/* Estimated Credit Cost */}
+            {selectedCustomers.length > 0 && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30" data-testid="credit-cost-estimate">
+                <Coins className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                <span className="text-sm">
+                  Estimated cost:{" "}
+                  <span className="font-semibold">
+                    {selectedCustomers.length} recipient{selectedCustomers.length !== 1 ? "s" : ""} × {perRecipientCost} credits = {totalCreditCost} credits
+                  </span>
+                </span>
+              </div>
+            )}
+
             {/* Recipients */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -335,7 +351,7 @@ export function BulkEmailDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isSending || isSent}
+            disabled={isSending || isPerforming || isSent}
           >
             Cancel
           </Button>
@@ -343,13 +359,14 @@ export function BulkEmailDialog({
             onClick={handleSend}
             disabled={
               isSending ||
+              isPerforming ||
               isSent ||
               selectedCustomers.length === 0 ||
               !subject.trim() ||
               !body.trim()
             }
           >
-            {isSending ? (
+            {isSending || isPerforming ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sending...
@@ -359,11 +376,22 @@ export function BulkEmailDialog({
                 <Mail className="mr-2 h-4 w-4" />
                 Send to {selectedCustomers.length} customer
                 {selectedCustomers.length !== 1 ? "s" : ""}
+                {totalCreditCost > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {totalCreditCost} cr
+                  </Badge>
+                )}
               </>
             )}
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <OutOfCreditsModal
+        open={showOutOfCredits}
+        onOpenChange={setShowOutOfCredits}
+        actionAttempted="send_bulk_email"
+      />
     </Dialog>
   );
 }
