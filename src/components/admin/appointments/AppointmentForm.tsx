@@ -36,6 +36,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { useCreditGatedAction } from "@/hooks/useCredits";
+import { CreditCostBadge } from "@/components/credits/CreditCostBadge";
 
 const appointmentSchema = z.object({
   customer_id: z.string().min(1, "Customer is required"),
@@ -62,6 +64,7 @@ export function AppointmentForm({
 }: AppointmentFormProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentSchema),
@@ -120,13 +123,15 @@ export function AppointmentForm({
   });
 
   const onSubmit = async (values: AppointmentFormValues) => {
-    await createMutation.mutateAsync({
-      customer_id: sanitizeFormInput(values.customer_id),
-      scheduled_at: values.scheduled_at,
-      duration_minutes: parseInt(values.duration_minutes, 10),
-      appointment_type: values.appointment_type,
-      notes: values.notes ? sanitizeTextareaInput(values.notes, 1000) : null,
-      status: "scheduled",
+    await executeCreditAction('appointment_create', async () => {
+      await createMutation.mutateAsync({
+        customer_id: sanitizeFormInput(values.customer_id),
+        scheduled_at: values.scheduled_at,
+        duration_minutes: parseInt(values.duration_minutes, 10),
+        appointment_type: values.appointment_type,
+        notes: values.notes ? sanitizeTextareaInput(values.notes, 1000) : null,
+        status: "scheduled",
+      });
     });
   };
 
@@ -264,6 +269,7 @@ export function AppointmentForm({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Schedule Appointment
+                <CreditCostBadge actionKey="appointment_create" compact />
               </Button>
             </div>
           </form>
