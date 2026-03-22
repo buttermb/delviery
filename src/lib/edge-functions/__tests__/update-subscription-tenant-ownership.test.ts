@@ -1,13 +1,13 @@
 /**
- * Update Subscription Edge Function — Tenant Ownership Verification Tests
+ * Update Subscription — Tenant Ownership Verification Tests
  *
- * Verifies that the update-subscription edge function correctly:
- * 1. Requires authentication (JWT in Authorization header)
- * 2. Resolves tenant_id from tenant_users — never trusts client-supplied value
- * 3. Returns 403 when client-supplied tenant_id does not match resolved tenant_id
- * 4. Returns 403 when user has no tenant association
- * 5. Returns 400 when required parameters are missing
- * 6. Proceeds with subscription update only when ownership is verified
+ * Verifies the update-subscription edge function enforces tenant ownership:
+ * 1. Requires valid Authorization header
+ * 2. Rejects unauthenticated users
+ * 3. Rejects users with no tenant association
+ * 4. Rejects cross-tenant requests (resolved tenant_id !== client tenant_id)
+ * 5. Accepts valid requests where tenant ownership is confirmed
+ * 6. Validates required parameters
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -16,11 +16,9 @@ const SUPABASE_URL = 'https://aejugtmhwwknrowfyzie.supabase.co';
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 const ENDPOINT = `${FUNCTIONS_URL}/update-subscription`;
 
-// Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Helper to create mock responses
 const createMockResponse = (data: unknown, status = 200) => ({
   ok: status >= 200 && status < 300,
   status,
@@ -28,7 +26,7 @@ const createMockResponse = (data: unknown, status = 200) => ({
   headers: new Headers({ 'Content-Type': 'application/json' }),
 });
 
-describe('update-subscription tenant ownership verification', () => {
+describe('update-subscription tenant ownership', () => {
   beforeEach(() => {
     mockFetch.mockClear();
   });
@@ -38,7 +36,7 @@ describe('update-subscription tenant ownership verification', () => {
   });
 
   describe('authentication', () => {
-    it('should reject requests without Authorization header', async () => {
+    it('should reject requests without authorization header', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing authorization header' }, 401)
       );
@@ -46,10 +44,7 @@ describe('update-subscription tenant ownership verification', () => {
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-          plan_id: 'plan-456',
-        }),
+        body: JSON.stringify({ tenant_id: 'tenant-123', plan_id: 'plan-456' }),
       });
 
       expect(response.status).toBe(401);
@@ -57,7 +52,7 @@ describe('update-subscription tenant ownership verification', () => {
       expect(data.error).toBe('Missing authorization header');
     });
 
-    it('should reject requests with invalid authentication token', async () => {
+    it('should reject requests with invalid token', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'User not authenticated' }, 401)
       );
@@ -66,12 +61,9 @@ describe('update-subscription tenant ownership verification', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer invalid-token',
+          Authorization: 'Bearer invalid-expired-token',
         },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-          plan_id: 'plan-456',
-        }),
+        body: JSON.stringify({ tenant_id: 'tenant-123', plan_id: 'plan-456' }),
       });
 
       expect(response.status).toBe(401);
@@ -81,7 +73,7 @@ describe('update-subscription tenant ownership verification', () => {
   });
 
   describe('tenant ownership verification', () => {
-    it('should return 403 when user has no tenant association', async () => {
+    it('should reject user with no tenant association (403)', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'No tenant associated with user' }, 403)
       );
@@ -92,10 +84,7 @@ describe('update-subscription tenant ownership verification', () => {
           'Content-Type': 'application/json',
           Authorization: 'Bearer valid-token-no-tenant',
         },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-          plan_id: 'plan-456',
-        }),
+        body: JSON.stringify({ tenant_id: 'tenant-123', plan_id: 'plan-456' }),
       });
 
       expect(response.status).toBe(403);
@@ -103,7 +92,7 @@ describe('update-subscription tenant ownership verification', () => {
       expect(data.error).toBe('No tenant associated with user');
     });
 
-    it('should return 403 when client tenant_id does not match resolved tenant_id', async () => {
+    it('should reject cross-tenant requests (resolved tenant_id !== client tenant_id)', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Not authorized for this tenant' }, 403)
       );
@@ -115,7 +104,7 @@ describe('update-subscription tenant ownership verification', () => {
           Authorization: 'Bearer valid-token-tenant-a',
         },
         body: JSON.stringify({
-          tenant_id: 'tenant-b-id', // Different from user's actual tenant
+          tenant_id: 'tenant-b-different',
           plan_id: 'plan-456',
         }),
       });
@@ -125,16 +114,16 @@ describe('update-subscription tenant ownership verification', () => {
       expect(data.error).toBe('Not authorized for this tenant');
     });
 
-    it('should proceed when tenant ownership is verified', async () => {
+    it('should accept request when resolved tenant matches client tenant', async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse({ url: 'https://checkout.stripe.com/session-123' })
+        createMockResponse({ url: 'https://checkout.stripe.com/session/test' })
       );
 
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-owner-token',
+          Authorization: 'Bearer valid-token-owner',
         },
         body: JSON.stringify({
           tenant_id: 'tenant-123',
@@ -149,8 +138,8 @@ describe('update-subscription tenant ownership verification', () => {
     });
   });
 
-  describe('input validation', () => {
-    it('should return 400 when tenant_id is missing', async () => {
+  describe('parameter validation', () => {
+    it('should reject request missing tenant_id', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
       );
@@ -161,9 +150,7 @@ describe('update-subscription tenant ownership verification', () => {
           'Content-Type': 'application/json',
           Authorization: 'Bearer valid-token',
         },
-        body: JSON.stringify({
-          plan_id: 'plan-456',
-        }),
+        body: JSON.stringify({ plan_id: 'plan-456' }),
       });
 
       expect(response.status).toBe(400);
@@ -171,7 +158,7 @@ describe('update-subscription tenant ownership verification', () => {
       expect(data.error).toBe('Missing tenant_id or plan_id');
     });
 
-    it('should return 400 when plan_id is missing', async () => {
+    it('should reject request missing plan_id', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
       );
@@ -182,9 +169,7 @@ describe('update-subscription tenant ownership verification', () => {
           'Content-Type': 'application/json',
           Authorization: 'Bearer valid-token',
         },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-        }),
+        body: JSON.stringify({ tenant_id: 'tenant-123' }),
       });
 
       expect(response.status).toBe(400);
@@ -192,7 +177,7 @@ describe('update-subscription tenant ownership verification', () => {
       expect(data.error).toBe('Missing tenant_id or plan_id');
     });
 
-    it('should return 400 when both tenant_id and plan_id are missing', async () => {
+    it('should reject request with no body parameters', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ error: 'Missing tenant_id or plan_id' }, 400)
       );
@@ -258,7 +243,7 @@ describe('update-subscription tenant ownership verification', () => {
     });
   });
 
-  describe('CORS', () => {
+  describe('CORS handling', () => {
     it('should handle OPTIONS preflight request', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -278,8 +263,30 @@ describe('update-subscription tenant ownership verification', () => {
     });
   });
 
-  describe('Stripe configuration', () => {
-    it('should return 500 when Stripe is not configured', async () => {
+  describe('error handling', () => {
+    it('should return 500 for internal server errors', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ error: 'Internal server error' }, 500)
+      );
+
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          tenant_id: 'tenant-123',
+          plan_id: 'plan-456',
+        }),
+      });
+
+      expect(response.status).toBe(500);
+      const data = await response.json();
+      expect(data.error).toBe('Internal server error');
+    });
+
+    it('should return error when Stripe is not configured', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse(
           { error: 'Stripe not configured. Please set STRIPE_SECRET_KEY.' },
@@ -345,7 +352,7 @@ describe('update-subscription tenant ownership verification', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-owner-token',
+          Authorization: 'Bearer valid-token-owner',
         },
         body: JSON.stringify({
           tenant_id: 'tenant-123',
@@ -367,7 +374,7 @@ describe('update-subscription tenant ownership verification', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-owner-token',
+          Authorization: 'Bearer valid-token-owner',
         },
         body: JSON.stringify({
           tenant_id: 'tenant-123',
@@ -380,7 +387,7 @@ describe('update-subscription tenant ownership verification', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            Authorization: 'Bearer valid-owner-token',
+            Authorization: 'Bearer valid-token-owner',
           }),
           body: JSON.stringify({
             tenant_id: 'tenant-123',
@@ -388,30 +395,6 @@ describe('update-subscription tenant ownership verification', () => {
           }),
         })
       );
-    });
-  });
-
-  describe('error handling', () => {
-    it('should return 500 with generic error on unexpected failures', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'Internal server error' }, 500)
-      );
-
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token',
-        },
-        body: JSON.stringify({
-          tenant_id: 'tenant-123',
-          plan_id: 'plan-456',
-        }),
-      });
-
-      expect(response.status).toBe(500);
-      const data = await response.json();
-      expect(data.error).toBe('Internal server error');
     });
   });
 });
