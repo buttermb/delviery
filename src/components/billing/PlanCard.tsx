@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { motion } from "framer-motion";
 
@@ -19,9 +20,10 @@ interface PlanCardProps {
   currentPlan?: string;
   onSelect?: (planName: string) => void;
   showYearly?: boolean;
+  isLoading?: boolean;
 }
 
-export function PlanCard({ plan, currentPlan, onSelect, showYearly = false }: PlanCardProps) {
+export function PlanCard({ plan, currentPlan, onSelect, showYearly = false, isLoading = false }: PlanCardProps) {
   const isCurrentPlan = currentPlan === plan.name;
   const price = showYearly && plan.price_yearly ? plan.price_yearly / 12 : plan.price_monthly;
   const displayPrice = showYearly && plan.price_yearly ? plan.price_yearly : plan.price_monthly;
@@ -119,14 +121,47 @@ export function PlanCard({ plan, currentPlan, onSelect, showYearly = false }: Pl
           <Button
             className="w-full"
             variant={isCurrentPlan ? "outline" : "default"}
-            disabled={isCurrentPlan}
+            disabled={isCurrentPlan || isLoading}
             onClick={() => onSelect?.(plan.name)}
           >
-            {isCurrentPlan ? "Current Plan" : "Select Plan"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : isCurrentPlan ? "Current Plan" : "Select Plan"}
           </Button>
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+export function PlanCardSkeleton() {
+  return (
+    <Card className="h-full" data-testid="plan-card-skeleton">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <Skeleton className="h-4 w-48 mt-2" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-4 w-20 mt-1" />
+        </div>
+        <ul className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded-full flex-shrink-0" />
+              <Skeleton className="h-4 w-full" />
+            </li>
+          ))}
+        </ul>
+        <Skeleton className="h-10 w-full" />
+      </CardContent>
+    </Card>
   );
 }
 
