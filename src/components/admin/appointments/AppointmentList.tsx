@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Edit, Loader2 } from "lucide-react";
+import { Bell, Clock, Edit, Loader2 } from "lucide-react";
 import { formatSmartDate } from "@/lib/formatters";
 
 interface Appointment {
@@ -18,12 +18,18 @@ interface AppointmentListProps {
   appointments: Appointment[];
   isLoading: boolean;
   onEdit: (appointment: Appointment) => void;
+  onSendReminder?: (appointment: Appointment) => void;
+  isSendingReminder?: boolean;
+  sendingReminderId?: string | null;
 }
 
 export function AppointmentList({
   appointments,
   isLoading,
   onEdit,
+  onSendReminder,
+  isSendingReminder = false,
+  sendingReminderId = null,
 }: AppointmentListProps) {
   if (isLoading) {
     return (
@@ -71,14 +77,32 @@ export function AppointmentList({
                   <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{apt.notes}</div>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(apt)}
-                className="min-h-[44px] touch-manipulation"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {onSendReminder && apt.status !== "cancelled" && apt.status !== "completed" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onSendReminder(apt)}
+                    disabled={isSendingReminder && sendingReminderId === apt.id}
+                    className="min-h-[44px] touch-manipulation"
+                    title="Send reminder (25 credits)"
+                  >
+                    {isSendingReminder && sendingReminderId === apt.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Bell className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(apt)}
+                  className="min-h-[44px] touch-manipulation"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
