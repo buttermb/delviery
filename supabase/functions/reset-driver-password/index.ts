@@ -47,7 +47,7 @@ function errorResponse(
   code: string,
 ) {
   return new Response(
-    JSON.stringify({ success: false, error, code }),
+    JSON.stringify({ error, code }),
     { status, headers: jsonHeaders },
   );
 }

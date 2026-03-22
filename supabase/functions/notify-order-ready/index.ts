@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { errorResponse } from "../_shared/error-response.ts";
 
 /**
  * Order Ready SMS Notification Edge Function
@@ -39,10 +40,7 @@ Deno.serve(async (req: Request) => {
         const { order_id, phone, email, store_name, order_number } = body;
 
         if (!order_id || !phone) {
-            return new Response(
-                JSON.stringify({ success: false, error: "Missing required fields" }),
-                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+            return errorResponse(400, "Missing required fields");
         }
 
         // Build notification message
@@ -124,12 +122,6 @@ Deno.serve(async (req: Request) => {
 
     } catch (error) {
         console.error("Error sending notification:", error);
-        return new Response(
-            JSON.stringify({ success: false, error: error.message }),
-            {
-                status: 500,
-                headers: { ...corsHeaders, "Content-Type": "application/json" }
-            }
-        );
+        return errorResponse(500, error instanceof Error ? error.message : "Internal server error");
     }
 });

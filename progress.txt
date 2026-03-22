@@ -587,3 +587,20 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Fixed InvoicesPage.tsx: removed unnecessary `as any` type assertion on balance column
 - Created 12 type compatibility tests in src/types/__tests__/invoiceTypeCompatibility.test.ts — all pass
 - TypeScript compilation passes with zero errors
+
+## Verify all edge functions return consistent error format
+- Audited ~200 edge functions for error response format consistency
+- Standardized on `{ error: string, code?: string, details?: unknown }` envelope (already used by ~165 functions)
+- Created `supabase/functions/_shared/error-response.ts` shared helper with `errorJson()` and `errorResponse()` functions
+- Fixed 13 edge functions that used `{ success: false, error: ... }` in error responses:
+  - `credits-cancel-subscription`, `retry-stripe-payment`, `create-stripe-refund`, `process-auto-topup`: imported shared `errorResponse()`, replaced all inline error responses
+  - `currency-convert`, `notify-order-ready`, `low-stock-email-digest`: imported shared `errorResponse()`, fixed inline errors
+  - `add-driver`, `reset-driver-pin`, `suspend-driver`, `terminate-driver`, `reset-driver-password`: updated local `errorResponse()` helpers to output `{ error, code }` instead of `{ success: false, error, code }`
+- Fixed status codes: `currency-convert` service-unavailable changed from 200 to 503, `process-auto-topup` rate limit changed from 200 to 429
+- Moved non-standard fields (`stripe_error`, rate-limit metadata) into `details` key
+- Carefully distinguished internal return values (`sendSMS()` returning `{ success: false }`) from HTTP responses — only HTTP responses were standardized
+- Created test suite `src/lib/edge-functions/__tests__/error-response-consistency.test.ts` with 405 tests:
+  - Scans all edge function index.ts files for `JSON.stringify({ success: false` violations
+  - Verifies all 4xx/5xx responses contain an `error` field
+  - Validates shared helper exports, format, CORS headers, and Content-Type header
+- All 405 tests pass, TypeScript compilation clean

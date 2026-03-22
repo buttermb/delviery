@@ -1,4 +1,5 @@
 import { serve, createClient, z, corsHeaders } from "../_shared/deps.ts";
+import { errorResponse } from "../_shared/error-response.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
 
 const RefundSchema = z.object({
@@ -20,20 +21,14 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Unauthorized" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
-      );
+      return errorResponse(401, "Unauthorized");
     }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Invalid token" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
-      );
+      return errorResponse(401, "Invalid token");
     }
 
     // Resolve tenant from authenticated user
@@ -44,10 +39,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!tenantUser?.tenant_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Forbidden: no tenant membership" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
-      );
+      return errorResponse(403, "Forbidden: no tenant membership");
     }
 
     const tenantId = tenantUser.tenant_id;
@@ -67,12 +59,10 @@ serve(async (req) => {
     const validationResult = RefundSchema.safeParse(body);
     
     if (!validationResult.success) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: (validationResult as { success: false; error: { errors: { message: string }[] } }).error.errors[0].message 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      return errorResponse(
+        400,
+        (validationResult as { success: false; error: { errors: { message: string }[] } }).error.errors[0].message,
+        'VALIDATION_ERROR',
       );
     }
 
@@ -86,10 +76,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!tenant?.stripe_customer_id || tenant.stripe_customer_id !== customerId) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Forbidden: customer does not belong to your tenant" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
-      );
+      return errorResponse(403, "Forbidden: customer does not belong to your tenant");
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -105,13 +92,7 @@ serve(async (req) => {
     );
 
     if (!successfulPayment) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "No successful payment found for this customer" 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
-      );
+      return errorResponse(404, "No successful payment found for this customer");
     }
 
     // Create the refund
@@ -148,9 +129,6 @@ serve(async (req) => {
     
     const errorMessage = error instanceof Error ? error.message : "Failed to process refund";
     
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-    );
+    return errorResponse(500, errorMessage);
   }
 });

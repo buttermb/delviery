@@ -91,7 +91,7 @@ function errorResponse(
   details?: Record<string, string[]>,
 ) {
   return new Response(
-    JSON.stringify({ success: false, error, code, ...(details ? { details } : {}) }),
+    JSON.stringify({ error, code, ...(details ? { details } : {}) }),
     { status, headers: jsonHeaders },
   );
 }

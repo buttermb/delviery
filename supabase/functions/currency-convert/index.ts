@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { errorResponse } from "../_shared/error-response.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -70,10 +71,7 @@ Deno.serve(async (req: Request) => {
         // API unavailable
       }
 
-      return new Response(
-        JSON.stringify({ success: false, error: 'unavailable' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(503, 'Currency service unavailable');
     }
 
     // Convert mode
@@ -82,16 +80,10 @@ Deno.serve(async (req: Request) => {
     const amount = typeof body?.amount === 'number' ? body.amount : 0;
 
     if (!from || !CURRENCY_REGEX.test(from)) {
-      return new Response(
-        JSON.stringify({ error: 'from must be a 3-letter currency code' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'from must be a 3-letter currency code');
     }
     if (!to || !CURRENCY_REGEX.test(to)) {
-      return new Response(
-        JSON.stringify({ error: 'to must be a 3-letter currency code' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'to must be a 3-letter currency code');
     }
 
     if (from === to) {
@@ -140,15 +132,9 @@ Deno.serve(async (req: Request) => {
       // API unavailable
     }
 
-    return new Response(
-      JSON.stringify({ success: false, error: 'unavailable' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(503, 'Currency service unavailable');
   } catch (error: unknown) {
     console.error('Currency convert error:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(500, error instanceof Error ? error.message : 'Unknown error');
   }
 });
