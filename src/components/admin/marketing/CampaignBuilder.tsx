@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, Mail, MessageSquare } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { CampaignCreditSummary } from "@/components/admin/marketing/CampaignCreditSummary";
 
 interface CampaignBuilderProps {
   onClose: () => void;
@@ -34,6 +35,29 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
     content: "",
     audience: "all",
     scheduled_at: "",
+  });
+
+  // Fetch recipient count based on audience selection
+  const { data: recipientCount = 0, isLoading: isLoadingRecipients } = useQuery({
+    queryKey: queryKeys.marketing.recipientCount(formData.audience),
+    queryFn: async () => {
+      if (!tenant?.id) return 0;
+      try {
+        const query = supabase
+          .from('wholesale_clients')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id)
+          .eq('status', 'active');
+
+        const { count, error } = await query;
+        if (error) throw error;
+        return count ?? 0;
+      } catch (error: unknown) {
+        logger.warn('Failed to fetch recipient count', { error, component: 'CampaignBuilder' });
+        return 0;
+      }
+    },
+    enabled: !!tenant?.id,
   });
 
   const createMutation = useMutation({
@@ -204,6 +228,13 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
             />
           </div>
         </div>
+
+        {/* Credit Cost Summary */}
+        <CampaignCreditSummary
+          campaignType={campaignType}
+          recipientCount={recipientCount}
+          isLoadingRecipients={isLoadingRecipients}
+        />
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button

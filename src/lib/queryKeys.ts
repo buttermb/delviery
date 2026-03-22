@@ -467,6 +467,7 @@ export const queryKeys = {
     all: ['marketing'] as const,
     campaigns: () => [...queryKeys.marketing.all, 'campaigns'] as const,
     workflows: () => [...queryKeys.marketing.all, 'workflows'] as const,
+    recipientCount: (audience: string) => [...queryKeys.marketing.all, 'recipientCount', audience] as const,
   },
 
   // Marketplace
