@@ -401,6 +401,9 @@ export const CREDIT_ACTIONS = {
   // Menus
   CREATE_MENU: 'create_menu',
   SHARE_MENU: 'share_menu',
+
+  // Marketplace
+  MARKETPLACE_ORDER_CREATED: 'marketplace_order_created',
 } as const;
 
 // ============================================================================
