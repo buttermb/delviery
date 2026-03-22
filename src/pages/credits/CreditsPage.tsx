@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { getCreditTransactions, type CreditTransaction } from '@/lib/credits';
+import { CreditOptimizationTips } from '@/components/credits/CreditOptimizationTips';
 import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
@@ -350,6 +351,7 @@ export function CreditsPage() {
   const navigate = useNavigate();
   const {
     balance,
+    isFreeTier,
     lifetimeEarned,
     lifetimeSpent,
     percentUsed,
@@ -448,6 +450,13 @@ export function CreditsPage() {
 
         {/* Spacer for layout on large screens */}
         <div className="hidden lg:block lg:col-span-2" />
+
+        {/* Credit Optimization Tips - show when balance is low */}
+        {isFreeTier && balance < 500 && balance > 0 && (
+          <div className="col-span-full">
+            <CreditOptimizationTips />
+          </div>
+        )}
 
         {/* Recent Transactions - full width */}
         <RecentTransactions
