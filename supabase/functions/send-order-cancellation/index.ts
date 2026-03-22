@@ -2,15 +2,11 @@
  * Send Order Cancellation Email
  * Sends cancellation notification to customer when an order is cancelled.
  * Fire-and-forget — failure does not block the cancellation.
+ *
+ * Credit deduction: send_email (10 credits) — refunded on send failure.
  */
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -24,10 +20,23 @@ interface CancellationEmailRequest {
   total: number;
 }
 
+interface CreditResult {
+  success: boolean;
+  new_balance: number;
+  credits_cost: number;
+  error_message: string | null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
 
   try {
     const body: CancellationEmailRequest = await req.json();
@@ -51,6 +60,70 @@ serve(async (req) => {
       );
     }
 
+    // ----------------------------------------------------------------
+    // Credit deduction: resolve tenant from JWT, consume 10 credits
+    // ----------------------------------------------------------------
+    let tenantId: string | null = null;
+    let creditDeducted = false;
+    let creditsCost = 0;
+    let creditsRemaining = 0;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+
+      if (user) {
+        const { data: tenantUser } = await supabase
+          .from("tenant_users")
+          .select("tenant_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        tenantId = tenantUser?.tenant_id ?? null;
+      }
+    }
+
+    if (tenantId) {
+      const { data: creditData, error: creditError } = await supabase.rpc(
+        "consume_credits",
+        {
+          p_tenant_id: tenantId,
+          p_action_key: "send_email",
+          p_reference_id: order_number,
+          p_reference_type: "order_cancellation_email",
+          p_description: `Cancellation email for order #${order_number}`,
+        }
+      );
+
+      if (creditError) {
+        console.error("Credit deduction error:", creditError.message);
+      } else if (creditData && creditData.length > 0) {
+        const result: CreditResult = creditData[0];
+        if (!result.success) {
+          return new Response(
+            JSON.stringify({
+              error: "Insufficient credits",
+              code: "INSUFFICIENT_CREDITS",
+              creditsRequired: result.credits_cost,
+              currentBalance: result.new_balance,
+            }),
+            {
+              status: 402,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+        creditDeducted = true;
+        creditsCost = result.credits_cost;
+        creditsRemaining = result.new_balance;
+      }
+    }
+
+    // ----------------------------------------------------------------
+    // Build email HTML
+    // ----------------------------------------------------------------
     const itemsHtml = items
       .map(
         (item) => `
@@ -104,6 +177,9 @@ serve(async (req) => {
       </html>
     `;
 
+    // ----------------------------------------------------------------
+    // Send email via Resend
+    // ----------------------------------------------------------------
     if (RESEND_API_KEY) {
       const resendResponse = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -122,17 +198,47 @@ serve(async (req) => {
       if (!resendResponse.ok) {
         const errorData = await resendResponse.json();
         console.error("Resend error:", errorData);
+
+        // Refund credits on send failure
+        if (creditDeducted && tenantId) {
+          await supabase.rpc("refund_credits", {
+            p_tenant_id: tenantId,
+            p_amount: creditsCost,
+            p_action_key: "send_email",
+            p_reason: `Email send failed for order #${order_number}`,
+          });
+          console.error("Credits refunded after email send failure");
+        }
+
         throw new Error(`Email send failed: ${JSON.stringify(errorData)}`);
       }
 
       const result = await resendResponse.json();
+
+      const responseHeaders: Record<string, string> = {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      };
+      if (creditDeducted) {
+        responseHeaders["X-Credits-Consumed"] = String(creditsCost);
+        responseHeaders["X-Credits-Remaining"] = String(creditsRemaining);
+      }
+
       return new Response(
         JSON.stringify({ success: true, email_id: result.id }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 200, headers: responseHeaders }
       );
+    }
+
+    // No email provider configured — refund credits since no email was sent
+    if (creditDeducted && tenantId) {
+      await supabase.rpc("refund_credits", {
+        p_tenant_id: tenantId,
+        p_amount: creditsCost,
+        p_action_key: "send_email",
+        p_reason: "No email provider configured",
+      });
+      console.error("Credits refunded: no email provider configured");
     }
 
     console.error(
