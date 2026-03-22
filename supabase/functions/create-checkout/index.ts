@@ -63,6 +63,14 @@ serve(secureHeadersMiddleware(async (req) => {
       );
     }
 
+    if (!tenant.slug) {
+      console.error('[CREATE-CHECKOUT] Tenant missing slug:', { tenant_id: tenant.id });
+      return new Response(
+        JSON.stringify({ error: "Tenant configuration incomplete — missing slug" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Get plan details
     const { data: plan } = await supabaseClient
       .from("subscription_plans")
