@@ -444,6 +444,7 @@ async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoice
 }
 
 import { useAsyncAction } from "@/hooks/useAsyncAction";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 
 function InvoicesPageSkeleton() {
     return (
@@ -550,6 +551,7 @@ export function InvoicesPage() {
     const voidInvoice = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
+    const { execute: executeCreditAction } = useCreditGatedAction();
     const mod = useModifierKey();
 
     const filteredInvoices = (() => {
@@ -607,7 +609,9 @@ export function InvoicesPage() {
     });
 
     const handleMarkAsSent = useAsyncAction(async (id: string) => {
-        await markAsSent.mutateAsync(id);
+        await executeCreditAction('invoice_send', async () => {
+            await markAsSent.mutateAsync(id);
+        });
     }, {
         successMessage: "Invoice marked as sent",
         errorMessage: "Failed to update invoice"

@@ -71,6 +71,14 @@ vi.mock('@/lib/navigation/tenantNavigation', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useCredits', () => ({
+  useCreditGatedAction: vi.fn(() => ({
+    execute: vi.fn().mockResolvedValue(null),
+    isPerforming: false,
+    isFreeTier: true,
+  })),
+}));
+
 vi.mock('@/hooks/useRelatedEntities', () => ({
   useRelatedInvoicePreOrders: vi.fn().mockReturnValue({
     items: [],
