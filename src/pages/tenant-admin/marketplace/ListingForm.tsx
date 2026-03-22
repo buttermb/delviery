@@ -39,6 +39,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFeatureFlags } from '@/config/featureFlags';
 import { Checkbox } from '@/components/ui/checkbox';
 import { queryKeys } from '@/lib/queryKeys';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 
 const PRODUCT_TYPES = [
   { value: 'flower', label: 'Flower' },
@@ -116,6 +118,13 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   const { slug } = useParams<{ slug: string }>();
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadingLabResults, setUploadingLabResults] = useState(false);
+  const {
+    execute: executeCreditAction,
+    isExecuting: isCreditExecuting,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useCreditGatedAction();
 
   // Get product data from navigation state (if coming from product list)
   const productData = (location.state as { productData?: Record<string, unknown> })?.productData;
@@ -416,7 +425,29 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       return;
     }
 
-    await saveListingMutation.mutateAsync(data);
+    if (existingListing) {
+      // Editing existing listing — no credit cost
+      await saveListingMutation.mutateAsync(data);
+    } else {
+      // Creating new listing — gate behind 25 credits
+      await executeCreditAction({
+        actionKey: 'marketplace_list_product',
+        action: async () => {
+          return saveListingMutation.mutateAsync(data);
+        },
+        referenceType: 'marketplace_listing',
+        onSuccess: () => {
+          logger.info('Marketplace listing created with credit gate', {
+            component: 'ListingForm',
+          });
+        },
+        onError: (error) => {
+          logger.error('Credit-gated listing creation failed', error, {
+            component: 'ListingForm',
+          });
+        },
+      });
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1024,9 +1055,9 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
           </Button>
           <Button
             type="submit"
-            disabled={saveListingMutation.isPending || uploading !== null || uploadingLabResults}
+            disabled={saveListingMutation.isPending || isCreditExecuting || uploading !== null || uploadingLabResults}
           >
-            {saveListingMutation.isPending ? (
+            {(saveListingMutation.isPending || isCreditExecuting) ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
@@ -1037,6 +1068,12 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
           </Button>
         </div>
       </form>
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+        actionAttempted={blockedAction ?? undefined}
+      />
     </Form>
   );
 }
