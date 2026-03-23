@@ -27,7 +27,7 @@ vi.mock('@/hooks/useCredits', () => ({
 vi.mock('@/lib/credits', async () => {
   const warningConfig = await import('@/lib/credits/creditWarningConfig');
   return {
-    LOW_BALANCE_WARNING_LEVELS: [2000, 1000, 500, 100],
+    LOW_BALANCE_WARNING_LEVELS: [200, 100, 50, 25],
     getCurrentThreshold: warningConfig.getCurrentThreshold,
     getAlertSeverityStyles: warningConfig.getAlertSeverityStyles,
     CREDIT_THRESHOLD_CONFIGS: warningConfig.CREDIT_THRESHOLD_CONFIGS,
@@ -67,8 +67,8 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
   });
 
   describe('Critical threshold behavior', () => {
-    it('should show danger severity with default button variant at 100 credits', () => {
-      mockBalance = 100;
+    it('should show danger severity with default button variant at 25 credits', () => {
+      mockBalance = 25;
 
       render(<CreditAlertBanner onBuyCredits={vi.fn()} />);
 
@@ -77,8 +77,8 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
       expect(screen.getByText('Critical Credit Balance')).toBeInTheDocument();
     });
 
-    it('should show critical severity at 500 credits', () => {
-      mockBalance = 500;
+    it('should show critical severity at 50 credits', () => {
+      mockBalance = 50;
 
       render(<CreditAlertBanner onBuyCredits={vi.fn()} />);
 
@@ -87,8 +87,8 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
       expect(screen.getByText('Low Credit Balance')).toBeInTheDocument();
     });
 
-    it('should show warning severity at 1000 credits', () => {
-      mockBalance = 1000;
+    it('should show warning severity at 100 credits', () => {
+      mockBalance = 100;
 
       render(<CreditAlertBanner onBuyCredits={vi.fn()} />);
 
@@ -96,8 +96,8 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
       expect(banner).toHaveAttribute('data-severity', 'warning');
     });
 
-    it('should show info severity at 2000 credits', () => {
-      mockBalance = 2000;
+    it('should show info severity at 200 credits', () => {
+      mockBalance = 200;
 
       render(<CreditAlertBanner onBuyCredits={vi.fn()} />);
 
@@ -152,7 +152,7 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
 
   describe('Dismiss and re-appear behavior', () => {
     it('should hide after dismiss and stay hidden at same threshold', () => {
-      mockBalance = 500;
+      mockBalance = 50;
       const { rerender } = render(<CreditAlertBanner onBuyCredits={vi.fn()} />);
 
       expect(screen.getByTestId('credit-alert-banner')).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('CreditAlertBanner Admin Layout Integration', () => {
 
   describe('Custom className support', () => {
     it('should accept and apply custom className', () => {
-      mockBalance = 500;
+      mockBalance = 50;
 
       render(<CreditAlertBanner onBuyCredits={vi.fn()} className="mt-2" />);
 

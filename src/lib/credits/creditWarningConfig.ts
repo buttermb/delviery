@@ -5,7 +5,7 @@
  * color mappings, and warning messages used across CreditBalance badge,
  * CreditAlertBanner, useCreditAlert hook, and useCredits toast warnings.
  *
- * Thresholds: 2000, 1000, 500, 100
+ * Thresholds: 200, 100, 50, 25 (calibrated for 500 monthly credits)
  * Severity progression: info -> warning -> critical -> danger
  */
 
@@ -45,28 +45,28 @@ export interface AlertSeverityStyles {
 
 export const CREDIT_THRESHOLD_CONFIGS: CreditThresholdConfig[] = [
   {
-    threshold: 2000,
+    threshold: 200,
     severity: 'info',
     toastType: 'info',
     title: 'Credits Running Low',
     description: 'You have {balance} credits remaining. Consider purchasing more to avoid interruptions.',
   },
   {
-    threshold: 1000,
+    threshold: 100,
     severity: 'warning',
     toastType: 'warning',
     title: 'Credit Balance Warning',
     description: 'Only {balance} credits left. Some features may become unavailable soon.',
   },
   {
-    threshold: 500,
+    threshold: 50,
     severity: 'critical',
     toastType: 'warning',
     title: 'Low Credit Balance',
     description: 'Only {balance} credits remaining. Purchase credits now to continue using premium features.',
   },
   {
-    threshold: 100,
+    threshold: 25,
     severity: 'danger',
     toastType: 'error',
     title: 'Critical Credit Balance',
@@ -102,11 +102,11 @@ export function getCurrentThreshold(balance: number): CreditThresholdConfig | nu
 // Badge Colors (CreditBalance component)
 //
 // Colors are aligned with alert severity:
-//   info     -> blue      (≤ 2000)
-//   warning  -> amber     (≤ 1000)
-//   critical -> orange    (≤ 500)
-//   danger   -> red+pulse (≤ 100)
-//   healthy  -> emerald   (> 2000)
+//   info     -> blue      (≤ 200)
+//   warning  -> amber     (≤ 100)
+//   critical -> orange    (≤ 50)
+//   danger   -> red+pulse (≤ 25)
+//   healthy  -> emerald   (> 200)
 // ============================================================================
 
 const BADGE_COLORS: Record<CreditWarningSeverity, BadgeColorClasses> = {

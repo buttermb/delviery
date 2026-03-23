@@ -1529,28 +1529,28 @@ export function getPricePerCredit(priceCents: number, credits: number): number {
  * Free tier monthly credit allocation (500 credits/month)
  * Matches create_tenant_atomic and grant-free-credits edge function amounts
  */
-export const FREE_TIER_MONTHLY_CREDITS = 10000;
-export const LOW_CREDIT_WARNING_THRESHOLD = 2000;
-export const CRITICAL_CREDIT_THRESHOLD = 100;
+export const FREE_TIER_MONTHLY_CREDITS = 500;
+export const LOW_CREDIT_WARNING_THRESHOLD = 200;
+export const CRITICAL_CREDIT_THRESHOLD = 25;
 
 /**
  * Progressive warning thresholds (for upgrade triggers)
- * Triggers at 2000, 1000, 500, 100 credits
+ * Calibrated for 500 monthly credits
  */
 export const CREDIT_WARNING_THRESHOLDS = {
-  FIRST_WARNING: 2000, // First warning - "Credits running low"
-  SECOND_WARNING: 1000, // Second warning - "Consider buying credits"
-  YELLOW_BADGE: 500, // Show yellow indicator
-  WARNING_MODAL: 100, // Show warning modal - critical level
-  BANNER_WARNING: 50, // Show banner at top of dashboard
+  FIRST_WARNING: 200, // 40% remaining - "Credits running low"
+  SECOND_WARNING: 100, // 20% remaining - "Consider buying credits"
+  YELLOW_BADGE: 50, // 10% remaining - Show yellow indicator
+  WARNING_MODAL: 25, // 5% remaining - Show warning modal
+  BANNER_WARNING: 10, // 2% remaining - Show banner at top of dashboard
   BLOCKED: 0, // Block credit-consuming actions
 } as const;
 
 /**
  * Low balance warning levels for toast notifications
- * Triggers at specific thresholds: 2000, 1000, 500, 100
+ * Calibrated for 500 monthly credits
  */
-export const LOW_BALANCE_WARNING_LEVELS = [2000, 1000, 500, 100] as const;
+export const LOW_BALANCE_WARNING_LEVELS = [200, 100, 50, 25] as const;
 
 /**
  * Behavioral trigger thresholds

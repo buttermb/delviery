@@ -18,8 +18,8 @@ import {
 } from '../creditCosts';
 
 describe('FREE_TIER_MONTHLY_CREDITS constant', () => {
-  it('should be exactly 10000', () => {
-    expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
+  it('should be exactly 500', () => {
+    expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
   });
 
   it('should be a positive integer', () => {
@@ -29,8 +29,8 @@ describe('FREE_TIER_MONTHLY_CREDITS constant', () => {
 });
 
 describe('Credit threshold consistency with FREE_TIER_MONTHLY_CREDITS', () => {
-  it('LOW_CREDIT_WARNING_THRESHOLD should be greater than FREE_TIER_MONTHLY_CREDITS', () => {
-    expect(LOW_CREDIT_WARNING_THRESHOLD).toBeGreaterThan(FREE_TIER_MONTHLY_CREDITS);
+  it('LOW_CREDIT_WARNING_THRESHOLD should be less than FREE_TIER_MONTHLY_CREDITS', () => {
+    expect(LOW_CREDIT_WARNING_THRESHOLD).toBeLessThan(FREE_TIER_MONTHLY_CREDITS);
   });
 
   it('CRITICAL_CREDIT_THRESHOLD should be less than FREE_TIER_MONTHLY_CREDITS', () => {

@@ -107,11 +107,11 @@ describe('Credit Cost Configuration', () => {
 
 describe('Credit Threshold Configuration', () => {
   it('should have correct warning thresholds', () => {
-    expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(2000);
-    expect(CREDIT_WARNING_THRESHOLDS.SECOND_WARNING).toBe(1000);
-    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBe(500);
-    expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(100);
-    expect(CREDIT_WARNING_THRESHOLDS.BANNER_WARNING).toBe(50);
+    expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(200);
+    expect(CREDIT_WARNING_THRESHOLDS.SECOND_WARNING).toBe(100);
+    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBe(50);
+    expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(25);
+    expect(CREDIT_WARNING_THRESHOLDS.BANNER_WARNING).toBe(10);
     expect(CREDIT_WARNING_THRESHOLDS.BLOCKED).toBe(0);
   });
 
@@ -123,13 +123,13 @@ describe('Credit Threshold Configuration', () => {
   });
 
   it('should have LOW_BALANCE_WARNING_LEVELS match expected values', () => {
-    expect(LOW_BALANCE_WARNING_LEVELS).toEqual([2000, 1000, 500, 100]);
+    expect(LOW_BALANCE_WARNING_LEVELS).toEqual([200, 100, 50, 25]);
   });
 
   it('should have consistent threshold values', () => {
-    expect(LOW_CREDIT_WARNING_THRESHOLD).toBe(2000);
-    expect(CRITICAL_CREDIT_THRESHOLD).toBe(100);
-    expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
+    expect(LOW_CREDIT_WARNING_THRESHOLD).toBe(200);
+    expect(CRITICAL_CREDIT_THRESHOLD).toBe(25);
+    expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
   });
 });
 
@@ -234,14 +234,14 @@ describe('Credit Balance Logic', () => {
     });
 
     it('should correctly flag low credits', () => {
-      const status = getBalanceStatus(2000, true);
+      const status = getBalanceStatus(200, true);
       expect(status.isLowCredits).toBe(true);
       expect(status.isCriticalCredits).toBe(false);
       expect(status.isOutOfCredits).toBe(false);
     });
 
     it('should correctly flag critical credits', () => {
-      const status = getBalanceStatus(100, true);
+      const status = getBalanceStatus(25, true);
       expect(status.isLowCredits).toBe(true);
       expect(status.isCriticalCredits).toBe(true);
       expect(status.isOutOfCredits).toBe(false);
@@ -571,37 +571,37 @@ describe('Low Balance Alerts', () => {
       return null;
     };
 
-    it('should show 2000 alert first', () => {
+    it('should show 200 alert first', () => {
       const shown = new Set<number>();
-      expect(getAlertToShow(1999, shown)).toBe(2000);
+      expect(getAlertToShow(199, shown)).toBe(200);
     });
 
     it('should skip already shown alerts', () => {
-      const shown = new Set([2000]);
-      expect(getAlertToShow(999, shown)).toBe(1000);
+      const shown = new Set([200]);
+      expect(getAlertToShow(99, shown)).toBe(100);
     });
 
     it('should show all alerts progressively', () => {
       const shown = new Set<number>();
 
-      // First alert at 2000
-      expect(getAlertToShow(2000, shown)).toBe(2000);
-      shown.add(2000);
+      // First alert at 200
+      expect(getAlertToShow(200, shown)).toBe(200);
+      shown.add(200);
 
-      // Second alert at 1000
-      expect(getAlertToShow(1000, shown)).toBe(1000);
-      shown.add(1000);
-
-      // Third alert at 500
-      expect(getAlertToShow(500, shown)).toBe(500);
-      shown.add(500);
-
-      // Fourth alert at 100
+      // Second alert at 100
       expect(getAlertToShow(100, shown)).toBe(100);
       shown.add(100);
 
+      // Third alert at 50
+      expect(getAlertToShow(50, shown)).toBe(50);
+      shown.add(50);
+
+      // Fourth alert at 25
+      expect(getAlertToShow(25, shown)).toBe(25);
+      shown.add(25);
+
       // No more alerts
-      expect(getAlertToShow(50, shown)).toBeNull();
+      expect(getAlertToShow(10, shown)).toBeNull();
     });
 
     it('should return null when balance is healthy', () => {

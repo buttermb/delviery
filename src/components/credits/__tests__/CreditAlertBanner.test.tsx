@@ -31,7 +31,7 @@ vi.mock('@/lib/credits', async () => {
   // Import only the warning config directly to avoid loading supabase client
   const warningConfig = await import('@/lib/credits/creditWarningConfig');
   return {
-    LOW_BALANCE_WARNING_LEVELS: [2000, 1000, 500, 100],
+    LOW_BALANCE_WARNING_LEVELS: [200, 100, 50, 25],
     getCurrentThreshold: warningConfig.getCurrentThreshold,
     getAlertSeverityStyles: warningConfig.getAlertSeverityStyles,
     CREDIT_THRESHOLD_CONFIGS: warningConfig.CREDIT_THRESHOLD_CONFIGS,
@@ -56,31 +56,13 @@ describe('CreditAlertBanner', () => {
   });
 
   describe('Threshold Display', () => {
-    it('should show banner at 2000 credits threshold', () => {
-      mockBalance = 2000;
+    it('should show banner at 200 credits threshold', () => {
+      mockBalance = 200;
       renderBanner();
 
       const banner = screen.getByTestId('credit-alert-banner');
       expect(banner).toBeInTheDocument();
-      expect(banner).toHaveAttribute('data-threshold', '2000');
-    });
-
-    it('should show banner at 1000 credits threshold', () => {
-      mockBalance = 1000;
-      renderBanner();
-
-      const banner = screen.getByTestId('credit-alert-banner');
-      expect(banner).toBeInTheDocument();
-      expect(banner).toHaveAttribute('data-threshold', '1000');
-    });
-
-    it('should show banner at 500 credits threshold', () => {
-      mockBalance = 500;
-      renderBanner();
-
-      const banner = screen.getByTestId('credit-alert-banner');
-      expect(banner).toBeInTheDocument();
-      expect(banner).toHaveAttribute('data-threshold', '500');
+      expect(banner).toHaveAttribute('data-threshold', '200');
     });
 
     it('should show banner at 100 credits threshold', () => {
@@ -92,8 +74,26 @@ describe('CreditAlertBanner', () => {
       expect(banner).toHaveAttribute('data-threshold', '100');
     });
 
-    it('should not show banner when balance is above 2000', () => {
-      mockBalance = 2500;
+    it('should show banner at 50 credits threshold', () => {
+      mockBalance = 50;
+      renderBanner();
+
+      const banner = screen.getByTestId('credit-alert-banner');
+      expect(banner).toBeInTheDocument();
+      expect(banner).toHaveAttribute('data-threshold', '50');
+    });
+
+    it('should show banner at 25 credits threshold', () => {
+      mockBalance = 25;
+      renderBanner();
+
+      const banner = screen.getByTestId('credit-alert-banner');
+      expect(banner).toBeInTheDocument();
+      expect(banner).toHaveAttribute('data-threshold', '25');
+    });
+
+    it('should not show banner when balance is above 200', () => {
+      mockBalance = 250;
       renderBanner();
 
       expect(screen.queryByTestId('credit-alert-banner')).not.toBeInTheDocument();
@@ -124,32 +124,32 @@ describe('CreditAlertBanner', () => {
   });
 
   describe('Severity Colors', () => {
-    it('should show info severity at 2000 threshold', () => {
-      mockBalance = 2000;
+    it('should show info severity at 200 threshold', () => {
+      mockBalance = 200;
       renderBanner();
 
       const banner = screen.getByTestId('credit-alert-banner');
       expect(banner).toHaveAttribute('data-severity', 'info');
     });
 
-    it('should show warning severity at 1000 threshold', () => {
-      mockBalance = 1000;
+    it('should show warning severity at 100 threshold', () => {
+      mockBalance = 100;
       renderBanner();
 
       const banner = screen.getByTestId('credit-alert-banner');
       expect(banner).toHaveAttribute('data-severity', 'warning');
     });
 
-    it('should show critical severity at 500 threshold', () => {
-      mockBalance = 500;
+    it('should show critical severity at 50 threshold', () => {
+      mockBalance = 50;
       renderBanner();
 
       const banner = screen.getByTestId('credit-alert-banner');
       expect(banner).toHaveAttribute('data-severity', 'critical');
     });
 
-    it('should show danger severity at 100 threshold', () => {
-      mockBalance = 100;
+    it('should show danger severity at 25 threshold', () => {
+      mockBalance = 25;
       renderBanner();
 
       const banner = screen.getByTestId('credit-alert-banner');
@@ -158,29 +158,29 @@ describe('CreditAlertBanner', () => {
   });
 
   describe('Warning Messages', () => {
-    it('should show appropriate title at 2000 threshold', () => {
-      mockBalance = 2000;
+    it('should show appropriate title at 200 threshold', () => {
+      mockBalance = 200;
       renderBanner();
 
       expect(screen.getByText('Credits Running Low')).toBeInTheDocument();
     });
 
-    it('should show appropriate title at 1000 threshold', () => {
-      mockBalance = 1000;
+    it('should show appropriate title at 100 threshold', () => {
+      mockBalance = 100;
       renderBanner();
 
       expect(screen.getByText('Credit Balance Warning')).toBeInTheDocument();
     });
 
-    it('should show appropriate title at 500 threshold', () => {
-      mockBalance = 500;
+    it('should show appropriate title at 50 threshold', () => {
+      mockBalance = 50;
       renderBanner();
 
       expect(screen.getByText('Low Credit Balance')).toBeInTheDocument();
     });
 
-    it('should show appropriate title at 100 threshold', () => {
-      mockBalance = 100;
+    it('should show appropriate title at 25 threshold', () => {
+      mockBalance = 25;
       renderBanner();
 
       expect(screen.getByText('Critical Credit Balance')).toBeInTheDocument();
@@ -277,11 +277,11 @@ describe('useCreditAlert hook', () => {
   });
 
   it('should return correct threshold info', () => {
-    mockBalance = 800;
+    mockBalance = 80;
     const { result } = renderHook(() => useCreditAlert());
 
     expect(result.current.shouldShowAlert).toBe(true);
-    expect(result.current.currentThreshold?.threshold).toBe(1000);
+    expect(result.current.currentThreshold?.threshold).toBe(100);
     expect(result.current.currentThreshold?.severity).toBe('warning');
   });
 });

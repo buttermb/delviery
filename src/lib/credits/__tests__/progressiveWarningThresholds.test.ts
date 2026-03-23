@@ -1,13 +1,13 @@
 /**
  * Progressive Warning Thresholds → Correct UI Responses
  *
- * Simulates balance decreasing through 2000, 1000, 500, 100, 0 and verifies
+ * Simulates balance decreasing through 200, 100, 50, 25, 0 and verifies
  * the correct warning mechanism activates at each threshold:
  *
- *   2000 → info toast (5s), blue badge, info banner
- *   1000 → warning toast (5s), amber badge, warning banner
- *    500 → critical toast (8s) + Buy button, orange badge, critical banner
- *    100 → danger toast (8s) + Buy button, red+pulse badge, danger banner
+ *   200 → info toast (5s), blue badge, info banner
+ *   100 → warning toast (5s), amber badge, warning banner
+ *    50 → critical toast (8s) + Buy button, orange badge, critical banner
+ *    25 → danger toast (8s) + Buy button, red+pulse badge, danger banner
  *      0 → no banner (OutOfCreditsModal handles this), no toast
  */
 
@@ -41,11 +41,11 @@ function getNextWarning(
 }
 
 function getToastDuration(threshold: number): number {
-  return threshold <= 500 ? 8000 : 5000;
+  return threshold <= 50 ? 8000 : 5000;
 }
 
 function shouldShowBuyButton(threshold: number): boolean {
-  return threshold <= 500;
+  return threshold <= 50;
 }
 
 // ============================================================================
@@ -65,7 +65,7 @@ interface ExpectedUIResponse {
 
 const EXPECTED_UI_RESPONSES: ExpectedUIResponse[] = [
   {
-    threshold: 2000,
+    threshold: 200,
     severity: 'info',
     toastDuration: 5000,
     hasBuyButton: false,
@@ -75,7 +75,7 @@ const EXPECTED_UI_RESPONSES: ExpectedUIResponse[] = [
     alertIconColor: 'text-blue-500',
   },
   {
-    threshold: 1000,
+    threshold: 100,
     severity: 'warning',
     toastDuration: 5000,
     hasBuyButton: false,
@@ -85,7 +85,7 @@ const EXPECTED_UI_RESPONSES: ExpectedUIResponse[] = [
     alertIconColor: 'text-amber-500',
   },
   {
-    threshold: 500,
+    threshold: 50,
     severity: 'critical',
     toastDuration: 8000,
     hasBuyButton: true,
@@ -95,7 +95,7 @@ const EXPECTED_UI_RESPONSES: ExpectedUIResponse[] = [
     alertIconColor: 'text-orange-500',
   },
   {
-    threshold: 100,
+    threshold: 25,
     severity: 'danger',
     toastDuration: 8000,
     hasBuyButton: true,
@@ -111,13 +111,13 @@ const EXPECTED_UI_RESPONSES: ExpectedUIResponse[] = [
 // ============================================================================
 
 describe('Progressive warning thresholds → correct UI responses', () => {
-  describe('Full balance descent: 3000 → 2000 → 1000 → 500 → 100 → 0', () => {
+  describe('Full balance descent: 300 → 200 → 100 → 50 → 25 → 0', () => {
     it('should trigger warnings at each threshold in sequence', () => {
       const shown = new Set<number>();
       const triggeredSequence: number[] = [];
 
       // Simulate descending balance snapshots
-      const balanceSnapshots = [3000, 2500, 2000, 1500, 1000, 750, 500, 200, 100, 50, 0];
+      const balanceSnapshots = [300, 250, 200, 150, 100, 75, 50, 30, 25, 10, 0];
 
       for (const balance of balanceSnapshots) {
         const warning = getNextWarning(balance, shown);
@@ -127,13 +127,13 @@ describe('Progressive warning thresholds → correct UI responses', () => {
         }
       }
 
-      expect(triggeredSequence).toEqual([2000, 1000, 500, 100]);
+      expect(triggeredSequence).toEqual([200, 100, 50, 25]);
     });
 
     it('should trigger exactly 4 warnings total across the descent', () => {
       const shown = new Set<number>();
       let count = 0;
-      const balances = [3000, 2000, 1500, 1000, 750, 500, 200, 100, 50, 0];
+      const balances = [300, 200, 150, 100, 75, 50, 30, 25, 10, 0];
 
       for (const balance of balances) {
         const warning = getNextWarning(balance, shown);
@@ -150,11 +150,11 @@ describe('Progressive warning thresholds → correct UI responses', () => {
       const shown = new Set<number>();
 
       // Check same balance twice
-      const warning1 = getNextWarning(2000, shown);
-      expect(warning1).toBe(2000);
-      shown.add(2000);
+      const warning1 = getNextWarning(200, shown);
+      expect(warning1).toBe(200);
+      shown.add(200);
 
-      const warning2 = getNextWarning(2000, shown);
+      const warning2 = getNextWarning(200, shown);
       expect(warning2).toBeNull();
     });
   });
@@ -228,7 +228,7 @@ describe('Progressive warning thresholds → correct UI responses', () => {
   describe('At balance = 0 (out of credits)', () => {
     it('should NOT trigger any toast warning', () => {
       // All thresholds already shown
-      const allShown = new Set([2000, 1000, 500, 100]);
+      const allShown = new Set([200, 100, 50, 25]);
       expect(getNextWarning(0, allShown)).toBeNull();
     });
 
@@ -249,33 +249,33 @@ describe('Progressive warning thresholds → correct UI responses', () => {
   // ============================================================================
 
   describe('Badge color progression across balance levels', () => {
-    it('should show emerald (healthy) above 2000', () => {
-      const classes = getBadgeColorClass(3000);
+    it('should show emerald (healthy) above 200', () => {
+      const classes = getBadgeColorClass(300);
       expect(classes).toContain('text-emerald-600');
       expect(classes).toContain('bg-emerald-50');
       expect(classes).not.toContain('animate-pulse');
     });
 
-    it('should show blue (info) between 1001-2000', () => {
-      const classes = getBadgeColorClass(1500);
+    it('should show blue (info) between 101-200', () => {
+      const classes = getBadgeColorClass(150);
       expect(classes).toContain('text-blue-600');
       expect(classes).toContain('bg-blue-50');
     });
 
-    it('should show amber (warning) between 501-1000', () => {
-      const classes = getBadgeColorClass(800);
+    it('should show amber (warning) between 51-100', () => {
+      const classes = getBadgeColorClass(80);
       expect(classes).toContain('text-amber-600');
       expect(classes).toContain('bg-amber-50');
     });
 
-    it('should show orange (critical) between 101-500', () => {
-      const classes = getBadgeColorClass(300);
+    it('should show orange (critical) between 26-50', () => {
+      const classes = getBadgeColorClass(30);
       expect(classes).toContain('text-orange-600');
       expect(classes).toContain('bg-orange-50');
     });
 
-    it('should show red with pulse (danger) between 1-100', () => {
-      const classes = getBadgeColorClass(50);
+    it('should show red with pulse (danger) between 1-25', () => {
+      const classes = getBadgeColorClass(10);
       expect(classes).toContain('text-red-600');
       expect(classes).toContain('bg-red-50');
       expect(classes).toContain('animate-pulse');
@@ -356,12 +356,12 @@ describe('Progressive warning thresholds → correct UI responses', () => {
       expect(configThresholds).toEqual([...LOW_BALANCE_WARNING_LEVELS]);
     });
 
-    it('should have CREDIT_WARNING_THRESHOLDS.FIRST_WARNING = 2000', () => {
-      expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(2000);
+    it('should have CREDIT_WARNING_THRESHOLDS.FIRST_WARNING = 200', () => {
+      expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(200);
     });
 
-    it('should have CREDIT_WARNING_THRESHOLDS.WARNING_MODAL = 100', () => {
-      expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(100);
+    it('should have CREDIT_WARNING_THRESHOLDS.WARNING_MODAL = 25', () => {
+      expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(25);
     });
 
     it('should have CREDIT_WARNING_THRESHOLDS.BLOCKED = 0', () => {
@@ -376,45 +376,45 @@ describe('Progressive warning thresholds → correct UI responses', () => {
   describe('Boundary value transitions', () => {
     it('should change severity at exact threshold boundaries', () => {
       // Just above → just at each threshold
-      expect(getCurrentThreshold(2001)).toBeNull();
-      expect(getCurrentThreshold(2000)!.severity).toBe('info');
+      expect(getCurrentThreshold(201)).toBeNull();
+      expect(getCurrentThreshold(200)!.severity).toBe('info');
 
-      expect(getCurrentThreshold(1001)!.severity).toBe('info');
-      expect(getCurrentThreshold(1000)!.severity).toBe('warning');
+      expect(getCurrentThreshold(101)!.severity).toBe('info');
+      expect(getCurrentThreshold(100)!.severity).toBe('warning');
 
-      expect(getCurrentThreshold(501)!.severity).toBe('warning');
-      expect(getCurrentThreshold(500)!.severity).toBe('critical');
+      expect(getCurrentThreshold(51)!.severity).toBe('warning');
+      expect(getCurrentThreshold(50)!.severity).toBe('critical');
 
-      expect(getCurrentThreshold(101)!.severity).toBe('critical');
-      expect(getCurrentThreshold(100)!.severity).toBe('danger');
+      expect(getCurrentThreshold(26)!.severity).toBe('critical');
+      expect(getCurrentThreshold(25)!.severity).toBe('danger');
     });
 
     it('should transition badge colors at exact boundaries', () => {
-      // 2001 = healthy (emerald), 2000 = info (blue)
-      expect(getBadgeColorClass(2001)).toContain('emerald');
-      expect(getBadgeColorClass(2000)).toContain('blue');
+      // 201 = healthy (emerald), 200 = info (blue)
+      expect(getBadgeColorClass(201)).toContain('emerald');
+      expect(getBadgeColorClass(200)).toContain('blue');
 
-      // 1001 = info (blue), 1000 = warning (amber)
-      expect(getBadgeColorClass(1001)).toContain('blue');
-      expect(getBadgeColorClass(1000)).toContain('amber');
+      // 101 = info (blue), 100 = warning (amber)
+      expect(getBadgeColorClass(101)).toContain('blue');
+      expect(getBadgeColorClass(100)).toContain('amber');
 
-      // 501 = warning (amber), 500 = critical (orange)
-      expect(getBadgeColorClass(501)).toContain('amber');
-      expect(getBadgeColorClass(500)).toContain('orange');
+      // 51 = warning (amber), 50 = critical (orange)
+      expect(getBadgeColorClass(51)).toContain('amber');
+      expect(getBadgeColorClass(50)).toContain('orange');
 
-      // 101 = critical (orange), 100 = danger (red)
-      expect(getBadgeColorClass(101)).toContain('orange');
-      expect(getBadgeColorClass(100)).toContain('red');
+      // 26 = critical (orange), 25 = danger (red)
+      expect(getBadgeColorClass(26)).toContain('orange');
+      expect(getBadgeColorClass(25)).toContain('red');
     });
 
-    it('should transition toast duration at the 500 boundary', () => {
-      expect(getToastDuration(501)).toBe(5000);
-      expect(getToastDuration(500)).toBe(8000);
+    it('should transition toast duration at the 50 boundary', () => {
+      expect(getToastDuration(51)).toBe(5000);
+      expect(getToastDuration(50)).toBe(8000);
     });
 
-    it('should transition Buy button visibility at the 500 boundary', () => {
-      expect(shouldShowBuyButton(501)).toBe(false);
-      expect(shouldShowBuyButton(500)).toBe(true);
+    it('should transition Buy button visibility at the 50 boundary', () => {
+      expect(shouldShowBuyButton(51)).toBe(false);
+      expect(shouldShowBuyButton(50)).toBe(true);
     });
   });
 
@@ -423,7 +423,7 @@ describe('Progressive warning thresholds → correct UI responses', () => {
   // ============================================================================
 
   describe('Rapid balance drop scenario', () => {
-    it('should fire all 4 warnings when balance drops from 5000 to 10 in one step', () => {
+    it('should fire all 4 warnings when balance drops from 500 to 10 in one step', () => {
       const shown = new Set<number>();
       const warnings: number[] = [];
 
@@ -436,7 +436,7 @@ describe('Progressive warning thresholds → correct UI responses', () => {
         }
       }
 
-      expect(warnings).toEqual([2000, 1000, 500, 100]);
+      expect(warnings).toEqual([200, 100, 50, 25]);
     });
 
     it('should stop firing after all 4 warnings are shown', () => {
@@ -460,22 +460,22 @@ describe('Progressive warning thresholds → correct UI responses', () => {
   // ============================================================================
 
   describe('Credit status flags at each threshold', () => {
-    const isLowCredits = (balance: number) => balance <= 2000;
-    const isCriticalCredits = (balance: number) => balance <= 100;
+    const isLowCredits = (balance: number) => balance <= 200;
+    const isCriticalCredits = (balance: number) => balance <= 25;
     const isOutOfCredits = (balance: number) => balance <= 0;
 
-    it('should flag isLowCredits at 2000 and below', () => {
-      expect(isLowCredits(2001)).toBe(false);
-      expect(isLowCredits(2000)).toBe(true);
-      expect(isLowCredits(1000)).toBe(true);
+    it('should flag isLowCredits at 200 and below', () => {
+      expect(isLowCredits(201)).toBe(false);
+      expect(isLowCredits(200)).toBe(true);
       expect(isLowCredits(100)).toBe(true);
+      expect(isLowCredits(25)).toBe(true);
       expect(isLowCredits(0)).toBe(true);
     });
 
-    it('should flag isCriticalCredits at 100 and below', () => {
-      expect(isCriticalCredits(101)).toBe(false);
-      expect(isCriticalCredits(100)).toBe(true);
-      expect(isCriticalCredits(50)).toBe(true);
+    it('should flag isCriticalCredits at 25 and below', () => {
+      expect(isCriticalCredits(26)).toBe(false);
+      expect(isCriticalCredits(25)).toBe(true);
+      expect(isCriticalCredits(10)).toBe(true);
       expect(isCriticalCredits(0)).toBe(true);
     });
 

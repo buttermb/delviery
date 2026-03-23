@@ -195,36 +195,36 @@ describe('CreditBalance', () => {
   });
 
   describe('Color Classes by Threshold', () => {
-    it('should use emerald (healthy) when credits > 2000', () => {
-      mockCredits = 2500;
+    it('should use emerald (healthy) when credits > 200', () => {
+      mockCredits = 250;
       const { container } = render(<CreditBalance />);
       const badge = container.querySelector('.text-emerald-600');
       expect(badge).toBeInTheDocument();
     });
 
-    it('should use yellow when credits > 1000 and <= 2000', () => {
-      mockCredits = 1500;
+    it('should use yellow when credits > 100 and <= 200', () => {
+      mockCredits = 150;
       const { container } = render(<CreditBalance />);
       const badge = container.querySelector('.text-yellow-600');
       expect(badge).toBeInTheDocument();
     });
 
-    it('should use amber when credits > 500 and <= 1000', () => {
-      mockCredits = 750;
+    it('should use amber when credits > 50 and <= 100', () => {
+      mockCredits = 75;
       const { container } = render(<CreditBalance />);
       const badge = container.querySelector('.text-amber-600');
       expect(badge).toBeInTheDocument();
     });
 
-    it('should use orange when credits > 100 and <= 500', () => {
-      mockCredits = 200;
+    it('should use orange when credits > 25 and <= 50', () => {
+      mockCredits = 35;
       const { container } = render(<CreditBalance />);
       const badge = container.querySelector('.text-orange-600');
       expect(badge).toBeInTheDocument();
     });
 
-    it('should use red with pulse when credits <= 100', () => {
-      mockCredits = 50;
+    it('should use red with pulse when credits <= 25', () => {
+      mockCredits = 20;
       const { container } = render(<CreditBalance />);
       const badge = container.querySelector('.text-red-600');
       expect(badge).toBeInTheDocument();

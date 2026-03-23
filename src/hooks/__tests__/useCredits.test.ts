@@ -63,23 +63,23 @@ describe('useCredits Query Configuration', () => {
 
 describe('Credit Warning Thresholds Configuration', () => {
   it('should have correct low balance warning levels', () => {
-    expect(LOW_BALANCE_WARNING_LEVELS).toEqual([2000, 1000, 500, 100]);
+    expect(LOW_BALANCE_WARNING_LEVELS).toEqual([200, 100, 50, 25]);
   });
 
-  it('should have LOW_CREDIT_WARNING_THRESHOLD set to 2000', () => {
-    expect(LOW_CREDIT_WARNING_THRESHOLD).toBe(2000);
+  it('should have LOW_CREDIT_WARNING_THRESHOLD set to 200', () => {
+    expect(LOW_CREDIT_WARNING_THRESHOLD).toBe(200);
   });
 
-  it('should have CRITICAL_CREDIT_THRESHOLD set to 100', () => {
-    expect(CRITICAL_CREDIT_THRESHOLD).toBe(100);
+  it('should have CRITICAL_CREDIT_THRESHOLD set to 25', () => {
+    expect(CRITICAL_CREDIT_THRESHOLD).toBe(25);
   });
 
   it('should have correct progressive warning thresholds', () => {
-    expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(2000);
-    expect(CREDIT_WARNING_THRESHOLDS.SECOND_WARNING).toBe(1000);
-    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBe(500);
-    expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(100);
-    expect(CREDIT_WARNING_THRESHOLDS.BANNER_WARNING).toBe(50);
+    expect(CREDIT_WARNING_THRESHOLDS.FIRST_WARNING).toBe(200);
+    expect(CREDIT_WARNING_THRESHOLDS.SECOND_WARNING).toBe(100);
+    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBe(50);
+    expect(CREDIT_WARNING_THRESHOLDS.WARNING_MODAL).toBe(25);
+    expect(CREDIT_WARNING_THRESHOLDS.BANNER_WARNING).toBe(10);
     expect(CREDIT_WARNING_THRESHOLDS.BLOCKED).toBe(0);
   });
 
@@ -94,40 +94,40 @@ describe('Credit Warning Thresholds Configuration', () => {
 describe('Credit Color Coding Logic', () => {
   // Test the color logic used in CreditBalance component
   const getColorClass = (amount: number) => {
-    if (amount > 2000) return 'emerald'; // Green - healthy
-    if (amount > 1000) return 'yellow'; // Yellow - first warning
-    if (amount > 500) return 'amber'; // Amber - second warning
-    if (amount > 100) return 'orange'; // Orange - low
+    if (amount > 200) return 'emerald'; // Green - healthy
+    if (amount > 100) return 'yellow'; // Yellow - first warning
+    if (amount > 50) return 'amber'; // Amber - second warning
+    if (amount > 25) return 'orange'; // Orange - low
     return 'red'; // Red - critical
   };
 
-  it('should return emerald (green) for balance > 2000', () => {
-    expect(getColorClass(2001)).toBe('emerald');
-    expect(getColorClass(5000)).toBe('emerald');
-    expect(getColorClass(10000)).toBe('emerald');
+  it('should return emerald (green) for balance > 200', () => {
+    expect(getColorClass(201)).toBe('emerald');
+    expect(getColorClass(500)).toBe('emerald');
+    expect(getColorClass(1000)).toBe('emerald');
   });
 
-  it('should return yellow for balance between 1001-2000', () => {
-    expect(getColorClass(2000)).toBe('yellow');
-    expect(getColorClass(1500)).toBe('yellow');
-    expect(getColorClass(1001)).toBe('yellow');
+  it('should return yellow for balance between 101-200', () => {
+    expect(getColorClass(200)).toBe('yellow');
+    expect(getColorClass(150)).toBe('yellow');
+    expect(getColorClass(101)).toBe('yellow');
   });
 
-  it('should return amber for balance between 501-1000', () => {
-    expect(getColorClass(1000)).toBe('amber');
-    expect(getColorClass(750)).toBe('amber');
-    expect(getColorClass(501)).toBe('amber');
+  it('should return amber for balance between 51-100', () => {
+    expect(getColorClass(100)).toBe('amber');
+    expect(getColorClass(75)).toBe('amber');
+    expect(getColorClass(51)).toBe('amber');
   });
 
-  it('should return orange for balance between 101-500', () => {
-    expect(getColorClass(500)).toBe('orange');
-    expect(getColorClass(250)).toBe('orange');
-    expect(getColorClass(101)).toBe('orange');
+  it('should return orange for balance between 26-50', () => {
+    expect(getColorClass(50)).toBe('orange');
+    expect(getColorClass(35)).toBe('orange');
+    expect(getColorClass(26)).toBe('orange');
   });
 
-  it('should return red (critical) for balance <= 100', () => {
-    expect(getColorClass(100)).toBe('red');
-    expect(getColorClass(50)).toBe('red');
+  it('should return red (critical) for balance <= 25', () => {
+    expect(getColorClass(25)).toBe('red');
+    expect(getColorClass(10)).toBe('red');
     expect(getColorClass(0)).toBe('red');
     expect(getColorClass(-10)).toBe('red');
   });
@@ -137,22 +137,22 @@ describe('Warning Message Generation', () => {
   // Test the warning message logic
   const getWarningMessage = (threshold: number, balance: number) => {
     switch (threshold) {
-      case 2000:
+      case 200:
         return {
           title: 'Credits Running Low',
           description: `You have ${balance.toLocaleString()} credits remaining. Consider purchasing more to avoid interruptions.`,
         };
-      case 1000:
+      case 100:
         return {
           title: 'Credit Balance Warning',
           description: `Only ${balance.toLocaleString()} credits left. Some features may become unavailable soon.`,
         };
-      case 500:
+      case 50:
         return {
           title: 'Low Credit Balance',
           description: `${balance.toLocaleString()} credits remaining. Purchase credits now to continue using premium features.`,
         };
-      case 100:
+      case 25:
         return {
           title: 'Critical Credit Balance',
           description: `Only ${balance.toLocaleString()} credits left! Actions will be blocked when credits run out.`,
@@ -162,31 +162,31 @@ describe('Warning Message Generation', () => {
     }
   };
 
-  it('should generate correct message for 2000 threshold', () => {
-    const message = getWarningMessage(2000, 1950);
+  it('should generate correct message for 200 threshold', () => {
+    const message = getWarningMessage(200, 195);
     expect(message?.title).toBe('Credits Running Low');
-    expect(message?.description).toContain('1,950');
+    expect(message?.description).toContain('195');
     expect(message?.description).toContain('Consider purchasing');
   });
 
-  it('should generate correct message for 1000 threshold', () => {
-    const message = getWarningMessage(1000, 950);
+  it('should generate correct message for 100 threshold', () => {
+    const message = getWarningMessage(100, 95);
     expect(message?.title).toBe('Credit Balance Warning');
-    expect(message?.description).toContain('950');
+    expect(message?.description).toContain('95');
     expect(message?.description).toContain('features may become unavailable');
   });
 
-  it('should generate correct message for 500 threshold', () => {
-    const message = getWarningMessage(500, 450);
+  it('should generate correct message for 50 threshold', () => {
+    const message = getWarningMessage(50, 45);
     expect(message?.title).toBe('Low Credit Balance');
-    expect(message?.description).toContain('450');
+    expect(message?.description).toContain('45');
     expect(message?.description).toContain('Purchase credits now');
   });
 
-  it('should generate correct message for 100 threshold', () => {
-    const message = getWarningMessage(100, 75);
+  it('should generate correct message for 25 threshold', () => {
+    const message = getWarningMessage(25, 20);
     expect(message?.title).toBe('Critical Credit Balance');
-    expect(message?.description).toContain('75');
+    expect(message?.description).toContain('20');
     expect(message?.description).toContain('Actions will be blocked');
   });
 
@@ -208,39 +208,39 @@ describe('Warning Threshold Detection', () => {
     return null;
   };
 
-  it('should detect 2000 threshold when balance drops to 2000', () => {
+  it('should detect 200 threshold when balance drops to 200', () => {
     const shown = new Set<number>();
-    expect(getApplicableWarning(2000, shown)).toBe(2000);
+    expect(getApplicableWarning(200, shown)).toBe(200);
   });
 
-  it('should detect 1000 threshold when balance drops to 1000', () => {
+  it('should detect 100 threshold when balance drops to 100', () => {
     const shown = new Set<number>();
-    expect(getApplicableWarning(1000, shown)).toBe(2000); // 2000 not shown yet
+    expect(getApplicableWarning(100, shown)).toBe(200); // 200 not shown yet
   });
 
   it('should skip already shown thresholds', () => {
-    const shown = new Set([2000]);
-    expect(getApplicableWarning(1000, shown)).toBe(1000);
+    const shown = new Set([200]);
+    expect(getApplicableWarning(100, shown)).toBe(100);
   });
 
   it('should skip multiple already shown thresholds', () => {
-    const shown = new Set([2000, 1000]);
-    expect(getApplicableWarning(500, shown)).toBe(500);
+    const shown = new Set([200, 100]);
+    expect(getApplicableWarning(50, shown)).toBe(50);
   });
 
-  it('should return 100 when balance is critical and others shown', () => {
-    const shown = new Set([2000, 1000, 500]);
-    expect(getApplicableWarning(50, shown)).toBe(100);
+  it('should return 25 when balance is critical and others shown', () => {
+    const shown = new Set([200, 100, 50]);
+    expect(getApplicableWarning(20, shown)).toBe(25);
   });
 
   it('should return null when all thresholds shown', () => {
-    const shown = new Set([2000, 1000, 500, 100]);
-    expect(getApplicableWarning(50, shown)).toBeNull();
+    const shown = new Set([200, 100, 50, 25]);
+    expect(getApplicableWarning(10, shown)).toBeNull();
   });
 
   it('should return null when balance is above all thresholds', () => {
     const shown = new Set<number>();
-    expect(getApplicableWarning(3000, shown)).toBeNull();
+    expect(getApplicableWarning(300, shown)).toBeNull();
   });
 });
 
@@ -254,15 +254,15 @@ describe('Credit Status Flags', () => {
     };
   };
 
-  it('should mark as low credits when balance <= 2000 for free tier', () => {
-    const flags = deriveStatusFlags(2000, true);
+  it('should mark as low credits when balance <= 200 for free tier', () => {
+    const flags = deriveStatusFlags(200, true);
     expect(flags.isLowCredits).toBe(true);
     expect(flags.isCriticalCredits).toBe(false);
     expect(flags.isOutOfCredits).toBe(false);
   });
 
-  it('should mark as critical when balance <= 100 for free tier', () => {
-    const flags = deriveStatusFlags(100, true);
+  it('should mark as critical when balance <= 25 for free tier', () => {
+    const flags = deriveStatusFlags(25, true);
     expect(flags.isLowCredits).toBe(true);
     expect(flags.isCriticalCredits).toBe(true);
     expect(flags.isOutOfCredits).toBe(false);
