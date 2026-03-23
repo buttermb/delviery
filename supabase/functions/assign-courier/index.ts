@@ -40,6 +40,21 @@ serve(async (req) => {
       });
     }
 
+    // Get user's tenant context (REQUIRED for multi-tenant security)
+    const { data: tenantUser, error: tenantError } = await supabase
+      .from("tenant_users")
+      .select("tenant_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (tenantError || !tenantUser) {
+      console.error("Failed to resolve tenant_id:", tenantError);
+      return new Response(
+        JSON.stringify({ error: "Forbidden - no tenant association" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Verify user is admin or courier
     const { data: userRole } = await supabase
       .from("user_roles")
@@ -57,12 +72,13 @@ serve(async (req) => {
 
     const { orderId, courierId } = await req.json();
 
-    // Get order details
+    // Get order details (MUST filter by tenant_id for security)
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select("*")
       .eq("id", orderId)
-      .single();
+      .eq("tenant_id", tenantUser.tenant_id)
+      .maybeSingle();
 
     if (orderError || !order) {
       return new Response(
@@ -75,20 +91,14 @@ serve(async (req) => {
     let selectedCourierId = courierId;
 
     if (!selectedCourierId) {
-      // Filter couriers by tenant_id for multi-tenant isolation
-      let courierQuery = supabase
+      // Filter couriers by tenant_id for multi-tenant isolation (ALWAYS filter)
+      const { data: availableCouriers } = await supabase
         .from("couriers")
         .select("*")
+        .eq("tenant_id", tenantUser.tenant_id)
         .eq("is_active", true)
         .eq("is_online", true)
         .eq("age_verified", true);
-
-      // If order has tenant_id, filter couriers by same tenant
-      if (order.tenant_id) {
-        courierQuery = courierQuery.eq("tenant_id", order.tenant_id);
-      }
-
-      const { data: availableCouriers } = await courierQuery;
 
       if (!availableCouriers || availableCouriers.length === 0) {
         return new Response(
@@ -125,18 +135,13 @@ serve(async (req) => {
       selectedCourierId = nearestCourier.id;
     }
 
-    // Verify courier exists and is available
-    let courierVerifyQuery = supabase
+    // Verify courier exists and is available (MUST filter by tenant_id)
+    const { data: courier, error: courierError } = await supabase
       .from("couriers")
       .select("*")
-      .eq("id", selectedCourierId);
-
-    // Ensure courier belongs to same tenant as order for multi-tenant isolation
-    if (order.tenant_id) {
-      courierVerifyQuery = courierVerifyQuery.eq("tenant_id", order.tenant_id);
-    }
-
-    const { data: courier, error: courierError } = await courierVerifyQuery.single();
+      .eq("id", selectedCourierId)
+      .eq("tenant_id", tenantUser.tenant_id)
+      .maybeSingle();
 
     if (courierError || !courier) {
       return new Response(
@@ -152,14 +157,15 @@ serve(async (req) => {
       );
     }
 
-    // Assign courier to order
+    // Assign courier to order (MUST filter by tenant_id for security)
     const { error: updateError } = await supabase
       .from("orders")
-      .update({ 
+      .update({
         courier_id: selectedCourierId,
         status: "preparing"
       })
-      .eq("id", orderId);
+      .eq("id", orderId)
+      .eq("tenant_id", tenantUser.tenant_id);
 
     if (updateError) {
       console.error("Failed to assign courier:", updateError);

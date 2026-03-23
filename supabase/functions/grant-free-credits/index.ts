@@ -232,11 +232,18 @@ serve(async (req) => {
     }
 
     // Also check for tenants without a credit record that should have one
-    const { data: tenantsWithoutCredits, error: missingError } = await supabase
+    const excludeIds = (eligibleTenants || []).map(t => t.tenant_id);
+    let tenantsQuery = supabase
       .from('tenants')
       .select('id, slug, subscription_plan, is_free_tier')
-      .not('id', 'in', `(${(eligibleTenants || []).map(t => `'${t.tenant_id}'`).join(',') || "''"})`)
       .limit(100);
+
+    // Only apply filter if there are IDs to exclude
+    if (excludeIds.length > 0) {
+      tenantsQuery = tenantsQuery.not('id', 'in', `(${excludeIds.join(',')})`);
+    }
+
+    const { data: tenantsWithoutCredits, error: missingError } = await tenantsQuery;
 
     if (!missingError && tenantsWithoutCredits?.length) {
       console.error(`[GRANT_FREE_CREDITS] Found ${tenantsWithoutCredits.length} tenants without credit records`);

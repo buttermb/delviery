@@ -211,8 +211,7 @@ If you didn't create an account with ${params.businessName}, please ignore this 
   }
 
   // No email provider configured - log for development
-  console.error('No email provider configured. Verification token:', params.token);
-  console.error('Verification URL:', params.verificationUrl);
+  console.error('[AUTH-SIGNUP] No email provider configured. Verification email could not be sent.');
   return false;
 }
 

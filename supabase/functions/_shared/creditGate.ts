@@ -373,65 +373,6 @@ export async function trackCreditEvent(
 // Standalone Credit Consumption (for edge functions that don't use middleware)
 // ============================================================================
 
-export class CreditError extends Error {
-  public readonly code = 'INSUFFICIENT_CREDITS' as const;
-  public readonly creditsRequired: number;
-  public readonly currentBalance: number;
-  public readonly actionKey: string;
-
-  constructor(actionKey: string, creditsRequired: number, currentBalance: number, message?: string) {
-    super(message || `Insufficient credits for ${actionKey}: requires ${creditsRequired}, has ${currentBalance}`);
-    this.name = 'CreditError';
-    this.actionKey = actionKey;
-    this.creditsRequired = creditsRequired;
-    this.currentBalance = currentBalance;
-  }
-}
-
-/**
- * Consume credits for an action or throw CreditError if insufficient.
- * Use this in edge functions where the withCreditGate wrapper doesn't fit.
- *
- * @returns { success: true, newBalance, creditsCost }
- * @throws CreditError when tenant has insufficient credits
- */
-export async function consumeCreditsOrFail(
-  supabaseClient: SupabaseClient,
-  tenantId: string,
-  actionKey: string,
-  options?: {
-    referenceId?: string;
-    referenceType?: string;
-    description?: string;
-  }
-): Promise<{ success: true; newBalance: number; creditsCost: number }> {
-  const result = await consumeCreditsForAction(
-    supabaseClient,
-    tenantId,
-    actionKey,
-    options?.referenceId,
-    options?.referenceType,
-    options?.description,
-  );
-
-  if (!result.success) {
-    await trackCreditEvent(
-      supabaseClient,
-      tenantId,
-      'action_blocked_insufficient_credits',
-      result.newBalance,
-      actionKey,
-    );
-    throw new CreditError(actionKey, result.creditsCost, result.newBalance, result.errorMessage ?? undefined);
-  }
-
-  return {
-    success: true,
-    newBalance: result.newBalance,
-    creditsCost: result.creditsCost,
-  };
-}
-
 // ============================================================================
 // Quick Check Function (for manual use)
 // ============================================================================

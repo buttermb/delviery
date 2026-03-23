@@ -201,11 +201,7 @@ This link will expire in 24 hours. If you didn't request a password reset, pleas
         console.error('Email sending error:', emailError);
       }
     } else {
-      console.error('Password reset email (Klaviyo not configured):', {
-        to: email,
-        subject,
-        resetUrl,
-      });
+      console.error('[REQUEST-PASSWORD-RESET] Email provider not configured. Reset email could not be sent for:', email);
     }
 
     return new Response(

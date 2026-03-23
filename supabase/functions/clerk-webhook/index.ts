@@ -57,34 +57,43 @@ serve(async (req) => {
     // Get body as text for signature verification
     const bodyText = await req.text();
     
-    // Verify signature if secret and headers are present
-    if (webhookSecret && svixId && svixTimestamp && svixSignature) {
-      try {
-        const signedContent = `${svixId}.${svixTimestamp}.${bodyText}`;
-        const encoder = new TextEncoder();
-        
-        // Decode the base64 secret (remove 'whsec_' prefix)
-        const secretBytes = Uint8Array.from(atob(webhookSecret.replace('whsec_', '')), c => c.charCodeAt(0));
-        const key = await crypto.subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-        const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(signedContent));
-        const computedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
-        
-        // Check if any of the provided signatures match
-        const providedSignatures = svixSignature.split(' ').map(s => s.split(',')[1]);
-        const isValid = providedSignatures.some(sig => sig === computedSignature);
-        
-        if (!isValid) {
-          console.error('[CLERK-WEBHOOK] Invalid signature');
-          return new Response(JSON.stringify({ error: 'Invalid signature' }), { 
-            status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          });
-        }
-        console.error('[CLERK-WEBHOOK] Signature verified successfully');
-      } catch (verifyError) {
-        console.warn('[CLERK-WEBHOOK] Signature verification failed:', verifyError);
+    // Verify signature - REQUIRED for security
+    if (!webhookSecret || !svixId || !svixTimestamp || !svixSignature) {
+      console.error('[CLERK-WEBHOOK] Missing webhook secret or signature headers');
+      return new Response(
+        JSON.stringify({ error: 'Webhook verification failed' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    try {
+      const signedContent = `${svixId}.${svixTimestamp}.${bodyText}`;
+      const encoder = new TextEncoder();
+
+      // Decode the base64 secret (remove 'whsec_' prefix)
+      const secretBytes = Uint8Array.from(atob(webhookSecret.replace('whsec_', '')), c => c.charCodeAt(0));
+      const key = await crypto.subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+      const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(signedContent));
+      const computedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+      // Check if any of the provided signatures match
+      const providedSignatures = svixSignature.split(' ').map(s => s.split(',')[1]);
+      const isValid = providedSignatures.some(sig => sig === computedSignature);
+
+      if (!isValid) {
+        console.error('[CLERK-WEBHOOK] Invalid signature');
+        return new Response(
+          JSON.stringify({ error: 'Webhook verification failed' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-    } else {
-      console.warn('[CLERK-WEBHOOK] Skipping signature verification (missing secret or headers)');
+      console.error('[CLERK-WEBHOOK] Signature verified successfully');
+    } catch (verifyError) {
+      console.error('[CLERK-WEBHOOK] Signature verification failed:', verifyError);
+      return new Response(
+        JSON.stringify({ error: 'Webhook verification failed' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
     // Parse the body
