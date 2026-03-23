@@ -53,6 +53,9 @@ export function useFeatureAccess() {
   const isSubscriptionValid = (): boolean => {
     if (!tenant) return false;
 
+    // Free tier users always have valid access
+    if (tenant.is_free_tier) return true;
+
     const status = tenant.subscription_status;
 
     // Guard: Null check for status

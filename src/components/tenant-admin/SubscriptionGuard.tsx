@@ -29,15 +29,20 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const isBillingPage = location.pathname.includes('/billing');
   const isSettingsPage = location.pathname.includes('/settings');
   
+  const isFreeTier = tenant?.is_free_tier === true;
+
   useEffect(() => {
+    // Free tier users always pass through — they have valid access
+    if (isFreeTier) return;
+
     // If subscription is invalid and not on billing/settings, redirect to billing
     if (!subscriptionValid && !isBillingPage && !isSettingsPage) {
       navigate(`/${tenant?.slug}/admin/billing`, { replace: true });
     }
-  }, [subscriptionValid, isBillingPage, isSettingsPage, navigate, tenant?.slug]);
+  }, [subscriptionValid, isFreeTier, isBillingPage, isSettingsPage, navigate, tenant?.slug]);
   
-  // Show alert banner on billing/settings pages when subscription is invalid
-  if (!subscriptionValid && (isBillingPage || isSettingsPage)) {
+  // Show alert banner on billing/settings pages when subscription is invalid (not for free tier)
+  if (!subscriptionValid && !isFreeTier && (isBillingPage || isSettingsPage)) {
     let alertMessage = 'Your subscription requires attention.';
     
     if (isTrialExpired) {
