@@ -236,9 +236,22 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
     }, [storageKey]);
 
     const dismiss = useCallback(() => {
+        // Treat dismiss (clicking X / closing dialog) the same as skip
+        // so the modal doesn't reopen on next render
+        const newState = {
+            ...state,
+            isSkipped: true,
+            completedAt: new Date().toISOString(),
+        };
+        setState(newState);
+        persistState(newState);
         setIsOpen(false);
         sessionStorage.removeItem('floraiq_active_modal');
-    }, []);
+        logger.info('[FreeTierOnboarding] Dismissed onboarding', {
+            tenantId: tenant?.id,
+            stepReached: state.currentStep
+        });
+    }, [state, persistState, tenant?.id]);
 
     return {
         state,
