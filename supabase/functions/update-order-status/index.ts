@@ -82,18 +82,35 @@ serve(async (req) => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Update order status - ONLY for orders in user's tenant
-      const query = supabase
-        .from("orders")
-        .update(updateData)
-        .eq("id", orderId);
-
-      // If user belongs to a tenant, enforce tenant isolation
-      if (tenantUser?.tenant_id) {
-        query.eq("tenant_id", tenantUser.tenant_id);
+      // FAIL-CLOSED: Require tenant_id for all operations
+      if (!tenantUser?.tenant_id) {
+        return new Response(
+          JSON.stringify({ error: "No tenant associated with user" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      const { error: updateError } = await query;
+      // Verify order belongs to user's tenant before updating
+      const { data: existingOrder } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("id", orderId)
+        .eq("tenant_id", tenantUser.tenant_id)
+        .maybeSingle();
+
+      if (!existingOrder) {
+        return new Response(
+          JSON.stringify({ error: "Order not found or access denied" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update order status - ALWAYS enforce tenant isolation
+      const { error: updateError } = await supabase
+        .from("orders")
+        .update(updateData)
+        .eq("id", orderId)
+        .eq("tenant_id", tenantUser.tenant_id);
 
       if (updateError) {
         console.error("Update error details:", JSON.stringify(updateError));
@@ -119,19 +136,22 @@ serve(async (req) => {
         await supabase
           .from("deliveries")
           .update({ actual_pickup_time: new Date().toISOString() })
-          .eq("order_id", orderId);
+          .eq("order_id", orderId)
+          .eq("tenant_id", tenantUser.tenant_id);
       } else if (status === "delivered") {
         await supabase
           .from("deliveries")
           .update({ actual_dropoff_time: new Date().toISOString() })
-          .eq("order_id", orderId);
+          .eq("order_id", orderId)
+          .eq("tenant_id", tenantUser.tenant_id);
 
         await supabase
           .from("orders")
           .update({
             payment_status: "completed"
           })
-          .eq("id", orderId);
+          .eq("id", orderId)
+          .eq("tenant_id", tenantUser.tenant_id);
       }
 
       // Create audit log
@@ -145,12 +165,13 @@ serve(async (req) => {
 
       // Send push notification to customer for status updates
       try {
-        // Get order details including customer
+        // Get order details including customer - ALWAYS filter by tenant_id
         const { data: orderData } = await supabase
           .from("orders")
           .select("customer_id, order_number, tenant_id")
           .eq("id", orderId)
-          .single();
+          .eq("tenant_id", tenantUser.tenant_id)
+          .maybeSingle();
 
         if (orderData?.customer_id) {
           // Build notification message based on status
