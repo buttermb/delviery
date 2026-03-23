@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,26 +6,63 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId, message, mode } = await req.json();
-    
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    // Get session and message history
-    const { data: session } = await supabase
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user } } = await supabaseClient.auth.getUser(token);
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'User not authenticated' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Resolve tenant
+    const { data: tenantUser } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'No tenant associated with user' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { sessionId, message, mode } = await req.json();
+
+    // Get session and message history (filtered by tenant_id)
+    const { data: session } = await supabaseClient
       .from('chat_sessions')
       .select('*')
       .eq('id', sessionId)
-      .single();
+      .eq('tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
 
     if (!session) {
-      throw new Error('Session not found');
+      return new Response(
+        JSON.stringify({ error: 'Session not found or access denied' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // If mode is human, just store the message and wait for admin
     if (mode === 'human' || session.mode === 'human') {
-      await supabase.from('chat_messages').insert({
+      await supabaseClient.from('chat_messages').insert({
         session_id: sessionId,
         sender_type: 'user',
         message
@@ -47,7 +78,7 @@ serve(async (req) => {
     }
 
     // AI mode - get conversation history
-    const { data: messages } = await supabase
+    const { data: messages } = await supabaseClient
       .from('chat_messages')
       .select('*')
       .eq('session_id', sessionId)
@@ -123,7 +154,7 @@ If you can't help or the user seems frustrated, say: "Let me connect you with ou
     const aiMessage = aiData.choices[0].message.content;
 
     // Store both messages
-    await supabase.from('chat_messages').insert([
+    await supabaseClient.from('chat_messages').insert([
       {
         session_id: sessionId,
         sender_type: 'user',

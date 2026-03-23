@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,10 +6,42 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user } } = await supabaseClient.auth.getUser(token);
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'User not authenticated' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Resolve tenant
+    const { data: tenantUser } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'No tenant associated with user' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const { orderId } = await req.json();
 
@@ -23,15 +49,16 @@ serve(async (req) => {
       throw new Error('Order ID is required');
     }
 
-    // Get order details
-    const { data: order, error: orderError } = await supabase
+    // Get order details (filtered by tenant_id)
+    const { data: order, error: orderError } = await supabaseClient
       .from('menu_orders')
       .select(`
         *,
-        disposable_menus (
+        disposable_menus!inner (
           id,
           title,
-          business_name
+          business_name,
+          tenant_id
         ),
         synced_order:orders (
           id,
@@ -39,9 +66,17 @@ serve(async (req) => {
         )
       `)
       .eq('id', orderId)
-      .single();
+      .eq('disposable_menus.tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
 
     if (orderError) throw orderError;
+
+    if (!order) {
+      return new Response(
+        JSON.stringify({ error: 'Order not found or access denied' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const menu = order.disposable_menus;
     const orderData = order.order_data as Record<string, unknown>;
@@ -109,7 +144,7 @@ Please review and process this order.
     });
 
     // Log notifications
-    await supabase.from('account_logs').insert([
+    await supabaseClient.from('account_logs').insert([
       {
         menu_id: menu.id,
         action: 'order_notification_sent',
@@ -131,7 +166,7 @@ Please review and process this order.
     ]);
 
     // Create security event for new order
-    await supabase.from('menu_security_events').insert({
+    await supabaseClient.from('menu_security_events').insert({
       menu_id: menu.id,
       event_type: 'new_order',
       severity: 'medium',
