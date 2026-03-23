@@ -169,11 +169,11 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && dismiss()}>
             <DialogContent className={cn(
-                'sm:max-w-[600px] p-0 overflow-hidden gap-0 border-0',
+                'sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 overflow-hidden gap-0 border-0',
                 className
             )}>
                 {/* Header */}
-                <div className="relative bg-white dark:bg-slate-950 border-b border-border/40 p-6 pb-8">
+                <div className="relative shrink-0 bg-white dark:bg-slate-950 border-b border-border/40 p-6 pb-8">
                     {/* Close button */}
                     <Button
                         variant="ghost"
@@ -238,7 +238,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                 </div>
 
                 {/* Step Content */}
-                <div className="p-6 min-h-[400px] overflow-hidden">
+                <div className="p-6 flex-1 min-h-0 overflow-x-hidden overflow-y-auto">
                     <AnimatePresence mode="wait" custom={direction}>
                         <motion.div
                             key={state.currentStep}
@@ -247,7 +247,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            className="h-full"
+                            className=""
                         >
                             {state.currentStep === 'welcome' && (
                                 <WelcomeStep businessName={tenant?.business_name || 'your business'} />
@@ -269,7 +269,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 bg-muted/30 border-t flex items-center justify-between">
+                <div className="shrink-0 p-4 bg-muted/30 border-t flex items-center justify-between">
                     {/* Step indicators */}
                     <div className="flex items-center gap-1.5">
                         {stepConfigs.map((step, i) => (
