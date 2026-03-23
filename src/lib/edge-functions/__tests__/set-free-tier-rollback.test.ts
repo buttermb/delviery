@@ -500,13 +500,13 @@ describe('set-free-tier Rollback Logic Unit Tests', () => {
       responseBody: {
         success: true,
         slug: 'test',
-        credits_granted: 500,
+        credits_granted: 10000,
       },
     };
   };
 
   it('should set free tier state when credit grant succeeds', () => {
-    const result = simulateSetFreeTierFlow({ success: true, new_balance: 500 });
+    const result = simulateSetFreeTierFlow({ success: true, new_balance: 10000 });
 
     expect(result.tenantState.is_free_tier).toBe(true);
     expect(result.tenantState.credits_enabled).toBe(true);
@@ -549,10 +549,10 @@ describe('set-free-tier Rollback Logic Unit Tests', () => {
     expect(result.responseBody.credits_granted).toBeUndefined();
   });
 
-  it('should return exactly 500 credits on success (matches FREE_TIER_MONTHLY_CREDITS)', () => {
-    const result = simulateSetFreeTierFlow({ success: true, new_balance: 500 });
+  it('should return exactly 10000 credits on success (matches FREE_TIER_MONTHLY_CREDITS)', () => {
+    const result = simulateSetFreeTierFlow({ success: true, new_balance: 10000 });
 
-    expect(result.responseBody.credits_granted).toBe(500);
+    expect(result.responseBody.credits_granted).toBe(10000);
   });
 
   it('rollback state should exactly match pre-update state', () => {
@@ -569,7 +569,7 @@ describe('set-free-tier Rollback Logic Unit Tests', () => {
   });
 
   it('rollback should produce a complete reversal of the update', () => {
-    const successResult = simulateSetFreeTierFlow({ success: true, new_balance: 500 });
+    const successResult = simulateSetFreeTierFlow({ success: true, new_balance: 10000 });
     const failResult = simulateSetFreeTierFlow({ success: false, error: 'fail' });
 
     // Every field in the update should be reverted

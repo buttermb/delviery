@@ -698,8 +698,8 @@ describe('Update Subscription — Edge Function Code Verification', () => {
       description: 'Must fetch both tenant_id and role for authorization',
     },
     comparesResolvedVsClient: {
-      pattern: 'resolvedTenantId !== clientTenantId',
-      description: 'Must compare resolved tenant_id against client-supplied value',
+      pattern: 'eq("tenant_id", clientTenantId)',
+      description: 'Must query tenant_users by tenant_id',
     },
     checksRole: {
       pattern: "userRole !== 'admin' && userRole !== 'owner'",
@@ -735,9 +735,9 @@ describe('Update Subscription — Edge Function Code Verification', () => {
     expect(pattern.pattern).toContain('role');
   });
 
-  it('should compare resolved tenant_id against client-supplied value', () => {
+  it('should verify tenant ownership directly within the tenant_users query', () => {
     const pattern = EDGE_FUNCTION_SECURITY_PATTERNS.comparesResolvedVsClient;
-    expect(pattern.pattern).toContain('resolvedTenantId');
+    expect(pattern.pattern).toContain('eq("tenant_id"');
     expect(pattern.pattern).toContain('clientTenantId');
   });
 

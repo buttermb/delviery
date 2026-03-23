@@ -18,8 +18,8 @@ import {
 } from '../creditCosts';
 
 describe('FREE_TIER_MONTHLY_CREDITS constant', () => {
-  it('should be exactly 500', () => {
-    expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
+  it('should be exactly 10000', () => {
+    expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
   });
 
   it('should be a positive integer', () => {
@@ -37,8 +37,8 @@ describe('Credit threshold consistency with FREE_TIER_MONTHLY_CREDITS', () => {
     expect(CRITICAL_CREDIT_THRESHOLD).toBeLessThan(FREE_TIER_MONTHLY_CREDITS);
   });
 
-  it('YELLOW_BADGE threshold should equal FREE_TIER_MONTHLY_CREDITS', () => {
-    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBe(FREE_TIER_MONTHLY_CREDITS);
+  it('YELLOW_BADGE threshold should be less than FREE_TIER_MONTHLY_CREDITS', () => {
+    expect(CREDIT_WARNING_THRESHOLDS.YELLOW_BADGE).toBeLessThan(FREE_TIER_MONTHLY_CREDITS);
   });
 });
 

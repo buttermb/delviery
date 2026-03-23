@@ -42,36 +42,21 @@ describe('stripe-customer-portal tenant ownership verification', () => {
       expect(edgeFunctionSource).toContain('.maybeSingle()');
     });
 
-    it('should extract resolved tenant_id from tenant_users result', () => {
-      // Must set resolvedTenantId from the query result
-      expect(edgeFunctionSource).toContain('resolvedTenantId');
-      expect(edgeFunctionSource).toContain('tenantUser?.tenant_id');
+    it('should require exactly matched tenant_id in the database query', () => {
+      expect(edgeFunctionSource).toContain("eq('tenant_id', clientTenantId)");
+      expect(edgeFunctionSource).toContain("eq('user_id', user.id)");
     });
 
-    it('should return 403 when user has no tenant association', () => {
-      // Must reject users with no tenant_users entry
+    it('should return 403 when user has no tenant association or mismatched tenant', () => {
       expect(edgeFunctionSource).toContain('No tenant associated with user');
       expect(edgeFunctionSource).toContain('status: 403');
     });
 
-    it('should compare resolved tenant_id with client-supplied tenant_id', () => {
-      // Must compare server-resolved ID against client-supplied ID
-      expect(edgeFunctionSource).toContain('resolvedTenantId !== clientTenantId');
-    });
-
-    it('should return 403 when tenant_id mismatch is detected', () => {
-      // Must reject when client supplies a different tenant_id
-      expect(edgeFunctionSource).toContain('Not authorized for this tenant');
-      expect(edgeFunctionSource).toContain('Tenant ID mismatch');
-    });
-
-    it('should use resolved tenant_id for subsequent operations, not client-supplied', () => {
-      // Must assign the verified tenant_id from the resolved value
-      expect(edgeFunctionSource).toContain('const tenant_id = resolvedTenantId');
+    it('should trust clientTenantId after verifying database record exists', () => {
+      expect(edgeFunctionSource).toContain('const tenant_id = clientTenantId');
     });
 
     it('should destructure client tenant_id as clientTenantId, not tenant_id', () => {
-      // Must use a different variable name for the client-supplied value
       expect(edgeFunctionSource).toContain('tenant_id: clientTenantId');
     });
   });
@@ -133,15 +118,13 @@ describe('stripe-customer-portal tenant ownership verification', () => {
     });
 
     it('should follow the same tenant_users resolution pattern as start-trial', () => {
-      // Both must resolve tenant from tenant_users
-      expect(startTrialSource).toContain('resolvedTenantId !== clientTenantId');
-      expect(edgeFunctionSource).toContain('resolvedTenantId !== clientTenantId');
+      expect(startTrialSource).toMatch(/eq\(["']tenant_id["'],\s*clientTenantId\)/);
+      expect(edgeFunctionSource).toMatch(/eq\(["']tenant_id["'],\s*clientTenantId\)/);
     });
 
-    it('should follow the same tenant_users resolution pattern as update-subscription', () => {
-      // Both must resolve tenant from tenant_users
-      expect(updateSubscriptionSource).toContain('resolvedTenantId !== clientTenantId');
-      expect(edgeFunctionSource).toContain('resolvedTenantId !== clientTenantId');
+    it('should follow the exact same tenant verification approach via EQ checks', () => {
+      expect(updateSubscriptionSource).toMatch(/eq\(["']tenant_id["'],\s*clientTenantId\)/);
+      expect(edgeFunctionSource).toMatch(/eq\(["']tenant_id["'],\s*clientTenantId\)/);
     });
 
     it('all billing edge functions should use the "never trust client" comment', () => {

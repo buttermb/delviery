@@ -364,6 +364,18 @@ export function useCustomerInvoices() {
       mutationFn: async (invoiceId: string) => {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
+        const invoiceCheck = await db.from('customer_invoices')
+          .select('status')
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (invoiceCheck.error) throw invoiceCheck.error;
+        if (!invoiceCheck.data) throw new Error('Invoice not found');
+        if ((invoiceCheck.data as unknown as { status: string }).status !== 'draft') {
+          throw new Error('Only draft invoices can be deleted');
+        }
+
         const result = await db.from('customer_invoices').delete().eq('id', invoiceId).eq('tenant_id', tenant.id);
 
         if (result.error) throw result.error;

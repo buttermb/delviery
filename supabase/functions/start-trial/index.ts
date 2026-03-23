@@ -30,27 +30,18 @@ serve(async (req) => {
     const { data: tenantUser, error: tenantUserError } = await supabaseClient
       .from("tenant_users")
       .select("tenant_id, role")
+      .eq("tenant_id", clientTenantId)
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const resolvedTenantId = tenantUser?.tenant_id;
-
-    if (tenantUserError || !resolvedTenantId) {
+    if (tenantUserError || !tenantUser) {
       return new Response(
         JSON.stringify({ error: "No tenant associated with user" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (resolvedTenantId !== clientTenantId) {
-      console.error('[START-TRIAL] Tenant ID mismatch: caller does not own requested tenant');
-      return new Response(
-        JSON.stringify({ error: "Not authorized for this tenant" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const tenant_id = resolvedTenantId;
+    const tenant_id = clientTenantId;
 
     console.error('[START-TRIAL] Request:', { tenant_id, plan_id, billing_cycle, skip_trial, hasIdempotencyKey: !!idempotency_key });
 

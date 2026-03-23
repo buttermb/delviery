@@ -95,7 +95,7 @@ export const EXPECTED_DB_FEATURES = {
  * create_tenant_atomic sets these as the initial tenant_credits.balance.
  */
 export const EXPECTED_INITIAL_CREDITS = {
-  free: FREE_TIER_MONTHLY_CREDITS, // 500 - must match the constant
+  free: FREE_TIER_MONTHLY_CREDITS, // 10000 - must match the constant
   starter: 25000,
   professional: 100000,
   enterprise: 500000,
@@ -137,7 +137,7 @@ describe('create_tenant_atomic free tier limits consistency', () => {
 
   describe('initial credit grants are consistent', () => {
     it('free tier initial credits must equal FREE_TIER_MONTHLY_CREDITS', () => {
-      expect(EXPECTED_INITIAL_CREDITS.free).toBe(500);
+      expect(EXPECTED_INITIAL_CREDITS.free).toBe(10000);
       expect(EXPECTED_INITIAL_CREDITS.free).toBe(FREE_TIER_MONTHLY_CREDITS);
     });
 
@@ -252,10 +252,10 @@ describe('create_tenant_atomic free tier limits consistency', () => {
   });
 
   describe('grant_free_credits RPC cap matches FREE_TIER_MONTHLY_CREDITS', () => {
-    it('free tier monthly allocation should be 500', () => {
-      // The grant_free_credits SQL function has v_max_monthly_grant = 500
+    it('free tier monthly allocation should be 10000', () => {
+      // The grant_free_credits SQL function has v_max_monthly_grant = 10000
       // This MUST match FREE_TIER_MONTHLY_CREDITS
-      expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
+      expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
     });
   });
 });

@@ -107,11 +107,11 @@ serve(async (req) => {
       );
     }
 
-    // 6. Grant initial credits (500 = FREE_TIER_MONTHLY_CREDITS)
+    // 6. Grant initial credits (10000 = FREE_TIER_MONTHLY_CREDITS)
     const { data: creditResult, error: creditError } = await supabaseClient
       .rpc('grant_free_credits', {
         p_tenant_id: tenantId,
-        p_amount: 500,
+        p_amount: 10000,
       });
 
     if (creditError) {
@@ -146,7 +146,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         slug: tenant?.slug,
-        credits_granted: 500,
+        credits_granted: 10000,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
