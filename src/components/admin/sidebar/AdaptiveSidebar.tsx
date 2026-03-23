@@ -144,7 +144,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   }, [navigate, tenantSlug]);
 
   const handleNavigateToProfile = useCallback(() => {
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/profile`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/account-settings`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToHelp = useCallback(() => {
