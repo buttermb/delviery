@@ -23,29 +23,13 @@ serve(async (req) => {
         items,
         delivery_address,
         delivery_notes,
-        idempotency_key,
-        tenant_id
+        idempotency_key
+        // NOTE: tenant_id is intentionally NOT extracted from body - we use creditTenantId from JWT
       } = validateWholesaleOrderCreate(rawBody);
 
-      // Get tenant_id from auth context if not provided
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      let resolvedTenantId = tenant_id;
-
-      if (!resolvedTenantId && user) {
-        const { data: tenantUser } = await supabaseClient
-          .from('tenant_users')
-          .select('tenant_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        resolvedTenantId = tenantUser?.tenant_id;
-      }
-
-      if (!resolvedTenantId) {
-        return new Response(
-          JSON.stringify({ error: 'Tenant ID required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // SECURITY: Use tenant_id resolved from JWT by creditGate wrapper
+      // NEVER trust client-supplied tenant_id from request body
+      const resolvedTenantId = creditTenantId;
 
       // Try atomic RPC first (preferred - single transaction, prevents race conditions)
       const { data: rpcResult, error: rpcError } = await supabaseClient.rpc('create_wholesale_order_atomic', {

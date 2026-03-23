@@ -14,7 +14,8 @@ export const wholesaleOrderCreateSchema = z.object({
   delivery_address: z.string().min(1).max(500).optional(),
   delivery_notes: z.string().max(2000).optional(),
   payment_terms: z.enum(['net30', 'net60', 'net90', 'immediate']).optional().default('net30'),
-  tenant_id: z.string().uuid().optional(),
+  // SECURITY: tenant_id is NEVER accepted from client - it's resolved from JWT by creditGate
+  // If a client sends tenant_id, Zod will silently ignore it (not in schema)
   idempotency_key: z.string().max(100).optional(),
 });
 
