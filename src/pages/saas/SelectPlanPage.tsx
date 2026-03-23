@@ -546,11 +546,11 @@ export default function SelectPlanPage() {
                       )}
                     </Button>
 
-                    {!skipTrial && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        No charges until trial ends
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground text-center">
+                      {skipTrial
+                        ? "Credit card required"
+                        : "Credit card required — no charges until trial ends"}
+                    </p>
                   </CardFooter>
                 </Card>
               );
@@ -579,6 +579,7 @@ export default function SelectPlanPage() {
               By {skipTrial ? "subscribing" : "starting a trial"}, you agree to our{" "}
               <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
               <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+              {" "}A valid credit card is required.
               {!skipTrial && (
                 <> Your card will be charged <span className="font-semibold">after 14 days</span> unless you cancel.</>
               )}
