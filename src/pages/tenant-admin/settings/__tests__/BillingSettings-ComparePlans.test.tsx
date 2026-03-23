@@ -127,7 +127,7 @@ vi.mock('@/lib/humanizeError', () => ({
 }));
 
 vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
 }));
 
 vi.mock('@/components/billing/AddPaymentMethodDialog', () => ({

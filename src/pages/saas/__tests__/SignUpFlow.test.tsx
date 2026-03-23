@@ -150,7 +150,7 @@ vi.mock('@/components/marketing/ForceLightMode', () => ({
 }));
 
 vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
 }));
 
 vi.mock('@/config/planPricing', () => ({

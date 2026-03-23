@@ -93,6 +93,8 @@ export type { CreditAlertBannerProps } from './CreditAlertBanner';
 export { FreeTierDailyLimitWarning } from './FreeTierDailyLimitWarning';
 export type { FreeTierDailyLimitWarningProps } from './FreeTierDailyLimitWarning';
 
+export { CreditGatedButton } from './CreditGatedButton';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';

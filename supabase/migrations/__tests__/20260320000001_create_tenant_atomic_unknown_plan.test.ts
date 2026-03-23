@@ -13,7 +13,7 @@
  *   - is_free_tier: true
  *   - subscription_status: 'active'
  *   - trial_ends_at: null
- *   - initial_credits: 10,000
+ *   - initial_credits: 500
  *   - subscription_plan: 'free'
  *   - mrr: 0
  *   - limits: { customers: 50, menus: 3, products: 100, locations: 2, users: 3 }
@@ -51,7 +51,7 @@ const PLAN_CONFIGS: Record<string, PlanConfig> = {
     isFreeTier: true,
     subscriptionStatus: 'active',
     trialEndsAt: null,
-    initialCredits: 10_000,
+    initialCredits: 500,
     subscriptionPlan: 'free',
     mrr: 0,
     limits: { customers: 50, menus: 3, products: 100, locations: 2, users: 3 },
@@ -118,7 +118,7 @@ describe('create_tenant_atomic: plan resolution logic', () => {
       const config = resolvePlanConfig('free');
       expect(config.subscriptionPlan).toBe('free');
       expect(config.isFreeTier).toBe(true);
-      expect(config.initialCredits).toBe(10_000);
+      expect(config.initialCredits).toBe(500);
       expect(config.mrr).toBe(0);
     });
 
@@ -188,7 +188,7 @@ describe('create_tenant_atomic: plan resolution logic', () => {
       expect(config.isFreeTier).toBe(true);
       expect(config.subscriptionStatus).toBe('active');
       expect(config.trialEndsAt).toBeNull();
-      expect(config.initialCredits).toBe(10_000);
+      expect(config.initialCredits).toBe(500);
       expect(config.mrr).toBe(0);
     });
 
@@ -298,7 +298,7 @@ describe('create_tenant_atomic RPC: unknown plan handling', () => {
     //     v_is_free_tier := true;
     //     v_subscription_status := 'active';
     //     v_trial_ends_at := NULL;
-    //     v_initial_credits := 10000;
+    //     v_initial_credits := 500;
     //     v_subscription_plan := 'free';
     //   END IF;
     //
@@ -309,7 +309,7 @@ describe('create_tenant_atomic RPC: unknown plan handling', () => {
       unknownPlanInput: 'any_unrecognized_string',
       resultingPlan: 'free',
       resultingStatus: 'active',
-      resultingCredits: 10_000,
+      resultingCredits: 500,
       resultingFreeTier: true,
       resultingTrialEndsAt: null,
       resultingMrr: 0,
@@ -318,7 +318,7 @@ describe('create_tenant_atomic RPC: unknown plan handling', () => {
     expect(expectedBehavior.resultingPlan).toBe('free');
     expect(expectedBehavior.resultingFreeTier).toBe(true);
     expect(expectedBehavior.resultingStatus).toBe('active');
-    expect(expectedBehavior.resultingCredits).toBe(10_000);
+    expect(expectedBehavior.resultingCredits).toBe(500);
     expect(expectedBehavior.resultingTrialEndsAt).toBeNull();
     expect(expectedBehavior.resultingMrr).toBe(0);
   });

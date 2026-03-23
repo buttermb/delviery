@@ -224,7 +224,7 @@ vi.mock('@/lib/tutorials/tutorialConfig', () => ({
 }));
 
 vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
   FREE_TIER_LIMITS: {
     max_menus_per_day: 5,
     max_orders_per_day: 10,

@@ -86,10 +86,10 @@ vi.mock('@/integrations/supabase/client', () => ({
     functions: {
       invoke: vi.fn().mockResolvedValue({
         data: {
-          balance: 5000,
+          balance: 250,
           lifetimeStats: {
-            earned: 10000,
-            spent: 5000,
+            earned: 500,
+            spent: 250,
             purchased: 0,
             expired: 0,
             refunded: 0,
@@ -97,7 +97,7 @@ vi.mock('@/integrations/supabase/client', () => ({
           subscription: {
             status: 'active',
             isFreeTier: true,
-            creditsPerPeriod: 10000,
+            creditsPerPeriod: 500,
             currentPeriodEnd: null,
             cancelAtPeriodEnd: false,
           },
@@ -129,7 +129,7 @@ vi.mock('@/lib/credits', () => ({
   getCreditCostInfo: vi.fn(() => null),
   LOW_CREDIT_WARNING_THRESHOLD: 2000,
   CRITICAL_CREDIT_THRESHOLD: 100,
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
   LOW_BALANCE_WARNING_LEVELS: [2000, 1000, 500, 100],
 }));
 

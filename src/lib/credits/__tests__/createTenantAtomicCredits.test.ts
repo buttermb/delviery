@@ -2,7 +2,7 @@
  * create_tenant_atomic Credit Grant Tests
  *
  * Verifies that the create_tenant_atomic SQL function correctly grants
- * 10,000 initial credits for free tier tenants, with proper balance
+ * 500 initial credits for free tier tenants, with proper balance
  * tracking, transaction logging, and tier status.
  *
  * These tests validate the TypeScript-side logic that mirrors the SQL
@@ -18,7 +18,7 @@ import { describe, it, expect } from 'vitest';
 
 /** Plan-based initial credit amounts (mirrors SQL function) */
 const PLAN_INITIAL_CREDITS: Record<string, number> = {
-  free: 10_000,
+  free: 500,
   starter: 25_000,
   professional: 100_000,
   enterprise: 500_000,
@@ -31,7 +31,7 @@ const TRIAL_CREDITS = -1;
 const DEFAULT_PLAN = 'free';
 
 /** Free tier initial credit grant */
-const FREE_TIER_INITIAL_CREDITS = 10_000;
+const FREE_TIER_INITIAL_CREDITS = 500;
 
 // ============================================================================
 // Types matching the SQL function's return shape
@@ -205,32 +205,32 @@ describe('create_tenant_atomic: Free Tier Credit Grants', () => {
   };
 
   describe('Initial credit amount', () => {
-    it('should grant exactly 10,000 credits for free plan', () => {
+    it('should grant exactly 500 credits for free plan', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.initialCredits).toBe(10_000);
+      expect(result.initialCredits).toBe(500);
     });
 
-    it('should grant 10,000 credits when plan defaults (no plan specified)', () => {
+    it('should grant 500 credits when plan defaults (no plan specified)', () => {
       const params = { ...freeParams, plan: undefined };
       const result = simulateCreateTenantAtomic(params);
-      expect(result.initialCredits).toBe(10_000);
+      expect(result.initialCredits).toBe(500);
     });
 
-    it('should grant 10,000 credits for unknown plan names (defaults to free)', () => {
+    it('should grant 500 credits for unknown plan names (defaults to free)', () => {
       const result = simulateCreateTenantAtomic({ ...freeParams, plan: 'unknown_plan' });
-      expect(result.initialCredits).toBe(10_000);
+      expect(result.initialCredits).toBe(500);
     });
   });
 
   describe('Credit balance record', () => {
-    it('should set balance to 10,000 for free tier', () => {
+    it('should set balance to 500 for free tier', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.credits.balance).toBe(10_000);
+      expect(result.credits.balance).toBe(500);
     });
 
-    it('should set free_credits_balance to 10,000 for free tier', () => {
+    it('should set free_credits_balance to 500 for free tier', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.credits.freeCreditsBalance).toBe(10_000);
+      expect(result.credits.freeCreditsBalance).toBe(500);
     });
 
     it('should set purchased_credits_balance to 0', () => {
@@ -238,9 +238,9 @@ describe('create_tenant_atomic: Free Tier Credit Grants', () => {
       expect(result.credits.purchasedCreditsBalance).toBe(0);
     });
 
-    it('should set lifetime_earned to 10,000', () => {
+    it('should set lifetime_earned to 500', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.credits.lifetimeEarned).toBe(10_000);
+      expect(result.credits.lifetimeEarned).toBe(500);
     });
 
     it('should set lifetime_spent to 0', () => {
@@ -303,14 +303,14 @@ describe('create_tenant_atomic: Free Tier Credit Grants', () => {
       expect(result.transaction?.actionType).toBe('initial_grant');
     });
 
-    it('should log amount of 10,000', () => {
+    it('should log amount of 500', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.transaction?.amount).toBe(10_000);
+      expect(result.transaction?.amount).toBe(500);
     });
 
-    it('should log balance_after as 10,000', () => {
+    it('should log balance_after as 500', () => {
       const result = simulateCreateTenantAtomic(freeParams);
-      expect(result.transaction?.balanceAfter).toBe(10_000);
+      expect(result.transaction?.balanceAfter).toBe(500);
     });
 
     it('should include welcome description with plan name', () => {
@@ -339,9 +339,9 @@ describe('create_tenant_atomic: All Plan Credit Amounts', () => {
     ownerName: 'Test Owner',
   };
 
-  it('should grant 10,000 credits for free plan', () => {
+  it('should grant 500 credits for free plan', () => {
     const result = simulateCreateTenantAtomic({ ...baseParams, plan: 'free' });
-    expect(result.initialCredits).toBe(10_000);
+    expect(result.initialCredits).toBe(500);
     expect(result.tenant.isFreeTier).toBe(true);
   });
 
@@ -395,7 +395,7 @@ describe('create_tenant_atomic: Free Tier Credit Balance Details', () => {
     const freeResult = simulateCreateTenantAtomic({ ...baseParams, plan: 'free' });
     const starterResult = simulateCreateTenantAtomic({ ...baseParams, plan: 'starter' });
 
-    expect(freeResult.credits.freeCreditsBalance).toBe(10_000);
+    expect(freeResult.credits.freeCreditsBalance).toBe(500);
     expect(starterResult.credits.freeCreditsBalance).toBe(0);
   });
 
@@ -486,7 +486,7 @@ describe('create_tenant_atomic: Plan Resolution', () => {
 describe('create_tenant_atomic: get_plan_credit_amount helper', () => {
   // This mirrors the SQL helper function get_plan_credit_amount
   it('should match SQL function output for all plans', () => {
-    expect(getInitialCredits('free')).toBe(10_000);
+    expect(getInitialCredits('free')).toBe(500);
     expect(getInitialCredits('starter')).toBe(25_000);
     expect(getInitialCredits('pro')).toBe(100_000);
     expect(getInitialCredits('professional')).toBe(100_000);
@@ -495,7 +495,7 @@ describe('create_tenant_atomic: get_plan_credit_amount helper', () => {
   });
 
   it('should default to free tier amount for unknown plans', () => {
-    expect(getInitialCredits('garbage')).toBe(10_000);
-    expect(getInitialCredits('')).toBe(10_000);
+    expect(getInitialCredits('garbage')).toBe(500);
+    expect(getInitialCredits('')).toBe(500);
   });
 });

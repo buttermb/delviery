@@ -168,7 +168,7 @@ vi.mock('@/lib/credits', () => ({
     description: 'Send bulk SMS (volume discount)',
   })),
   CREDIT_PACKAGES: [],
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
   MIN_BALANCE_REQUIREMENTS: {
     require_full_balance: [],
     min_buffer: 0,

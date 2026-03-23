@@ -55,11 +55,11 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
 
 // Mock credits hook with configurable values
 let mockCreditsData = {
-  balance: 5000,
+  balance: 250,
   isFreeTier: true,
   isLoading: false,
-  lifetimeSpent: 2000,
-  lifetimeEarned: 10000,
+  lifetimeSpent: 100,
+  lifetimeEarned: 500,
   nextFreeGrantAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   refetch: vi.fn(),
 };
@@ -79,7 +79,7 @@ vi.mock('@/lib/logger', () => ({
 
 // Mock credits lib
 vi.mock('@/lib/credits', () => ({
-  FREE_TIER_MONTHLY_CREDITS: 10000,
+  FREE_TIER_MONTHLY_CREDITS: 500,
   getCreditCostInfo: (actionType: string) => ({
     actionName: actionType.replace(/_/g, ' '),
     category: 'orders',
@@ -131,11 +131,11 @@ describe('CreditAnalyticsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreditsData = {
-      balance: 5000,
+      balance: 250,
       isFreeTier: true,
       isLoading: false,
-      lifetimeSpent: 2000,
-      lifetimeEarned: 10000,
+      lifetimeSpent: 100,
+      lifetimeEarned: 500,
       nextFreeGrantAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       refetch: vi.fn(),
     };
@@ -167,7 +167,7 @@ describe('CreditAnalyticsPage', () => {
     it('should display credit balance card', () => {
       renderPage();
       expect(screen.getByText('Credit Balance')).toBeInTheDocument();
-      expect(screen.getByText('5,000')).toBeInTheDocument();
+      expect(screen.getByText('250')).toBeInTheDocument();
     });
 
     it('should display 30-day usage card', () => {
@@ -300,7 +300,7 @@ describe('CreditAnalyticsPage', () => {
   describe('Balance Display', () => {
     it('should show percentage remaining', () => {
       renderPage();
-      // 5000/10000 = 50%
+      // 250/500 = 50%
       expect(screen.getByText('50%')).toBeInTheDocument();
     });
   });
@@ -310,11 +310,11 @@ describe('CreditAnalyticsPage Queries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreditsData = {
-      balance: 5000,
+      balance: 250,
       isFreeTier: true,
       isLoading: false,
-      lifetimeSpent: 2000,
-      lifetimeEarned: 10000,
+      lifetimeSpent: 100,
+      lifetimeEarned: 500,
       nextFreeGrantAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       refetch: vi.fn(),
     };

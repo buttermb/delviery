@@ -2,7 +2,7 @@
  * CreditUsageStats Tests
  *
  * Verifies:
- * - Monthly allocation displays correct value (10,000 credits)
+ * - Monthly allocation displays correct value (500 credits)
  * - Percentage remaining calculation is accurate
  * - Compact mode shows correct balance/allocation
  * - Does not render for paid tier users
@@ -16,7 +16,7 @@ import { CreditUsageStats } from '../CreditUsageStats';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits/creditCosts';
 
 // Configurable mock state
-let mockBalance = 5000;
+let mockBalance = 250;
 let mockIsFreeTier = true;
 let mockIsLoading = false;
 let mockNextFreeGrantAt: Date | null = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -26,8 +26,8 @@ vi.mock('@/hooks/useCredits', () => ({
     balance: mockBalance,
     isFreeTier: mockIsFreeTier,
     isLoading: mockIsLoading,
-    lifetimeSpent: 3000,
-    lifetimeEarned: 10000,
+    lifetimeSpent: 200,
+    lifetimeEarned: 500,
     nextFreeGrantAt: mockNextFreeGrantAt,
   }),
 }));
@@ -99,50 +99,50 @@ function createWrapper() {
 describe('CreditUsageStats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockBalance = 5000;
+    mockBalance = 250;
     mockIsFreeTier = true;
     mockIsLoading = false;
     mockNextFreeGrantAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   });
 
   describe('Monthly allocation constant', () => {
-    it('FREE_TIER_MONTHLY_CREDITS should be 10000', () => {
-      expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
+    it('FREE_TIER_MONTHLY_CREDITS should be 500', () => {
+      expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
     });
 
-    it('should match create_tenant_atomic grant amount (10000)', () => {
-      // create_tenant_atomic grants v_initial_credits := 10000 for free plan
-      expect(FREE_TIER_MONTHLY_CREDITS).toBe(10000);
+    it('should match create_tenant_atomic grant amount (500)', () => {
+      // create_tenant_atomic grants v_initial_credits := 500 for free plan
+      expect(FREE_TIER_MONTHLY_CREDITS).toBe(500);
     });
 
-    it('should match grant-free-credits edge function amount (10000)', () => {
-      // grant-free-credits PLAN_CREDIT_AMOUNTS.free = 10000
-      const PLAN_CREDIT_AMOUNTS_FREE = 10000;
+    it('should match grant-free-credits edge function amount (500)', () => {
+      // grant-free-credits PLAN_CREDIT_AMOUNTS.free = 500
+      const PLAN_CREDIT_AMOUNTS_FREE = 500;
       expect(FREE_TIER_MONTHLY_CREDITS).toBe(PLAN_CREDIT_AMOUNTS_FREE);
     });
   });
 
   describe('Balance display', () => {
-    it('should display monthly allocation as 10,000', () => {
+    it('should display monthly allocation as 500', () => {
       render(<CreditUsageStats />, { wrapper: createWrapper() });
-      expect(screen.getByText(/of 10,000 monthly credits/)).toBeInTheDocument();
+      expect(screen.getByText(/of 500 monthly credits/)).toBeInTheDocument();
     });
 
     it('should display current balance', () => {
-      mockBalance = 7500;
+      mockBalance = 375;
       render(<CreditUsageStats />, { wrapper: createWrapper() });
-      expect(screen.getByText('7,500')).toBeInTheDocument();
+      expect(screen.getByText('375')).toBeInTheDocument();
     });
 
     it('should calculate percentage remaining correctly', () => {
-      mockBalance = 5000;
+      mockBalance = 250;
       render(<CreditUsageStats />, { wrapper: createWrapper() });
-      // 5000 / 10000 = 50%
+      // 250 / 500 = 50%
       expect(screen.getByText('50% remaining')).toBeInTheDocument();
     });
 
     it('should show 100% when balance equals allocation', () => {
-      mockBalance = 10000;
+      mockBalance = 500;
       render(<CreditUsageStats />, { wrapper: createWrapper() });
       expect(screen.getByText('100% remaining')).toBeInTheDocument();
     });
@@ -156,9 +156,9 @@ describe('CreditUsageStats', () => {
 
   describe('Compact mode', () => {
     it('should display balance / allocation in compact mode', () => {
-      mockBalance = 8000;
+      mockBalance = 400;
       render(<CreditUsageStats compact />, { wrapper: createWrapper() });
-      expect(screen.getByText('8,000 / 10,000')).toBeInTheDocument();
+      expect(screen.getByText('400 / 500')).toBeInTheDocument();
     });
   });
 
