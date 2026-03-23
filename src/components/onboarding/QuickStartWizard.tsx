@@ -19,7 +19,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantSlug = tenant?.slug;
-  const isEnterprise = tenant?.subscription_plan === 'enterprise';
+  const isPaidTier = tenant?.subscription_plan === 'professional' || tenant?.subscription_plan === 'enterprise';
 
   const [activeStep, setActiveStep] = useState<'overview' | 'import_clients'>('overview');
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -46,14 +46,26 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
   const handleAddClients = () => {
     onComplete();
     onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/big-plug-clients`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
   };
 
   const handleAddRunners = () => {
-    if (!isEnterprise) return;
+    if (!isPaidTier) return;
     onComplete();
     onOpenChange(false);
     if (tenantSlug) navigate(`/${tenantSlug}/admin/fulfillment-hub?tab=couriers`);
+  };
+
+  const handleCreateOrders = () => {
+    onComplete();
+    onOpenChange(false);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/orders`);
+  };
+
+  const handleOpenPOS = () => {
+    onComplete();
+    onOpenChange(false);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/pos-system`);
   };
 
   const overviewContent = (
@@ -108,11 +120,11 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
 
         {/* Runners Card */}
         <button
-          onClick={isEnterprise ? handleAddRunners : undefined}
-          disabled={!isEnterprise}
+          onClick={isPaidTier ? handleAddRunners : undefined}
+          disabled={!isPaidTier}
           className={cn(
             "group relative flex flex-col p-5 rounded-xl text-left transition-all border",
-            isEnterprise 
+            isPaidTier 
               ? "bg-card border-border hover:shadow-md hover:border-primary/40 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
               : "bg-muted/50 border-transparent opacity-80 cursor-not-allowed"
           )}
@@ -120,26 +132,26 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
           <div className="flex justify-between items-start mb-4">
             <div className={cn(
               "h-10 w-10 shrink-0 rounded-lg flex items-center justify-center",
-              isEnterprise ? "bg-primary/10 text-primary" : "bg-muted-foreground/20 text-muted-foreground"
+              isPaidTier ? "bg-primary/10 text-primary" : "bg-muted-foreground/20 text-muted-foreground"
             )}>
               <Truck className="h-5 w-5" />
             </div>
-            {!isEnterprise && (
+            {!isPaidTier && (
               <Badge variant="secondary" className="text-[10px] uppercase font-medium tracking-wide">
                 Pro+
               </Badge>
             )}
           </div>
           
-          <h3 className={cn("text-base font-semibold mb-1", isEnterprise ? "text-card-foreground" : "text-muted-foreground")}>
+          <h3 className={cn("text-base font-semibold mb-1", isPaidTier ? "text-card-foreground" : "text-muted-foreground")}>
             Add Runners
           </h3>
           
           <p className="text-sm text-muted-foreground flex-1">
-            {isEnterprise ? "Assign drivers for your incoming delivery fleet." : "Upgrade to unlock enterprise delivery routing."}
+            {isPaidTier ? "Assign drivers for your incoming delivery fleet." : "Upgrade to unlock enterprise delivery routing."}
           </p>
           
-          {isEnterprise && (
+          {isPaidTier && (
             <div className="mt-4 shrink-0 flex items-center text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
               Setup fleet <ArrowRight className="ml-1 h-4 w-4" />
             </div>
@@ -152,35 +164,26 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
           <CheckCircle2 className="h-4 w-4 text-primary" />
           Quick Setup Guide
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground">1</div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Add Products</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Start managing your inventory</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground">2</div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Add Wholesale Clients</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Build your customer base</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground">3</div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Create Orders</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Track deliveries seamlessly</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground">4</div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Use the POS</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Perfect for walk-in sales</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 gap-x-4">
+          {[
+            { step: 1, label: 'Add Products', desc: 'Start managing your inventory', action: handleAddProducts },
+            { step: 2, label: 'Add Wholesale Clients', desc: 'Build your customer base', action: handleAddClients },
+            { step: 3, label: 'Create Orders', desc: 'Track deliveries seamlessly', action: handleCreateOrders },
+            { step: 4, label: 'Use the POS', desc: 'Perfect for walk-in sales', action: handleOpenPOS },
+          ].map(({ step, label, desc, action }) => (
+            <button
+              key={step}
+              onClick={action}
+              className="flex items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-muted/50 group"
+            >
+              <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">{step}</div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 mt-0.5 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            </button>
+          ))}
         </div>
       </div>
 
@@ -254,7 +257,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
           setShowImportDialog(false);
           onComplete();
           onOpenChange(false);
-          if (tenantSlug) navigate(`/${tenantSlug}/admin/big-plug-clients`);
+          if (tenantSlug) navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
         }} 
       />
     </motion.div>
