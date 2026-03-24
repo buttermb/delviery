@@ -169,8 +169,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                     {step === 1 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-                                    <Store className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                                <div className="p-3 bg-primary/10 rounded-full">
+                                    <Store className="h-8 w-8 text-primary" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Set Up Your Store</h3>
@@ -216,8 +216,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                     {step === 2 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
-                                    <Truck className="h-8 w-8 text-green-600 dark:text-green-400" />
+                                <div className="p-3 bg-primary/10 rounded-full">
+                                    <Truck className="h-8 w-8 text-primary" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Delivery Settings</h3>
@@ -264,8 +264,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                     {step === 3 && isFreeTier && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 rounded-full">
-                                    <Coins className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                                <div className="p-3 bg-primary/10 rounded-full">
+                                    <Coins className="h-8 w-8 text-primary" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Your Free Credits</h3>
@@ -281,8 +281,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                     {((step === 3 && !isFreeTier) || (step === 4 && isFreeTier)) && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-                                    <Users className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                                <div className="p-3 bg-primary/10 rounded-full">
+                                    <Users className="h-8 w-8 text-primary" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Team & Access</h3>
@@ -290,8 +290,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                 </div>
                             </div>
 
-                            <div className="bg-muted/30 p-4 rounded-lg text-center">
-                                <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                            <div className="bg-muted/30 p-4 rounded-lg text-center border">
+                                <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-3" />
                                 <h4 className="text-lg font-medium mb-2">You're All Set!</h4>
                                 <p className="text-muted-foreground mb-4">
                                     Your dashboard is ready. You can always change these settings later.

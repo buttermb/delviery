@@ -45,7 +45,7 @@ export function CreditSystemExplainer({
   if (variant === 'minimal') {
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        <Badge variant="secondary" className="bg-green-100 text-green-800">
+        <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
           <Gift className="h-3 w-3 mr-1" />
           {FREE_TIER_MONTHLY_CREDITS} Free Credits
         </Badge>
@@ -57,12 +57,12 @@ export function CreditSystemExplainer({
   if (variant === 'compact') {
     return (
       <div className={cn(
-        'flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 border',
+        'flex items-center justify-between p-3 rounded-lg bg-card border shadow-sm',
         className
       )}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-            <Coins className="h-5 w-5 text-green-600" />
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Coins className="h-5 w-5 text-primary" />
           </div>
           <div>
             <p className="font-medium text-sm">Start with {FREE_TIER_MONTHLY_CREDITS} free credits</p>
@@ -85,26 +85,34 @@ export function CreditSystemExplainer({
     <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 mx-auto mb-4 flex items-center justify-center">
-          <Coins className="h-8 w-8 text-green-600" />
+        <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+          <Coins className="h-8 w-8 text-primary" />
         </div>
-        <h3 className="text-xl font-bold">Start Free with Credits</h3>
+        <h3 className="text-xl font-semibold">Start Free with Credits</h3>
         <p className="text-muted-foreground mt-1">
           No credit card required. Explore everything.
         </p>
       </div>
 
       {/* Credit Balance */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-6 text-center">
-        <p className="text-sm opacity-90 mb-1">Your Starting Balance</p>
-        <p className="text-4xl font-bold">{FREE_TIER_MONTHLY_CREDITS.toLocaleString()}</p>
-        <p className="text-sm opacity-90 mt-1">credits to explore</p>
+      <div className="bg-card border shadow-sm rounded-xl p-6 flex flex-col items-center">
+        <div className="flex items-center gap-2 mb-2 text-muted-foreground">
+            <Coins className="h-4 w-4" />
+            <span className="text-sm font-medium">Your Starting Balance</span>
+        </div>
+        <div className="text-4xl font-semibold tracking-tight mb-2 flex items-baseline gap-1">
+            {FREE_TIER_MONTHLY_CREDITS.toLocaleString()}
+            <span className="text-lg text-muted-foreground font-normal">credits</span>
+        </div>
+        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            Refreshes monthly • No credit card required
+        </p>
       </div>
 
       {/* How It Works */}
       <div className="space-y-3">
         <h4 className="font-semibold flex items-center gap-2">
-          <Zap className="h-4 w-4 text-yellow-500" />
+          <Zap className="h-4 w-4 text-primary" />
           How Credits Work
         </h4>
         
@@ -116,7 +124,7 @@ export function CreditSystemExplainer({
             >
               <span className="text-sm">{item.action}</span>
               {item.credits === 0 ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
                   Free
                 </Badge>
               ) : (
@@ -130,40 +138,40 @@ export function CreditSystemExplainer({
       </div>
 
       {/* What's Included */}
-      <div className="space-y-3">
+      <div className="space-y-3 mt-6">
         <h4 className="font-semibold flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 text-green-500" />
+          <CheckCircle className="h-4 w-4 text-primary" />
           What's Included Free
         </h4>
         
         <ul className="space-y-2 text-sm">
           <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 text-primary/70 flex-shrink-0" />
             <span>All core features unlocked</span>
           </li>
           <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 text-primary/70 flex-shrink-0" />
             <span>Up to {FREE_TIER_LIMITS.max_products} products</span>
           </li>
           <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 text-primary/70 flex-shrink-0" />
             <span>Up to {FREE_TIER_LIMITS.max_customers} customers</span>
           </li>
           <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 text-primary/70 flex-shrink-0" />
             <span>Unlimited viewing and browsing</span>
           </li>
           <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 text-primary/70 flex-shrink-0" />
             <span>Email support</span>
           </li>
         </ul>
       </div>
 
       {/* Upgrade CTA */}
-      <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+      <div className="bg-muted/50 rounded-lg p-4 space-y-3 border">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-purple-500" />
+          <TrendingUp className="h-5 w-5 text-primary" />
           <span className="font-medium">Need More?</span>
         </div>
         <p className="text-sm text-muted-foreground">

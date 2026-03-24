@@ -629,13 +629,7 @@ export const CREDIT_COSTS: Record<string, CreditCost> = {
     category: 'crm',
     description: 'Send bulk email (volume discount)',
   },
-  send_push_notification: {
-    actionKey: 'send_push_notification',
-    actionName: 'Send Push Notification',
-    credits: 15,
-    category: 'crm',
-    description: 'Send push notification',
-  },
+
   live_chat_view: {
     actionKey: 'live_chat_view',
     actionName: 'View Live Chat',
