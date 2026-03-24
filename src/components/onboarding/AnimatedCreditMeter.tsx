@@ -1,8 +1,8 @@
 /**
  * AnimatedCreditMeter Component
  * 
- * A visually engaging animated meter that shows the FREE tier credit allocation.
- * Features spring animations, glow effects, and example credit deductions.
+ * A clean, professional meter that shows the FREE tier credit allocation.
+ * Features subtle entry animations and clear credit examples.
  */
 
 import { useEffect, useState } from 'react';
@@ -49,7 +49,6 @@ export function AnimatedCreditMeter({
     autoPlay = true,
 }: AnimatedCreditMeterProps) {
     const [phase, setPhase] = useState<'filling' | 'examples' | 'complete'>('filling');
-    const [showGlow, setShowGlow] = useState(false);
     const [activeExample, setActiveExample] = useState(-1);
 
     // Animated credit value
@@ -80,11 +79,10 @@ export function AnimatedCreditMeter({
             creditValue.set(FREE_TIER_MONTHLY_CREDITS);
         }, 500);
 
-        // Phase 2: Show glow effect when full
-        const glowTimeout = setTimeout(() => {
-            setShowGlow(true);
+        // Phase 2: Start examples shortly after
+        const examplesTimeout = setTimeout(() => {
             setPhase('examples');
-        }, 2000);
+        }, 1200);
 
         // Phase 3: Show examples with stagger
         const exampleTimeouts: ReturnType<typeof setTimeout>[] = [];
@@ -92,7 +90,7 @@ export function AnimatedCreditMeter({
             exampleTimeouts.push(
                 setTimeout(() => {
                     setActiveExample(index);
-                }, 2500 + index * 600)
+                }, 1500 + index * 400)
             );
         });
 
@@ -100,11 +98,11 @@ export function AnimatedCreditMeter({
         const completeTimeout = setTimeout(() => {
             setPhase('complete');
             onAnimationComplete?.();
-        }, 2500 + creditExamples.length * 600 + 500);
+        }, 1500 + creditExamples.length * 400 + 400);
 
         return () => {
             clearTimeout(fillTimeout);
-            clearTimeout(glowTimeout);
+            clearTimeout(examplesTimeout);
             exampleTimeouts.forEach(clearTimeout);
             clearTimeout(completeTimeout);
         };
@@ -114,52 +112,36 @@ export function AnimatedCreditMeter({
         <div className={cn('space-y-6', className)}>
             {/* Main Credit Display */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
                 className="relative"
             >
-                {/* Glow effect */}
-                {showGlow && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-0 bg-gradient-to-r from-green-400/20 via-emerald-400/30 to-green-400/20 rounded-2xl blur-xl"
-                    />
-                )}
-
                 {/* Credit card */}
-                <div className="relative bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 rounded-2xl p-6 text-white overflow-hidden">
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute top-4 right-4">
-                            <Coins className="h-32 w-32" />
-                        </div>
-                    </div>
-
+                <div className="bg-card border shadow-sm rounded-xl p-6 overflow-hidden">
                     {/* Content */}
                     <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Sparkles className="h-5 w-5 text-yellow-300" />
-                            <span className="text-sm font-medium text-white/90">Your Starting Balance</span>
+                        <div className="flex items-center gap-2 mb-2 text-muted-foreground">
+                            <Coins className="h-4 w-4" />
+                            <span className="text-sm font-medium">Your Starting Balance</span>
                         </div>
 
                         {/* Animated counter */}
-                        <motion.div className="text-5xl font-bold tracking-tight mb-4">
+                        <div className="text-4xl font-semibold tracking-tight mb-4 flex items-baseline gap-1">
                             {displayValue.toLocaleString()}
-                            <span className="text-2xl ml-2 font-normal opacity-80">credits</span>
-                        </motion.div>
+                            <span className="text-lg text-muted-foreground font-normal">credits</span>
+                        </div>
 
                         {/* Progress bar */}
-                        <div className="h-3 bg-white/20 rounded-full overflow-hidden mb-2">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden mb-3">
                             <motion.div
-                                className="h-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-300 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 style={{ width: `${progressValue}%` }}
                             />
                         </div>
 
-                        <p className="text-sm text-white/80">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
                             Refreshes monthly • No credit card required
                         </p>
                     </div>
@@ -171,62 +153,53 @@ export function AnimatedCreditMeter({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: phase !== 'filling' ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-3"
+                className="space-y-4"
             >
-                <p className="text-sm font-medium text-muted-foreground">
-                    Example credit usage:
+                <p className="text-sm font-medium">
+                    Example credit usage
                 </p>
 
                 <div className="grid gap-2">
                     {creditExamples.map((example, index) => (
                         <motion.div
                             key={example.action}
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={{ opacity: 0, x: -10 }}
                             animate={{
-                                opacity: activeExample >= index ? 1 : 0.3,
-                                x: activeExample >= index ? 0 : -20,
+                                opacity: activeExample >= index ? 1 : 0.4,
+                                x: activeExample >= index ? 0 : -10,
                             }}
                             transition={{
-                                type: 'spring',
-                                damping: 25,
-                                stiffness: 400,
-                                delay: index * 0.1
+                                duration: 0.3,
+                                delay: index * 0.05
                             }}
                             className={cn(
                                 'flex items-center justify-between p-3 rounded-lg border bg-card transition-colors',
-                                activeExample === index && 'ring-2 ring-primary ring-offset-2 dark:ring-offset-background'
+                                activeExample === index && 'border-primary shadow-sm ring-1 ring-primary/20'
                             )}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={cn('p-2 rounded-lg bg-muted', example.color)}>
+                                <div className={cn('p-2 rounded-md bg-muted', example.color)}>
                                     {example.icon}
                                 </div>
                                 <span className="text-sm font-medium">{example.action}</span>
                             </div>
-                            <motion.span
-                                className="text-sm font-mono text-muted-foreground"
-                                animate={activeExample === index ? {
-                                    scale: [1, 1.2, 1],
-                                    color: ['var(--muted-foreground)', 'var(--primary)', 'var(--muted-foreground)']
-                                } : {}}
-                                transition={{ duration: 0.3 }}
-                            >
+                            <span className="text-sm font-mono font-medium text-muted-foreground">
                                 -{example.cost}
-                            </motion.span>
+                            </span>
                         </motion.div>
                     ))}
                 </div>
 
                 {/* Value proposition */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: phase === 'complete' ? 1 : 0, y: phase === 'complete' ? 0 : 10 }}
-                    transition={{ delay: 0.3 }}
-                    className="p-4 rounded-lg bg-muted/50 border border-dashed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: phase === 'complete' ? 1 : 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="p-3 text-sm text-muted-foreground flex gap-2 items-start bg-muted/30 rounded-lg"
                 >
-                    <p className="text-sm text-muted-foreground text-center">
-                        <strong>Tip:</strong> Viewing & browsing is always <span className="text-green-600 font-semibold">FREE</span> —
-                        credits are only used for actions that generate value.
+                    <span className="text-primary mt-0.5">💡</span>
+                    <p>
+                        <strong>Tip:</strong> Viewing & browsing is always free. Credits are only used for actions that generate value.
                     </p>
                 </motion.div>
             </motion.div>
@@ -235,3 +208,4 @@ export function AnimatedCreditMeter({
 }
 
 export default AnimatedCreditMeter;
+

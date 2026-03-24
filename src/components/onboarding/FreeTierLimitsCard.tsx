@@ -56,27 +56,25 @@ const containerVariants = {
 };
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
-        scale: 1,
         transition: {
-            type: 'spring' as const,
-            damping: 25,
-            stiffness: 400
+            duration: 0.3,
+            ease: "easeOut"
         }
     }
 };
 
 const badgePulse = {
-    initial: { scale: 1 },
+    initial: { opacity: 0, scale: 0.95 },
     animate: {
-        scale: [1, 1.05, 1],
+        opacity: 1,
+        scale: 1,
         transition: {
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut' as const
+            duration: 0.3,
+            ease: "easeOut"
         }
     }
 };

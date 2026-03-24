@@ -51,31 +51,31 @@ interface StepConfig {
 const stepConfigs: StepConfig[] = [
     {
         id: 'welcome',
-        title: 'Welcome to FloraIQ!',
+        title: 'Welcome to FloraIQ',
         subtitle: "You're all set up. Let's get you started.",
-        icon: <PartyPopper className="h-6 w-6" />,
-        iconBg: 'bg-gradient-to-br from-pink-500 to-rose-500',
+        icon: <Rocket className="h-6 w-6" />,
+        iconBg: 'bg-primary/10 text-primary',
     },
     {
         id: 'credits',
         title: 'Your Free Credits',
         subtitle: 'See how the credit system works.',
         icon: <Coins className="h-6 w-6" />,
-        iconBg: 'bg-gradient-to-br from-green-500 to-emerald-500',
+        iconBg: 'bg-primary/10 text-primary',
     },
     {
         id: 'limits',
         title: 'Free Tier Limits',
         subtitle: 'Understand your account boundaries.',
         icon: <AlertTriangle className="h-6 w-6" />,
-        iconBg: 'bg-gradient-to-br from-orange-500 to-amber-500',
+        iconBg: 'bg-primary/10 text-primary',
     },
     {
         id: 'upgrade',
         title: 'Grow When Ready',
         subtitle: 'Upgrade anytime for unlimited access.',
         icon: <Crown className="h-6 w-6" />,
-        iconBg: 'bg-gradient-to-br from-purple-500 to-indigo-500',
+        iconBg: 'bg-primary/10 text-primary',
     },
 ];
 
@@ -85,40 +85,23 @@ const stepConfigs: StepConfig[] = [
 
 const pageVariants = {
     initial: (direction: number) => ({
-        x: direction > 0 ? 300 : -300,
+        x: direction > 0 ? 30 : -30,
         opacity: 0,
     }),
     animate: {
         x: 0,
         opacity: 1,
         transition: {
-            type: 'spring' as const,
-            damping: 25,
-            stiffness: 300,
+            duration: 0.3,
+            ease: "easeOut"
         },
     },
     exit: (direction: number) => ({
-        x: direction > 0 ? -300 : 300,
+        x: direction > 0 ? -30 : 30,
         opacity: 0,
         transition: {
-            type: 'spring' as const,
-            damping: 25,
-            stiffness: 300,
-        },
-    }),
-};
-
-const confettiVariants = {
-    initial: { y: -20, opacity: 0, scale: 0 },
-    animate: (i: number) => ({
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        transition: {
-            delay: i * 0.1,
-            type: 'spring' as const,
-            damping: 10,
-            stiffness: 200,
+            duration: 0.2,
+            ease: "easeIn"
         },
     }),
 };
@@ -173,7 +156,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                 className
             )}>
                 {/* Header */}
-                <div className="relative shrink-0 bg-white dark:bg-slate-950 border-b border-border/40 p-6 pb-8">
+                <div className="relative shrink-0 bg-card text-foreground border-b border-border/40 p-6 pb-6">
                     {/* Close button */}
                     <Button
                         variant="ghost"
@@ -185,21 +168,15 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                         <X className="h-4 w-4" />
                     </Button>
 
-                    {/* Background decoration */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-60" />
-                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl opacity-60" />
-                    </div>
-
                     {/* Content */}
                     <div className="relative z-10 flex items-center gap-4">
                         <motion.div
                             key={currentConfig.id}
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.2 }}
                             className={cn(
-                                'p-3 rounded-2xl text-white shadow-lg',
+                                'p-3 rounded-xl',
                                 currentConfig.iconBg
                             )}
                         >
@@ -208,16 +185,16 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                         <div>
                             <motion.h2
                                 key={`title-${currentConfig.id}`}
-                                initial={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, y: -5 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-xl font-bold text-foreground"
+                                className="text-xl font-semibold text-foreground"
                             >
                                 {currentConfig.title}
                             </motion.h2>
                             <motion.p
                                 key={`subtitle-${currentConfig.id}`}
                                 initial={{ opacity: 0 }}
-                                animate={{ opacity: 0.8 }}
+                                animate={{ opacity: 1 }}
                                 transition={{ delay: 0.1 }}
                                 className="text-sm text-muted-foreground"
                             >
@@ -227,9 +204,9 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                     </div>
 
                     {/* Progress bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted">
                         <motion.div
-                            className="h-full bg-gradient-to-r from-primary to-purple-500"
+                            className="h-full bg-primary"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercent}%` }}
                             transition={{ duration: 0.3 }}
@@ -329,48 +306,23 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
     );
 }
 
-// ============================================================================
-// Welcome Step Component
-// ============================================================================
-
 function WelcomeStep({ businessName }: { businessName: string }) {
-    const icons = [
-        <PartyPopper key="party" className="h-6 w-6 text-pink-500" />,
-        <Sparkles key="sparkles" className="h-6 w-6 text-amber-500" />,
-        <Rocket key="rocket" className="h-6 w-6 text-blue-500" />,
-        <CheckCircle2 key="check" className="h-6 w-6 text-emerald-500" />,
-        <Crown key="crown" className="h-6 w-6 text-purple-500" />,
-    ];
-
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-            {/* Animated icons */}
-            <div className="flex gap-4 mb-2">
-                {icons.map((icon, i) => (
-                    <motion.span
-                        key={i}
-                        custom={i}
-                        variants={confettiVariants}
-                        initial="initial"
-                        animate="animate"
-                        className="p-2 rounded-lg bg-muted/50"
-                    >
-                        {icon}
-                    </motion.span>
-                ))}
-            </div>
-
+        <div className="flex flex-col items-center justify-center h-full text-center space-y-6 pt-4">
             {/* Main content */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ duration: 0.3 }}
                 className="space-y-3"
             >
-                <h3 className="text-2xl font-bold">
-                    Welcome aboard, <span className="text-primary">{businessName}</span>!
+                <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Rocket className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-semibold">
+                    Welcome aboard, {businessName}
                 </h3>
-                <p className="text-muted-foreground max-w-md">
+                <p className="text-muted-foreground max-w-md mx-auto">
                     Your account is ready to go. Let's take a quick tour of your free tier benefits
                     and how to make the most of FloraIQ.
                 </p>
@@ -380,7 +332,7 @@ function WelcomeStep({ businessName }: { businessName: string }) {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
                 className="grid grid-cols-3 gap-4 w-full max-w-sm pt-4"
             >
                 {[
@@ -390,10 +342,10 @@ function WelcomeStep({ businessName }: { businessName: string }) {
                 ].map((item, i) => (
                     <motion.div
                         key={item.label}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 + i * 0.1 }}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50"
+                        transition={{ delay: 0.3 + i * 0.1, duration: 0.3 }}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl bg-card border shadow-sm"
                     >
                         <div className="p-2 rounded-lg bg-primary/10 text-primary">
                             {item.icon}
@@ -407,10 +359,10 @@ function WelcomeStep({ businessName }: { businessName: string }) {
             <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.9 }}
+                transition={{ delay: 0.6 }}
                 className="text-sm text-muted-foreground"
             >
-                Let's take a quick look
+                This will only take about <strong>30 seconds</strong>
             </motion.p>
         </div>
     );
