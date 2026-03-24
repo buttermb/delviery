@@ -31,9 +31,15 @@ import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
 import Palette from 'lucide-react/dist/esm/icons/palette';
 import type { LucideIcon } from 'lucide-react';
 
+import Lock from 'lucide-react/dist/esm/icons/lock';
+
 import { type FeatureToggleKey } from '@/lib/featureFlags';
+import { FEATURES, TIER_NAMES, type FeatureId } from '@/lib/featureConfig';
+import { TOGGLE_TO_FEATURE_MAP } from '@/lib/featureMapping';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { humanizeError } from '@/lib/humanizeError';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -181,7 +187,17 @@ const ADVANCED_FEATURES: FeatureItem[] = [
 
 export function FeatureTogglesPanel() {
   const { isEnabled, toggleFeature, isLoading } = useTenantFeatureToggles();
+  const { canAccess } = useFeatureAccess();
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
+
+  /** Returns the required tier name if the toggle's mapped feature is tier-locked, else null. */
+  const getTierLock = (key: FeatureToggleKey): string | null => {
+    const featureId = TOGGLE_TO_FEATURE_MAP[key];
+    if (!featureId) return null;
+    if (canAccess(featureId)) return null;
+    const feature = FEATURES[featureId as FeatureId];
+    return feature ? TIER_NAMES[feature.tier] : null;
+  };
 
   const handleToggle = async (key: FeatureToggleKey, enabled: boolean) => {
     setTogglingKey(key);
@@ -226,8 +242,9 @@ export function FeatureTogglesPanel() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CORE_FEATURES.map((feature) => {
             const Icon = feature.icon;
+            const lockedTier = getTierLock(feature.key);
             return (
-              <Card key={feature.key} className="relative opacity-80">
+              <Card key={feature.key} className={`relative ${lockedTier ? 'opacity-60' : 'opacity-80'}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -235,6 +252,12 @@ export function FeatureTogglesPanel() {
                       <CardTitle className="text-sm font-medium">
                         {feature.label}
                       </CardTitle>
+                      {lockedTier && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+                          <Lock className="h-2.5 w-2.5" />
+                          {lockedTier}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
@@ -250,7 +273,7 @@ export function FeatureTogglesPanel() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <CardDescription className="text-xs">
-                    {feature.description}
+                    {lockedTier ? `Upgrade to ${lockedTier} to access this feature` : feature.description}
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -272,9 +295,10 @@ export function FeatureTogglesPanel() {
             const Icon = feature.icon;
             const enabled = isEnabled(feature.key);
             const isToggling = togglingKey === feature.key;
+            const lockedTier = getTierLock(feature.key);
 
             return (
-              <Card key={feature.key} className="relative">
+              <Card key={feature.key} className={`relative ${lockedTier ? 'opacity-60' : ''}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -282,6 +306,12 @@ export function FeatureTogglesPanel() {
                       <CardTitle className="text-sm font-medium">
                         {feature.label}
                       </CardTitle>
+                      {lockedTier && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+                          <Lock className="h-2.5 w-2.5" />
+                          {lockedTier}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
@@ -289,8 +319,8 @@ export function FeatureTogglesPanel() {
                       </Label>
                       <Switch
                         id={`toggle-${feature.key}`}
-                        checked={enabled}
-                        disabled={isToggling}
+                        checked={lockedTier ? false : enabled}
+                        disabled={isToggling || !!lockedTier}
                         onCheckedChange={(checked) => handleToggle(feature.key, checked)}
                       />
                     </div>
@@ -298,7 +328,7 @@ export function FeatureTogglesPanel() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <CardDescription className="text-xs">
-                    {feature.description}
+                    {lockedTier ? `Upgrade to ${lockedTier} to unlock` : feature.description}
                   </CardDescription>
                 </CardContent>
               </Card>

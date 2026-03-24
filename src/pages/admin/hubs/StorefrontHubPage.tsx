@@ -35,6 +35,7 @@ import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBounda
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 
 const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
 const StorefrontProducts = lazy(() => import('@/pages/admin/storefront/StorefrontProducts'));
@@ -81,6 +82,8 @@ export default function StorefrontHubPage() {
     usePageTitle('Storefront');
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { isEnabled } = useTenantFeatureToggles();
+    const builderEnabled = isEnabled('storefront_builder_advanced');
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
     const handleTabChange = useCallback((tab: string) => {
@@ -171,7 +174,19 @@ export default function StorefrontHubPage() {
                         <ModuleErrorBoundary moduleName="Reviews"><Suspense fallback={<TabSkeleton />}><ReviewsPage /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="builder" className="m-0 h-full overflow-hidden">
-                        <ModuleErrorBoundary moduleName="Store Design"><Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense></ModuleErrorBoundary>
+                        {builderEnabled ? (
+                            <ModuleErrorBoundary moduleName="Store Design"><Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense></ModuleErrorBoundary>
+                        ) : (
+                            <div className="flex items-center justify-center min-h-[40vh] p-6">
+                                <div className="max-w-md w-full text-center space-y-3">
+                                    <Brush className="h-10 w-10 text-muted-foreground mx-auto" />
+                                    <h2 className="text-lg font-semibold">Advanced Builder Disabled</h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Enable Advanced Storefront Builder in Settings &gt; Features to customize your store design.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </TabsContent>
                     <TabsContent value="bundles" className="m-0 h-full">
                         <ModuleErrorBoundary moduleName="Bundles"><Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense></ModuleErrorBoundary>

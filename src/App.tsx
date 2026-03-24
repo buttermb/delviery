@@ -592,7 +592,7 @@ const App = () => {
                                         <Route
                                           path="collection-mode"
                                           element={
-                                            <FeatureProtectedRoute featureId="collections">
+                                            <FeatureProtectedRoute featureId="collections" feature="credits_system">
                                               <Suspense fallback={<SkeletonDashboard />}>
                                                 <CollectionModePage />
                                               </Suspense>
@@ -744,7 +744,7 @@ const App = () => {
                                         <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program" feature="marketing_hub"><MarketingHubPage /></FeatureProtectedRoute>} />
                                         <Route path="marketing/reviews" element={<FeatureProtectedRoute featureId="storefront" feature="marketing_hub"><ReviewsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-management" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
-                                        <Route path="live-map" element={<FeatureProtectedRoute feature="delivery_tracking"><LiveMap /></FeatureProtectedRoute>} />
+                                        <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map" feature="live_map"><LiveMap /></FeatureProtectedRoute>} />
                                         <Route path="gps-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                                         <Route path="pos-system" element={<FeatureProtectedRoute feature="pos"><POSHubPage /></FeatureProtectedRoute>} />
                                         <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
@@ -755,7 +755,7 @@ const App = () => {
                                         {/* 13 Hidden gem pages */}
                                         <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat" feature="live_chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                         <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
-                                        <Route path="couriers" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
+                                        <Route path="couriers" element={<FeatureProtectedRoute featureId="couriers" feature="courier_portal"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customers"><CustomerDetails /></FeatureProtectedRoute>} />
                                         <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerReports /></FeatureProtectedRoute>} />
                                         <Route path="delivery-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
