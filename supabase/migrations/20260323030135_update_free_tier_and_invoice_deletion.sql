@@ -1,4 +1,5 @@
 -- Update grant_free_credits to use 10000 credits limit
+DROP FUNCTION IF EXISTS public.grant_free_credits(uuid, integer);
 CREATE OR REPLACE FUNCTION public.grant_free_credits(p_tenant_id uuid, p_amount integer DEFAULT 10000)
  RETURNS jsonb
  LANGUAGE plpgsql

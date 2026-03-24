@@ -6,7 +6,7 @@
 -- Uses ON CONFLICT (action_key) DO UPDATE to sync costs idempotently.
 -- ============================================================================
 
-INSERT INTO public.credit_costs (action_key, credit_cost, category, description, is_active)
+INSERT INTO public.credit_costs (action_key, credits, category, description, is_active)
 VALUES
   -- ========================================================================
   -- COMMAND CENTER - All viewing is FREE
@@ -266,7 +266,7 @@ VALUES
   ('barcode_lookup', 1, 'inventory', 'Barcode lookup query', true)
 
 ON CONFLICT (action_key) DO UPDATE SET
-  credit_cost = EXCLUDED.credit_cost,
+  credits = EXCLUDED.credits,
   category = EXCLUDED.category,
   description = EXCLUDED.description,
   is_active = EXCLUDED.is_active,

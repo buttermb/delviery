@@ -334,16 +334,20 @@ UPDATE public.tenants SET mrr = 150
 UPDATE public.tenants SET mrr = 499
   WHERE subscription_plan = 'enterprise' AND (mrr = 999 OR mrr = 799);
 
--- 3. Sync subscription_plans table prices to canonical values
--- Update both `price` (original NOT NULL column) and `price_monthly` (added later)
-UPDATE public.subscription_plans
-  SET price = 79, price_monthly = 79, price_yearly = 790
-  WHERE name = 'starter' AND (price != 79 OR price_monthly IS DISTINCT FROM 79);
+-- 3. Sync subscription_plans table prices to canonical values (if table exists)
+DO $sync$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'subscription_plans') THEN
+    UPDATE public.subscription_plans
+      SET price = 79, price_monthly = 79, price_yearly = 790
+      WHERE name = 'starter' AND (price != 79 OR price_monthly IS DISTINCT FROM 79);
 
-UPDATE public.subscription_plans
-  SET price = 150, price_monthly = 150, price_yearly = 1500
-  WHERE name = 'professional' AND (price != 150 OR price_monthly IS DISTINCT FROM 150);
+    UPDATE public.subscription_plans
+      SET price = 150, price_monthly = 150, price_yearly = 1500
+      WHERE name = 'professional' AND (price != 150 OR price_monthly IS DISTINCT FROM 150);
 
-UPDATE public.subscription_plans
-  SET price = 499, price_monthly = 499, price_yearly = 4990
-  WHERE name = 'enterprise' AND (price != 499 OR price_monthly IS DISTINCT FROM 499);
+    UPDATE public.subscription_plans
+      SET price = 499, price_monthly = 499, price_yearly = 4990
+      WHERE name = 'enterprise' AND (price != 499 OR price_monthly IS DISTINCT FROM 499);
+  END IF;
+END $sync$;
