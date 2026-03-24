@@ -27,6 +27,8 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Loader2,
   ArrowRight,
@@ -81,6 +83,9 @@ const step3Schema = z.object({
   tenantMode: z.enum(['create', 'join']),
   businessName: z.string().optional(),
   tenantSlug: z.string().optional(),
+  licenseAttestation: z.literal(true, {
+    errorMap: () => ({ message: 'You must confirm that you are a licensed operator to use FloraIQ' }),
+  }),
 }).refine((data) => {
   if (data.tenantMode === 'create') {
     return data.businessName && data.businessName.length >= 2;
@@ -146,6 +151,7 @@ export function SignupPage() {
       tenantMode: 'create',
       businessName: '',
       tenantSlug: '',
+      licenseAttestation: undefined as unknown as true,
     },
     mode: 'onChange',
   });
@@ -677,6 +683,35 @@ export function SignupPage() {
                       )}
                     />
                   )}
+
+                  {/* License Attestation */}
+                  <FormField
+                    control={step3Form.control}
+                    name="licenseAttestation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/30 p-3">
+                          <div className="flex items-start gap-3">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === true}
+                                onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                                disabled={isSubmitting}
+                                className="mt-0.5"
+                              />
+                            </FormControl>
+                            <Label
+                              className="text-xs font-normal leading-snug cursor-pointer text-amber-900 dark:text-amber-200"
+                              onClick={() => field.onChange(field.value === true ? undefined : true)}
+                            >
+                              I confirm that I am a <strong>duly licensed cannabis business operator</strong> (or authorized representative) operating in compliance with all applicable state and local laws in my jurisdiction. I understand that FloraIQ reserves the right to request proof of valid business licenses at any time, and that failure to provide documentation may result in account suspension or termination.
+                            </Label>
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="flex gap-3 pt-2">
                     <Button
