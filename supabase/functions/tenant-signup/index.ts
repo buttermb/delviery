@@ -543,6 +543,22 @@ serve(async (req) => {
           console.warn('[SIGNUP] Analytics tracking error (non-blocking)', error);
         }
       })(),
+
+      // Trigger durable onboarding workflow on Vercel
+      fetch(`${Deno.env.get('SITE_URL')}/api/workflows/start-onboarding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-api-key': Deno.env.get('INTERNAL_API_KEY') || '',
+        },
+        body: JSON.stringify({
+          tenantId: tenant.id,
+          userId: authData.user.id,
+          email,
+          fullName: owner_name,
+          trialDays: 14,
+        }),
+      }).catch(err => console.warn('[SIGNUP] Failed to start onboarding workflow:', err)),
     ]).catch((error) => {
       // Log but don't fail signup
       console.warn('[SIGNUP] Background tasks error (non-blocking)', error);

@@ -32,6 +32,8 @@ import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
 import { versionGeneratorPlugin } from './vite-plugins/version-generator';
 import { lucideDirectImportsPlugin } from './vite-plugins/lucide-direct-imports';
+import { nitro } from "nitro/vite";
+import { workflow } from "workflow/vite";
 
 // Backend env fallbacks for preview/dev environments.
 // These are *public* values (URL + anon/publishable key) and prevent the app from hard-crashing
@@ -88,7 +90,12 @@ export default defineConfig(({ mode }) => ({
     '__BUILD_TIME__': JSON.stringify(Date.now().toString())
   },
   envPrefix: 'VITE_', // Only expose env vars prefixed with VITE_ to client
+  nitro: {
+    serverDir: "./",
+  },
   plugins: [
+    nitro(),
+    workflow(),
     react(),
     lucideDirectImportsPlugin(),
     mode === "development" && componentTagger(),
