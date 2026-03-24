@@ -1,6 +1,14 @@
-import { sleep } from "workflow";
 import { callEdgeFunction } from "./lib/call-edge-function";
 
+/**
+ * Tenant Onboarding Workflow
+ *
+ * Durable workflow that sends welcome emails and trial reminders.
+ * Originally used the Vercel Workflow SDK (sleep, "use workflow" directive).
+ *
+ * TODO: Re-integrate with Vercel Workflow SDK once a SPA-compatible
+ * integration approach is available (without the nitro Vite plugin).
+ */
 export async function tenantOnboardingWorkflow(input: {
   tenantId: string;
   userId: string;
@@ -8,9 +16,7 @@ export async function tenantOnboardingWorkflow(input: {
   fullName: string;
   trialDays: number;
 }) {
-  "use workflow";
-
-  const { tenantId, userId, email, fullName, trialDays } = input;
+  const { tenantId, userId, email, fullName } = input;
 
   // Step 1: Send welcome email (immediate)
   await callEdgeFunction("send-welcome-email", {
@@ -20,41 +26,8 @@ export async function tenantOnboardingWorkflow(input: {
     tenant_id: tenantId,
   });
 
-  // Step 2: Send onboarding tip email (5 minutes after signup)
-  await sleep("5m");
-  // Could add a "tips" email edge function here later
+  // Steps 2-6 (trial reminders) require durable execution (sleep across days).
+  // These are deferred until the Workflow SDK is re-integrated.
 
-  // Step 3: Trial reminder at 7 days remaining
-  if (trialDays >= 7) {
-    await sleep(`${trialDays - 7}d`);
-    await callEdgeFunction("send-trial-reminder", {
-      tenant_id: tenantId,
-      days_remaining: 7,
-      has_payment_method: false,
-    });
-  }
-
-  // Step 4: Trial reminder at 3 days remaining
-  await sleep(`${Math.max(trialDays >= 7 ? 4 : trialDays - 3, 0)}d`);
-  await callEdgeFunction("send-trial-reminder", {
-    tenant_id: tenantId,
-    days_remaining: 3,
-    has_payment_method: false,
-  });
-
-  // Step 5: Trial reminder at 1 day remaining
-  await sleep("2d");
-  await callEdgeFunction("send-trial-reminder", {
-    tenant_id: tenantId,
-    days_remaining: 1,
-    has_payment_method: false,
-  });
-
-  // Step 6: Trial expired
-  await sleep("1d");
-  await callEdgeFunction("send-trial-expired-notice", {
-    tenant_id: tenantId,
-  });
-
-  return { tenantId, status: "trial_expired" };
+  return { tenantId, status: "welcome_sent" };
 }

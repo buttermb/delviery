@@ -1,8 +1,11 @@
-import { FatalError } from "workflow";
+export class FatalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FatalError";
+  }
+}
 
 export async function callEdgeFunction(name: string, body: Record<string, unknown>) {
-  "use step";
-
   const url = `${process.env.SUPABASE_URL}/functions/v1/${name}`;
   const res = await fetch(url, {
     method: "POST",

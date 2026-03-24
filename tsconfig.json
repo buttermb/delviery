@@ -9,7 +9,6 @@
         "./src/*"
       ]
     },
-    "plugins": [{ "name": "workflow" }],
     "skipLibCheck": true,
     "strictNullChecks": false
   },
