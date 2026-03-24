@@ -186,9 +186,14 @@ export default function Cookie() {
           iconBg="bg-slate-100 dark:bg-slate-800"
           title="8. Do Not Track Signals"
         >
-          <p className="text-sm">
-            We currently do not respond to &quot;Do Not Track&quot; (DNT) browser signals, as there is no universally accepted industry standard for compliance. However, you can manage tracking through the cookie controls described in Section 7 above.
-          </p>
+          <div className="space-y-3 text-sm">
+            <p>
+              We currently do not respond to &quot;Do Not Track&quot; (DNT) browser signals, as there is no universally accepted industry standard for compliance. However, you can manage tracking through the cookie controls described in Section 7 above.
+            </p>
+            <p>
+              <strong>Global Privacy Control (GPC):</strong> We honor the Global Privacy Control (GPC) signal. If your browser transmits a GPC signal, we will treat it as a valid opt-out request for the sale or sharing of personal information under the CCPA/CPRA, and will disable optional cookies accordingly.
+            </p>
+          </div>
         </Section>
 
         {/* 9. Cookie Retention */}

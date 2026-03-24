@@ -199,6 +199,7 @@ export default function PrivacyPage() {
             </ul>
             <p>You can manage cookie preferences through your browser settings. Disabling essential cookies may impair core Service functionality.</p>
             <p><strong>Do Not Track:</strong> We currently do not respond to &quot;Do Not Track&quot; browser signals, as there is no industry-standard protocol for compliance.</p>
+            <p><strong>Global Privacy Control (GPC):</strong> We honor the Global Privacy Control (GPC) signal. If your browser or device transmits a GPC signal, we will treat it as a valid opt-out request for the sale or sharing of personal information under the CCPA/CPRA. For more information, visit globalprivacycontrol.org.</p>
           </div>
         </Section>
 
@@ -218,6 +219,8 @@ export default function PrivacyPage() {
             <li><strong>Objection:</strong> Object to processing based on legitimate interests or for direct marketing.</li>
             <li><strong>Withdraw Consent:</strong> Withdraw consent at any time where processing is based on consent (without affecting prior processing).</li>
             <li><strong>Opt-Out of Marketing:</strong> Unsubscribe from marketing communications at any time via the link in any email or through your account settings.</li>
+            <li><strong>Lodge a Complaint:</strong> If you are located in the European Economic Area (EEA) or United Kingdom, you have the right to lodge a complaint with your local data protection supervisory authority if you believe our processing of your personal data violates applicable data protection law.</li>
+            <li><strong>Non-Discrimination:</strong> We will not discriminate against you for exercising any of your privacy rights.</li>
           </ul>
           <p className="text-sm mt-3 text-muted-foreground">
             To exercise any of these rights, contact us at {PRIVACY_EMAIL}. We will respond within the timeframe required by applicable law (typically 30 days). We may need to verify your identity before processing your request.
@@ -233,13 +236,41 @@ export default function PrivacyPage() {
           <div className="space-y-3 text-sm">
             <p>If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA):</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Right to Know:</strong> Request information about the categories and specific pieces of personal information we have collected.</li>
-              <li><strong>Right to Delete:</strong> Request deletion of your personal information, subject to exceptions.</li>
+              <li><strong>Right to Know:</strong> Request information about the categories and specific pieces of personal information we have collected, the sources, the business purpose, and the categories of third parties with whom it is shared.</li>
+              <li><strong>Right to Delete:</strong> Request deletion of your personal information, subject to legal exceptions (e.g., compliance with legal obligations, completing transactions, security).</li>
               <li><strong>Right to Correct:</strong> Request correction of inaccurate personal information.</li>
-              <li><strong>Right to Opt-Out of Sale/Sharing:</strong> We do not sell or share your personal information for cross-context behavioral advertising.</li>
+              <li><strong>Right to Opt-Out of Sale/Sharing:</strong> We do not sell or share your personal information for cross-context behavioral advertising. We honor Global Privacy Control (GPC) signals as a valid opt-out.</li>
+              <li><strong>Right to Limit Use of Sensitive Personal Information:</strong> We only use sensitive personal information as necessary to provide the Service.</li>
               <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising your privacy rights.</li>
             </ul>
-            <p>To submit a request, email {PRIVACY_EMAIL} with the subject line &quot;CCPA Request.&quot;</p>
+
+            <p className="font-semibold mt-4">Categories of Personal Information Collected (preceding 12 months):</p>
+            <div className="overflow-x-auto mt-2">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-2 pr-3 font-semibold">CCPA Category</th>
+                    <th className="py-2 pr-3 font-semibold">Examples</th>
+                    <th className="py-2 font-semibold">Business Purpose</th>
+                  </tr>
+                </thead>
+                <tbody className="text-muted-foreground">
+                  <tr className="border-b"><td className="py-2 pr-3">A. Identifiers</td><td className="py-2 pr-3">Name, email, phone, IP address, account ID</td><td className="py-2">Account creation, communication</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">B. Personal Information (Cal. Civ. Code &sect; 1798.80)</td><td className="py-2 pr-3">Name, address, phone number</td><td className="py-2">Service provision</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">D. Commercial Information</td><td className="py-2 pr-3">Orders, transaction records, products purchased</td><td className="py-2">Order management, analytics</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">F. Internet/Network Activity</td><td className="py-2 pr-3">Browsing history, search history, interaction data</td><td className="py-2">Product improvement, analytics</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">G. Geolocation Data</td><td className="py-2 pr-3">Approximate location (IP-based), precise GPS (with consent)</td><td className="py-2">Delivery, route planning</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">H. Professional/Employment Info</td><td className="py-2 pr-3">Business name, role, license numbers</td><td className="py-2">Account verification</td></tr>
+                  <tr><td className="py-2 pr-3">K. Inferences</td><td className="py-2 pr-3">Business preferences, usage patterns</td><td className="py-2">Personalization, recommendations</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-4"><strong>Sensitive Personal Information:</strong> We may collect business license numbers, precise geolocation (with consent), and account login credentials. We use sensitive personal information only as necessary to provide the Service and do not use it for purposes other than those disclosed.</p>
+
+            <p><strong>Authorized Agents:</strong> You may designate an authorized agent to submit CCPA requests on your behalf. The agent must provide a valid power of attorney or written authorization signed by you, and we may require you to verify your identity directly before processing the request.</p>
+
+            <p>To submit a request, email {PRIVACY_EMAIL} with the subject line &quot;CCPA Request.&quot; We will verify your identity before processing and respond within 45 days (extendable by an additional 45 days with notice).</p>
           </div>
         </Section>
 
@@ -296,6 +327,80 @@ export default function PrivacyPage() {
           <p className="text-sm">
             We may update this Privacy Policy from time to time to reflect changes in our practices, technology, legal requirements, or other factors. We will notify you of material changes by posting the updated policy on this page with a revised effective date, and by sending an email or in-app notification for significant changes. Your continued use of the Service after the updated policy becomes effective constitutes your acceptance of the changes. We encourage you to review this page periodically.
           </p>
+        </Section>
+
+        {/* 15. Automated Decision-Making & Profiling */}
+        <Section
+          icon={<Server className="h-5 w-5 text-violet-600 dark:text-violet-400" />}
+          iconBg="bg-violet-50 dark:bg-violet-950/50"
+          title="15. Automated Decision-Making &amp; Profiling"
+        >
+          <div className="space-y-3 text-sm">
+            <p>
+              The Service may use automated processing, including AI and machine learning, for purposes such as: demand forecasting, inventory recommendations, route optimization, anomaly detection, and business analytics. These features are designed to assist your decision-making, not replace it.
+            </p>
+            <p>
+              <strong>GDPR Article 22 Notice:</strong> If you are located in the EEA or UK, you have the right not to be subject to a decision based solely on automated processing, including profiling, which produces legal effects concerning you or similarly significantly affects you. We do not make fully automated decisions that produce legal effects without human involvement. Where automated processing assists in decisions that may significantly affect you, you have the right to: (a) obtain human intervention; (b) express your point of view; and (c) contest the decision. Contact {PRIVACY_EMAIL} to exercise these rights.
+            </p>
+            <p>
+              All automated recommendations provided by the Service are advisory in nature and subject to your independent judgment and verification.
+            </p>
+          </div>
+        </Section>
+
+        {/* 16. Cannabis Industry Data Sensitivity */}
+        <Section
+          icon={<Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+          iconBg="bg-amber-50 dark:bg-amber-950/50"
+          title="16. Cannabis Industry Data Sensitivity"
+        >
+          <div className="space-y-3 text-sm">
+            <p>
+              You acknowledge that data related to cannabis business operations may be considered sensitive due to the conflict between state and federal law in the United States. We take the following additional precautions:
+            </p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Your cannabis business data is encrypted at rest (AES-256) and in transit (TLS 1.2+).</li>
+              <li>We apply tenant isolation and row-level security to prevent unauthorized cross-tenant access.</li>
+              <li>We do not voluntarily disclose your business data to federal law enforcement agencies absent a valid legal process (such as a court order, subpoena, or warrant) directed specifically at us.</li>
+              <li>We will notify you of any legal process seeking your data to the extent permitted by law, unless prohibited by a court order or applicable law.</li>
+            </ul>
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 mt-2">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                <strong>Important:</strong> Despite these precautions, we cannot guarantee that your data will not be subject to legal process from any governmental authority. You should consult with your own legal counsel regarding the risks of maintaining business records electronically in the cannabis industry.
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* 17. Sub-Processors & Service Providers */}
+        <Section
+          icon={<Globe className="h-5 w-5 text-teal-600 dark:text-teal-400" />}
+          iconBg="bg-teal-50 dark:bg-teal-950/50"
+          title="17. Sub-Processors &amp; Service Providers"
+        >
+          <div className="space-y-3 text-sm">
+            <p>We use the following categories of sub-processors to provide the Service. Each operates under a data processing agreement with appropriate safeguards:</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-2 pr-3 font-semibold">Provider</th>
+                    <th className="py-2 pr-3 font-semibold">Purpose</th>
+                    <th className="py-2 font-semibold">Location</th>
+                  </tr>
+                </thead>
+                <tbody className="text-muted-foreground">
+                  <tr className="border-b"><td className="py-2 pr-3">Supabase</td><td className="py-2 pr-3">Database, authentication, edge functions</td><td className="py-2">United States</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">Vercel</td><td className="py-2 pr-3">Frontend hosting, serverless functions, analytics</td><td className="py-2">United States / Global Edge</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">Stripe</td><td className="py-2 pr-3">Payment processing</td><td className="py-2">United States</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">Cloudflare</td><td className="py-2 pr-3">CDN, DDoS protection, security</td><td className="py-2">Global Edge</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-3">Mapbox</td><td className="py-2 pr-3">Maps, geocoding, route optimization</td><td className="py-2">United States</td></tr>
+                  <tr><td className="py-2 pr-3">Anthropic</td><td className="py-2 pr-3">AI assistant features</td><td className="py-2">United States</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-muted-foreground">This list may be updated from time to time. Material changes to our sub-processors will be communicated via email or in-app notification.</p>
+          </div>
         </Section>
 
         {/* Disclaimer */}
