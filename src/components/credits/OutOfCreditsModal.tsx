@@ -126,10 +126,10 @@ export function OutOfCreditsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 p-3 rounded-full bg-red-500/10 w-fit">
-            <AlertTriangle className="h-8 w-8 text-red-500 animate-pulse" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
-          <DialogTitle className="text-2xl">You're Out of Credits</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">You're Out of Credits</DialogTitle>
           <DialogDescription className="text-base">
             {actionInfo
               ? `Cannot ${actionInfo.actionName.toLowerCase()} — not enough credits.`
@@ -152,7 +152,7 @@ export function OutOfCreditsModal({
               data-testid="credits-progress"
             />
             <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-red-500 font-medium">
+              <span className="text-xs text-destructive font-medium">
                 Need {creditsNeeded.toLocaleString()} more credits
               </span>
               <span className="text-xs text-muted-foreground">
@@ -166,25 +166,25 @@ export function OutOfCreditsModal({
             {actionInfo && (
               <div className="p-3 rounded-lg bg-muted/50 text-center">
                 <div className="text-xs text-muted-foreground mb-1">Action Cost</div>
-                <div className="text-lg font-bold text-amber-600">
+                <div className="text-lg font-semibold text-foreground">
                   {actionInfo.credits.toLocaleString()} credits
                 </div>
               </div>
             )}
-            <div className={`p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-center ${!actionInfo ? 'col-span-2' : ''}`}>
+            <div className={`p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-center ${!actionInfo ? 'col-span-2' : ''}`}>
               <div className="text-xs text-muted-foreground mb-1">Your Balance</div>
-              <div className="text-lg font-bold text-red-500">
+              <div className="text-lg font-semibold text-destructive">
                 {balance.toLocaleString()} credits
               </div>
             </div>
           </div>
 
           {/* Urgency Message */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-            <Clock className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted border">
+            <Clock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <span className="font-medium text-amber-700 dark:text-amber-400">
-                Don't lose momentum!
+              <span className="font-medium text-foreground">
+                Action Required
               </span>
               <span className="text-muted-foreground">
                 {' '}Your customers are waiting. Get back to business instantly.
@@ -251,7 +251,7 @@ export function OutOfCreditsModal({
           <div className="rounded-xl overflow-hidden border-2 border-primary/30">
             {/* Subscription Option - Highlighted */}
             <div className="p-4 bg-primary/5 relative">
-              <Badge className="absolute top-2 right-2 bg-emerald-500">
+              <Badge className="absolute top-2 right-2 hover:bg-primary">
                 BEST VALUE
               </Badge>
               <div className="flex items-center gap-2 mb-3">
@@ -264,17 +264,17 @@ export function OutOfCreditsModal({
                   <div className="text-2xl font-bold text-primary">${PLAN_CONFIG.starter.priceMonthly}</div>
                   <div className="text-xs text-muted-foreground">/month</div>
                 </div>
-                <div className="p-2 text-sm">
-                  <div className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
+                <div className="p-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle className="h-4 w-4 text-primary" />
                     <span>Unlimited actions</span>
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle className="h-4 w-4 text-primary" />
                     <span>No credit limits</span>
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
                     <span>All features unlocked</span>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export function OutOfCreditsModal({
               <p className="text-xs text-muted-foreground">
                 You've used <strong>{lifetimeSpent.toLocaleString()}</strong> credits.
                 At credit pack rates, that's <strong className="text-red-500">${comparison.creditPackCost}+</strong>.
-                Subscription = <strong className="text-emerald-500">${PLAN_CONFIG.starter.priceMonthly} flat</strong>.
+                Subscription = <strong className="text-primary">${PLAN_CONFIG.starter.priceMonthly} flat</strong>.
               </p>
             </div>
           )}
