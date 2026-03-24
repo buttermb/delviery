@@ -47,6 +47,7 @@ import { toast } from "sonner";
 import NProgress from "nprogress";
 
 import OfflineBanner from "./components/OfflineBanner";
+import { CookieConsentBanner } from "./components/storefront/CookieConsentBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteProgressManager } from "./components/RouteProgressManager";
 import { DocumentTitleManager } from "./components/DocumentTitleManager";
@@ -84,6 +85,7 @@ import {
   NotFoundPage, AdminNotFoundPage, ButtonMonitorPage,
   MarketingHome, PricingPage, Contact, Features, FAQPage, SupportPage,
   TermsPage, PrivacyPage, About, InteractiveDemoPage, DemoRequest, DemoConfirmation,
+  AcceptableUsePage, DPAPage, SLAPage,
   IntegrationsPage, DocsPage, GettingStartedPage, ApiReferencePage, AuthenticationPage,
   SecurityDocsPage, StatusPage, Careers, Press, Blog, Security, Cookie, LoginDirectory,
   PublicMarketplacePage, PublicListingDetailPage, ClientPortalPage,
@@ -319,6 +321,7 @@ const App = () => {
                                 <WhiteLabelProvider>
                                   <SkipToContent />
                                   <OfflineBanner />
+                                  <CookieConsentBanner />
                                   {DeferredUpdateBanner ? <DeferredUpdateBanner /> : null}
                                   {DeferredInstallPWA ? <DeferredInstallPWA /> : null}
                                   {DeferredDeviceTracker ? <DeferredDeviceTracker /> : null}
@@ -361,6 +364,12 @@ const App = () => {
                                       <Route path="/security" element={<Security />} />
                                       <Route path="/cookie" element={<Cookie />} />
                                       <Route path="/cookies" element={<Cookie />} />
+                                      <Route path="/aup" element={<AcceptableUsePage />} />
+                                      <Route path="/acceptable-use" element={<AcceptableUsePage />} />
+                                      <Route path="/dpa" element={<DPAPage />} />
+                                      <Route path="/data-processing" element={<DPAPage />} />
+                                      <Route path="/sla" element={<SLAPage />} />
+                                      <Route path="/service-level" element={<SLAPage />} />
                                       <Route path="/login" element={<LoginDirectory />} />
 
                                       {/* Public Marketplace (B2B) */}

@@ -23,6 +23,7 @@ import {
   MessageSquare,
   FileText,
   Zap,
+  AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
@@ -269,6 +270,19 @@ export function LocalAIIntegration() {
         </Card>
       </div>
 
+      {/* AI Disclaimer */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/30 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-amber-900 dark:text-amber-200 space-y-1">
+            <p className="font-semibold">AI Disclaimer</p>
+            <p>
+              AI-generated content is for informational purposes only and does not constitute legal, regulatory, compliance, financial, or medical advice. Always verify AI outputs independently and consult qualified professionals before making business decisions. FloraIQ is not liable for actions taken based on AI-generated suggestions.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Info Card */}
       <Card>
         <CardContent className="pt-6">
@@ -277,7 +291,7 @@ export function LocalAIIntegration() {
             <div className="flex-1">
               <h3 className="font-semibold mb-2">Local AI Models</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                These AI models run locally in your browser or on your server. 
+                These AI models run locally in your browser or on your server.
                 No data is sent to external services, ensuring complete privacy.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">

@@ -134,6 +134,8 @@ const Footer = () => {
               <li><Link to="/track-order" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">Track Order</Link></li>
               <li><Link to="/terms" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/aup" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">Acceptable Use</Link></li>
+              <li><Link to="/sla" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0)} className="hover:text-primary transition-colors">SLA</Link></li>
             </ul>
             <div className="mt-4 pt-4 border-t border-border space-y-1">
               <p className="font-semibold text-foreground">Need Help?</p>

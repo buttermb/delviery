@@ -132,7 +132,7 @@ export function AISuggestionBanner() {
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              AI suggestion based on your sales data
+              AI suggestion based on your sales data. For informational purposes only — not legal or compliance advice.
             </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
