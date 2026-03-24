@@ -208,122 +208,125 @@ export function QuickActionsButton({ className }: QuickActionsButtonProps) {
   }, [isOpen]);
   
   return (
-    <div 
-      data-quick-actions
-      className={cn(
-        'fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50',
-        className
-      )}
-    >
-      {/* Backdrop */}
+    <>
+      {/* Backdrop - rendered at overlay level so it covers sidebar/header */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-overlay bg-black/20 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
-      
-      {/* Action buttons - arranged in a semi-circle */}
-      <AnimatePresence>
-        {isOpen && (
-          <div className="absolute bottom-16 right-0">
-            {actions.map((action, index) => {
-              // Calculate position in semi-circle
-              const totalActions = actions.length;
-              const angle = (Math.PI / 2) * (index / (totalActions - 1)) + Math.PI / 4; // 45 to 135 degrees
-              const radius = 80;
-              const x = -Math.cos(angle) * radius;
-              const y = -Math.sin(angle) * radius;
-              
-              return (
-                <motion.button
-                  key={action.id}
-                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: 1, 
-                    x, 
-                    y,
-                    transition: { 
-                      delay: index * 0.05,
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 20
-                    }
-                  }}
-                  exit={{ 
-                    opacity: 0, 
-                    scale: 0, 
-                    x: 0, 
-                    y: 0,
-                    transition: { 
-                      delay: (totalActions - index - 1) * 0.03 
-                    }
-                  }}
-                  onClick={() => handleActionClick(action)}
-                  className={cn(
-                    'absolute flex items-center gap-2 px-3 py-2 rounded-full',
-                    'text-white text-sm font-medium shadow-lg',
-                    'transition-transform hover:scale-110',
-                    'whitespace-nowrap',
-                    action.color
-                  )}
-                  style={{
-                    // Center the button on its position
-                    transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
-                  }}
-                >
-                  <action.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{action.label}</span>
-                </motion.button>
-              );
-            })}
-          </div>
-        )}
-      </AnimatePresence>
-      
-      {/* Main FAB button */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        animate={{ rotate: isOpen ? 45 : 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+
+      <div
+        data-quick-actions
         className={cn(
-          'h-14 w-14 rounded-full shadow-lg',
-          'flex items-center justify-center',
-          'text-white transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          isOpen
-            ? 'bg-gray-700 hover:bg-gray-800 focus-visible:ring-gray-500'
-            : 'bg-primary hover:bg-primary/90 focus-visible:ring-primary'
+          'fixed bottom-20 right-4 md:bottom-6 md:right-6',
+          isOpen ? 'z-modal' : 'z-overlay',
+          className
         )}
-        aria-label={isOpen ? 'Close quick actions' : 'Open quick actions'}
-        aria-expanded={isOpen}
       >
-        {isOpen ? (
-          <X className="h-6 w-6" />
-        ) : (
-          <Plus className="h-6 w-6" />
-        )}
-      </motion.button>
-      
-      {/* Tooltip hint when closed */}
-      {!isOpen && (
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none"
+        {/* Action buttons - arranged in a semi-circle */}
+        <AnimatePresence>
+          {isOpen && (
+            <div className="absolute bottom-16 right-0">
+              {actions.map((action, index) => {
+                // Calculate position in semi-circle
+                const totalActions = actions.length;
+                const angle = (Math.PI / 2) * (index / (totalActions - 1)) + Math.PI / 4; // 45 to 135 degrees
+                const radius = 80;
+                const x = -Math.cos(angle) * radius;
+                const y = -Math.sin(angle) * radius;
+
+                return (
+                  <motion.button
+                    key={action.id}
+                    initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      x,
+                      y,
+                      transition: {
+                        delay: index * 0.05,
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 20
+                      }
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0,
+                      x: 0,
+                      y: 0,
+                      transition: {
+                        delay: (totalActions - index - 1) * 0.03
+                      }
+                    }}
+                    onClick={() => handleActionClick(action)}
+                    className={cn(
+                      'absolute flex items-center gap-2 px-3 py-2 rounded-full',
+                      'text-white text-sm font-medium shadow-lg',
+                      'transition-transform hover:scale-110',
+                      'whitespace-nowrap',
+                      action.color
+                    )}
+                    style={{
+                      // Center the button on its position
+                      transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
+                    }}
+                  >
+                    <action.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{action.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Main FAB button */}
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className={cn(
+            'h-14 w-14 rounded-full shadow-lg',
+            'flex items-center justify-center',
+            'text-white transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+            isOpen
+              ? 'bg-gray-700 hover:bg-gray-800 focus-visible:ring-gray-500'
+              : 'bg-primary hover:bg-primary/90 focus-visible:ring-primary'
+          )}
+          aria-label={isOpen ? 'Close quick actions' : 'Open quick actions'}
+          aria-expanded={isOpen}
         >
-          <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded shadow-sm whitespace-nowrap">
-            Quick Actions
-          </span>
-        </motion.div>
-      )}
-    </div>
+          {isOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Plus className="h-6 w-6" />
+          )}
+        </motion.button>
+
+        {/* Tooltip hint when closed */}
+        {!isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none"
+          >
+            <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded shadow-sm whitespace-nowrap">
+              Quick Actions
+            </span>
+          </motion.div>
+        )}
+      </div>
+    </>
   );
 }
 
