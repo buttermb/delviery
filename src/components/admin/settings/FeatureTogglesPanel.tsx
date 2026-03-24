@@ -1,41 +1,71 @@
 /**
  * FeatureTogglesPanel
  *
- * Grid of feature cards grouped into "Core Features" (always on, disabled switches)
- * and "Advanced Features" (toggleable). Each card shows a lucide icon,
- * feature name, one-line description, and a Switch toggle.
- * Toggle calls useTenantFeatureToggles().toggleFeature().
+ * Shows ALL platform features grouped by category.
+ * - Features with toggle keys get a working Switch (or disabled if tier-locked).
+ * - Essential features (dashboard, hotbox, settings, billing, help) are always on.
+ * - Features without toggles show "Included" or tier-lock status.
+ * - Summary stats at the top: accessible / locked / total.
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import { toast } from 'sonner';
 import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
 import Truck from 'lucide-react/dist/esm/icons/truck';
-import Map from 'lucide-react/dist/esm/icons/map';
+import MapIcon from 'lucide-react/dist/esm/icons/map';
 import MapPin from 'lucide-react/dist/esm/icons/map-pin';
 import ClipboardList from 'lucide-react/dist/esm/icons/clipboard-list';
 import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check';
 import Store from 'lucide-react/dist/esm/icons/store';
 import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
-import Users from 'lucide-react/dist/esm/icons/users';
+import UsersIcon from 'lucide-react/dist/esm/icons/users';
 import Megaphone from 'lucide-react/dist/esm/icons/megaphone';
 import MessageCircle from 'lucide-react/dist/esm/icons/message-circle';
 import Navigation from 'lucide-react/dist/esm/icons/navigation';
-import Package from 'lucide-react/dist/esm/icons/package';
+import PackageIcon from 'lucide-react/dist/esm/icons/package';
 import ShoppingBag from 'lucide-react/dist/esm/icons/shopping-bag';
-import Link from 'lucide-react/dist/esm/icons/link';
+import LinkIcon from 'lucide-react/dist/esm/icons/link';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
 import Warehouse from 'lucide-react/dist/esm/icons/warehouse';
 import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
 import Palette from 'lucide-react/dist/esm/icons/palette';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Check from 'lucide-react/dist/esm/icons/check';
+import LayoutDashboard from 'lucide-react/dist/esm/icons/layout-dashboard';
+import Settings from 'lucide-react/dist/esm/icons/settings';
+import Zap from 'lucide-react/dist/esm/icons/zap';
+import Star from 'lucide-react/dist/esm/icons/star';
+import Tag from 'lucide-react/dist/esm/icons/tag';
+import Gift from 'lucide-react/dist/esm/icons/gift';
+import Receipt from 'lucide-react/dist/esm/icons/receipt';
+import Bell from 'lucide-react/dist/esm/icons/bell';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Headphones from 'lucide-react/dist/esm/icons/headphones';
+import Radio from 'lucide-react/dist/esm/icons/radio';
+import Scan from 'lucide-react/dist/esm/icons/scan';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import ArrowLeftRight from 'lucide-react/dist/esm/icons/arrow-left-right';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Boxes from 'lucide-react/dist/esm/icons/boxes';
+import Globe from 'lucide-react/dist/esm/icons/globe';
+import Webhook from 'lucide-react/dist/esm/icons/webhook';
+import Bot from 'lucide-react/dist/esm/icons/bot';
+import Download from 'lucide-react/dist/esm/icons/download';
+import HelpCircle from 'lucide-react/dist/esm/icons/help-circle';
 import type { LucideIcon } from 'lucide-react';
 
-import Lock from 'lucide-react/dist/esm/icons/lock';
-
 import { type FeatureToggleKey } from '@/lib/featureFlags';
-import { FEATURES, TIER_NAMES, type FeatureId } from '@/lib/featureConfig';
-import { TOGGLE_TO_FEATURE_MAP } from '@/lib/featureMapping';
+import {
+  FEATURES,
+  ESSENTIAL_FEATURES,
+  TIER_NAMES,
+  CATEGORY_ORDER,
+  type FeatureId,
+  type FeatureCategory,
+  type SubscriptionTier,
+} from '@/lib/featureConfig';
+import { FEATURE_TO_TOGGLE_MAP } from '@/lib/featureMapping';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { humanizeError } from '@/lib/humanizeError';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,158 +76,179 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { logger } from '@/lib/logger';
 
-interface FeatureItem {
-  key: FeatureToggleKey;
-  label: string;
-  description: string;
-  icon: LucideIcon;
-}
+// ---------------------------------------------------------------------------
+// Icon maps
+// ---------------------------------------------------------------------------
 
-const CORE_FEATURES: FeatureItem[] = [
-  {
-    key: 'orders',
-    label: 'Orders',
-    description: 'Manage and track customer orders',
-    icon: ShoppingBag,
-  },
-  {
-    key: 'products',
-    label: 'Products',
-    description: 'Product catalog and inventory management',
-    icon: Package,
-  },
-  {
-    key: 'menus',
-    label: 'Menus',
-    description: 'Create and share disposable menus',
-    icon: Link,
-  },
-  {
-    key: 'invoices',
-    label: 'Invoices',
-    description: 'Generate and track invoices',
-    icon: FileText,
-  },
-  {
-    key: 'customers',
-    label: 'Customers',
-    description: 'Customer management and profiles',
-    icon: Users,
-  },
-  {
-    key: 'storefront',
-    label: 'Storefront',
-    description: 'Online store for customer orders',
-    icon: Store,
-  },
-  {
-    key: 'inventory',
-    label: 'Inventory',
-    description: 'Stock tracking and management',
-    icon: Warehouse,
-  },
-];
+/** Per-feature icons (hand-picked for the most important features). */
+const FEATURE_ICONS: Partial<Record<FeatureId, LucideIcon>> = {
+  // Command Center
+  'dashboard': LayoutDashboard,
+  'hotbox': Zap,
+  'live-orders': Radio,
+  'notifications': Bell,
+  'realtime-dashboard': Radio,
+  'live-map': MapPin,
+  // Sales & Orders
+  'basic-orders': ShoppingBag,
+  'wholesale-orders': Boxes,
+  'wholesale-pricing-tiers': Tag,
+  'loyalty-program': Star,
+  'coupons': Tag,
+  'marketplace': Store,
+  'marketplace-product-sync': ArrowLeftRight,
+  'sales-dashboard': TrendingUp,
+  'storefront': Store,
+  'storefront-builder': Palette,
+  'storefront-settings': Settings,
+  'storefront-analytics': BarChart3,
+  'storefront-live-orders': Radio,
+  'storefront-reviews': MessageCircle,
+  'pos-system': ShoppingCart,
+  // Menus
+  'disposable-menus': LinkIcon,
+  'menu-migration': ArrowLeftRight,
+  // Inventory
+  'products': PackageIcon,
+  'inventory-dashboard': Warehouse,
+  'stock-alerts': AlertTriangle,
+  'generate-barcodes': Scan,
+  'advanced-inventory': Warehouse,
+  'inventory-transfers': ArrowLeftRight,
+  'dispatch-inventory': Truck,
+  'vendor-management': Store,
+  // Customers
+  'customers': UsersIcon,
+  'customer-crm': UsersIcon,
+  'crm-invoices': FileText,
+  'customer-insights': TrendingUp,
+  'marketing-automation': Megaphone,
+  'customer-analytics': BarChart3,
+  'live-chat': MessageCircle,
+  // Operations
+  'suppliers': PackageIcon,
+  'purchase-orders': ClipboardList,
+  'returns': ArrowLeftRight,
+  'team-members': UsersIcon,
+  'role-management': ShieldCheck,
+  'activity-logs': FileText,
+  'quality-control': ShieldCheck,
+  'appointments': Calendar,
+  'support-tickets': Headphones,
+  'operations': Boxes,
+  'fronted-inventory': CreditCard,
+  'locations': MapIcon,
+  'user-management': UsersIcon,
+  'permissions': Lock,
+  // Analytics & Finance
+  'reports': BarChart3,
+  'analytics': BarChart3,
+  'revenue-reports': TrendingUp,
+  'financial-center': CreditCard,
+  'collections': CreditCard,
+  'invoice-management': Receipt,
+  'commission-tracking': TrendingUp,
+  'expense-tracking': Receipt,
+  'menu-analytics': BarChart3,
+  'order-analytics': BarChart3,
+  'advanced-reporting': FileText,
+  'predictive-analytics': TrendingUp,
+  'advanced-analytics': Bot,
+  'custom-reports': FileText,
+  'data-export': Download,
+  'risk-management': AlertTriangle,
+  // Delivery & Fleet
+  'delivery-management': Truck,
+  'fleet-management': Navigation,
+  'couriers': MapIcon,
+  'route-optimization': MapPin,
+  'delivery-tracking': Truck,
+  'delivery-analytics': BarChart3,
+  'drivers': UsersIcon,
+  'fleet-map': MapPin,
+  // Point of Sale
+  'cash-register': ShoppingCart,
+  'pos-analytics': BarChart3,
+  'location-analytics': MapPin,
+  // Integrations
+  'bulk-operations': Boxes,
+  'vendor-portal': Store,
+  'api-access': Globe,
+  'webhooks': Webhook,
+  'custom-integrations': LinkIcon,
+  'automation': Zap,
+  'ai': Bot,
+  // Security & Compliance
+  'batch-recall': AlertTriangle,
+  'compliance-vault': ShieldCheck,
+  'audit-trail': FileText,
+  'compliance': ShieldCheck,
+  // Settings
+  'settings': Settings,
+  'billing': CreditCard,
+  'help': HelpCircle,
+  'white-label': Palette,
+  'custom-domain': Globe,
+  'system-settings': Settings,
+  'priority-support': Headphones,
+};
 
-const ADVANCED_FEATURES: FeatureItem[] = [
-  {
-    key: 'pos',
-    label: 'Point of Sale',
-    description: 'Ring up in-store sales with shift management and Z-reports',
-    icon: ShoppingCart,
-  },
-  {
-    key: 'delivery_tracking',
-    label: 'Delivery Tracking',
-    description: 'Assign couriers and track deliveries live',
-    icon: Truck,
-  },
-  {
-    key: 'live_map',
-    label: 'Live Map',
-    description: 'Real-time map view of active deliveries',
-    icon: MapPin,
-  },
-  {
-    key: 'fleet_management',
-    label: 'Fleet Management',
-    description: 'Manage delivery fleet and drivers',
-    icon: Navigation,
-  },
-  {
-    key: 'courier_portal',
-    label: 'Courier Portal',
-    description: 'Dedicated portal for courier operations',
-    icon: Map,
-  },
-  {
-    key: 'purchase_orders',
-    label: 'Purchase Orders',
-    description: 'Track supplier orders and receiving',
-    icon: ClipboardList,
-  },
-  {
-    key: 'quality_control',
-    label: 'Quality Control',
-    description: 'Quality checks and compliance',
-    icon: ShieldCheck,
-  },
-  {
-    key: 'vendor_management',
-    label: 'Vendor Management',
-    description: 'Manage vendor relationships',
-    icon: Store,
-  },
-  {
-    key: 'crm_advanced',
-    label: 'Advanced CRM',
-    description: 'Customer scoring, activity logs, segmentation',
-    icon: Users,
-  },
-  {
-    key: 'analytics_advanced',
-    label: 'Advanced Analytics',
-    description: 'Sales reports and business insights',
-    icon: BarChart3,
-  },
-  {
-    key: 'marketing_hub',
-    label: 'Marketing Hub',
-    description: 'Coupons, campaigns, engagement tools',
-    icon: Megaphone,
-  },
-  {
-    key: 'credits_system',
-    label: 'Credits System',
-    description: 'Customer credit accounts and balances',
-    icon: CreditCard,
-  },
-  {
-    key: 'live_chat',
-    label: 'Live Chat',
-    description: 'Real-time messaging with customers',
-    icon: MessageCircle,
-  },
-  {
-    key: 'storefront_builder_advanced',
-    label: 'Advanced Storefront Builder',
-    description: 'Advanced storefront customization and theming',
-    icon: Palette,
-  },
-];
+/** Fallback icon per category when a feature has no specific icon. */
+const CATEGORY_ICONS: Record<FeatureCategory, LucideIcon> = {
+  'Command Center': LayoutDashboard,
+  'Sales & Orders': ShoppingCart,
+  'Menus': LinkIcon,
+  'Inventory': Warehouse,
+  'Customers': UsersIcon,
+  'Operations': ClipboardList,
+  'Analytics & Finance': BarChart3,
+  'Delivery & Fleet': Truck,
+  'Point of Sale': ShoppingCart,
+  'Integrations': LinkIcon,
+  'Security & Compliance': ShieldCheck,
+  'Settings': Settings,
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function FeatureTogglesPanel() {
   const { isEnabled, toggleFeature, isLoading } = useTenantFeatureToggles();
-  const { canAccess } = useFeatureAccess();
+  const { canAccess, currentTier } = useFeatureAccess();
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
 
-  /** Returns the required tier name if the toggle's mapped feature is tier-locked, else null. */
-  const getTierLock = (key: FeatureToggleKey): string | null => {
-    const featureId = TOGGLE_TO_FEATURE_MAP[key];
-    if (!featureId) return null;
-    if (canAccess(featureId)) return null;
-    const feature = FEATURES[featureId as FeatureId];
-    return feature ? TIER_NAMES[feature.tier] : null;
-  };
+  // Group all features by category in sidebar order
+  const categorized = useMemo(() => {
+    const allIds = Object.keys(FEATURES) as FeatureId[];
+    const grouped = new Map<FeatureCategory, FeatureId[]>();
+
+    for (const id of allIds) {
+      const f = FEATURES[id];
+      const list = grouped.get(f.category) ?? [];
+      list.push(id);
+      grouped.set(f.category, list);
+    }
+
+    return CATEGORY_ORDER
+      .filter((cat) => grouped.has(cat))
+      .map((cat) => ({ category: cat, featureIds: grouped.get(cat)! }));
+  }, []);
+
+  // Summary stats
+  const stats = useMemo(() => {
+    const allIds = Object.keys(FEATURES) as FeatureId[];
+    let accessible = 0;
+    let locked = 0;
+    for (const id of allIds) {
+      if (ESSENTIAL_FEATURES.includes(id) || canAccess(id)) {
+        accessible++;
+      } else {
+        locked++;
+      }
+    }
+    return { total: allIds.length, accessible, locked };
+  }, [canAccess]);
 
   const handleToggle = async (key: FeatureToggleKey, enabled: boolean) => {
     setTogglingKey(key);
@@ -215,13 +266,13 @@ export function FeatureTogglesPanel() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {[1, 2].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-3">
             <Skeleton className="h-5 w-32" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
             </div>
           </div>
         ))}
@@ -231,104 +282,141 @@ export function FeatureTogglesPanel() {
 
   return (
     <div className="space-y-8">
-      {/* Core Features — always on, switches disabled */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Core Features
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          These features are always enabled and cannot be turned off.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CORE_FEATURES.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <Card key={feature.key} className="relative opacity-80">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <CardTitle className="text-sm font-medium">
-                        {feature.label}
-                      </CardTitle>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
-                        {feature.label} (always on)
-                      </Label>
-                      <Switch
-                        id={`toggle-${feature.key}`}
-                        checked
-                        disabled
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <CardDescription className="text-xs">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      {/* Plan summary */}
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <Badge variant="outline" className="text-xs font-semibold">
+          {TIER_NAMES[currentTier]} Plan
+        </Badge>
+        <span className="text-muted-foreground">
+          {stats.accessible} of {stats.total} features accessible
+        </span>
+        {stats.locked > 0 && (
+          <span className="text-muted-foreground">
+            &middot; {stats.locked} locked
+          </span>
+        )}
       </div>
 
-      {/* Advanced Features — toggleable */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Advanced Features
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Enable or disable advanced features for your business.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ADVANCED_FEATURES.map((feature) => {
-            const Icon = feature.icon;
-            const enabled = isEnabled(feature.key);
-            const isToggling = togglingKey === feature.key;
-            const lockedTier = getTierLock(feature.key);
-
-            return (
-              <Card key={feature.key} className={`relative ${lockedTier ? 'opacity-60' : ''}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <CardTitle className="text-sm font-medium">
-                        {feature.label}
-                      </CardTitle>
-                      {lockedTier && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
-                          <Lock className="h-2.5 w-2.5" />
-                          {lockedTier}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
-                        Toggle {feature.label}
-                      </Label>
-                      <Switch
-                        id={`toggle-${feature.key}`}
-                        checked={lockedTier ? false : enabled}
-                        disabled={isToggling || !!lockedTier}
-                        onCheckedChange={(checked) => handleToggle(feature.key, checked)}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <CardDescription className="text-xs">
-                    {lockedTier ? `Upgrade to ${lockedTier} to unlock` : feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            );
-          })}
+      {/* Features by category */}
+      {categorized.map(({ category, featureIds }) => (
+        <div key={category} className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            {category}
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {featureIds.map((featureId) => (
+              <FeatureCard
+                key={featureId}
+                featureId={featureId}
+                category={category}
+                canAccess={canAccess(featureId)}
+                isEssential={ESSENTIAL_FEATURES.includes(featureId)}
+                isEnabled={isEnabled}
+                isToggling={togglingKey}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      ))}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Feature Card
+// ---------------------------------------------------------------------------
+
+interface FeatureCardProps {
+  featureId: FeatureId;
+  category: FeatureCategory;
+  canAccess: boolean;
+  isEssential: boolean;
+  isEnabled: (key: FeatureToggleKey) => boolean;
+  isToggling: string | null;
+  onToggle: (key: FeatureToggleKey, enabled: boolean) => void;
+}
+
+function FeatureCard({
+  featureId,
+  category,
+  canAccess: accessible,
+  isEssential,
+  isEnabled,
+  isToggling,
+  onToggle,
+}: FeatureCardProps) {
+  const feature = FEATURES[featureId];
+  const toggleKey = FEATURE_TO_TOGGLE_MAP[featureId] as FeatureToggleKey | undefined;
+  const Icon = FEATURE_ICONS[featureId] ?? CATEGORY_ICONS[category] ?? PackageIcon;
+
+  const tierLocked = !isEssential && !accessible;
+  const requiredTier = tierLocked ? TIER_NAMES[feature.tier as SubscriptionTier] : null;
+
+  // Determine what to show on the right side
+  let rightContent: React.ReactNode;
+
+  if (isEssential) {
+    // Always-on essential features
+    rightContent = (
+      <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+        Always on
+      </Badge>
+    );
+  } else if (toggleKey && !tierLocked) {
+    // Has a toggle and tier is accessible → working switch
+    const enabled = isEnabled(toggleKey);
+    rightContent = (
+      <>
+        <Label htmlFor={`toggle-${featureId}`} className="sr-only">
+          Toggle {feature.name}
+        </Label>
+        <Switch
+          id={`toggle-${featureId}`}
+          checked={enabled}
+          disabled={isToggling === toggleKey}
+          onCheckedChange={(checked) => onToggle(toggleKey, checked)}
+        />
+      </>
+    );
+  } else if (tierLocked) {
+    // Tier-locked → show lock badge
+    rightContent = (
+      <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 gap-1">
+        <Lock className="h-2.5 w-2.5" />
+        {requiredTier}
+      </Badge>
+    );
+  } else {
+    // Accessible, no toggle → included check
+    rightContent = (
+      <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+        <Check className="h-3.5 w-3.5" />
+        <span className="text-[10px] font-medium">Included</span>
+      </div>
+    );
+  }
+
+  return (
+    <Card className={`relative ${tierLocked ? 'opacity-50' : ''}`}>
+      <CardHeader className="pb-2 pt-3 px-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <CardTitle className="text-sm font-medium truncate">
+              {feature.name}
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {rightContent}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 pb-3 px-3">
+        <CardDescription className="text-xs line-clamp-2">
+          {tierLocked ? `Upgrade to ${requiredTier} to unlock` : feature.description}
+        </CardDescription>
+      </CardContent>
+    </Card>
   );
 }
