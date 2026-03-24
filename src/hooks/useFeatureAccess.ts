@@ -23,6 +23,7 @@ function businessTierToSubscription(businessTier: string | null | undefined): Su
   switch (businessTier) {
     case 'street':
     case 'trap':
+    case 'free':
       return 'starter';
     case 'block':
     case 'hood':

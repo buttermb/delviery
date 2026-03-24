@@ -254,36 +254,42 @@ export function SignupPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user account');
 
-      // If creating a new tenant
+      // If creating a new tenant — use atomic RPC to properly initialize
+      // features, limits, credits, subscription events, and tenant_users link
       if (data.tenantMode === 'create' && data.businessName) {
-        const { error: tenantError } = await supabase
-          .from('tenants')
-          .insert({
-            business_name: data.businessName,
-            slug: urlSlug,
-            owner_email: step1Data.email,
-            owner_name: step2Data.fullName,
-            subscription_plan: 'free',
-            subscription_status: 'trial',
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .maybeSingle();
-
-        if (tenantError) {
-          logger.warn('Tenant creation error (may already exist)', tenantError, { component: 'SignupPage' });
-        }
-
-        // Create tenant_users record
-        const { error: tenantUserError } = await supabase
-          .from('tenant_users')
-          .insert({
-            email: step1Data.email,
-            name: step2Data.fullName,
+        const { data: atomicResult, error: atomicError } = await supabase
+          .rpc('create_tenant_atomic', {
+            p_auth_user_id: authData.user.id,
+            p_email: step1Data.email,
+            p_business_name: data.businessName,
+            p_owner_name: step2Data.fullName,
+            p_phone: step2Data.phone || null,
+            p_slug: urlSlug,
+            p_plan: 'free',
           });
 
-        if (tenantUserError) {
-          logger.warn('Tenant user creation error', tenantUserError, { component: 'SignupPage' });
+        if (atomicError) {
+          logger.warn('Tenant creation error', atomicError, { component: 'SignupPage' });
+          // Fallback: create basic records if RPC fails (e.g., function not deployed yet)
+          const { error: tenantError } = await supabase
+            .from('tenants')
+            .insert({
+              business_name: data.businessName,
+              slug: urlSlug,
+              owner_email: step1Data.email,
+              owner_name: step2Data.fullName,
+              subscription_plan: 'free',
+              subscription_status: 'active',
+              is_free_tier: true,
+            })
+            .select('id')
+            .maybeSingle();
+
+          if (tenantError) {
+            logger.warn('Fallback tenant creation also failed', tenantError, { component: 'SignupPage' });
+          }
+        } else {
+          logger.info('Tenant created atomically', { tenantId: atomicResult?.tenant_id }, { component: 'SignupPage' });
         }
       }
 
