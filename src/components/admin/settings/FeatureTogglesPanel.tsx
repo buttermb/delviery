@@ -55,6 +55,7 @@ import Download from 'lucide-react/dist/esm/icons/download';
 import HelpCircle from 'lucide-react/dist/esm/icons/help-circle';
 import type { LucideIcon } from 'lucide-react';
 
+import FlaskConical from 'lucide-react/dist/esm/icons/flask-conical';
 import { type FeatureToggleKey } from '@/lib/featureFlags';
 import {
   FEATURES,
@@ -75,6 +76,20 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { logger } from '@/lib/logger';
+
+// ---------------------------------------------------------------------------
+// Beta features — not yet fully production-ready
+// ---------------------------------------------------------------------------
+
+const BETA_FEATURES = new Set<FeatureId>([
+  'predictive-analytics',
+  'custom-domain',
+  'white-label',
+  'ai',
+  'automation',
+  'custom-integrations',
+  'route-optimization',
+]);
 
 // ---------------------------------------------------------------------------
 // Icon maps
@@ -240,14 +255,16 @@ export function FeatureTogglesPanel() {
     const allIds = Object.keys(FEATURES) as FeatureId[];
     let accessible = 0;
     let locked = 0;
+    let beta = 0;
     for (const id of allIds) {
+      if (BETA_FEATURES.has(id)) beta++;
       if (ESSENTIAL_FEATURES.includes(id) || canAccess(id)) {
         accessible++;
       } else {
         locked++;
       }
     }
-    return { total: allIds.length, accessible, locked };
+    return { total: allIds.length, accessible, locked, beta };
   }, [canAccess]);
 
   const handleToggle = async (key: FeatureToggleKey, enabled: boolean) => {
@@ -293,6 +310,11 @@ export function FeatureTogglesPanel() {
         {stats.locked > 0 && (
           <span className="text-muted-foreground">
             &middot; {stats.locked} locked
+          </span>
+        )}
+        {stats.beta > 0 && (
+          <span className="text-amber-600 dark:text-amber-400">
+            &middot; {stats.beta} in beta
           </span>
         )}
       </div>
@@ -349,6 +371,7 @@ function FeatureCard({
   const feature = FEATURES[featureId];
   const toggleKey = FEATURE_TO_TOGGLE_MAP[featureId] as FeatureToggleKey | undefined;
   const Icon = FEATURE_ICONS[featureId] ?? CATEGORY_ICONS[category] ?? PackageIcon;
+  const isBeta = BETA_FEATURES.has(featureId);
 
   const tierLocked = !isEssential && !accessible;
   const requiredTier = tierLocked ? TIER_NAMES[feature.tier as SubscriptionTier] : null;
@@ -406,6 +429,16 @@ function FeatureCard({
             <CardTitle className="text-sm font-medium truncate">
               {feature.name}
             </CardTitle>
+            {isBeta ? (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 gap-0.5 border-amber-400 text-amber-600 dark:text-amber-400 flex-shrink-0">
+                <FlaskConical className="h-2.5 w-2.5" />
+                Beta
+              </Badge>
+            ) : !tierLocked ? (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 border-emerald-400 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                Built
+              </Badge>
+            ) : null}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {rightContent}
