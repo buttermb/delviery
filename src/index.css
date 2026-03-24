@@ -163,10 +163,10 @@
 
     /* Z-Index Scale */
     --z-base: 0;
-    --z-dropdown: 50;
     --z-sticky: 100;
     --z-overlay: 150;
     --z-modal: 200;
+    --z-dropdown: 250;
     --z-toast: 300;
     --z-tooltip: 400;
     --z-max: 9999;
@@ -269,10 +269,10 @@
 
     /* Z-Index Scale */
     --z-base: 0;
-    --z-dropdown: 50;
     --z-sticky: 100;
     --z-overlay: 150;
     --z-modal: 200;
+    --z-dropdown: 250;
     --z-toast: 300;
     --z-tooltip: 400;
     --z-max: 9999;

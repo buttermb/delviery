@@ -28,44 +28,42 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
   useEffect(() => {
     if (open) {
       setActiveStep('overview');
-      setShowImportDialog(false);
     }
   }, [open]);
 
-  const handleSkip = () => {
-    onComplete();
+  // Close dialog, navigate, then mark complete after a delay.
+  // onComplete() calls queryClient.invalidateQueries() which wipes the
+  // feature toggles cache — if that fires before the target page mounts,
+  // FeatureProtectedRoute sees no cached data and blocks the page.
+  const closeAndNavigate = (path?: string) => {
     onOpenChange(false);
+    if (path && tenantSlug) navigate(path);
+    // Defer onComplete so query cache stays intact during navigation
+    setTimeout(onComplete, 300);
+  };
+
+  const handleSkip = () => {
+    onOpenChange(false);
+    setTimeout(onComplete, 300);
   };
 
   const handleAddProducts = () => {
-    onComplete();
-    onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
+    closeAndNavigate(`/${tenantSlug}/admin/inventory-hub?tab=products`);
   };
 
   const handleAddClients = () => {
-    onComplete();
-    onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
+    closeAndNavigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
   };
 
   const handleAddRunners = () => {
     if (!isPaidTier) return;
-    onComplete();
-    onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/fulfillment-hub?tab=couriers`);
+    closeAndNavigate(`/${tenantSlug}/admin/fulfillment-hub?tab=couriers`);
   };
 
-  const handleCreateOrders = () => {
-    onComplete();
+  const handleOpenImport = () => {
+    // Close the wizard first, then open import dialog to avoid nested dialogs
     onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/orders`);
-  };
-
-  const handleOpenPOS = () => {
-    onComplete();
-    onOpenChange(false);
-    if (tenantSlug) navigate(`/${tenantSlug}/admin/pos-system`);
+    setTimeout(() => setShowImportDialog(true), 150);
   };
 
   const overviewContent = (
@@ -166,14 +164,14 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 gap-x-4">
           {[
-            { step: 1, label: 'Add Products', desc: 'Start managing your inventory', action: handleAddProducts },
-            { step: 2, label: 'Add Wholesale Clients', desc: 'Build your customer base', action: handleAddClients },
-            { step: 3, label: 'Create Orders', desc: 'Track deliveries seamlessly', action: handleCreateOrders },
-            { step: 4, label: 'Use the POS', desc: 'Perfect for walk-in sales', action: handleOpenPOS },
-          ].map(({ step, label, desc, action }) => (
+            { step: 1, label: 'Add Products', desc: 'Start managing your inventory', path: `/${tenantSlug}/admin/inventory-hub?tab=products` },
+            { step: 2, label: 'Add Wholesale Clients', desc: 'Build your customer base', path: `/${tenantSlug}/admin/customer-hub?tab=contacts` },
+            { step: 3, label: 'Create Orders', desc: 'Track deliveries seamlessly', path: `/${tenantSlug}/admin/orders?new=true` },
+            { step: 4, label: 'Use the POS', desc: 'Perfect for walk-in sales', path: `/${tenantSlug}/admin/pos-system` },
+          ].map(({ step, label, desc, path }) => (
             <button
               key={step}
-              onClick={action}
+              onClick={() => closeAndNavigate(path)}
               className="flex items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-muted/50 group"
             >
               <div className="flex-shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">{step}</div>
@@ -234,7 +232,7 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
 
         {/* CSV Upload */}
         <button
-          onClick={() => setShowImportDialog(true)}
+          onClick={handleOpenImport}
           className="flex flex-col items-center justify-center p-8 bg-muted/30 border border-dashed border-border rounded-xl hover:bg-muted/60 hover:border-primary/40 transition-all text-center group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         >
           <div className="h-12 w-12 bg-background border border-border rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
@@ -250,37 +248,39 @@ export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartW
         </button>
       </div>
 
-      <CustomerImportDialog 
-        open={showImportDialog} 
-        onOpenChange={setShowImportDialog}
-        onSuccess={() => {
-          setShowImportDialog(false);
-          onComplete();
-          onOpenChange(false);
-          if (tenantSlug) navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
-        }} 
-      />
     </motion.div>
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0 overflow-y-auto max-h-[85vh] bg-background border-border shadow-xl sm:rounded-2xl">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 h-8 w-8 rounded-full z-50 text-muted-foreground hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-        
-        <div className="p-6 md:p-8">
-          <AnimatePresence mode="wait">
-            {activeStep === 'overview' ? overviewContent : importClientsContent}
-          </AnimatePresence>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-3xl p-0 overflow-y-auto max-h-[85vh] bg-background border-border shadow-xl sm:rounded-2xl">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="absolute right-4 top-4 h-8 w-8 rounded-full z-50 text-muted-foreground hover:bg-muted"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          <div className="p-6 md:p-8">
+            <AnimatePresence mode="wait">
+              {activeStep === 'overview' ? overviewContent : importClientsContent}
+            </AnimatePresence>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Import dialog rendered outside the wizard dialog to avoid nested dialog z-index issues */}
+      <CustomerImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onSuccess={() => {
+          setShowImportDialog(false);
+          onComplete();
+          if (tenantSlug) navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts`);
+        }}
+      />
+    </>
   );
 }
