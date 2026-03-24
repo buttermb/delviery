@@ -242,9 +242,8 @@ export function FeatureTogglesPanel() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CORE_FEATURES.map((feature) => {
             const Icon = feature.icon;
-            const lockedTier = getTierLock(feature.key);
             return (
-              <Card key={feature.key} className={`relative ${lockedTier ? 'opacity-60' : 'opacity-80'}`}>
+              <Card key={feature.key} className="relative opacity-80">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -252,12 +251,6 @@ export function FeatureTogglesPanel() {
                       <CardTitle className="text-sm font-medium">
                         {feature.label}
                       </CardTitle>
-                      {lockedTier && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
-                          <Lock className="h-2.5 w-2.5" />
-                          {lockedTier}
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
@@ -273,7 +266,7 @@ export function FeatureTogglesPanel() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <CardDescription className="text-xs">
-                    {lockedTier ? `Upgrade to ${lockedTier} to access this feature` : feature.description}
+                    {feature.description}
                   </CardDescription>
                 </CardContent>
               </Card>

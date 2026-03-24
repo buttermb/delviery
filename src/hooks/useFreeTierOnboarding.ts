@@ -82,12 +82,20 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
 
     const [state, setState] = useState<FreeTierOnboardingState>(initialState);
     const [isOpen, setIsOpen] = useState(false);
+    // Guard: don't auto-open until we've read localStorage for the current tenant
+    const [stateLoaded, setStateLoaded] = useState(false);
 
     // Generate storage key per tenant
     const storageKey = tenant?.id ? `${ONBOARDING_STORAGE_KEY}_${tenant.id}` : ONBOARDING_STORAGE_KEY;
 
-    // Load persisted state on mount
+    // Load persisted state on mount (or when tenant changes)
     useEffect(() => {
+        // Wait for a real tenant before marking loaded — avoids reading the
+        // wrong (un-suffixed) key and then prematurely deciding to show.
+        if (!tenant?.id) {
+            setStateLoaded(false);
+            return;
+        }
         try {
             const saved = localStorage.getItem(storageKey);
             if (saved) {
@@ -97,7 +105,8 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
         } catch (error) {
             logger.warn('[FreeTierOnboarding] Failed to load saved state', { error });
         }
-    }, [storageKey]);
+        setStateLoaded(true);
+    }, [storageKey, tenant?.id]);
 
     // Persist state changes
     const persistState = useCallback((newState: FreeTierOnboardingState) => {
@@ -120,6 +129,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
 
     // Determine if onboarding should show
     const shouldShow = Boolean(
+        stateLoaded &&          // Don't show until localStorage has been read for this tenant
         isAuthenticated &&
         isFreeTier &&
         tenant &&
