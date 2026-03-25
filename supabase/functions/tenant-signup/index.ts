@@ -458,7 +458,8 @@ serve(async (req) => {
           const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
           if (resendApiKey) {
-            // Send via Resend (custom template)
+            const verificationLink = linkData.properties.action_link;
+            const deadlineDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             const emailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
             await fetch(emailUrl, {
               method: 'POST',
@@ -468,14 +469,10 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 to: email.toLowerCase(),
-                template: 'email-verification',
-                data: {
-                  business_name,
-                  owner_name,
-                  verification_link: linkData.properties.action_link,
-                  verification_deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                  dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
-                },
+                subject: `Verify your email — ${business_name}`,
+                fromName: business_name,
+                html: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;"><h2 style="margin-top:0;">Verify your email address</h2><p>Hi ${owner_name},</p><p>Welcome to <strong>${business_name}</strong>! Please verify your email to secure your account. You have until <strong>${deadlineDate}</strong>.</p><p style="margin:30px 0;"><a href="${verificationLink}" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:600;">Verify Email</a></p><p style="font-size:13px;color:#666;">Or paste this link in your browser:<br><a href="${verificationLink}" style="color:#16a34a;word-break:break-all;">${verificationLink}</a></p><hr style="border:none;border-top:1px solid #eee;margin:30px 0;"><p style="font-size:12px;color:#999;">If you didn't create this account, ignore this email.</p></body></html>`,
+                text: `Hi ${owner_name},\n\nWelcome to ${business_name}! Verify your email by visiting:\n${verificationLink}\n\nYou have until ${deadlineDate} to verify.\n\nIf you didn't create this account, ignore this email.`,
               }),
             }).catch((err) => {
               console.warn('[SIGNUP] Verification email failed (non-blocking)', err);
@@ -499,6 +496,7 @@ serve(async (req) => {
           // Only send if email service is configured
           const resendApiKey = Deno.env.get('RESEND_API_KEY');
           if (resendApiKey) {
+            const dashboardUrl = `${siteUrl}/${tenant.slug}/admin/dashboard`;
             await fetch(welcomeEmailUrl, {
               method: 'POST',
               headers: {
@@ -507,17 +505,10 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 to: email.toLowerCase(),
-                template: 'welcome',
-                data: {
-                  business_name,
-                  owner_name,
-                  tenant_slug: tenant.slug,
-                  dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
-                  // Credit info for welcome email
-                  initial_credits: 10000, // Free tier default
-                  plan: tenant.subscription_plan || 'free',
-                  is_free_tier: tenant.is_free_tier !== false,
-                },
+                subject: `Welcome to ${business_name}`,
+                fromName: business_name,
+                html: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;"><h2 style="margin-top:0;">Welcome aboard, ${owner_name}!</h2><p>Your account for <strong>${business_name}</strong> is ready.</p><p style="margin:30px 0;"><a href="${dashboardUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:600;">Go to Dashboard</a></p><hr style="border:none;border-top:1px solid #eee;margin:30px 0;"><p style="font-size:12px;color:#999;">You're receiving this because you signed up at ${business_name}.</p></body></html>`,
+                text: `Welcome aboard, ${owner_name}!\n\nYour account for ${business_name} is ready.\n\nGo to your dashboard: ${dashboardUrl}`,
               }),
             }).catch((err) => {
               console.warn('[SIGNUP] Welcome email failed (non-blocking)', err);

@@ -162,6 +162,9 @@ verify_jwt = false
 [functions.send-verification-email]
 verify_jwt = false
 
+[functions.resend-admin-verification]
+verify_jwt = true
+
 [functions.send-verification-sms]
 verify_jwt = false
 

@@ -42,17 +42,16 @@ export default function VerifyEmailPage() {
   });
 
   const handleResendVerification = async () => {
-    if (!admin?.email) return;
+    if (!admin?.email || !tenantSlug) return;
 
     setResending(true);
     try {
-      // Use Supabase Auth's built-in resend for admin users (who are Auth users)
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: admin.email,
+      const { data, error } = await supabase.functions.invoke('resend-admin-verification', {
+        body: { email: admin.email, tenant_slug: tenantSlug },
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success('Verification email sent! Please check your inbox.');
     } catch (error) {
