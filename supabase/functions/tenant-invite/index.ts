@@ -127,7 +127,7 @@ serve(async (req) => {
       }
 
       // Check if user is already a tenant user
-      const { data: existingUser } = await supabase
+      const { data: existingUser } = await serviceClient
         .from('tenant_users')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -215,8 +215,8 @@ serve(async (req) => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      // Create invitation
-      const { data: invitation, error: inviteError } = await supabase
+      // Create invitation (use serviceClient to bypass RLS)
+      const { data: invitation, error: inviteError } = await serviceClient
         .from('tenant_invitations')
         .insert({
           tenant_id: tenantId,
