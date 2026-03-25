@@ -14,12 +14,14 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 
 export default function VerifyEmailPage() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const { admin } = useTenantAdminAuth();
   const [resending, setResending] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
 
   // Check current verification status
   const { data: verificationStatus, isLoading, refetch } = useQuery({
@@ -46,16 +48,36 @@ export default function VerifyEmailPage() {
 
     setResending(true);
     try {
+      // Check if user is authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('Not authenticated. Please log in again.');
+      }
+
+      logger.info('[VERIFY_EMAIL] Invoking resend-admin-verification for:', admin.email);
+
       const { data, error } = await supabase.functions.invoke('resend-admin-verification', {
         body: { email: admin.email, tenant_slug: tenantSlug },
       });
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      logger.info('[VERIFY_EMAIL] Response:', { data, error });
+
+      if (error) {
+        logger.error('[VERIFY_EMAIL] Edge function error:', error);
+        throw new Error(`Failed to call edge function: ${error.message}`);
+      }
+
+      if (data?.error) {
+        logger.error('[VERIFY_EMAIL] API error:', data.error);
+        throw new Error(data.error);
+      }
 
       toast.success('Verification email sent! Please check your inbox.');
+      setLastError(null); // Clear any previous errors
     } catch (error) {
+      logger.error('[VERIFY_EMAIL] Resend failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to resend verification email. Please try again.';
+      setLastError(message);
       toast.error(message);
     } finally {
       setResending(false);
@@ -102,13 +124,33 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert>
-            <Mail className="h-4 w-4" />
-            <AlertTitle>Check your inbox</AlertTitle>
-            <AlertDescription>
-              Click the verification link in the email we sent you. If you don't see it, check your spam folder.
-            </AlertDescription>
-          </Alert>
+          {lastError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Error Sending Email</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p className="text-sm">{lastError}</p>
+                <p className="text-xs mt-2">
+                  If this issue persists, please contact support or check the{' '}
+                  <a
+                    href="/floraiq/scripts/verify-email-troubleshooting.md"
+                    target="_blank"
+                    className="underline"
+                  >
+                    troubleshooting guide
+                  </a>
+                  .
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert>
+              <Mail className="h-4 w-4" />
+              <AlertTitle>Check your inbox</AlertTitle>
+              <AlertDescription>
+                Click the verification link in the email we sent you. If you don't see it, check your spam folder.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="space-y-3">
             <Button

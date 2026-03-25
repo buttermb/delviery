@@ -29,6 +29,30 @@ React 18 + TypeScript + Vite | Tailwind + shadcn/ui | TanStack Query | React Rou
 - Currency inputs: CurrencyInput component
 - Mutations: useMutation + toast + isPending for loading state
 
+## Edge Functions
+- Check auth before calling: `await supabase.auth.getSession()` to verify session exists
+- Log comprehensively: `logger.info/error('[COMPONENT_NAME] message', data)`
+- Show specific errors to users: extract `data?.error` and `error.message` from responses
+- Display error state in UI: use Alert component with `variant="destructive"` for errors
+- Dependencies: if function A calls function B, deploy B first
+- Required env vars must be set in Supabase Dashboard → Edge Functions → Secrets
+- Common env vars: `RESEND_API_KEY`, `SITE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
+## Email Verification Pattern
+- Check user session exists before calling `supabase.functions.invoke()`
+- Log request/response for debugging: `logger.info('[VERIFY_EMAIL] Invoking...', email)`
+- Show detailed error messages: extract from `data?.error` or `error.message`
+- Display error state prominently with link to troubleshooting docs
+- Auto-refresh verification status: `refetchInterval: 10000` in useQuery
+- See `scripts/verify-email-troubleshooting.md` for comprehensive debugging guide
+
+## Deployment
+- Edge functions: use `scripts/deploy-email-functions.sh` or deploy individually
+- Check deployment: `supabase functions list`
+- View logs: `supabase functions logs <function-name> --tail`
+- Verify secrets: Supabase Dashboard → Edge Functions → Secrets
+- Test locally: `supabase functions serve --env-file .env.local`
+
 ## Before Each Commit
 - Run: `npx tsc --noEmit 2>&1 | head -30` — fix any new errors
 - No `console.log`, no `@ts-nocheck`, no `any` types (use `unknown`)
