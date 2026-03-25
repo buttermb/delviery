@@ -44,29 +44,21 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    // Send email OTP (using Klaviyo)
-    const klaviyoKey = Deno.env.get("KLAVIYO_API_KEY");
-    if (klaviyoKey) {
-      await fetch("https://a.klaviyo.com/api/events/", {
+    // Send email OTP (using Resend)
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (resendApiKey) {
+      await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Klaviyo-API-Key ${klaviyoKey}`,
-          "revision": "2024-07-15"
+          "Authorization": `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          data: {
-            type: "event",
-            attributes: {
-              profile: { email },
-              metric: { name: "Giveaway OTP" },
-              properties: {
-                otp: emailOTP,
-                expiry_minutes: 10
-              }
-            }
-          }
-        })
+          from: "FloraIQ <noreply@floraiq.com>",
+          to: [email],
+          subject: "Your Giveaway Verification Code",
+          text: `Your verification code is: ${emailOTP}\n\nThis code expires in 10 minutes.`,
+        }),
       });
     }
 

@@ -453,12 +453,12 @@ serve(async (req) => {
               console.warn('[SIGNUP] Failed to update verification timestamp (non-blocking)', err);
             });
 
-          // Send verification email via Klaviyo or Supabase email
+          // Send verification email via Resend or Supabase email
           const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
-          const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
+          const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
-          if (klaviyoApiKey) {
-            // Send via Klaviyo (custom template)
+          if (resendApiKey) {
+            // Send via Resend (custom template)
             const emailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
             await fetch(emailUrl, {
               method: 'POST',
@@ -497,8 +497,8 @@ serve(async (req) => {
           const welcomeEmailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
 
           // Only send if email service is configured
-          const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-          if (klaviyoApiKey) {
+          const resendApiKey = Deno.env.get('RESEND_API_KEY');
+          if (resendApiKey) {
             await fetch(welcomeEmailUrl, {
               method: 'POST',
               headers: {

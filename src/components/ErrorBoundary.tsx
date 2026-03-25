@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, Home, AlertTriangle } from 'lucide-react';
 import { analytics } from '@/utils/analytics';
+import { captureException as sentryCaptureException } from '@/lib/sentry';
 import bugFinder from '@/utils/bugFinder';
 import { clearAllCachesAndServiceWorkers, reloadWithCacheBypass } from '@/utils/serviceWorkerCache';
 
@@ -35,6 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     logger.error('ErrorBoundary caught an error', error, { component: 'ErrorBoundary' });
     analytics.trackError('error_boundary', error.message);
+    sentryCaptureException(error, { componentStack: errorInfo.componentStack });
 
     // Detect chunk/module loading errors
     const isChunkError = error.message?.includes('chunk') ||

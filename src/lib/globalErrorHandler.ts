@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { captureException as sentryCaptureException } from '@/lib/sentry';
 import { showErrorToast } from './toastUtils';
 
 let isSetup = false;
@@ -33,6 +34,7 @@ export function setupGlobalErrorHandlers() {
       lineno,
       colno,
     });
+    sentryCaptureException(error || new Error(messageStr), { source, lineno, colno });
 
     // Only show toast in development
     if (import.meta.env.DEV) {
@@ -57,6 +59,7 @@ export function setupGlobalErrorHandlers() {
     logger.error('Unhandled promise rejection', reason, {
       promise: event.promise,
     });
+    sentryCaptureException(reason instanceof Error ? reason : new Error(String(reason)));
 
     // Only show toast in development
     if (import.meta.env.DEV) {
@@ -76,4 +79,5 @@ export function setupGlobalErrorHandlers() {
  */
 export function captureException(error: unknown, context?: Record<string, unknown>) {
   logger.error('Captured exception', error, context);
+  sentryCaptureException(error, context);
 }

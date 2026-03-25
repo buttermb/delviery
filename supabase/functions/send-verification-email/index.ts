@@ -124,9 +124,9 @@ ${verificationUrl}
 If you didn't create an account with ${businessName}, please ignore this email.
     `.trim();
 
-    // Send email via Klaviyo if available, otherwise log
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (klaviyoApiKey) {
+    // Send email via Resend if available, otherwise log
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey) {
       try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
           method: 'POST',
@@ -145,14 +145,14 @@ If you didn't create an account with ${businessName}, please ignore this email.
         });
 
         if (!emailResponse.ok) {
-          console.error('Failed to send email via Klaviyo:', await emailResponse.text());
+          console.error('Failed to send email via Resend:', await emailResponse.text());
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError);
       }
     } else {
       // Log email for development
-      console.error('Verification email (Klaviyo not configured):', {
+      console.error('Verification email (Resend not configured):', {
         to: email,
         subject,
         code,

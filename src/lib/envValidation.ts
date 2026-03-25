@@ -76,6 +76,9 @@ export function validateWithWarnings(): void {
   const optionalVars = [
     { key: 'VITE_APP_VERSION', description: 'Application version for tracking' },
     { key: 'VITE_SENTRY_DSN', description: 'Error tracking configuration' },
+    { key: 'VITE_POSTHOG_KEY', description: 'PostHog product analytics' },
+    { key: 'VITE_CLARITY_PROJECT_ID', description: 'Microsoft Clarity session recording' },
+    { key: 'VITE_BETTERSTACK_STATUS_URL', description: 'Better Stack status page URL' },
   ];
 
   optionalVars.forEach(({ key, description }) => {

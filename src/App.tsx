@@ -240,6 +240,19 @@ const App = () => {
     }, 4000);
   }, []);
 
+  // Initialize PostHog product analytics (production only, deferred)
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    scheduleIdle(async () => {
+      try {
+        const { initPostHog } = await import('@/lib/posthog');
+        await initPostHog();
+      } catch (error) {
+        logger.error('[APP] PostHog initialization failed:', error);
+      }
+    }, 3000);
+  }, []);
+
   // Load non-critical global UI/hooks after initial paint.
   useEffect(() => {
     scheduleIdle(async () => {

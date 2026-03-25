@@ -242,9 +242,9 @@ This link will expire in 1 hour. If you didn't request a password reset, you can
 If you didn't request a password reset from ${businessName}, please ignore this email. Your password will remain unchanged.
     `.trim();
 
-    // Send email via Klaviyo if available
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (klaviyoApiKey) {
+    // Send email via Resend if available
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey) {
       try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
           method: 'POST',
@@ -263,7 +263,7 @@ If you didn't request a password reset from ${businessName}, please ignore this 
         });
 
         if (!emailResponse.ok) {
-          logger.error('Failed to send password reset email via Klaviyo', {
+          logger.error('Failed to send password reset email via Resend', {
             status: emailResponse.status.toString(),
           });
         } else {
@@ -276,7 +276,7 @@ If you didn't request a password reset from ${businessName}, please ignore this 
       }
     } else {
       // Log email for development
-      logger.info('Password reset email (Klaviyo not configured)', {
+      logger.info('Password reset email (Resend not configured)', {
         to: normalizedEmail,
         resetUrl,
       });

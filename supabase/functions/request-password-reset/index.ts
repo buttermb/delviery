@@ -178,9 +178,9 @@ ${resetUrl}
 This link will expire in 24 hours. If you didn't request a password reset, please ignore this email.
     `.trim();
 
-    // Send email via Klaviyo if available
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (klaviyoApiKey) {
+    // Send email via Resend if available
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey) {
       try {
         await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
           method: 'POST',

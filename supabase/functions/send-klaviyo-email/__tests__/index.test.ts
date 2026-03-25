@@ -1,10 +1,10 @@
 /**
- * send-klaviyo-email Edge Function Tests
+ * send-klaviyo-email Edge Function Tests (now using Resend)
  *
  * Verifies:
  * 1. Credit gating via withCreditGate with action_key 'send_email'
  * 2. Input validation (to, subject, content required)
- * 3. Refund on Klaviyo API failure
+ * 3. Refund on Resend API failure
  * 4. Successful email send path
  */
 
@@ -17,7 +17,7 @@ function readSource(): string {
   return fs.readFileSync(sourcePath, 'utf-8');
 }
 
-describe('send-klaviyo-email credit enforcement', () => {
+describe('send-klaviyo-email credit enforcement (Resend)', () => {
   const source = readSource();
 
   describe('credit gate integration', () => {
@@ -35,7 +35,7 @@ describe('send-klaviyo-email credit enforcement', () => {
 
     it('should pass referenceType and description options', () => {
       expect(source).toContain("referenceType: 'email'");
-      expect(source).toContain("description: 'Klaviyo email send'");
+      expect(source).toContain("description: 'Resend email send'");
     });
 
     it('should import serve from shared deps', () => {
@@ -53,7 +53,7 @@ describe('send-klaviyo-email credit enforcement', () => {
   });
 
   describe('refund on API failure', () => {
-    it('should call refundCredits when Klaviyo API returns non-ok response', () => {
+    it('should call refundCredits when Resend API returns non-ok response', () => {
       expect(source).toContain('refundCredits(supabaseClient, tenantId, CREDIT_ACTIONS.SEND_EMAIL,');
     });
 
@@ -77,7 +77,7 @@ describe('send-klaviyo-email credit enforcement', () => {
       expect(source).toContain("transaction_type: 'refund'");
     });
 
-    it('should return 502 with refunded flag on Klaviyo failure', () => {
+    it('should return 502 with refunded flag on Resend failure', () => {
       expect(source).toContain('refunded: true');
       expect(source).toContain('status: 502');
     });
@@ -93,13 +93,13 @@ describe('send-klaviyo-email credit enforcement', () => {
     });
   });
 
-  describe('Klaviyo API integration', () => {
-    it('should call Klaviyo campaigns API endpoint', () => {
-      expect(source).toContain('https://a.klaviyo.com/api/campaigns/');
+  describe('Resend API integration', () => {
+    it('should call Resend emails API endpoint', () => {
+      expect(source).toContain('https://api.resend.com/emails');
     });
 
-    it('should use KLAVIYO_API_KEY from environment', () => {
-      expect(source).toContain("Deno.env.get('KLAVIYO_API_KEY')");
+    it('should use RESEND_API_KEY from environment', () => {
+      expect(source).toContain("Deno.env.get('RESEND_API_KEY')");
     });
 
     it('should include tenantId in logging for observability', () => {
@@ -111,7 +111,7 @@ describe('send-klaviyo-email credit enforcement', () => {
 
     it('should return success with messageId on successful send', () => {
       expect(source).toContain('success: true');
-      expect(source).toContain("messageId: result.data?.id");
+      expect(source).toContain("messageId: result.id");
     });
   });
 

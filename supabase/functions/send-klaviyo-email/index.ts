@@ -1,6 +1,8 @@
 /**
- * Send Klaviyo Email Edge Function
- * Sends email via Klaviyo API with credit deduction (action_key: send_email, 10 credits)
+ * Send Email Edge Function (via Resend)
+ * Sends transactional email via Resend API with credit deduction (action_key: send_email, 10 credits)
+ *
+ * NOTE: Directory kept as send-klaviyo-email to avoid updating all caller URLs.
  */
 
 import { serve } from '../_shared/deps.ts';
@@ -20,9 +22,9 @@ interface EmailRequest {
 
 serve(async (req) => {
   return withCreditGate(req, CREDIT_ACTIONS.SEND_EMAIL, async (tenantId: string, supabaseClient: SupabaseClient) => {
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (!klaviyoApiKey) {
-      throw new Error('KLAVIYO_API_KEY not configured');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY not configured');
     }
 
     const {
@@ -41,65 +43,46 @@ serve(async (req) => {
       );
     }
 
-    console.error('Sending email via Klaviyo:', { to, subject, fromEmail, tenantId });
+    console.error('Sending email via Resend:', { to, subject, fromEmail, tenantId });
 
-    const response = await fetch('https://a.klaviyo.com/api/campaigns/', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Klaviyo-API-Key ${klaviyoApiKey}`,
+        'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
-        'revision': '2024-10-15'
       },
       body: JSON.stringify({
-        data: {
-          type: 'campaign',
-          attributes: {
-            name: `Email - ${new Date().toISOString()}`,
-            audiences: {
-              included: [to]
-            },
-            messages: {
-              email: {
-                subject: subject,
-                from_email: fromEmail,
-                from_label: fromName,
-                content: {
-                  html: html,
-                  plain_text: text
-                }
-              }
-            },
-            send_strategy: {
-              method: 'immediate'
-            }
-          }
-        }
-      })
+        from: `${fromName} <${fromEmail}>`,
+        to: [to],
+        subject,
+        html: html || undefined,
+        text: text || undefined,
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Klaviyo Email API error:', errorText);
+      console.error('Resend API error:', errorText);
 
-      // Refund credits on Klaviyo API failure
-      await refundCredits(supabaseClient, tenantId, CREDIT_ACTIONS.SEND_EMAIL, `Klaviyo API error: ${response.status}`);
+      // Refund credits on API failure
+      await refundCredits(supabaseClient, tenantId, CREDIT_ACTIONS.SEND_EMAIL, `Resend API error: ${response.status}`);
 
       return new Response(
-        JSON.stringify({ error: `Klaviyo API error: ${response.status}`, refunded: true }),
+        JSON.stringify({ error: `Resend API error: ${response.status}`, refunded: true }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const result = await response.json();
-    console.error('Email sent successfully via Klaviyo:', { messageId: result.data?.id, tenantId });
+    console.error('Email sent successfully via Resend:', { messageId: result.id, tenantId });
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.data?.id }),
+      JSON.stringify({ success: true, messageId: result.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }, {
     referenceType: 'email',
-    description: 'Klaviyo email send',
+    description: 'Resend email send',
   });
 });
 

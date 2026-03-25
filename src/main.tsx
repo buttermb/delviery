@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { validateEnvironmentVariables } from '@/lib/envValidation';
+import { initSentry } from '@/lib/sentry';
 
 /**
  * Delivery Platform - Main Entry Point
@@ -10,6 +11,9 @@ import { validateEnvironmentVariables } from '@/lib/envValidation';
 
 // Validate environment variables at startup
 validateEnvironmentVariables();
+
+// Initialize Sentry early (before global error handlers)
+initSentry();
 
 /**
  * NOTE: Zen Firewall (AikidoSec) is installed but designed for Node.js/Express backend servers.
@@ -149,6 +153,16 @@ if (import.meta.env.PROD) {
       logger.error('[APP] Security obfuscation failed:', error);
     }
   }, 2000);
+
+  // Initialize Microsoft Clarity (session recording) — deferred
+  scheduleIdle(async () => {
+    try {
+      const { initClarity } = await import('./lib/clarity');
+      initClarity();
+    } catch (error) {
+      logger.error('[APP] Clarity initialization failed:', error);
+    }
+  }, 5000);
 }
 
 // Register custom service worker (production only)

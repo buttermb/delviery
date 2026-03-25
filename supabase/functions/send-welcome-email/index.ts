@@ -125,10 +125,10 @@ If you didn't create this account, please contact our support team.
       }
     }
 
-    // Send email via Klaviyo if available, otherwise log
+    // Send email via Resend if available, otherwise log
     let emailSent = false;
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (klaviyoApiKey) {
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey) {
       const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
         method: 'POST',
         headers: {
@@ -153,14 +153,14 @@ If you didn't create this account, please contact our support team.
 
       if (!emailResponse.ok) {
         const errorText = await emailResponse.text();
-        console.error('[WELCOME-EMAIL] Failed to send via Klaviyo:', errorText);
+        console.error('[WELCOME-EMAIL] Failed to send via Resend:', errorText);
       } else {
         console.error('[WELCOME-EMAIL] Sent successfully to:', email);
         emailSent = true;
       }
     } else {
       // Log email for development
-      console.error('[WELCOME-EMAIL] Klaviyo not configured, email logged:', {
+      console.error('[WELCOME-EMAIL] Resend not configured, email logged:', {
         to: email,
         subject,
         dashboard_url: dashboardUrl,

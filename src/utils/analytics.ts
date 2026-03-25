@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { posthogCapture } from '@/lib/posthog';
 import { safeStorage } from '@/utils/safeStorage';
 // Analytics tracking utility for signup popup and checkout events
 
@@ -29,6 +30,9 @@ class Analytics {
 
     // Store in localStorage for demo purposes
     this.storeEvent(eventData);
+
+    // Forward to PostHog (no-op if not initialized)
+    posthogCapture(event, properties);
   }
 
   private storeEvent(eventData: AnalyticsEvent) {

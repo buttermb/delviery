@@ -112,9 +112,9 @@ ${expirationText}
 If you didn't expect this invitation, you can safely ignore this email.
     `.trim();
 
-    // Send email via Klaviyo if available, otherwise log
-    const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-    if (klaviyoApiKey) {
+    // Send email via Resend if available, otherwise log
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (resendApiKey) {
       try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
           method: 'POST',
@@ -134,7 +134,7 @@ If you didn't expect this invitation, you can safely ignore this email.
 
         if (!emailResponse.ok) {
           const errorText = await emailResponse.text();
-          console.error('Failed to send invitation email via Klaviyo:', errorText);
+          console.error('Failed to send invitation email via Resend:', errorText);
           // Don't fail the request - email sending is best effort
         } else {
           console.error('Invitation email sent successfully to:', to);
@@ -145,7 +145,7 @@ If you didn't expect this invitation, you can safely ignore this email.
       }
     } else {
       // Log email for development
-      console.error('Invitation email (Klaviyo not configured):', {
+      console.error('Invitation email (Resend not configured):', {
         to,
         subject,
         invite_link,
