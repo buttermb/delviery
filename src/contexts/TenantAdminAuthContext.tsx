@@ -116,7 +116,7 @@ const EXPIRATION_BUFFER_MS = 60 * 1000;
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -459,7 +459,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // PRIORITY 1: Try cookie-based verification first (most secure)
         try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
           // Check if token is expired before attempting verification
           let tokenToUse = storedToken;
@@ -677,7 +677,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
         try {
           const { response: verifyResponse } = await resilientFetch(
@@ -931,7 +931,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     const doRefresh = async (): Promise<boolean> => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
         // STEP 4: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
@@ -1103,7 +1103,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // This prevents an attacker from setting tokens before the user authenticates
       clearPreAuthSessionData('tenant_admin');
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -1329,7 +1329,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     try {
       // Call logout endpoint to clear cookies
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include',
@@ -1439,7 +1439,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 return;
               }
               try {
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {

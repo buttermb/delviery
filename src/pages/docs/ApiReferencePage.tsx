@@ -31,7 +31,7 @@ const endpoints: ApiEndpoint[] = [
     }
   ]
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"action": "list", "resource": "products"}'`,
@@ -64,7 +64,7 @@ const endpoints: ApiEndpoint[] = [
     "created_at": "2024-01-01T00:00:00Z"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"action": "create", "resource": "products", "data": {"name": "New Product", "price": 49.99}}'`,
@@ -97,7 +97,7 @@ const endpoints: ApiEndpoint[] = [
     "updated_at": "2024-01-01T00:00:00Z"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"action": "update", "resource": "products", "id": "uuid", "data": {"price": 39.99}}'`,
@@ -123,7 +123,7 @@ const endpoints: ApiEndpoint[] = [
     "success": true
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"action": "delete", "resource": "products", "id": "uuid"}'`,
@@ -156,7 +156,7 @@ const endpoints: ApiEndpoint[] = [
     "role": "admin"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-auth \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-auth \\
   -H "Content-Type: application/json" \\
   -d '{"action": "login", "email": "admin@example.com", "password": "secure_password"}'`,
   },
@@ -186,7 +186,7 @@ const endpoints: ApiEndpoint[] = [
     "email": "customer@example.com"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/customer-auth \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-auth \\
   -H "Content-Type: application/json" \\
   -d '{"action": "login", "email": "customer@example.com", "password": "password"}'`,
   },
@@ -221,7 +221,7 @@ const endpoints: ApiEndpoint[] = [
     "created_at": "2024-01-01T00:00:00Z"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/create-order \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-order \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"customer_id": "uuid", "items": [...], "total": 59.98}'`,
@@ -248,7 +248,7 @@ const endpoints: ApiEndpoint[] = [
     "product_id": "uuid"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/generate-product-images \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-product-images \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"product_name": "Premium Coffee", "description": "..."}'`,
@@ -273,7 +273,7 @@ const endpoints: ApiEndpoint[] = [
     "status": "sent"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/send-sms \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-sms \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"to": "+1234567890", "message": "Your order shipped!"}'`,
@@ -300,7 +300,7 @@ const endpoints: ApiEndpoint[] = [
     "recommendation": "approve"
   }
 }`,
-    curlExample: `curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/detect-fraud \\
+    curlExample: `curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-fraud \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"order_id": "uuid", "customer_id": "uuid"}'`,

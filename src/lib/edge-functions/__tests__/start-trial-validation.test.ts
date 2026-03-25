@@ -286,7 +286,7 @@ describe('start-trial validation', () => {
 });
 
 describe('start-trial integration tests', () => {
-  const SUPABASE_URL = 'https://aejugtmhwwknrowfyzie.supabase.co';
+  const SUPABASE_URL = 'https://mtvwmyerntkhrcdnhahp.supabase.co';
   const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
   const endpoint = `${FUNCTIONS_URL}/start-trial`;
 

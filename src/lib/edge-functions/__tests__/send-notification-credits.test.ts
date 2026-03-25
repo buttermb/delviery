@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { z } from 'zod';
 import { CREDIT_COSTS } from '@/lib/credits/creditCosts';
 
-const SUPABASE_URL = 'https://aejugtmhwwknrowfyzie.supabase.co';
+const SUPABASE_URL = 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
 const mockFetch = vi.fn();

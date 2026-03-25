@@ -37,10 +37,10 @@ import { lucideDirectImportsPlugin } from './vite-plugins/lucide-direct-imports'
 // These are *public* values (URL + anon/publishable key) and prevent the app from hard-crashing
 // when the platform doesn't inject VITE_SUPABASE_* into the frontend build.
 const FALLBACK_BACKEND = {
-  url: 'https://aejugtmhwwknrowfyzie.supabase.co',
+  url: 'https://mtvwmyerntkhrcdnhahp.supabase.co',
   anonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlanVndG1od3drbnJvd2Z5emllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NDA4OTcsImV4cCI6MjA3NzQxNjg5N30.R7S5uyha_U5oNc1IBXt8bThumQJSa8FuJZdgiWRgwek',
-  projectId: 'aejugtmhwwknrowfyzie',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dndteWVybnRraHJjZG5oYWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1NzQ2MDAsImV4cCI6MjA3NzE1MDYwMH0.rtBxVV_dLIvTI-6X_a7wAHakWW7OUWS-pLq8n-igbBI',
+  projectId: 'mtvwmyerntkhrcdnhahp',
 } as const;
 
 // Sitemap generator plugin — skipped gracefully in sandboxed / restricted environments
