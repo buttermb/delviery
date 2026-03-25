@@ -34,6 +34,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [skipVerification, setSkipVerification] = useState(false);
   const [tenantSlugValid, setTenantSlugValid] = useState<boolean | null>(null);
+  const [initTimeout, setInitTimeout] = useState(false);
   const location = useLocation();
   const totalWaitStartRef = useRef<number | null>(null);
   const tenantCheckSlugRef = useRef<string | null>(null);
@@ -63,6 +64,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       verificationLockRef.current = false;
     };
   }, []);
+
+  // Hard timeout on the !initialized spinner — if auth context never resolves, redirect to login
+  useEffect(() => {
+    if (initialized) return;
+    const t = setTimeout(() => {
+      logger.warn('[PROTECTED ROUTE] Init timeout — auth context never resolved, redirecting to login');
+      setInitTimeout(true);
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [initialized]);
 
   // Safety timeout to unlock verification if it gets stuck
   useEffect(() => {
@@ -325,30 +336,25 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // eslint-disable-next-line react-hooks/exhaustive-deps -- verified, skipVerification, and verifying are intentionally omitted to prevent infinite verification loops
   }, [tenantSlug, effectiveAdmin, effectiveTenant, effectiveLoading]);
 
-  // Show spinner while auth is initializing — prevents flash of login page
-  if (!initialized) {
+  // Show spinner while auth is initializing — but bail out after 5s to avoid infinite loading
+  if (!initialized && !initTimeout) {
     return <LoadingFallback />;
   }
 
   // Loading state - wait for auth AND verification (unless skipped OR not authenticated)
-  // If user is not authenticated (no admin/tenant), let it fall through to redirect
-  if ((effectiveLoading || verifying || (!verified && (effectiveAdmin || effectiveTenant))) && !skipVerification) {
+  // If user is not authenticated (no admin/tenant), let it fall through to redirect immediately
+  if ((effectiveLoading || verifying || (!verified && (effectiveAdmin || effectiveTenant))) && !skipVerification && !initTimeout) {
     return <LoadingFallback />;
   }
 
-  // Not authenticated - check tenant exists then redirect to login
+  // Not authenticated - redirect to login immediately (skip tenant DB check — slug is in the URL)
   if (!effectiveAdmin || !effectiveTenant) {
     // If tenant slug was checked and doesn't exist, show "Business not found"
     if (tenantSlugValid === false) {
       return <TenantNotFoundPage />;
     }
 
-    // Still checking tenant existence, show loading
-    if (tenantSlugValid === null && tenantSlug) {
-      return <LoadingFallback />;
-    }
-
-    // Save the current path as intended destination before redirecting to login
+    // Save intended destination so login can redirect back after success
     const currentPath = location.pathname + location.search;
     intendedDestinationUtils.save(currentPath);
     logger.debug('[PROTECTED ROUTE] Saved intended destination before login redirect', { currentPath });
