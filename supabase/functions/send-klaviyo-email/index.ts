@@ -1,13 +1,17 @@
 /**
  * Send Email Edge Function (via Resend)
- * Sends transactional email via Resend API with credit deduction (action_key: send_email, 10 credits)
+ * Sends transactional email via Resend API.
+ *
+ * This function is called internally by other edge functions using the
+ * service role key. It does NOT apply credit gating — callers are responsible
+ * for their own credit deduction if needed. The previous withCreditGate wrapper
+ * rejected all internal (service-role) calls because the credit gate expects
+ * a user JWT to identify the tenant.
  *
  * NOTE: Directory kept as send-klaviyo-email to avoid updating all caller URLs.
  */
 
 import { serve } from '../_shared/deps.ts';
-import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
-import type { SupabaseClient } from '../_shared/deps.ts';
 import { corsHeaders } from '../_shared/deps.ts';
 
 interface EmailRequest {
@@ -21,10 +25,17 @@ interface EmailRequest {
 }
 
 serve(async (req) => {
-  return withCreditGate(req, CREDIT_ACTIONS.SEND_EMAIL, async (tenantId: string, supabaseClient: SupabaseClient) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
-      throw new Error('RESEND_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'RESEND_API_KEY not configured' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const {
@@ -43,7 +54,7 @@ serve(async (req) => {
       );
     }
 
-    console.error('Sending email via Resend:', { to, subject, fromEmail, tenantId });
+    console.error('Sending email via Resend:', { to, subject, fromEmail });
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -63,85 +74,24 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Resend API error:', errorText);
-
-      // Refund credits on API failure
-      await refundCredits(supabaseClient, tenantId, CREDIT_ACTIONS.SEND_EMAIL, `Resend API error: ${response.status}`);
-
       return new Response(
-        JSON.stringify({ error: `Resend API error: ${response.status}`, refunded: true }),
+        JSON.stringify({ error: `Resend API error: ${response.status}` }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const result = await response.json();
-    console.error('Email sent successfully via Resend:', { messageId: result.id, tenantId });
+    console.error('Email sent successfully via Resend:', { messageId: result.id });
 
     return new Response(
       JSON.stringify({ success: true, messageId: result.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  }, {
-    referenceType: 'email',
-    description: 'Resend email send',
-  });
-});
-
-/**
- * Refund credits after a failed API call.
- * Looks up the action cost from credit_costs, adds credits back, and logs a refund transaction.
- */
-async function refundCredits(
-  supabaseClient: SupabaseClient,
-  tenantId: string,
-  actionKey: string,
-  reason: string
-): Promise<void> {
-  try {
-    // Look up the cost for this action
-    const { data: costData } = await supabaseClient
-      .from('credit_costs')
-      .select('credits')
-      .eq('action_key', actionKey)
-      .eq('is_active', true)
-      .maybeSingle();
-
-    const cost = costData?.credits ?? 0;
-    if (cost === 0) return;
-
-    // Get current balance to compute balance_after for the transaction record
-    const { data: creditData } = await supabaseClient
-      .from('tenant_credits')
-      .select('balance')
-      .eq('tenant_id', tenantId)
-      .maybeSingle();
-
-    const currentBalance = creditData?.balance ?? 0;
-    const newBalance = currentBalance + cost;
-
-    // Add credits back atomically
-    const { error: updateError } = await supabaseClient
-      .from('tenant_credits')
-      .update({ balance: newBalance, updated_at: new Date().toISOString() })
-      .eq('tenant_id', tenantId);
-
-    if (updateError) {
-      console.error('Credit refund balance update failed:', updateError);
-    }
-
-    // Record refund transaction
-    await supabaseClient
-      .from('credit_transactions')
-      .insert({
-        tenant_id: tenantId,
-        amount: cost,
-        balance_after: newBalance,
-        transaction_type: 'refund',
-        action_type: actionKey,
-        description: `Refund: ${reason}`,
-      });
-
-    console.error('Credits refunded:', { tenantId, amount: cost, reason });
-  } catch (err) {
-    console.error('Failed to refund credits:', err);
+  } catch (error: unknown) {
+    console.error('Send email error:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
-}
+});

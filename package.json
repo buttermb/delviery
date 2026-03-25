@@ -23,7 +23,6 @@
     "verify": "npm run lint && npx tsc --noEmit && npm run test -- --run"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.17",
     "@aikidosec/firewall": "^1.7.18",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.0",
@@ -76,7 +75,6 @@
     "@types/leaflet-draw": "^1.0.13",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^2.0.0",
-    "ai": "^6.0.44",
     "bcryptjs": "^3.0.3",
     "browser-image-compression": "^2.0.2",
     "canvas-confetti": "^1.9.3",

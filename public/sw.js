@@ -7,7 +7,7 @@
 // Version: 4.1.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v13'; // Increment this manually on each deploy
+const CACHE_VERSION = 'v14'; // Increment this manually on each deploy
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -101,9 +101,16 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
+  // Skip cross-origin requests the SW can't handle (fonts, analytics, etc.)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // Network-first for admin routes - always get fresh data
   if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/courier')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request).then(r => r || new Response('Offline', { status: 503 })))
+    );
     return;
   }
 
@@ -115,7 +122,9 @@ self.addEventListener('fetch', (event) => {
 
     if (isAdminOrRealtime) {
       // Never cache admin API calls
-      event.respondWith(fetch(event.request));
+      event.respondWith(
+        fetch(event.request).catch(() => new Response(JSON.stringify({ error: 'Offline' }), { status: 503, headers: { 'Content-Type': 'application/json' } }))
+      );
       return;
     }
 
@@ -139,8 +148,8 @@ self.addEventListener('fetch', (event) => {
             }
             return response;
           }).catch(() => {
-            // If network fails and we have cache, return it
-            return cached;
+            // If network fails and we have cache, return it; otherwise return 503
+            return cached || new Response(JSON.stringify({ error: 'Offline' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
           });
 
           // Return cached version immediately if available, otherwise wait for network
@@ -171,6 +180,9 @@ self.addEventListener('fetch', (event) => {
               }
             }
             return response;
+          }).catch(() => {
+            // If network fails and no cache, return transparent pixel
+            return cached || new Response('', { status: 503 });
           });
 
           // Return cached version immediately, update in background
@@ -209,7 +221,7 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // Only fallback to cache if network completely fails
-          return caches.match(event.request);
+          return caches.match(event.request).then(r => r || new Response('Offline', { status: 503 }));
         })
     );
     return;
@@ -235,7 +247,7 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request).then(r => r || new Response('Offline', { status: 503 })))
   );
 });
 

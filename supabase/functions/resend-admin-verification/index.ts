@@ -97,7 +97,8 @@ serve(async (req) => {
     const deadlineDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-    // Send via the central email function
+    // Send directly via Resend API (bypasses credit-gated send-klaviyo-email
+    // which rejects service-role calls because the credit gate expects a user JWT)
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
       console.error('[RESEND_VERIFICATION] RESEND_API_KEY not configured');
@@ -107,24 +108,26 @@ serve(async (req) => {
       );
     }
 
-    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
+    const emailHtml = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;"><h2 style="margin-top:0;">Verify your email address</h2><p>Hi ${ownerName},</p><p>Please verify your email to secure your <strong>${businessName}</strong> account. You have until <strong>${deadlineDate}</strong>.</p><p style="margin:30px 0;"><a href="${verificationLink}" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:600;">Verify Email</a></p><p style="font-size:13px;color:#666;">Or paste this link in your browser:<br><a href="${verificationLink}" style="color:#16a34a;word-break:break-all;">${verificationLink}</a></p><hr style="border:none;border-top:1px solid #eee;margin:30px 0;"><p style="font-size:12px;color:#999;">If you didn't request this, ignore this email.</p></body></html>`;
+
+    const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseKey}`,
+        'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: email.toLowerCase(),
+        from: `${businessName} <noreply@nymdelivery.com>`,
+        to: [email.toLowerCase()],
         subject: `Verify your email — ${businessName}`,
-        fromName: businessName,
-        html: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;"><h2 style="margin-top:0;">Verify your email address</h2><p>Hi ${ownerName},</p><p>Please verify your email to secure your <strong>${businessName}</strong> account. You have until <strong>${deadlineDate}</strong>.</p><p style="margin:30px 0;"><a href="${verificationLink}" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:600;">Verify Email</a></p><p style="font-size:13px;color:#666;">Or paste this link in your browser:<br><a href="${verificationLink}" style="color:#16a34a;word-break:break-all;">${verificationLink}</a></p><hr style="border:none;border-top:1px solid #eee;margin:30px 0;"><p style="font-size:12px;color:#999;">If you didn't request this, ignore this email.</p></body></html>`,
+        html: emailHtml,
         text: `Hi ${ownerName},\n\nVerify your email for ${businessName} by visiting:\n${verificationLink}\n\nYou have until ${deadlineDate} to verify.\n\nIf you didn't request this, ignore this email.`,
       }),
     });
 
     if (!emailResponse.ok) {
       const errText = await emailResponse.text();
-      console.error('[RESEND_VERIFICATION] Email send failed:', errText);
+      console.error('[RESEND_VERIFICATION] Resend API error:', errText);
       return new Response(
         JSON.stringify({ error: 'Failed to send verification email' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -48,10 +48,10 @@ export default function VerifyEmailPage() {
 
     setResending(true);
     try {
-      // Check if user is authenticated
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        throw new Error('Not authenticated. Please log in again.');
+      // Refresh session to ensure valid token before invoking edge function
+      const { data: { session }, error: authError } = await supabase.auth.refreshSession();
+      if (authError || !session) {
+        throw new Error('Session expired. Please log in again.');
       }
 
       logger.info('[VERIFY_EMAIL] Invoking resend-admin-verification for:', admin.email);
@@ -63,8 +63,10 @@ export default function VerifyEmailPage() {
       logger.info('[VERIFY_EMAIL] Response:', { data, error });
 
       if (error) {
-        logger.error('[VERIFY_EMAIL] Edge function error:', error);
-        throw new Error(`Failed to call edge function: ${error.message}`);
+        const context = (error as Record<string, unknown>).context;
+        logger.error('[VERIFY_EMAIL] Edge function error:', { message: error.message, context, name: error.name });
+        const detail = context instanceof Error ? context.message : error.message;
+        throw new Error(`Email service error: ${detail}`);
       }
 
       if (data?.error) {

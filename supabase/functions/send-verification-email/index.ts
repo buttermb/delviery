@@ -124,28 +124,29 @@ ${verificationUrl}
 If you didn't create an account with ${businessName}, please ignore this email.
     `.trim();
 
-    // Send email via Resend if available, otherwise log
+    // Send email directly via Resend API (bypasses credit-gated send-klaviyo-email
+    // which rejects service-role calls because the credit gate expects a user JWT)
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (resendApiKey) {
       try {
-        const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-klaviyo-email`, {
+        const fromEmail = Deno.env.get('FROM_EMAIL') || 'noreply@nymdelivery.com';
+        const emailResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
+            'Authorization': `Bearer ${resendApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            to: email,
+            from: `${businessName} <${fromEmail}>`,
+            to: [email],
             subject,
             html: htmlContent,
             text: textContent,
-            fromEmail: Deno.env.get('FROM_EMAIL') || 'noreply@example.com',
-            fromName: businessName,
           }),
         });
 
         if (!emailResponse.ok) {
-          console.error('Failed to send email via Resend:', await emailResponse.text());
+          console.error('Resend API error:', await emailResponse.text());
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError);
