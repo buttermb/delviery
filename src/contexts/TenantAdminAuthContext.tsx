@@ -342,7 +342,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             // Fetch admin and tenant data using user ID from session
             const { data: adminData } = await supabase
               .from('tenant_users')
-              .select('id, email, role, tenant_id, status')
+              .select('id, user_id, email, role, tenant_id, status')
               .eq('user_id', session.user.id)
               .eq('status', 'active')
               .maybeSingle();
@@ -662,6 +662,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         };
 
         // Set state from localStorage (for quick UI rendering)
+        // Ensure userId is set — prefer stored userId, then user_id, fallback to session
+        if (!parsedAdmin.userId && parsedAdmin.user_id) {
+          parsedAdmin.userId = parsedAdmin.user_id;
+        }
+        if (!parsedAdmin.userId && session?.user?.id) {
+          parsedAdmin.userId = session.user.id;
+        }
         setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
         // Sync lastTenantSlug
@@ -716,7 +723,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             const verifyData = await verifyResponse.json();
 
             // Update state from verification response (more up-to-date than localStorage)
-            if (verifyData.admin) setAdmin(verifyData.admin);
+            if (verifyData.admin) {
+              setAdmin({
+                ...verifyData.admin,
+                userId: verifyData.admin.userId || verifyData.admin.user_id || session?.user?.id || verifyData.admin.id,
+              });
+            }
             if (verifyData.tenant) setTenant(verifyData.tenant);
 
             // For backwards compatibility, set token state (but don't store in localStorage)
@@ -802,7 +814,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
           const { data: adminData } = await supabase
             .from('tenant_users')
-            .select('id, email, role, tenant_id, status')
+            .select('id, user_id, email, role, tenant_id, status')
             .eq('user_id', session.user.id)
             .eq('status', 'active')
             .maybeSingle();
@@ -1178,7 +1190,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
-      setAdmin(data.admin);
+      // Ensure userId is always set from session user, not just from edge function response
+      const adminWithUserId = {
+        ...data.admin,
+        userId: data.admin?.userId || data.admin?.user_id || data.session?.user?.id || data.admin?.id,
+      };
+      setAdmin(adminWithUserId);
       setTenant(tenantWithDefaults);
 
       // Check for MFA
