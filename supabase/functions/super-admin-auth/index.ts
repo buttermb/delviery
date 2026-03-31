@@ -3,6 +3,7 @@ import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
+import { AUTH_ERRORS } from '../_shared/auth-errors.ts';
 
 interface SuperAdminJWTPayload {
   super_admin_id: string;
@@ -242,7 +243,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (rateCheck && !rateCheck.allowed) {
         return new Response(
-          JSON.stringify({ error: rateCheck.error || 'Too many attempts' }),
+          JSON.stringify({ error: rateCheck.error || AUTH_ERRORS.RATE_LIMITED }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -265,7 +266,7 @@ serve(secureHeadersMiddleware(async (req) => {
           failure_reason: 'user_not_found'
         });
         return new Response(
-          JSON.stringify({ error: "Invalid credentials" }),
+          JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -282,7 +283,7 @@ serve(secureHeadersMiddleware(async (req) => {
           failure_reason: 'invalid_password'
         });
         return new Response(
-          JSON.stringify({ error: "Invalid credentials" }),
+          JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -470,7 +471,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (adminError || !superAdmin) {
         return new Response(
-          JSON.stringify({ error: "User not found or inactive" }),
+          JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -582,7 +583,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (adminError || !superAdminUser) {
         return new Response(
-          JSON.stringify({ error: "User not found or inactive" }),
+          JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

@@ -13,6 +13,7 @@
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
+import { AUTH_ERRORS } from '../_shared/auth-errors.ts';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
@@ -279,7 +280,7 @@ serve(async (req) => {
 
     if (!rateLimitResult.allowed) {
       return new Response(
-        JSON.stringify({ error: 'Too many signup attempts. Please try again later.' }),
+        JSON.stringify({ error: AUTH_ERRORS.RATE_LIMITED }),
         {
           status: 429,
           headers: {

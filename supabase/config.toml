@@ -113,7 +113,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.admin-api-operations]
-verify_jwt = false
+verify_jwt = true
 
 [functions.credit-threshold-alerts]
 verify_jwt = false
@@ -534,3 +534,153 @@ verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false
+
+# ===========================================
+# AUTH FLOW ENDPOINTS (no JWT - pre-authentication)
+# Added: audit remediation 2026-03-31
+# ===========================================
+
+[functions.auth-login]
+verify_jwt = false
+
+[functions.auth-signup]
+verify_jwt = false
+
+[functions.auth-logout]
+verify_jwt = false
+
+[functions.auth-forgot-password]
+verify_jwt = false
+
+[functions.auth-refresh]
+verify_jwt = false
+
+[functions.auth-reset-password]
+verify_jwt = false
+
+[functions.auth-verify-email]
+verify_jwt = false
+
+[functions.magic-link-login]
+verify_jwt = false
+
+[functions.request-account-unlock]
+verify_jwt = false
+
+# Auth endpoints that require existing session
+[functions.auth-change-password]
+verify_jwt = true
+
+[functions.auth-sessions]
+verify_jwt = true
+
+[functions.admin-reset-password]
+verify_jwt = true
+
+[functions.detect-suspicious-login]
+verify_jwt = true
+
+[functions.secure-account]
+verify_jwt = true
+
+# ===========================================
+# CREDITS ENDPOINTS
+# Added: audit remediation 2026-03-31
+# ===========================================
+
+[functions.credits-packages]
+verify_jwt = false
+
+[functions.credits-apply-promo]
+verify_jwt = true
+
+[functions.credits-cancel-subscription]
+verify_jwt = true
+
+[functions.credits-purchase]
+verify_jwt = true
+
+[functions.credits-subscribe]
+verify_jwt = true
+
+[functions.credits-transactions]
+verify_jwt = true
+
+[functions.credits-use]
+verify_jwt = true
+
+[functions.set-free-tier]
+verify_jwt = true
+
+# ===========================================
+# PUBLIC/WEBHOOK ENDPOINTS
+# Added: audit remediation 2026-03-31
+# ===========================================
+
+[functions.serve-menu-page]
+verify_jwt = false
+
+[functions.polar-checkout]
+verify_jwt = false
+
+[functions.polar-webhook]
+verify_jwt = false
+
+[functions.heartbeat]
+verify_jwt = false
+
+[functions.public-holidays]
+verify_jwt = false
+
+[functions.forward-order-telegram]
+verify_jwt = false
+
+[functions.test-telegram]
+verify_jwt = false
+
+[functions.notify-order-ready]
+verify_jwt = false
+
+[functions.send-order-cancellation]
+verify_jwt = false
+
+[functions.send-purchase-order]
+verify_jwt = true
+
+# ===========================================
+# PROTECTED ENDPOINTS (additional)
+# Added: audit remediation 2026-03-31
+# ===========================================
+
+[functions.ai-suggestions]
+verify_jwt = true
+
+[functions.barcode-lookup]
+verify_jwt = true
+
+[functions.bin-lookup]
+verify_jwt = true
+
+[functions.bootstrap-tenant-owner]
+verify_jwt = true
+
+[functions.commission-calculate]
+verify_jwt = true
+
+[functions.currency-convert]
+verify_jwt = true
+
+[functions.fetch-weather]
+verify_jwt = true
+
+[functions.generate-recurring-invoices]
+verify_jwt = true
+
+[functions.low-stock-email-digest]
+verify_jwt = true
+
+[functions.report-security-event]
+verify_jwt = true
+
+[functions.update-account-profile]
+verify_jwt = true

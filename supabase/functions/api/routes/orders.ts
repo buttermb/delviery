@@ -66,7 +66,7 @@ async function getAuthContext(req: Request) {
     .from('tenant_users')
     .select('tenant_id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!tenantUser?.tenant_id) {
     throw new Error('No tenant access');
@@ -163,7 +163,7 @@ async function getOrder(req: Request, params: Record<string, string>): Promise<R
       `)
       .eq('id', orderId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return errorResponse(error.message, error.code === 'PGRST116' ? 404 : 400);
@@ -217,7 +217,7 @@ async function createOrder(req: Request, params: Record<string, string>): Promis
       .from('unified_orders')
       .select('*, items:unified_order_items(*)')
       .eq('id', orderId)
-      .single();
+      .maybeSingle();
 
     // Log audit event
     await supabase.rpc('log_audit_event', {
@@ -258,7 +258,7 @@ async function updateOrderStatus(req: Request, params: Record<string, string>): 
       .select('status, order_type')
       .eq('id', orderId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!currentOrder) {
       return errorResponse('Order not found', 404);
@@ -322,7 +322,7 @@ async function cancelOrder(req: Request, params: Record<string, string>): Promis
       .select('status, order_type, wholesale_client_id, total_amount')
       .eq('id', orderId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!currentOrder) {
       return errorResponse('Order not found', 404);

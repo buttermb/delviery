@@ -100,7 +100,7 @@ serve(withZenProtection(async (req) => {
       .select('id, menu_visibility, available_quantity, name')
       .eq('id', product_id)
       .eq('tenant_id', tenant_id)
-      .single();
+      .maybeSingle();
 
     if (productError || !product) {
       console.error('Product query failed:', productError);

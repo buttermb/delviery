@@ -149,6 +149,11 @@ export const RATE_LIMITS = {
   CREDIT_CONSUME: { key: 'credit_consume', limit: 30, windowMs: 60 * 1000 }, // 30 per minute
   CREDIT_PURCHASE: { key: 'credit_purchase', limit: 5, windowMs: 60 * 60 * 1000 }, // 5 per hour
   FREE_CREDITS_GRANT: { key: 'free_credits', limit: 1, windowMs: 24 * 60 * 60 * 1000 }, // 1 per day
+  VALIDATE_EMAIL: { key: 'validate_email', limit: 10, windowMs: 60 * 1000 }, // 10 per minute
+  SEND_OTP: { key: 'send_otp', limit: 5, windowMs: 60 * 1000 }, // 5 per minute
+  VERIFY_EMAIL_CODE: { key: 'verify_email_code', limit: 10, windowMs: 60 * 1000 }, // 10 per minute
+  ACCOUNT_UNLOCK: { key: 'account_unlock', limit: 3, windowMs: 60 * 60 * 1000 }, // 3 per hour
+  MENU_ACCESS: { key: 'menu_access', limit: 30, windowMs: 60 * 1000 }, // 30 per minute
 } as const;
 
 /**

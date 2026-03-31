@@ -1,12 +1,7 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateSendMarketingCampaign, type SendMarketingCampaignInput } from './validation.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -34,9 +29,9 @@ Deno.serve(async (req) => {
       .from('marketing_campaigns')
       .select('*')
       .eq('id', campaignId)
-      .single();
+      .maybeSingle();
 
-    if (campaignError) throw campaignError;
+    if (campaignError || !campaign) throw campaignError ?? new Error('Campaign not found');
 
     // Get customer list based on audience filter
     const query = supabaseClient

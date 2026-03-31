@@ -1,10 +1,5 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 // Hardcoded disposable domains as sync fast-path
 const DISPOSABLE_DOMAINS = [
@@ -38,9 +33,18 @@ async function setCachedResult(supabase: ReturnType<typeof createClient>, cacheK
     .upsert({ cache_key: cacheKey, response, expires_at: expiresAt }, { onConflict: 'cache_key' });
 }
 
-Deno.serve(async (req: Request) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
+  const rateLimitResult = await checkRateLimit(RATE_LIMITS.VALIDATE_EMAIL, clientIP);
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {

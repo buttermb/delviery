@@ -1,6 +1,7 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
+import { AUTH_ERRORS } from '../_shared/auth-errors.ts';
 
 const logger = createLogger('auth-login');
 
@@ -52,7 +53,7 @@ serve(withZenProtection(async (req: Request): Promise<Response> => {
       // Generic error - don't reveal if tenant exists or not
       logger.warn('Login attempt with invalid tenant', { tenantId: tenant_slug });
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password' }),
+        JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -71,7 +72,7 @@ serve(withZenProtection(async (req: Request): Promise<Response> => {
         logger.warn('Login attempt on locked account', { tenantId: tenant.id });
         return new Response(
           JSON.stringify({
-            error: 'Account is temporarily locked. Please try again later.',
+            error: AUTH_ERRORS.ACCOUNT_LOCKED,
             locked_until: userProfile.locked_until,
           }),
           { status: 423, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -98,7 +99,7 @@ serve(withZenProtection(async (req: Request): Promise<Response> => {
 
       // Generic error message - never reveal if email exists
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password' }),
+        JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -116,7 +117,7 @@ serve(withZenProtection(async (req: Request): Promise<Response> => {
       await supabase.auth.signOut();
       logger.warn('Login attempt for user not in tenant', { tenantId: tenant.id });
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password' }),
+        JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 // Calculate distance between two coordinates using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -61,7 +55,7 @@ serve(async (req) => {
       .select("role")
       .eq("user_id", user.id)
       .in("role", ["admin", "courier"])
-      .single();
+      .maybeSingle();
 
     if (!userRole) {
       return new Response(

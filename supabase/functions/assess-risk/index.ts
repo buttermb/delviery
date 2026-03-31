@@ -1,11 +1,5 @@
 // Edge Function: assess-risk
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 interface RiskFactors {
   nameRisk: number;
@@ -37,7 +31,7 @@ serve(async (req) => {
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (profileError) throw profileError;
 
@@ -47,7 +41,7 @@ serve(async (req) => {
       .select("*")
       .eq("user_id", userId)
       .eq("is_default", true)
-      .single();
+      .maybeSingle();
 
     // Get user's orders
     const { data: orders } = await supabaseClient
@@ -195,7 +189,7 @@ async function assessAddressRisk(address: Address | null, supabaseClient: any): 
       .from("risk_factors")
       .select("risk_level")
       .eq("neighborhood", address.neighborhood)
-      .single();
+      .maybeSingle();
 
     if (riskFactor) {
       risk += ((riskFactor as { risk_level: number }).risk_level) * 4; // Scale 1-10 to 4-40

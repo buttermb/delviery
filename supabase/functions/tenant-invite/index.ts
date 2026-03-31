@@ -85,7 +85,7 @@ serve(async (req) => {
         .from('tenants')
         .select('*')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (tenantError || !tenant) {
         return new Response(
@@ -132,7 +132,7 @@ serve(async (req) => {
         .select('*')
         .eq('tenant_id', tenantId)
         .eq('email', email.toLowerCase())
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         return new Response(
@@ -303,7 +303,7 @@ serve(async (req) => {
         .eq('token', inviteToken)
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
-        .single();
+        .maybeSingle();
 
       if (inviteError || !invitation) {
         return new Response(
@@ -371,7 +371,7 @@ serve(async (req) => {
         .from('tenants')
         .select('id, owner_email')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (!tenant) {
         return new Response(
@@ -425,7 +425,7 @@ serve(async (req) => {
         .eq('token', inviteToken)
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
-        .single();
+        .maybeSingle();
 
       if (inviteError || !invitation) {
         return new Response(

@@ -58,7 +58,7 @@ async function getAuthContext(req: Request) {
     .from('tenant_users')
     .select('tenant_id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!tenantUser?.tenant_id) {
     throw new Error('No tenant access');
@@ -158,7 +158,7 @@ async function getMenu(req: Request, params: Record<string, string>): Promise<Re
       `)
       .eq('id', menuId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return errorResponse(error.message, error.code === 'PGRST116' ? 404 : 400);
@@ -271,7 +271,7 @@ async function burnMenu(req: Request, params: Record<string, string>): Promise<R
       .select('status')
       .eq('id', menuId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!menu) {
       return errorResponse('Menu not found', 404);
@@ -354,7 +354,7 @@ async function addToWhitelist(req: Request, params: Record<string, string>): Pro
       .select('id, tenant_id')
       .eq('id', menuId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!menu) {
       return errorResponse('Menu not found', 404);

@@ -5,23 +5,29 @@
  * DESTRUCTIVE OPERATION - Requires explicit confirmation
  */
 
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { createLogger } from '../_shared/logger.ts';
-
-const logger = createLogger('panic-reset');
+import { serve, createClient, z } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
+import { checkRateLimit } from '../_shared/rateLimiting.ts';
 
 // Zod validation schemas
 const resetRequestSchema = z.object({
   action: z.enum(['reset', 'preview']),
   tenant_id: z.string().uuid('Invalid tenant ID'),
   reset_type: z.enum(['orders', 'inventory', 'deliveries', 'invoices', 'all']).optional(),
-  confirmation: z.literal('CONFIRM_RESET').optional(),
+  confirmation_token: z.string().uuid('Invalid confirmation token').optional(),
 });
 
+const PANIC_RESET_RATE_LIMIT = { key: 'panic_reset', limit: 3, windowMs: 60 * 60 * 1000 }; // 3 per hour
+
 serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: authCors });
   }
+
+  const logger = createRequestLogger('panic-reset', req);
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -34,7 +40,7 @@ serve(async (req) => {
       logger.warn('Missing or invalid authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing or invalid authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -50,14 +56,14 @@ serve(async (req) => {
       logger.warn('Unauthorized access attempt', { error: authError?.message });
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
     // Verify user is super admin
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: superAdmin } = await serviceClient
-      .from('super_admins')
+      .from('super_admin_users')
       .select('id')
       .eq('id', user.id)
       .maybeSingle();
@@ -66,7 +72,17 @@ serve(async (req) => {
       logger.warn('Non-super-admin attempted panic reset', { userId: user.id });
       return new Response(
         JSON.stringify({ error: 'Forbidden - Super admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting: 3 per hour per user
+    const rateLimitResult = await checkRateLimit(PANIC_RESET_RATE_LIMIT, user.id);
+    if (!rateLimitResult.allowed) {
+      logger.warn('Rate limit exceeded for panic reset', { userId: user.id });
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }),
+        { status: 429, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -77,7 +93,7 @@ serve(async (req) => {
     } catch {
       return new Response(
         JSON.stringify({ error: 'Invalid request body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -91,44 +107,70 @@ serve(async (req) => {
           error: 'Validation failed',
           details: zodError.error.flatten().fieldErrors,
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { action, tenant_id, reset_type, confirmation } = validationResult.data;
+    const { action, tenant_id, reset_type, confirmation_token } = validationResult.data;
 
     // Verify tenant exists
     const { data: tenant } = await serviceClient
       .from('tenants')
       .select('id, business_name')
       .eq('id', tenant_id)
-      .single();
+      .maybeSingle();
 
     if (!tenant) {
       logger.warn('Tenant not found', { tenant_id });
       return new Response(
         JSON.stringify({ error: 'Tenant not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
     // Handle reset action
     if (action === 'reset') {
-      // Require explicit confirmation for destructive operations
-      if (confirmation !== 'CONFIRM_RESET') {
+      // Require a valid confirmation token for destructive operations
+      if (!confirmation_token) {
         return new Response(
           JSON.stringify({
-            error: 'Confirmation required',
-            message: 'You must provide confirmation: "CONFIRM_RESET" to proceed',
+            error: 'Confirmation token required',
+            message: 'You must first call preview to obtain a confirmation_token, then pass it to reset',
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Verify the confirmation token from api_cache
+      const cacheKey = `panic_reset:${tenant_id}`;
+      const { data: cached } = await serviceClient
+        .from('api_cache')
+        .select('response')
+        .eq('cache_key', cacheKey)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      const storedToken = (cached?.response as { token?: string })?.token;
+      if (!storedToken || storedToken !== confirmation_token) {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid or expired confirmation token',
+            message: 'Call preview again to obtain a new confirmation_token',
+          }),
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Consume the token so it cannot be reused
+      await serviceClient
+        .from('api_cache')
+        .delete()
+        .eq('cache_key', cacheKey);
 
       if (!reset_type) {
         return new Response(
           JSON.stringify({ error: 'reset_type is required for reset action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -212,7 +254,7 @@ serve(async (req) => {
           reset_type,
           results,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -243,26 +285,39 @@ serve(async (req) => {
         }
       }
 
+      // Generate a confirmation token and store in api_cache with 5-minute TTL
+      const confirmationToken = crypto.randomUUID();
+      const cacheKey = `panic_reset:${tenant_id}`;
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+      await serviceClient
+        .from('api_cache')
+        .upsert(
+          { cache_key: cacheKey, response: { token: confirmationToken }, expires_at: expiresAt },
+          { onConflict: 'cache_key' }
+        );
+
       logger.info('Panic reset preview', { tenant_id, preview });
 
       return new Response(
         JSON.stringify({
           tenant: { id: tenant.id, business_name: tenant.business_name },
           preview,
+          confirmation_token: confirmationToken,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: 'Invalid action. Must be: reset or preview' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     logger.error('Panic reset error', { error: error instanceof Error ? error.message : 'Unknown' });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
   }
 });

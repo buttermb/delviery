@@ -57,7 +57,7 @@ serve(async (req) => {
       .from('tenants')
       .select('business_name, slug')
       .eq('id', tenant_id)
-      .single();
+      .maybeSingle();
 
     const businessName = tenant_name || tenant?.business_name || 'Our Store';
     const siteUrl = Deno.env.get('SITE_URL') || 'https://app.example.com';

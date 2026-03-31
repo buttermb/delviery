@@ -1,5 +1,5 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from "../_shared/deps.ts";
 import { checkRateLimit } from "../_shared/rateLimiting.ts";
 import { signJWT } from "../_shared/jwt.ts";
 
@@ -338,47 +338,42 @@ serve(async (req) => {
     }
 
     // Generate JWT tokens for auto-login using secure HMAC-SHA256 signing
-    const accessToken = await signJWT(
-      {
-        user_id: tenantUser.id,
-        email: tenantUser.email,
-        name: tenantUser.name,
-        role: tenantUser.role,
-        tenant_id: tenant.id,
-        tenant_slug: tenant.slug,
-      },
-      7 * 24 * 60 * 60 // 7 days
-    );
+    // These are optional — the Supabase Auth session is the primary auth mechanism
+    let accessToken: string | null = null;
+    let refreshToken: string | null = null;
 
-    const refreshToken = await signJWT(
-      {
-        user_id: tenantUser.id,
-        tenant_id: tenant.id,
-        type: 'refresh',
-      },
-      30 * 24 * 60 * 60 // 30 days
-    );
+    try {
+      accessToken = await signJWT(
+        {
+          user_id: tenantUser.id,
+          email: tenantUser.email,
+          name: tenantUser.name,
+          role: tenantUser.role,
+          tenant_id: tenant.id,
+          tenant_slug: tenant.slug,
+        },
+        7 * 24 * 60 * 60 // 7 days
+      );
 
-    // Set httpOnly cookies for tokens (XSS protection)
-    const accessCookie = [
-      `tenant_access_token=${accessToken}`,
-      `Max-Age=${7 * 24 * 60 * 60}`, // 7 days in seconds
-      'HttpOnly',
-      'Secure',
-      'SameSite=Strict',
-      'Path=/',
-    ].join('; ');
+      refreshToken = await signJWT(
+        {
+          user_id: tenantUser.id,
+          tenant_id: tenant.id,
+          type: 'refresh',
+        },
+        30 * 24 * 60 * 60 // 30 days
+      );
+    } catch (jwtError) {
+      console.warn('[SIGNUP] JWT generation failed (non-blocking, Supabase session used instead)', jwtError);
+    }
 
-    const refreshCookie = [
-      `tenant_refresh_token=${refreshToken}`,
-      `Max-Age=${30 * 24 * 60 * 60}`, // 30 days in seconds
-      'HttpOnly',
-      'Secure',
-      'SameSite=Strict',
-      'Path=/',
-    ].join('; ');
+    // Build response headers
+    const responseHeaders: Record<string, string> = {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+    };
 
-    // Return success response WITHOUT tokens in body (cookies set via headers)
+    // Set httpOnly cookies for tokens (XSS protection) — only if JWT generation succeeded
     const response = new Response(
       JSON.stringify({
         success: true,
@@ -411,16 +406,34 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-          'Set-Cookie': accessCookie,
-        },
+        headers: responseHeaders,
       }
     );
 
-    // Add second cookie (Set-Cookie can be set multiple times)
-    response.headers.append('Set-Cookie', refreshCookie);
+    // Set httpOnly cookies only if JWT tokens were generated
+    if (accessToken) {
+      const accessCookie = [
+        `tenant_access_token=${accessToken}`,
+        `Max-Age=${7 * 24 * 60 * 60}`,
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+      ].join('; ');
+      response.headers.append('Set-Cookie', accessCookie);
+    }
+
+    if (refreshToken) {
+      const refreshCookie = [
+        `tenant_refresh_token=${refreshToken}`,
+        `Max-Age=${30 * 24 * 60 * 60}`,
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+      ].join('; ');
+      response.headers.append('Set-Cookie', refreshCookie);
+    }
 
     // Background tasks (don't await - run asynchronously)
     // These don't block the response, improving signup performance

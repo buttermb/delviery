@@ -1,15 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-
-// ---------------------------------------------------------------------------
-// Inlined shared deps
-// ---------------------------------------------------------------------------
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { serve, createClient, z, corsHeaders } from '../_shared/deps.ts';
 
 function createLogger(functionName: string) {
   function formatLog(level: string, message: string, context?: Record<string, unknown>): string {
@@ -472,7 +461,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         driver_id: driver.id,
-        pin,
+        pin_delivered_via: emailSent ? 'email' : 'pending',
         email_sent: emailSent,
       }),
       { status: 201, headers: jsonHeaders },

@@ -90,7 +90,7 @@ serve(
         .select('*')
         .eq('id', order_id)
         .eq('tenant_id', tenant_id)
-        .single();
+        .maybeSingle();
 
       if (orderError || !order) {
         return new Response(

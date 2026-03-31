@@ -1,4 +1,5 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { validateAdminAction, type AdminActionInput } from './validation.ts';
 
@@ -56,8 +57,10 @@ async function logAdminAction(
 }
 
 serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: authCors });
   }
 
   try {
@@ -71,7 +74,7 @@ serve(async (req) => {
       logger.warn('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -82,7 +85,7 @@ serve(async (req) => {
       logger.warn('Authentication failed', { error: authError?.message });
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -97,7 +100,7 @@ serve(async (req) => {
       logger.warn('Non-admin attempted admin action', { userId: user.id });
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -107,7 +110,7 @@ serve(async (req) => {
       logger.warn('Admin has no tenant association', { userId: user.id });
       return new Response(
         JSON.stringify({ error: 'Tenant not found or user not authorized' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -127,7 +130,7 @@ serve(async (req) => {
           error: 'Validation failed', 
           details: validationError instanceof Error ? validationError.message : 'Invalid input' 
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -138,7 +141,7 @@ serve(async (req) => {
       if (!orderId) {
         return new Response(
           JSON.stringify({ error: 'Order ID required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -154,7 +157,7 @@ serve(async (req) => {
         logger.error('Failed to cancel order', { orderId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to cancel order' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -213,7 +216,7 @@ serve(async (req) => {
           order,
           message: 'Order cancelled. Inventory restored. Notifications sent.',
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -222,7 +225,7 @@ serve(async (req) => {
       if (!orderId || !reason) {
         return new Response(
           JSON.stringify({ error: 'Order ID and reason required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -238,7 +241,7 @@ serve(async (req) => {
         logger.error('Failed to flag order', { orderId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to flag order' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -247,7 +250,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, order }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -256,7 +259,7 @@ serve(async (req) => {
       if (!orderId) {
         return new Response(
           JSON.stringify({ error: 'Order ID required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -272,7 +275,7 @@ serve(async (req) => {
         logger.error('Failed to unflag order', { orderId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to unflag order' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -281,7 +284,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, order }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -290,7 +293,7 @@ serve(async (req) => {
       if (!orderId) {
         return new Response(
           JSON.stringify({ error: 'Order ID required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -304,7 +307,7 @@ serve(async (req) => {
       if (fetchError || !orderData) {
         return new Response(
           JSON.stringify({ error: 'Order not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -343,7 +346,7 @@ serve(async (req) => {
         logger.error('Failed to accept order', { orderId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to accept order' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -378,7 +381,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, order, courier }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -387,7 +390,7 @@ serve(async (req) => {
       if (!orderId || !reason) {
         return new Response(
           JSON.stringify({ error: 'Order ID and reason required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -403,7 +406,7 @@ serve(async (req) => {
         logger.error('Failed to decline order', { orderId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to decline order' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -418,7 +421,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, order }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -427,7 +430,7 @@ serve(async (req) => {
       if (!userId || !reason) {
         return new Response(
           JSON.stringify({ error: 'User ID and reason required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -443,7 +446,7 @@ serve(async (req) => {
         logger.warn('Suspend user: target not in admin tenant', { userId, tenantId });
         return new Response(
           JSON.stringify({ error: 'User not found in your tenant' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -459,7 +462,7 @@ serve(async (req) => {
         logger.error('Failed to suspend user', { userId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to suspend user' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -468,7 +471,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, profile }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -479,7 +482,7 @@ serve(async (req) => {
       if (!orderId || !courierId) {
         return new Response(
           JSON.stringify({ error: 'Order ID and Courier ID required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -495,7 +498,7 @@ serve(async (req) => {
         logger.warn('Assign courier: courier not in admin tenant', { courierId, tenantId });
         return new Response(
           JSON.stringify({ error: 'Courier not found in your tenant' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -511,7 +514,7 @@ serve(async (req) => {
         logger.error('Failed to assign courier', { orderId, courierId, error: updateError.message });
         return new Response(
           JSON.stringify({ error: 'Failed to assign courier' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -526,19 +529,19 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, order }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: 'Invalid action' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     logger.error('Admin action error', { error: error instanceof Error ? error.message : 'Unknown' });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Action failed' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
   }
 });

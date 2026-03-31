@@ -53,7 +53,7 @@ async function getAuthContext(req: Request) {
         .from('tenant_users')
         .select('tenant_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       return {
         supabase,
@@ -120,7 +120,7 @@ async function createTransaction(req: Request, params: Record<string, string>): 
       .from('tenants')
       .select('id, status')
       .eq('id', input.p_tenant_id)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       return errorResponse('Invalid tenant', 400);
@@ -253,7 +253,7 @@ async function getTransaction(req: Request, params: Record<string, string>): Pro
       .select('*, items:pos_transaction_items(*)')
       .eq('id', transactionId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return errorResponse(error.message, error.code === 'PGRST116' ? 404 : 400);

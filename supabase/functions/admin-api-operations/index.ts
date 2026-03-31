@@ -1,18 +1,18 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { serve, createClient } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
 import { validateAdminApiOperation, type AdminApiOperationInput } from './validation.ts';
 import { checkCreditsAvailable, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
 serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: authCors });
   }
+
+  const logger = createRequestLogger('admin-api-operations', req);
 
   try {
     // Initialize Supabase client with service role
@@ -32,7 +32,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -41,10 +41,10 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('Auth error:', authError);
+      logger.error('Auth error', { error: authError?.message });
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -53,13 +53,20 @@ serve(async (req) => {
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (tenantError || !tenantUser) {
-      console.error('Tenant lookup error:', tenantError);
+    if (tenantError) {
+      logger.error('Tenant lookup error', { error: tenantError?.message });
+      return new Response(
+        JSON.stringify({ error: 'Tenant lookup failed' }),
+        { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!tenantUser) {
       return new Response(
         JSON.stringify({ error: 'Tenant not found for user' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -105,7 +112,7 @@ serve(async (req) => {
                 creditsRequired: creditCheck.cost,
                 currentBalance: creditCheck.balance,
               }),
-              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              { status: 402, headers: { ...authCors, 'Content-Type': 'application/json' } }
             );
           }
 
@@ -148,7 +155,7 @@ serve(async (req) => {
         if (!id) {
           return new Response(
             JSON.stringify({ error: 'ID required for update' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -180,7 +187,7 @@ serve(async (req) => {
         if (!id) {
           return new Response(
             JSON.stringify({ error: 'ID required for delete' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -209,21 +216,21 @@ serve(async (req) => {
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
     }
 
     return new Response(
       JSON.stringify({ data: result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in admin-api-operations:', error);
+    logger.error('Operation failed', { error: error instanceof Error ? error.message : 'Unknown' });
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
     );
   }
 });

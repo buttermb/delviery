@@ -1,6 +1,7 @@
 // Edge Function: access-encrypted-menu (Security Hardened)
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 // Request validation schema
 const AccessMenuSchema = z.object({
@@ -16,6 +17,15 @@ const AccessMenuSchema = z.object({
 serve(withZenProtection(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
+  const rateLimitResult = await checkRateLimit(RATE_LIMITS.MENU_ACCESS, clientIP);
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {

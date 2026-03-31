@@ -7,6 +7,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 const verifyEmailSchema = z.object({
   code: z.string().length(6, 'Code must be 6 digits'),
@@ -17,6 +18,15 @@ const verifyEmailSchema = z.object({
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
+  const rateLimitResult = await checkRateLimit(RATE_LIMITS.VERIFY_EMAIL_CODE, clientIP);
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {

@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-
-// ---------------------------------------------------------------------------
-// Inlined shared deps
-// ---------------------------------------------------------------------------
+import { serve, createClient, z } from '../_shared/deps.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -294,7 +288,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        pin,
+        pin_reset: true,
+        pin_delivered_via: emailSent ? 'email' : 'pending',
         email_sent: emailSent,
       }),
       { status: 200, headers: jsonHeaders },

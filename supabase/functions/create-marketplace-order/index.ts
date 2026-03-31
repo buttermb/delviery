@@ -1,5 +1,4 @@
-import { serve, corsHeaders } from "../_shared/deps.ts";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { serve, z, corsHeaders } from "../_shared/deps.ts";
 import { withCreditGate, CREDIT_ACTIONS } from "../_shared/creditGate.ts";
 
 const CreateOrderSchema = z.object({

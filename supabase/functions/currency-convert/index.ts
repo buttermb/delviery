@@ -1,11 +1,5 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { errorResponse } from "../_shared/error-response.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const CURRENCY_REGEX = /^[A-Z]{3}$/;
 
@@ -26,7 +20,7 @@ async function setCachedResult(supabase: ReturnType<typeof createClient>, cacheK
     .upsert({ cache_key: cacheKey, response, expires_at: expiresAt }, { onConflict: 'cache_key' });
 }
 
-Deno.serve(async (req: Request) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

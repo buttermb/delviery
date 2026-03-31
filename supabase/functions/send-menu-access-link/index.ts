@@ -50,7 +50,7 @@ serve(async (req) => {
         )
       `)
       .eq('id', whitelistId)
-      .single();
+      .maybeSingle();
 
     if (whitelistError || !whitelist) {
       return new Response(

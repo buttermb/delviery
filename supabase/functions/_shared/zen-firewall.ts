@@ -132,6 +132,12 @@ export function withZenProtection(
   initZenFirewall();
 
   return async (req: Request): Promise<Response> => {
+    // Always let OPTIONS preflight requests pass through to the handler
+    // so CORS headers are returned correctly
+    if (req.method === 'OPTIONS') {
+      return handler(req);
+    }
+
     const validation = await validateRequest(req);
 
     if (validation.action === 'block') {
@@ -144,6 +150,8 @@ export function withZenProtection(
           headers: {
             'Content-Type': 'application/json',
             'X-Zen-Firewall': 'blocked',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
             ...secureHeaders,
           },
         }

@@ -60,7 +60,7 @@ async function getAuthContext(req: Request) {
     .from('tenant_users')
     .select('tenant_id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!tenantUser?.tenant_id) {
     throw new Error('No tenant access');
@@ -149,7 +149,7 @@ async function getProduct(req: Request, params: Record<string, string>): Promise
       .select('*')
       .eq('id', productId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return errorResponse(error.message, error.code === 'PGRST116' ? 404 : 400);

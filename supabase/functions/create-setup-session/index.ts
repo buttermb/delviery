@@ -72,7 +72,7 @@ serve(async (req) => {
             .from('tenants')
             .select('*')
             .eq('id', tenant_id)
-            .single();
+            .maybeSingle();
 
         if (tenantError || !tenant) {
             logStep('ERROR: Tenant not found', { error: tenantError?.message });

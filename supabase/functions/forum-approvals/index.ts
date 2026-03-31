@@ -48,7 +48,7 @@ serve(async (req) => {
       .from('admin_users')
       .select('role, is_active')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (adminError || !adminUser || !adminUser.is_active) {
       logger.warn('Non-admin attempted forum approval', { userId: user.id });
@@ -79,7 +79,7 @@ serve(async (req) => {
         .from('forum_user_approvals')
         .select('customer_user_id, status')
         .eq('id', approval_id)
-        .single();
+        .maybeSingle();
 
       if (approvalError || !approval) {
         logger.warn('Approval not found', { approval_id });
@@ -108,7 +108,7 @@ serve(async (req) => {
         .from('forum_user_profiles')
         .select('id')
         .eq('user_id', approval.customer_user_id)
-        .single();
+        .maybeSingle();
 
       // Only create profile if it doesn't exist
       if (!existingProfile) {
@@ -116,7 +116,7 @@ serve(async (req) => {
           .from('profiles')
           .select('email, full_name')
           .eq('user_id', approval.customer_user_id)
-          .single();
+          .maybeSingle();
 
         const { error: profileError } = await supabaseClient
           .from('forum_user_profiles')

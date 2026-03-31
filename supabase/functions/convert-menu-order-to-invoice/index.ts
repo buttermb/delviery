@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
         .select('id, converted_to_invoice_id, tenant_id, order_data, total_amount, client_id, menu_id')
         .eq('id', menu_order_id)
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (orderError || !order) {
         return new Response(

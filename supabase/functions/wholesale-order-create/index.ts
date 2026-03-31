@@ -121,7 +121,7 @@ async function handleLegacyOrderCreate(
     .from('wholesale_clients')
     .select('*, credit_limit, outstanding_balance')
     .eq('id', client_id)
-    .single();
+    .maybeSingle();
 
   if (!client) {
     return new Response(
@@ -139,7 +139,7 @@ async function handleLegacyOrderCreate(
       .from('wholesale_inventory')
       .select('*, products(name, wholesale_price_per_lb)')
       .eq('id', item.inventory_id)
-      .single();
+      .maybeSingle();
 
     if (!inventory || inventory.quantity_lbs < item.quantity_lbs) {
       return new Response(

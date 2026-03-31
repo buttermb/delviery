@@ -21,6 +21,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
 
 // Plan-based credit amounts per specification
 // These are the MONTHLY refresh amounts for existing tenants
@@ -50,6 +51,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const logger = createRequestLogger('grant-free-credits', req);
+
   // Verify this is an internal/cron call or super-admin
   const authHeader = req.headers.get('Authorization');
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -73,20 +76,20 @@ serve(async (req) => {
 
       // SECURITY: Verify user is a super-admin (not just any authenticated user)
       const { data: superAdmin, error: superAdminError } = await tempClient
-        .from('super_admins')
+        .from('super_admin_users')
         .select('id')
         .eq('email', user.email)
         .maybeSingle();
 
       if (superAdminError || !superAdmin) {
-        console.warn(`[GRANT_FREE_CREDITS] Unauthorized attempt by ${user.email}`);
+        logger.warn('Unauthorized attempt', { email: user.email });
         return new Response(
           JSON.stringify({ error: 'Super admin access required for manual trigger' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.error(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
+      logger.info('Authorized super-admin', { email: user.email });
     }
   }
 
@@ -95,7 +98,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.error('[GRANT_FREE_CREDITS] Starting daily credit grant job');
+    logger.info('Starting daily credit grant job');
 
     // Find all tenants whose credits need refreshing
     // Note: We now query ALL tenants (not just free tier) to support plan-based amounts
@@ -118,11 +121,11 @@ serve(async (req) => {
       .lte('next_free_grant_at', new Date().toISOString());
 
     if (queryError) {
-      console.error('[GRANT_FREE_CREDITS] Query error:', queryError);
+      logger.error('Query error', { error: queryError.message });
       throw queryError;
     }
 
-    console.error(`[GRANT_FREE_CREDITS] Found ${eligibleTenants?.length || 0} eligible tenants`);
+    logger.info('Found eligible tenants', { count: eligibleTenants?.length || 0 });
 
     const results = {
       processed: 0,
@@ -167,7 +170,7 @@ serve(async (req) => {
           .eq('tenant_id', tenantId);
 
         if (updateError) {
-          console.error(`[GRANT_FREE_CREDITS] Update error for ${tenantId}:`, updateError);
+          logger.error('Update error', { tenantId, error: updateError.message });
           results.errors.push(`${tenantId}: ${updateError.message}`);
           continue;
         }
@@ -197,12 +200,12 @@ serve(async (req) => {
 
         // If duplicate key error, this grant was already processed
         if (txError?.code === '23505') {
-          console.error(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - already granted today`);
+          logger.info('Skipping tenant - already granted today', { tenantId });
           results.skipped++;
           continue;
         }
 
-        console.error(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
+        logger.info('Granted credits', { tenantId, slug: tenant.slug, credits: planCredits, plan: tenant?.subscription_plan || 'free', rollover: rolloverAmount });
         results.granted++;
 
         // Track analytics event
@@ -222,11 +225,11 @@ serve(async (req) => {
         // Send notification email (optional - integrate with email service)
         if (tenant.owner_email) {
           // TODO: Integrate with email service (Resend, SendGrid, etc.)
-          console.error(`[GRANT_FREE_CREDITS] Would send email to ${tenant.owner_email}`);
+          logger.info('Would send email notification', { email: tenant.owner_email });
         }
 
       } catch (err) {
-        console.error(`[GRANT_FREE_CREDITS] Error processing ${tenantId}:`, err);
+        logger.error('Error processing tenant', { tenantId, error: (err as Error).message });
         results.errors.push(`${tenantId}: ${(err as Error).message}`);
       }
     }
@@ -246,7 +249,7 @@ serve(async (req) => {
     const { data: tenantsWithoutCredits, error: missingError } = await tenantsQuery;
 
     if (!missingError && tenantsWithoutCredits?.length) {
-      console.error(`[GRANT_FREE_CREDITS] Found ${tenantsWithoutCredits.length} tenants without credit records`);
+      logger.info('Found tenants without credit records', { count: tenantsWithoutCredits.length });
 
       for (const tenant of tenantsWithoutCredits) {
         try {
@@ -272,7 +275,7 @@ serve(async (req) => {
             });
 
           if (!createError) {
-            console.error(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug} (${planCredits} credits, ${tenant.subscription_plan || 'free'} plan)`);
+            logger.info('Created credit record', { tenantId: tenant.id, slug: tenant.slug, credits: planCredits, plan: tenant.subscription_plan || 'free' });
 
             // Log the initial grant transaction with idempotency
             const initKey = `initial_grant:${tenant.id}`;
@@ -294,12 +297,12 @@ serve(async (req) => {
             results.granted++;
           }
         } catch (err) {
-          console.error(`[GRANT_FREE_CREDITS] Error creating credit record for ${tenant.id}:`, err);
+          logger.error('Error creating credit record', { tenantId: tenant.id, error: (err as Error).message });
         }
       }
     }
 
-    console.error('[GRANT_FREE_CREDITS] Job completed:', results);
+    logger.info('Job completed', { results });
 
     return new Response(
       JSON.stringify({
@@ -314,7 +317,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[GRANT_FREE_CREDITS] Job failed:', error);
+    logger.error('Job failed', { error: (error as Error).message });
     return new Response(
       JSON.stringify({
         success: false,

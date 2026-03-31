@@ -1,9 +1,7 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 /**
  * Resolve tenant_id from an authenticated user.
@@ -35,10 +33,14 @@ async function resolveTenantId(supabase: any, userId: string, userEmail: string 
   return null;
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: authCors });
   }
+
+  const logger = createRequestLogger('admin-reset-password', req);
 
   try {
     const supabaseAdmin = createClient(
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
     const callerToken = authHeader.replace('Bearer ', '');
@@ -59,7 +61,7 @@ Deno.serve(async (req) => {
     if (callerError || !callerUser) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
 
@@ -72,20 +74,30 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!adminUser) {
-      console.error('[admin-reset-password] Non-admin attempted password reset', callerUser.id);
+      logger.warn('Non-admin attempted password reset', { userId: callerUser.id });
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
 
     // Resolve caller's tenant
     const callerTenantId = await resolveTenantId(supabaseAdmin, callerUser.id, callerUser.email);
     if (!callerTenantId) {
-      console.error('[admin-reset-password] Admin has no tenant association');
+      logger.warn('Admin has no tenant association', { userId: callerUser.id });
       return new Response(
         JSON.stringify({ error: 'Tenant not found or user not authorized' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...authCors, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Rate limit: 3 password resets per hour per admin
+    const rateLimitResult = await checkRateLimit(RATE_LIMITS.PASSWORD_RESET, callerUser.id);
+    if (!rateLimitResult.allowed) {
+      logger.warn('Rate limit exceeded', { userId: callerUser.id });
+      return new Response(
+        JSON.stringify({ error: 'Too many password reset attempts. Please try again later.' }),
+        { status: 429, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
 
@@ -94,68 +106,62 @@ Deno.serve(async (req) => {
     if (!email || !newPassword) {
       return new Response(
         JSON.stringify({ error: "Email and new password are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
 
-    console.error('[admin-reset-password] Password reset requested');
+    logger.info('Password reset requested');
 
-    // Find user by email
-    const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    if (listError) {
-      console.error('[admin-reset-password] Error listing users:', listError);
-      throw listError;
-    }
-
-    const user = users.users.find(u => u.email === email);
-    if (!user) {
-      console.error('[admin-reset-password] User not found');
-      throw new Error("User not found");
-    }
-
-    // Verify the target user belongs to the same tenant
-    const targetTenantId = await resolveTenantId(supabaseAdmin, user.id, user.email);
+    // Tenant-scoped user lookup: find target user in tenant_users filtered by caller's tenant
+    const { data: tenantUser } = await supabaseAdmin
+      .from('tenant_users')
+      .select('user_id')
+      .eq('tenant_id', callerTenantId)
+      .eq('email', email)
+      .maybeSingle();
 
     // Also check if target is a customer in this tenant via profiles
     const { data: targetProfile } = await supabaseAdmin
       .from('profiles')
-      .select('tenant_id')
-      .eq('user_id', user.id)
+      .select('user_id')
       .eq('tenant_id', callerTenantId)
+      .eq('email', email)
       .maybeSingle();
 
-    if (targetTenantId !== callerTenantId && !targetProfile) {
-      console.error('[admin-reset-password] Target user not in admin tenant');
+    const targetUserId = tenantUser?.user_id ?? targetProfile?.user_id;
+
+    if (!targetUserId) {
+      logger.warn('Target user not found in tenant', { email });
       return new Response(
         JSON.stringify({ error: 'Target user not found in your tenant' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...authCors, "Content-Type": "application/json" } }
       );
     }
 
-    console.error('[admin-reset-password] Found user, updating password');
+    logger.info('Found user, updating password', { targetUserId });
 
     // Update password (service role used only after authorization confirmed)
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-      user.id,
+      targetUserId,
       { password: newPassword }
     );
 
     if (updateError) {
-      console.error('[admin-reset-password] Error updating password:', updateError);
+      logger.error('Error updating password', { error: updateError.message });
       throw updateError;
     }
 
-    console.error('[admin-reset-password] Password updated successfully');
+    logger.info('Password updated successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: "Password updated successfully" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...authCors, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error('[admin-reset-password] Error:', error);
+    logger.error('Password reset failed', { error: error instanceof Error ? error.message : 'Unknown' });
     return new Response(
       JSON.stringify({ error: 'Password reset failed' }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...authCors, "Content-Type": "application/json" } }
     );
   }
 });

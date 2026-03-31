@@ -52,7 +52,7 @@ serve(async (req) => {
       .from("tenants")
       .select("*")
       .eq("id", tenant_id)
-      .single();
+      .maybeSingle();
 
     if (!tenant || !tenant.stripe_subscription_id) {
       throw new Error("Tenant or subscription not found");

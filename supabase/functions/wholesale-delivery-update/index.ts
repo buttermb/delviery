@@ -57,7 +57,7 @@ serve(async (req) => {
       .from('wholesale_deliveries')
       .select('order_id, runner_id, status')
       .eq('id', delivery_id)
-      .single();
+      .maybeSingle();
 
     if (!delivery) {
       return new Response(

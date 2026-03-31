@@ -102,7 +102,7 @@ export async function checkRateLimit(
       .from('rate_limits')
       .select('*')
       .eq('tenant_id', check.tenantId)
-      .single();
+      .maybeSingle();
 
     if (!rateLimit) {
       // No custom limits, allow by default

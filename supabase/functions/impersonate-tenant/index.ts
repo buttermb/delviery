@@ -1,4 +1,5 @@
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { serve, createClient, z } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
 const impersonateSchema = z.object({
@@ -7,8 +8,10 @@ const impersonateSchema = z.object({
 
 serve(
   withZenProtection(async (req) => {
+    const authCors = getAuthenticatedCorsHeaders(req);
+
     if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, { headers: authCors });
     }
 
     try {
@@ -21,7 +24,7 @@ serve(
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return new Response(
           JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -41,7 +44,7 @@ serve(
       if (!user) {
         return new Response(
           JSON.stringify({ error: 'Unauthorized - Invalid or expired token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -56,7 +59,7 @@ serve(
       if (!superAdmin) {
         return new Response(
           JSON.stringify({ error: 'Unauthorized - Super admin access required' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -74,7 +77,7 @@ serve(
       if (tenantError || !tenant) {
         return new Response(
           JSON.stringify({ error: 'Tenant not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -82,7 +85,7 @@ serve(
       if (tenant.status && tenant.status !== 'active') {
         return new Response(
           JSON.stringify({ error: `Cannot impersonate tenant with status: ${tenant.status}` }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -99,7 +102,7 @@ serve(
       if (adminError || !tenantAdmin) {
         return new Response(
           JSON.stringify({ error: 'No active admin found for tenant' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -126,7 +129,7 @@ serve(
         if (!tenantAuthResponse.ok) {
           return new Response(
             JSON.stringify({ error: 'Failed to generate impersonation token' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -162,7 +165,7 @@ serve(
               role: tenantAdmin.role,
             },
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -196,13 +199,13 @@ serve(
             role: tenantAdmin.role,
           },
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     } catch (error) {
       console.error('Impersonation error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to impersonate tenant' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
   })

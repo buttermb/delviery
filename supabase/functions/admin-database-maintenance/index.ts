@@ -1,13 +1,11 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { serve, createClient } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
 
-Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: authCors })
   }
 
   try {
@@ -24,7 +22,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...authCors, 'Content-Type': 'application/json' }
       })
     }
 
@@ -34,12 +32,12 @@ Deno.serve(async (req) => {
       .select('id')
       .eq('user_id', user.id)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (!adminCheck) {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...authCors, 'Content-Type': 'application/json' }
       })
     }
 
@@ -69,7 +67,7 @@ Deno.serve(async (req) => {
       message,
       timestamp: new Date().toISOString()
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...authCors, 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
@@ -79,7 +77,7 @@ Deno.serve(async (req) => {
       error: errorMessage
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...authCors, 'Content-Type': 'application/json' }
     })
   }
 })

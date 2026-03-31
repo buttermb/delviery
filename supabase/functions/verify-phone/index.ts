@@ -48,7 +48,7 @@ serve(async (req) => {
       .from('phone_verifications')
       .select('*')
       .eq('id', verificationId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !verification) {
       return new Response(

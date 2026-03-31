@@ -1,6 +1,7 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR, GENERIC_AUTH_DETAIL } from '../_shared/bruteForceProtection.ts';
+import { AUTH_ERRORS } from '../_shared/auth-errors.ts';
 
 serve(secureHeadersMiddleware(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,7 +49,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (rateCheck && !rateCheck.allowed) {
         return new Response(
-          JSON.stringify({ error: rateCheck.error || 'Too many attempts' }),
+          JSON.stringify({ error: rateCheck.error || AUTH_ERRORS.RATE_LIMITED }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -110,7 +111,7 @@ serve(secureHeadersMiddleware(async (req) => {
       if (roleError || !roleData) {
         await supabase.auth.signOut();
         return new Response(
-          JSON.stringify({ error: "Unauthorized - admin access required" }),
+          JSON.stringify({ error: AUTH_ERRORS.FORBIDDEN }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -126,7 +127,7 @@ serve(secureHeadersMiddleware(async (req) => {
       if (adminError || !adminUser) {
         await supabase.auth.signOut();
         return new Response(
-          JSON.stringify({ error: "Admin account not active" }),
+          JSON.stringify({ error: AUTH_ERRORS.FORBIDDEN }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -202,7 +203,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (roleError || !roleData) {
         return new Response(
-          JSON.stringify({ error: "Unauthorized - admin access required" }),
+          JSON.stringify({ error: AUTH_ERRORS.FORBIDDEN }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -217,7 +218,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (adminError || !adminUser) {
         return new Response(
-          JSON.stringify({ error: "Admin account not active" }),
+          JSON.stringify({ error: AUTH_ERRORS.FORBIDDEN }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

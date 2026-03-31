@@ -5,6 +5,7 @@ import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { signupSchema, loginSchema, updatePasswordSchema, updateProfileSchema } from './validation.ts';
 import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR } from '../_shared/bruteForceProtection.ts';
+import { AUTH_ERRORS } from '../_shared/auth-errors.ts';
 
 interface CustomerJWTPayload {
   customer_user_id: string;
@@ -171,7 +172,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (existingUser) {
         return new Response(
-          JSON.stringify({ error: "An account with this email already exists" }),
+          JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -191,10 +192,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (tenantUserExists) {
         return new Response(
-          JSON.stringify({
-            error: "This email is registered as a staff account",
-            message: `This email is registered as a staff account. Please use the staff login at /${tenant.slug}/admin/login instead.`
-          }),
+          JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -459,10 +457,10 @@ serve(secureHeadersMiddleware(async (req) => {
       if (!customerUser.email_verified) {
         return new Response(
           JSON.stringify({
-            error: "Email not verified",
+            error: AUTH_ERRORS.EMAIL_NOT_VERIFIED,
             requires_verification: true,
             customer_user_id: customerUser.id,
-            message: "Please verify your email address before logging in. Check your inbox for the verification code."
+            message: AUTH_ERRORS.EMAIL_NOT_VERIFIED
           }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -590,7 +588,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (customerError || !customerUser) {
         return new Response(
-          JSON.stringify({ error: "User not found or inactive" }),
+          JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -605,7 +603,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (tenantError || !tenant) {
         return new Response(
-          JSON.stringify({ error: "Tenant not found or inactive" }),
+          JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -689,7 +687,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (customerError || !customerUser) {
         return new Response(
-          JSON.stringify({ error: "User not found or inactive" }),
+          JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

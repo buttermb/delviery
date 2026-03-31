@@ -66,7 +66,7 @@ serve(async (req) => {
       .select('*')
       .eq('slug', package_slug)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (packageError || !creditPackage) {
       return new Response(
@@ -80,7 +80,7 @@ serve(async (req) => {
       .from('tenants')
       .select('id, slug, stripe_customer_id, owner_email')
       .eq('id', tenant_id)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       return new Response(

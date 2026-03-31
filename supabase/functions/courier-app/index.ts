@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,7 +25,7 @@ serve(async (req) => {
       .from("couriers")
       .select("*, tenant_id")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!courier || !courier.is_active) {
       return new Response(
@@ -556,7 +550,7 @@ serve(async (req) => {
             .from("orders")
             .select("delivery_address, pickup_lat, pickup_lng, merchants(business_name, address)")
             .eq("id", deliveredOrder.id)
-            .single();
+            .maybeSingle();
 
           const pickupAddress = orderAddresses?.merchants?.address
             || orderAddresses?.merchants?.business_name

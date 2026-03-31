@@ -1,4 +1,5 @@
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { serve, createClient, z } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
 const exportSchema = z.object({
@@ -8,8 +9,10 @@ const exportSchema = z.object({
 
 serve(
   withZenProtection(async (req) => {
+    const authCors = getAuthenticatedCorsHeaders(req);
+
     if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, { headers: authCors });
     }
 
     try {
@@ -22,7 +25,7 @@ serve(
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return new Response(
           JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -32,7 +35,7 @@ serve(
       if (authError || !user) {
         return new Response(
           JSON.stringify({ error: 'Invalid token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -173,7 +176,7 @@ serve(
         {
           status: 200,
           headers: {
-            ...corsHeaders,
+            ...authCors,
             'Content-Type': 'application/json',
             'Content-Disposition': `attachment; filename="gdpr-export-${targetUserId}-${Date.now()}.json"`,
           },
@@ -185,7 +188,7 @@ serve(
         JSON.stringify({
           error: error instanceof Error ? error.message : 'Failed to export data',
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
   })

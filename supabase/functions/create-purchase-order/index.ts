@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         .select('*')
         .eq('id', supplier_id)
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (!supplier) {
         return new Response(
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
           .select('wholesale_price_per_lb')
           .eq('id', item.product_id)
           .eq('tenant_id', tenantId)
-          .single();
+          .maybeSingle();
 
         const itemTotal = item.quantity_lbs * (product?.wholesale_price_per_lb || item.price_per_lb);
         totalAmount += itemTotal;

@@ -1,7 +1,6 @@
-import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { createLogger } from '../_shared/logger.ts';
-
-const logger = createLogger('encrypt-all-data');
+import { serve, createClient, z } from '../_shared/deps.ts';
+import { getAuthenticatedCorsHeaders } from '../_shared/cors.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
 
 // Zod validation schema
 const encryptAllDataSchema = z.object({
@@ -10,15 +9,55 @@ const encryptAllDataSchema = z.object({
 });
 
 serve(async (req) => {
+  const authCors = getAuthenticatedCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: authCors });
   }
+
+  const logger = createRequestLogger('encrypt-all-data', req);
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...authCors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify the authenticated user is a super admin
+    const { data: superAdmin } = await supabaseClient
+      .from('super_admin_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!superAdmin) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Super admin access required' }),
+        { status: 403, headers: { ...authCors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    logger.info('Authenticated super admin', { userId: user.id });
 
     // Parse and validate request body
     const rawBody = await req.json();
@@ -32,7 +71,7 @@ serve(async (req) => {
           error: 'Validation failed',
           details: zodError.error.flatten().fieldErrors,
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...authCors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -229,13 +268,13 @@ serve(async (req) => {
         results,
         message: `Encryption completed: Medical (${results.medical.success} success, ${results.medical.failed} failed), PII (${results.pii.success} success, ${results.pii.failed} failed), Financial (${results.financial.success} success, ${results.financial.failed} failed)`,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...authCors, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
     logger.error('Encryption error', { error: error instanceof Error ? error.message : 'Unknown' });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: { ...authCors, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
 });

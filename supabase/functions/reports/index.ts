@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
     if (req.method === "OPTIONS") {
@@ -24,9 +18,9 @@ serve(async (req) => {
             .from("custom_reports")
             .select("*")
             .eq("id", report_id)
-            .single();
+            .maybeSingle();
 
-        if (error) throw error;
+        if (error || !report) throw error ?? new Error('Report not found');
 
         // Execute SQL query (Security Warning: This executes raw SQL from DB. Ensure only admins can create reports)
         // In a real app, you might want to restrict this or use a read-only user

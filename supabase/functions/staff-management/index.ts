@@ -92,7 +92,7 @@ serve(async (req) => {
       .from('tenants')
       .select('id, owner_email')
       .eq('id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!tenant) {
       return new Response(

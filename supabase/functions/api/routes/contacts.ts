@@ -64,7 +64,7 @@ async function getAuthContext(req: Request) {
     .from('tenant_users')
     .select('tenant_id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!tenantUser?.tenant_id) {
     throw new Error('No tenant access');
@@ -155,7 +155,7 @@ async function getContact(req: Request, params: Record<string, string>): Promise
       .select('*')
       .eq('id', contactId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return errorResponse(error.message, error.code === 'PGRST116' ? 404 : 400);
@@ -188,7 +188,7 @@ async function createContact(req: Request, params: Record<string, string>): Prom
         .select('id')
         .eq('tenant_id', tenantId)
         .eq('email', input.email)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         return errorResponse('A contact with this email already exists');
@@ -250,7 +250,7 @@ async function updateContact(req: Request, params: Record<string, string>): Prom
         .eq('tenant_id', tenantId)
         .eq('email', input.email)
         .neq('id', contactId)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         return errorResponse('A contact with this email already exists');

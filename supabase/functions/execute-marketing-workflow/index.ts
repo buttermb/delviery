@@ -42,9 +42,9 @@ Deno.serve(async (req) => {
       .select('*')
       .eq('id', workflowId)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
 
-    if (workflowError) throw workflowError;
+    if (workflowError || !workflow) throw workflowError ?? new Error('Workflow not found');
 
     // Check trigger conditions
     const conditions = workflow.trigger_conditions as Record<string, unknown>;

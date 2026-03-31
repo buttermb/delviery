@@ -102,7 +102,7 @@ serve(async (req) => {
       .from('tenants')
       .select('id, owner_email')
       .eq('id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!tenant) {
       return new Response(
@@ -435,7 +435,7 @@ serve(async (req) => {
           .select('id, tenant_id, invoice_number, subtotal, tax, total, amount_paid, amount_due, line_items, billing_period_start, billing_period_end, issue_date, due_date, paid_at, status, stripe_invoice_id, stripe_payment_intent_id, created_at, updated_at')
           .eq('id', invoice_id)
           .eq('tenant_id', tenantId)
-          .single();
+          .maybeSingle();
 
         if (queryError) {
           return new Response(
@@ -470,7 +470,7 @@ serve(async (req) => {
         .select('status')
         .eq('id', invoice_id)
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (!invoice) {
         return new Response(

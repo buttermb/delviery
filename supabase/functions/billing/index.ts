@@ -89,7 +89,7 @@ serve(async (req) => {
       .from('tenants')
       .select('id, owner_email')
       .eq('id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (!tenant) {
       return new Response(
@@ -125,7 +125,7 @@ serve(async (req) => {
           .from('tenants')
           .select('subscription_plan, subscription_status, limits, usage, stripe_customer_id')
           .eq('id', tenantId)
-          .single();
+          .maybeSingle();
 
         if (!tenantData) {
           return new Response(

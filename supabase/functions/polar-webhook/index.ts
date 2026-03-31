@@ -64,7 +64,7 @@ serve(async (req) => {
                     .from('tenants')
                     .select('id')
                     .eq('subscription_id', subscription_id)
-                    .single();
+                    .maybeSingle();
 
                 if (tenant) {
                     await supabase
@@ -86,7 +86,7 @@ serve(async (req) => {
                     .from('tenants')
                     .select('id')
                     .eq('subscription_id', subscription_id)
-                    .single();
+                    .maybeSingle();
 
                 if (tenant) {
                     // Downgrade to free tier
