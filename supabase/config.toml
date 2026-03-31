@@ -578,7 +578,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.detect-suspicious-login]
-verify_jwt = true
+verify_jwt = false
 
 [functions.secure-account]
 verify_jwt = true

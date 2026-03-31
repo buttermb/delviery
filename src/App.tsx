@@ -345,6 +345,7 @@ const App = () => {
                                     <RouteProgressManager />
                                     <DocumentTitleManager />
                                     <ScrollToTop />
+                                    <main id="main-content">
                                     <Routes>
                                       {/* Marketing & Public Routes */}
                                       <Route path="/" element={<SmartRootRedirect />} />
@@ -979,6 +980,7 @@ const App = () => {
                                       {/* ==================== 404 NOT FOUND ==================== */}
                                       <Route path="*" element={<NotFoundPage />} />
                                     </Routes>
+                                    </main>
                                   </Suspense>
                                 </WhiteLabelProvider>
                               </TenantProvider>

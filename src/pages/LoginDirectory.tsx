@@ -134,7 +134,7 @@ export default function LoginDirectory() {
                     {/* Content */}
                     <div className="mb-4">
                       <h2 className="text-xl font-semibold text-foreground mb-1">{portal.title}</h2>
-                      <p className="text-sm text-muted-foreground/80 mb-3">{portal.subtitle}</p>
+                      <p className="text-sm text-muted-foreground mb-3">{portal.subtitle}</p>
                       <p className="text-muted-foreground text-sm leading-relaxed">
                         {portal.description}
                       </p>

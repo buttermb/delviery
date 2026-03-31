@@ -94,7 +94,7 @@ export function AuthLayout({
           >
             Terms of Service
           </a>
-          <span className="hidden text-muted-foreground/50 sm:inline" aria-hidden="true">
+          <span className="hidden text-muted-foreground sm:inline" aria-hidden="true">
             &middot;
           </span>
           <a
@@ -103,7 +103,7 @@ export function AuthLayout({
           >
             Privacy Policy
           </a>
-          <span className="hidden text-muted-foreground/50 sm:inline" aria-hidden="true">
+          <span className="hidden text-muted-foreground sm:inline" aria-hidden="true">
             &middot;
           </span>
           <a
