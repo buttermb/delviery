@@ -1,4 +1,19 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { jsonResponse } from './utils.ts';
+import type { CourierRecord } from './utils.ts';
+
+// ── Handlers ────────────────────────────────────────────────────────────
+import { handleLogin } from './handlers/login.ts';
+import { handleToggleOnline } from './handlers/toggle-online.ts';
+import { handleUpdateLocation } from './handlers/update-location.ts';
+import {
+  handleMyOrders,
+  handleAvailableOrders,
+  handleAcceptOrder,
+  handleUpdateOrderStatus,
+} from './handlers/orders.ts';
+import { handleMarkPickedUp, handleMarkDelivered } from './handlers/delivery.ts';
+import { handleEarnings, handleTodayStats } from './handlers/earnings.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,10 +30,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     const { data: courier } = await supabase
@@ -28,10 +40,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!courier || !courier.is_active) {
-      return new Response(
-        JSON.stringify({ error: "Courier account not found or inactive" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Courier account not found or inactive" }, 403);
     }
 
     // Log tenant_id for debugging
@@ -40,644 +49,43 @@ serve(async (req) => {
     // Parse request body to get endpoint
     const body = await req.json();
     const endpoint = body.endpoint;
-    
+
     console.error("Courier app request:", { endpoint, courier: courier.email });
 
-    if (endpoint === "login") {
-      await supabase
-        .from("couriers")
-        .update({ last_login_at: new Date().toISOString() })
-        .eq("id", courier.id);
+    const typedCourier = courier as CourierRecord;
 
-      return new Response(
-        JSON.stringify({
-          courier: {
-            id: courier.id,
-            email: courier.email,
-            full_name: courier.full_name,
-            phone: courier.phone,
-            vehicle_type: courier.vehicle_type,
-            is_online: courier.is_online,
-            commission_rate: courier.commission_rate
-          }
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // ── Route to handler ──────────────────────────────────────────────
+    switch (endpoint) {
+      case "login":
+        return handleLogin(supabase, typedCourier);
+      case "toggle-online":
+        return handleToggleOnline(supabase, typedCourier, body);
+      case "update-location":
+        return handleUpdateLocation(supabase, typedCourier, body);
+      case "my-orders":
+        return handleMyOrders(supabase, typedCourier, body);
+      case "available-orders":
+        return handleAvailableOrders(supabase, typedCourier);
+      case "accept-order":
+        return handleAcceptOrder(supabase, typedCourier, body);
+      case "update-order-status":
+        return handleUpdateOrderStatus(supabase, typedCourier, body);
+      case "mark-picked-up":
+        return handleMarkPickedUp(supabase, typedCourier, body);
+      case "mark-delivered":
+        return handleMarkDelivered(supabase, typedCourier, body);
+      case "earnings":
+        return handleEarnings(supabase, typedCourier, body);
+      case "today-stats":
+        return handleTodayStats(supabase, typedCourier);
+      default:
+        return jsonResponse({ error: "Invalid endpoint" }, 400);
     }
-
-    if (endpoint === "toggle-online") {
-      const isOnline = body.is_online;
-
-      let shiftId = null;
-      if (isOnline) {
-        const { data: shift } = await supabase
-          .from("courier_shifts")
-          .insert({
-            courier_id: courier.id,
-            started_at: new Date().toISOString(),
-            status: 'active'
-          })
-          .select()
-          .single();
-        shiftId = shift?.id;
-      } else {
-        const { data: activeShift } = await supabase
-          .from("courier_shifts")
-          .select("*")
-          .eq("courier_id", courier.id)
-          .eq("status", "active")
-          .order("started_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (activeShift) {
-          const endTime = new Date();
-          const startTime = new Date(activeShift.started_at);
-          const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-
-          await supabase
-            .from("courier_shifts")
-            .update({
-              ended_at: endTime.toISOString(),
-              total_hours: hours,
-              status: 'completed'
-            })
-            .eq("id", activeShift.id);
-        }
-      }
-
-      const { data: updatedCourier } = await supabase
-        .from("couriers")
-        .update({ 
-          is_online: isOnline,
-          available_for_orders: isOnline
-        })
-        .eq("id", courier.id)
-        .select()
-        .single();
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          is_online: isOnline,
-          shift_id: shiftId,
-          courier: updatedCourier
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "update-location") {
-      const { lat, lng, accuracy, speed, heading, order_id } = body;
-
-      await supabase
-        .from("couriers")
-        .update({
-          current_lat: lat,
-          current_lng: lng,
-          last_location_update: new Date().toISOString()
-        })
-        .eq("id", courier.id);
-
-      await supabase
-        .from("courier_location_history")
-        .insert({
-          courier_id: courier.id,
-          lat,
-          lng,
-          accuracy,
-          speed,
-          heading,
-          order_id
-        });
-
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "my-orders") {
-      const status = body.status || "all";
-      
-      let query = supabase
-        .from("orders")
-        .select(`
-          *,
-          merchants (*),
-          addresses (*),
-          order_items (
-            *,
-            products (*)
-          )
-        `)
-        .eq("courier_id", courier.id)
-        .order("created_at", { ascending: false });
-
-      // Add tenant filter for multi-tenant isolation
-      if (courier.tenant_id) {
-        query = query.eq("tenant_id", courier.tenant_id);
-      }
-
-      if (status === "active") {
-        // Active orders are preparing or out for delivery
-        query = query.in("status", ["preparing", "out_for_delivery"]);
-      } else if (status !== "all") {
-        query = query.eq("status", status);
-      }
-
-      const { data: orders, error } = await query;
-
-      if (error) {
-        console.error("Orders query error:", error);
-        return new Response(
-          JSON.stringify({ error: error.message, orders: [] }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Fetch customer info from profiles table
-      const ordersWithCustomerInfo = await Promise.all(
-        (orders || []).map(async (order) => {
-          let customerName = order.customer_name;
-          let customerPhone = order.customer_phone;
-          
-          // If customer info is missing, fetch from profiles
-          if (!customerName || !customerPhone) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("full_name, phone")
-              .eq("user_id", order.user_id)
-              .maybeSingle();
-            
-            if (profile) {
-              customerName = profile.full_name || customerName;
-              customerPhone = profile.phone || customerPhone;
-            }
-          }
-          
-          const commission = (parseFloat(order.subtotal || order.total_amount) * courier.commission_rate) / 100;
-          return {
-            ...order,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            courier_commission: commission.toFixed(2)
-          };
-        })
-      );
-
-      return new Response(
-        JSON.stringify({ 
-          orders: ordersWithCustomerInfo,
-          count: ordersWithCustomerInfo.length
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "available-orders") {
-      // Filter orders by courier's tenant_id for multi-tenant isolation
-      let query = supabase
-        .from("orders")
-        .select(`
-          *,
-          merchants (*),
-          addresses (*)
-        `)
-        .eq("status", "pending")
-        .is("courier_id", null)
-        .order("created_at", { ascending: true })
-        .limit(20);
-
-      // Add tenant filter if courier has a tenant_id
-      if (courier.tenant_id) {
-        query = query.eq("tenant_id", courier.tenant_id);
-      }
-
-      const { data: orders } = await query;
-
-      // Fetch customer info from profiles table
-      const ordersWithCustomerInfo = await Promise.all(
-        (orders || []).map(async (order) => {
-          let customerName = order.customer_name;
-          let customerPhone = order.customer_phone;
-          
-          // If customer info is missing, fetch from profiles
-          if (!customerName || !customerPhone) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("full_name, phone")
-              .eq("user_id", order.user_id)
-              .maybeSingle();
-            
-            if (profile) {
-              customerName = profile.full_name || customerName;
-              customerPhone = profile.phone || customerPhone;
-            }
-          }
-          
-          return {
-            ...order,
-            customer_name: customerName,
-            customer_phone: customerPhone
-          };
-        })
-      );
-
-      return new Response(
-        JSON.stringify({ orders: ordersWithCustomerInfo }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "accept-order") {
-      const orderId = body.order_id;
-      console.error('Accept order request for:', orderId);
-
-      const { data: order } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", orderId)
-        .is("courier_id", null)
-        .maybeSingle();
-
-      if (!order) {
-        console.error('Order not available or already assigned');
-        return new Response(
-          JSON.stringify({ error: "Order no longer available" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      console.error('Updating order and fetching full details...');
-      const { data: updatedOrder, error: updateError } = await supabase
-        .from("orders")
-        .update({
-          courier_id: courier.id,
-          courier_assigned_at: new Date().toISOString(),
-          courier_accepted_at: new Date().toISOString(),
-          status: "preparing"
-        })
-        .eq("id", orderId)
-        .select(`
-          *,
-          merchants (
-            id,
-            business_name,
-            address,
-            phone,
-            latitude,
-            longitude
-          ),
-          addresses (
-            street,
-            apartment,
-            city,
-            state,
-            zip_code,
-            borough,
-            latitude,
-            longitude
-          ),
-          order_items (
-            id,
-            quantity,
-            price,
-            product_name,
-            products (
-              id,
-              name,
-              image_url,
-              description
-            )
-          )
-        `)
-        .single();
-
-      if (updateError) {
-        console.error('Error updating order:', updateError);
-        return new Response(
-          JSON.stringify({ error: updateError.message }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      console.error('✅ Order updated successfully:', updatedOrder);
-
-      // Fetch customer info from profiles
-      let customerName = updatedOrder.customer_name;
-      let customerPhone = updatedOrder.customer_phone;
-      
-      if (!customerName || !customerPhone) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, phone")
-          .eq("user_id", updatedOrder.user_id)
-          .maybeSingle();
-        
-        if (profile) {
-          customerName = profile.full_name || customerName;
-          customerPhone = profile.phone || customerPhone;
-        }
-      }
-
-      // Get customer order count
-      const { count } = await supabase
-        .from('orders')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', updatedOrder.user_id)
-        .eq('status', 'delivered');
-
-      const orderWithCustomerInfo = {
-        ...updatedOrder,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_order_count: count || 0
-      };
-
-      await supabase
-        .from("order_tracking")
-        .insert({
-          order_id: orderId,
-          status: "preparing",
-          message: `Courier ${courier.full_name} accepted the order`
-        });
-
-      console.error('Returning response with full order data');
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          order: orderWithCustomerInfo
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "update-order-status") {
-      const { order_id, status, notes } = body;
-
-      const { data: updatedOrder } = await supabase
-        .from("orders")
-        .update({ status })
-        .eq("id", order_id)
-        .eq("courier_id", courier.id)
-        .select()
-        .single();
-
-      await supabase
-        .from("order_tracking")
-        .insert({
-          order_id,
-          status,
-          message: notes || `Status updated to ${status}`
-        });
-
-      return new Response(
-        JSON.stringify({ success: true, order: updatedOrder }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "mark-picked-up") {
-      const { order_id, pickup_photo_url } = body;
-
-      await supabase
-        .from("orders")
-        .update({ status: "out_for_delivery" })
-        .eq("id", order_id)
-        .eq("courier_id", courier.id);
-
-      await supabase
-        .from("deliveries")
-        .update({ 
-          actual_pickup_time: new Date().toISOString(),
-          pickup_photo_url
-        })
-        .eq("order_id", order_id);
-
-      await supabase
-        .from("order_tracking")
-        .insert({
-          order_id,
-          status: "out_for_delivery",
-          message: "Order picked up and out for delivery"
-        });
-
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "mark-delivered") {
-      const {
-        order_id,
-        delivery_photo_url,
-        signature_url,
-        id_verification_photo_url,
-        customer_present
-      } = body;
-
-      const now = new Date().toISOString();
-
-      // 1. Mark order delivered and fetch order details for earnings calc
-      const { data: deliveredOrder } = await supabase
-        .from("orders")
-        .update({
-          status: "delivered",
-          delivered_at: now
-        })
-        .eq("id", order_id)
-        .eq("courier_id", courier.id)
-        .select("id, order_number, subtotal, total_amount, delivery_fee, tip_amount, tenant_id, customer_name")
-        .single();
-
-      // 2. Update delivery record
-      await supabase
-        .from("deliveries")
-        .update({
-          actual_dropoff_time: now,
-          delivery_photo_url,
-          signature_url,
-          id_verification_url: id_verification_photo_url,
-          delivery_notes: customer_present ? "Delivered to customer" : "Left at door"
-        })
-        .eq("order_id", order_id);
-
-      // 3. Insert tracking event
-      await supabase
-        .from("order_tracking")
-        .insert({
-          order_id,
-          status: "delivered",
-          message: "Order delivered successfully"
-        });
-
-      // 4. Create earnings record
-      if (deliveredOrder) {
-        const orderTotal = parseFloat(String(deliveredOrder.subtotal || deliveredOrder.total_amount)) || 0;
-        const commissionRate = courier.commission_rate || 30;
-        const commissionAmount = (orderTotal * commissionRate) / 100;
-        const tipAmount = parseFloat(String(deliveredOrder.tip_amount)) || 0;
-        const totalEarned = commissionAmount + tipAmount;
-
-        // Compute week_start_date (Monday of current week)
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        const monday = new Date(today);
-        monday.setDate(today.getDate() + mondayOffset);
-        const weekStartDate = monday.toISOString().split("T")[0];
-
-        await supabase
-          .from("courier_earnings")
-          .insert({
-            courier_id: courier.id,
-            order_id: deliveredOrder.id,
-            order_total: orderTotal,
-            commission_rate: commissionRate,
-            commission_amount: commissionAmount,
-            tip_amount: tipAmount,
-            total_earned: totalEarned,
-            week_start_date: weekStartDate,
-            status: "pending",
-          });
-
-        // 5. Log delivery_completed to driver_activity_log
-        if (courier.tenant_id) {
-          // Fetch order addresses for pickup/dropoff display
-          const { data: orderAddresses } = await supabase
-            .from("orders")
-            .select("delivery_address, pickup_lat, pickup_lng, merchants(business_name, address)")
-            .eq("id", deliveredOrder.id)
-            .maybeSingle();
-
-          const pickupAddress = orderAddresses?.merchants?.address
-            || orderAddresses?.merchants?.business_name
-            || null;
-
-          await supabase
-            .from("driver_activity_log")
-            .insert({
-              tenant_id: courier.tenant_id,
-              driver_id: courier.id,
-              event_type: "delivery_completed",
-              event_data: {
-                order_id: deliveredOrder.id,
-                order_number: deliveredOrder.order_number,
-                total_earned: totalEarned,
-                customer_name: deliveredOrder.customer_name,
-                tip: tipAmount > 0 ? tipAmount.toFixed(2) : null,
-                pickup: pickupAddress,
-                dropoff: orderAddresses?.delivery_address || null,
-              },
-            });
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "earnings") {
-      const period = body.period || "week";
-      
-      let query = supabase
-        .from("courier_earnings")
-        .select("*")
-        .eq("courier_id", courier.id)
-        .order("created_at", { ascending: false });
-
-      if (period === "week") {
-        const weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-        weekStart.setHours(0, 0, 0, 0);
-        query = query.gte("created_at", weekStart.toISOString());
-      } else if (period === "month") {
-        const monthStart = new Date();
-        monthStart.setDate(1);
-        monthStart.setHours(0, 0, 0, 0);
-        query = query.gte("created_at", monthStart.toISOString());
-      }
-
-      const { data: earnings } = await query;
-
-      const totalEarned = earnings?.reduce((sum, e) => sum + parseFloat(e.total_earned), 0) || 0;
-      const totalDeliveries = earnings?.length || 0;
-      const avgPerDelivery = totalDeliveries > 0 ? totalEarned / totalDeliveries : 0;
-
-      return new Response(
-        JSON.stringify({
-          earnings: earnings || [],
-          summary: {
-            total_earned: totalEarned.toFixed(2),
-            total_deliveries: totalDeliveries,
-            avg_per_delivery: avgPerDelivery.toFixed(2)
-          }
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (endpoint === "today-stats") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const [
-        { data: todayOrders },
-        { data: todayEarnings },
-        { data: activeShift }
-      ] = await Promise.all([
-        supabase
-          .from("orders")
-          .select("*")
-          .eq("courier_id", courier.id)
-          .gte("created_at", today.toISOString()),
-        supabase
-          .from("courier_earnings")
-          .select("total_earned")
-          .eq("courier_id", courier.id)
-          .gte("created_at", today.toISOString()),
-        supabase
-          .from("courier_shifts")
-          .select("*")
-          .eq("courier_id", courier.id)
-          .eq("status", "active")
-          .maybeSingle()
-      ]);
-
-      const deliveries = todayOrders?.filter(o => o.status === "delivered").length || 0;
-      const totalEarnings = todayEarnings?.reduce((sum, e) => sum + parseFloat(e.total_earned), 0) || 0;
-      
-      let hoursOnline = 0;
-      if (activeShift) {
-        const now = new Date();
-        const start = new Date(activeShift.started_at);
-        hoursOnline = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
-      }
-
-      return new Response(
-        JSON.stringify({
-          deliveries_completed: deliveries,
-          total_earned: totalEarnings.toFixed(2),
-          hours_online: hoursOnline.toFixed(1),
-          active_orders: todayOrders?.filter(o => ["preparing", "out_for_delivery"].includes(o.status)).length || 0
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ error: "Invalid endpoint" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
   } catch (error) {
     console.error("Courier app error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Request failed" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : "Request failed" },
+      500,
     );
   }
 });
