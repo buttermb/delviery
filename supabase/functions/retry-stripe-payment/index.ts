@@ -52,7 +52,7 @@ serve(async (req) => {
       .from("tenant_users")
       .select("tenant_id, role, tenants!inner(id, stripe_customer_id, name)")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (tenantUserError || !tenantUser) {
       console.error("Tenant lookup failed:", tenantUserError);

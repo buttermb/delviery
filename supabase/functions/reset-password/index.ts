@@ -57,7 +57,7 @@ serve(async (req) => {
         .from('tenants')
         .select('id, slug')
         .eq('slug', tenant_slug.toLowerCase())
-        .single();
+        .maybeSingle();
 
       if (!tenant || tenant.id !== resetToken.tenant_id) {
         return new Response(
