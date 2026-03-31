@@ -206,8 +206,7 @@ serve(async (req) => {
       .from("orders")
       .select(`
         *,
-        courier:couriers(*),
-        customer:profiles(*)
+        courier:couriers!orders_courier_id_fkey(*)
       `)
       .in("status", ["accepted", "confirmed", "preparing", "out_for_delivery"])
       .order("created_at", { ascending: false });
@@ -307,10 +306,13 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
-    console.error("Notification processing error:", error);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message
+      : (error && typeof error === 'object' && 'message' in error) ? String((error as Record<string, unknown>).message)
+      : String(error);
+    console.error("Notification processing error:", errMsg, error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: errMsg }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -294,7 +294,16 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error(`[ORDER_CREATE] Internal server error`, { traceId, error });
+    console.error(`[ORDER_CREATE] Error`, { traceId, error });
+
+    // Validation errors should return 400
+    if (error instanceof Error && (error.message.includes('Validation') || error.message.includes('required') || error.message.includes('invalid'))) {
+      return new Response(
+        JSON.stringify({ error: error.message, trace_id: traceId }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: 'Internal server error', trace_id: traceId }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
