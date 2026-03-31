@@ -61,7 +61,7 @@ serve(async (req) => {
             slug,
             is_free_tier,
             owner_email,
-            owner_phone
+            phone
           )
         `)
         .eq('tenants.is_free_tier', true)

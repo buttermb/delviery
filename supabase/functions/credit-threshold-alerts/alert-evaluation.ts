@@ -13,14 +13,14 @@ export async function checkAndAlertTenant(
   supabase: any,
   tenantId: string,
   balance: number,
-  tenantData?: { owner_email?: string; owner_phone?: string; slug?: string },
+  tenantData?: { owner_email?: string; phone?: string; slug?: string },
   alertsSent?: Record<string, boolean>
 ): Promise<AlertResult | null> {
   // Get tenant data if not provided
   if (!tenantData) {
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('owner_email, owner_phone, slug')
+      .select('owner_email, phone, slug')
       .eq('id', tenantId)
       .maybeSingle();
 
@@ -75,10 +75,10 @@ export async function checkAndAlertTenant(
             break;
 
           case 'sms':
-            if (tenantData.owner_phone) {
+            if (tenantData.phone) {
               await sendSmsAlert(
                 supabase,
-                tenantData.owner_phone,
+                tenantData.phone,
                 threshold,
                 balance
               );
