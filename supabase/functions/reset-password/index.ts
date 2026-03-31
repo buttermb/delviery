@@ -106,6 +106,14 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     console.error('Reset password error:', error);
+
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: error.errors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to reset password',

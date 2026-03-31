@@ -224,6 +224,14 @@ This link will expire in 24 hours. If you didn't request a password reset, pleas
     );
   } catch (error: unknown) {
     console.error('Request password reset error:', error);
+
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: error.errors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to process password reset request',

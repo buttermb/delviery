@@ -182,7 +182,13 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (action === "verify") {
       // Verify admin status for existing session
-      const authHeader = req.headers.get("Authorization")!;
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Missing authorization header" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const token = authHeader.replace("Bearer ", "");
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
@@ -237,7 +243,13 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     if (action === "logout") {
-      const authHeader = req.headers.get("Authorization")!;
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Missing authorization header" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const token = authHeader.replace("Bearer ", "");
       const { data: { user } } = await supabase.auth.getUser(token);
 
