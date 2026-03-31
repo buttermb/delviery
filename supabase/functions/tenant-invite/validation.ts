@@ -1,4 +1,4 @@
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from "../_shared/deps.ts";
 
 // Schema for send_invitation action
 const sendInvitationSchema = z.object({

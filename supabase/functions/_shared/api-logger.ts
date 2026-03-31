@@ -4,7 +4,7 @@
  * Can be imported and used in edge functions
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from './deps.ts';
 
 interface LogRequest {
   tenantId?: string;

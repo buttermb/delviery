@@ -5,6 +5,7 @@
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 const requestResetSchema = z.object({
   email: z.string().email(),
@@ -17,6 +18,16 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit: 3 password reset requests per hour per IP
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
+    const rateLimitResult = await checkRateLimit(RATE_LIMITS.PASSWORD_RESET, clientIP);
+    if (!rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);

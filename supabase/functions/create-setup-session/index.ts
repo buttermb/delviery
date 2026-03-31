@@ -3,8 +3,7 @@
  * Creates a Stripe Checkout session in setup mode to save a payment method
  */
 
-import { serve, corsHeaders } from '../_shared/deps.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve, corsHeaders, createClient } from '../_shared/deps.ts';
 import { getOrCreateStripeCustomer } from '../_shared/stripe-customer.ts';
 import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 import { validateSetupSession } from './validation.ts';

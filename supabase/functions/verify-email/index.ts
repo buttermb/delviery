@@ -1,4 +1,5 @@
 import { serve, z, corsHeaders } from '../_shared/deps.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
 
 // Request schema
 const RequestSchema = z.object({
@@ -80,9 +81,19 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit: 10 email verifications per minute per IP
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
+    const rateLimitResult = await checkRateLimit(RATE_LIMITS.VALIDATE_EMAIL, clientIP);
+    if (!rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await req.json();
     const { email, checkMx, checkDisposable } = RequestSchema.parse(body);
-    
+
     console.error(`Verifying email: ${email}`);
     
     // Extract domain

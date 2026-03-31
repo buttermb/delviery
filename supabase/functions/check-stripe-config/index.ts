@@ -3,8 +3,7 @@
  * Checks if Stripe is properly configured and the secret key is valid
  */
 
-import { serve, corsHeaders } from '../_shared/deps.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve, corsHeaders, createClient } from '../_shared/deps.ts';
 import { Stripe, STRIPE_API_VERSION } from '../_shared/stripe.ts';
 
 serve(async (req) => {

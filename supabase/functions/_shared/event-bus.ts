@@ -1,5 +1,5 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from './deps.ts';
 
 export interface MenuEvent {
     type: 'MENU_CREATED' | 'MENU_ACCESSED' | 'MENU_BURNED' |

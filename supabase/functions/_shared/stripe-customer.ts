@@ -8,7 +8,7 @@
  *    first writer persists the new ID; any loser re-reads the winning value.
  */
 
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import type { SupabaseClient } from './deps.ts';
 import { createLogger } from './logger.ts';
 
 const logger = createLogger('stripe-customer');
