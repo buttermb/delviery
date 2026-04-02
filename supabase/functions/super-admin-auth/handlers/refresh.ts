@@ -1,5 +1,4 @@
 // Handler: refresh token
-import { corsHeaders } from '../../_shared/deps.ts';
 import { refreshSchema } from '../validation.ts';
 import {
   createSuperAdminToken,
@@ -24,7 +23,7 @@ export async function handleRefresh(ctx: HandlerContext): Promise<Response> {
       }),
       {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -37,7 +36,7 @@ export async function handleRefresh(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: "Invalid token" }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -65,7 +64,7 @@ export async function handleRefresh(ctx: HandlerContext): Promise<Response> {
     JSON.stringify({ token: newToken }),
     {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
     },
   );
 }

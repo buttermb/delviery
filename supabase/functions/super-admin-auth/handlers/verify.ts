@@ -1,5 +1,4 @@
 // Handler: verify token
-import { corsHeaders } from '../../_shared/deps.ts';
 import { AUTH_ERRORS } from '../../_shared/auth-errors.ts';
 import { verifySuperAdminToken, type HandlerContext } from '../utils.ts';
 
@@ -12,7 +11,7 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: "No token provided" }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -25,14 +24,14 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: "Invalid or expired token" }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
 
   // Check if token is blacklisted (immediate revocation)
   const { data: isBlacklisted } = await supabase.rpc("is_token_blacklisted", {
-    p_jti: token.substring(0, 32),
+    p_jti: payload.jti ?? token.substring(0, 32),
   });
 
   if (isBlacklisted) {
@@ -40,7 +39,7 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: "Token has been revoked" }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -58,7 +57,7 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: "Session expired or invalid" }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -76,7 +75,7 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -93,7 +92,7 @@ export async function handleVerify(ctx: HandlerContext): Promise<Response> {
     }),
     {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
     },
   );
 }

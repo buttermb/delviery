@@ -1,5 +1,4 @@
 // Handler: logout
-import { corsHeaders } from '../../_shared/deps.ts';
 import { verifySuperAdminToken, type HandlerContext } from '../utils.ts';
 
 export async function handleLogout(ctx: HandlerContext): Promise<Response> {
@@ -18,7 +17,7 @@ export async function handleLogout(ctx: HandlerContext): Promise<Response> {
       tokenExpiry.setHours(tokenExpiry.getHours() + 8); // Match token expiry
 
       await supabase.rpc("blacklist_token", {
-        p_jti: token.substring(0, 32), // Use first 32 chars as JTI
+        p_jti: payload.jti ?? token.substring(0, 32),
         p_user_id: payload.super_admin_id,
         p_expires_at: tokenExpiry.toISOString(),
         p_reason: "logout",
@@ -33,7 +32,7 @@ export async function handleLogout(ctx: HandlerContext): Promise<Response> {
     JSON.stringify({ success: true }),
     {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
     },
   );
 }
