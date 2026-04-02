@@ -32,7 +32,20 @@ Deno.serve(withZenProtection(async (req) => {
 
     if (action === 'secure') {
       // One-click secure account (from email link, no auth required)
-      const body = secureAccountSchema.parse(rawBody);
+      const parsed = secureAccountSchema.safeParse(rawBody);
+      if (!parsed.success) {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid request: token is required',
+            details: parsed.error.flatten().fieldErrors,
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+      const body = parsed.data;
 
       const { data: result, error: rpcError } = await supabase.rpc('secure_account_from_alert', {
         p_secure_token: body.token,
@@ -61,7 +74,7 @@ Deno.serve(withZenProtection(async (req) => {
         try {
           // Sign out all sessions for this user
           await supabase.auth.admin.signOut(result.user_id, 'global');
-          console.error('All sessions revoked for user:', result.user_id);
+          console.info('All sessions revoked for user:', result.user_id);
         } catch (signOutError) {
           console.error('Failed to revoke sessions:', signOutError);
           // Continue anyway - the alert is already marked
@@ -108,7 +121,20 @@ Deno.serve(withZenProtection(async (req) => {
         );
       }
 
-      const body = confirmLoginSchema.parse(rawBody);
+      const parsed = confirmLoginSchema.safeParse(rawBody);
+      if (!parsed.success) {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid request: alertId (UUID) is required',
+            details: parsed.error.flatten().fieldErrors,
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+      const body = parsed.data;
 
       const { data: result, error: rpcError } = await supabase.rpc('confirm_login_was_me', {
         p_alert_id: body.alertId,
