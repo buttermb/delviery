@@ -35,15 +35,16 @@ serve(async (req) => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     const threeDaysFromNow = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
-    const oneDayFromNow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
 
-    // Find trials expiring in 3 days or 1 day, include is_free_tier for credit gating
+    // Find trials expiring within the next 3 days, include is_free_tier for credit gating
+    // The loop below filters for exactly 1 or 3 days remaining
     const { data: expiringTrials, error: selectError } = await supabaseClient
       .from('tenants')
       .select('id, business_name, owner_email, owner_name, trial_ends_at, is_free_tier')
       .eq('subscription_status', 'trial')
       .not('trial_ends_at', 'is', null)
-      .or(`trial_ends_at.lte.${threeDaysFromNow.toISOString()},trial_ends_at.lte.${oneDayFromNow.toISOString()}`);
+      .gte('trial_ends_at', now.toISOString())
+      .lte('trial_ends_at', threeDaysFromNow.toISOString());
 
     if (selectError) {
       console.error('Error fetching expiring trials:', selectError);
