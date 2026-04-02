@@ -3,7 +3,7 @@
  * Sends order receipt to customer after successful order placement
  */
 
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, corsHeaders } from '../_shared/deps.ts';
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
