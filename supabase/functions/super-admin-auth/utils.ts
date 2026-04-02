@@ -10,6 +10,7 @@ export interface SuperAdminJWTPayload {
   super_admin_id: string;
   role: string;
   type: "super_admin";
+  jti?: string;
 }
 
 export interface HandlerContext {

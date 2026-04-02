@@ -1,5 +1,4 @@
 // Handler: login
-import { corsHeaders } from '../../_shared/deps.ts';
 import { AUTH_ERRORS } from '../../_shared/auth-errors.ts';
 import { loginSchema } from '../validation.ts';
 import {
@@ -25,7 +24,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
       }),
       {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -49,7 +48,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
       }),
       {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -75,7 +74,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -98,7 +97,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
       JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
       {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
       },
     );
   }
@@ -158,9 +157,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
           },
         });
 
-      if (createError) {
-        // Non-fatal error, continue with custom JWT
-
+      if (!createError && newAuthUser?.user) {
         // Generate session for the new user
         const { data: sessionData, error: sessionError } =
           await supabase.auth.admin.generateLink({
@@ -180,8 +177,8 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
             user: newAuthUser.user,
           };
         }
-        // Role will be auto-assigned via trigger
       }
+      // If createError: non-fatal, continue with custom JWT only
     }
   } catch (_authError) {
     // Non-fatal error, continue with custom JWT
@@ -243,6 +240,6 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
 
   return new Response(JSON.stringify(response), {
     status: 200,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
   });
 }

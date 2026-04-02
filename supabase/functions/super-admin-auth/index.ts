@@ -1,5 +1,5 @@
 // Edge Function: super-admin-auth — slim router
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import type { HandlerContext } from './utils.ts';
 import { handleHealth } from './handlers/health.ts';
@@ -97,7 +97,7 @@ serve(secureHeadersMiddleware(async (req) => {
     if (!handler) {
       return new Response(
         JSON.stringify({ error: "Invalid action" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeadersWithOrigin, "Content-Type": "application/json" } },
       );
     }
 
@@ -106,7 +106,7 @@ serve(secureHeadersMiddleware(async (req) => {
     console.error('[super-admin-auth] Error:', error);
     return new Response(
       JSON.stringify({ error: "Authentication failed" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeadersWithOrigin, "Content-Type": "application/json" } },
     );
   }
 }));
