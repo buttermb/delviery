@@ -153,6 +153,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
   // Track whether auth has been initialized to prevent re-running on route changes
   const authInitializedRef = useRef(false);
+  // Guard against infinite re-initialization loop when no session exists
+  const reinitAttemptedRef = useRef(false);
 
   // Define clearAuthState first so it can be used by other functions
   // Helper function to clear auth state
@@ -172,6 +174,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
     // Allow re-initialization after logout (e.g., switching tenants)
     authInitializedRef.current = false;
+    reinitAttemptedRef.current = false;
   }, []);
 
   // Helper: redirect to login page with session expired message
@@ -799,7 +802,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
     
     // If we're on an admin route, initialized is done, but no admin/tenant loaded => re-init
-    if (isTenantAdminRoute && initialized && !admin && !tenant && !loading) {
+    // reinitAttemptedRef prevents infinite loop: no session → loading flips → effect re-fires
+    if (isTenantAdminRoute && initialized && !admin && !tenant && !loading && !reinitAttemptedRef.current) {
+      reinitAttemptedRef.current = true;
       logger.info('[AUTH] On admin route with no auth data - re-initializing');
       authInitializedRef.current = false;
       

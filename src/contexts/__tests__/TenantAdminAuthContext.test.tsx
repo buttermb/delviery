@@ -103,10 +103,25 @@ vi.mock('sonner', () => ({
   },
 }));
 
+vi.mock('@/lib/toastUtils', () => ({
+  showErrorToast: vi.fn(),
+}));
+
+vi.mock('@/hooks/useAuthError', () => ({
+  emitAuthError: vi.fn(),
+}));
+
+vi.mock('@/lib/auth/sessionFixation', () => ({
+  clearPreAuthSessionData: vi.fn(),
+  invalidateSessionNonce: vi.fn(),
+}));
+
 // Import after mocks
 import { TenantAdminAuthProvider, useTenantAdminAuth } from '../TenantAdminAuthContext';
 import { resilientFetch } from '@/lib/utils/networkResilience';
 import { safeStorage } from '@/utils/safeStorage';
+import { clearPreAuthSessionData } from '@/lib/auth/sessionFixation';
+import { supabase } from '@/integrations/supabase/client';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <MemoryRouter initialEntries={['/test-tenant/admin/dashboard']}>
@@ -279,6 +294,258 @@ describe('TenantAdminAuthContext', () => {
         result.current.login('admin@test.com', 'wrong-password', 'test-tenant')
       ).rejects.toThrow();
 
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    it('should handle server error (500)', async () => {
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({ error: 'Internal server error' }),
+          { status: 500 }
+        ),
+        attempts: 1,
+        category: 'server',
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      await expect(
+        result.current.login('admin@test.com', 'password', 'test-tenant')
+      ).rejects.toThrow();
+
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    it('should clear pre-auth session data on login (session fixation protection)', async () => {
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({ error: 'Invalid credentials' }),
+          { status: 401 }
+        ),
+        attempts: 1,
+        category: 'auth',
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      try {
+        await result.current.login('admin@test.com', 'password', 'test-tenant');
+      } catch {
+        // Expected to throw
+      }
+
+      expect(clearPreAuthSessionData).toHaveBeenCalledWith('tenant_admin');
+    });
+
+    it('should store tokens in safeStorage after successful login', async () => {
+      const mockAdmin = {
+        id: 'admin-456',
+        email: 'admin@store.com',
+        role: 'owner',
+        tenant_id: 'tenant-456',
+        userId: 'user-456',
+      };
+
+      const mockTenant = {
+        id: 'tenant-456',
+        business_name: 'Test Store',
+        slug: 'test-store',
+        subscription_plan: 'starter',
+        subscription_status: 'active',
+        limits: { customers: 50, menus: 3, products: 100, locations: 2, users: 3 },
+        usage: { customers: 5, menus: 1, products: 10, locations: 1, users: 1 },
+      };
+
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({
+            user: { id: 'user-456', email: 'admin@store.com' },
+            session: { access_token: 'new-access-tok', refresh_token: 'new-refresh-tok' },
+            admin: mockAdmin,
+            tenant: mockTenant,
+            access_token: 'new-access-tok',
+            refresh_token: 'new-refresh-tok',
+          }),
+          { status: 200 }
+        ),
+        attempts: 1,
+        category: null,
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      await act(async () => {
+        await result.current.login('admin@store.com', 'password123', 'test-store');
+      });
+
+      expect(safeStorage.getItem('tenant_admin_access_token')).toBe('new-access-tok');
+      expect(safeStorage.getItem('tenant_admin_refresh_token')).toBe('new-refresh-tok');
+      expect(safeStorage.getItem('tenant_admin_user')).toContain('admin@store.com');
+      expect(safeStorage.getItem('tenant_data')).toContain('test-store');
+    });
+
+    it('should sync tokens with Supabase client after login', async () => {
+      const mockAdmin = {
+        id: 'admin-789',
+        email: 'admin@sync.com',
+        role: 'admin',
+        tenant_id: 'tenant-789',
+        userId: 'user-789',
+      };
+
+      const mockTenant = {
+        id: 'tenant-789',
+        business_name: 'Sync Business',
+        slug: 'sync-biz',
+        subscription_plan: 'pro',
+        subscription_status: 'active',
+        limits: { customers: 100, menus: 10, products: 500, locations: 5, users: 10 },
+        usage: { customers: 0, menus: 0, products: 0, locations: 0, users: 0 },
+      };
+
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({
+            user: { id: 'user-789', email: 'admin@sync.com' },
+            session: { access_token: 'sync-access', refresh_token: 'sync-refresh' },
+            admin: mockAdmin,
+            tenant: mockTenant,
+            access_token: 'sync-access',
+            refresh_token: 'sync-refresh',
+          }),
+          { status: 200 }
+        ),
+        attempts: 1,
+        category: null,
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      await act(async () => {
+        await result.current.login('admin@sync.com', 'password123', 'sync-biz');
+      });
+
+      expect(supabase.auth.setSession).toHaveBeenCalledWith({
+        access_token: 'sync-access',
+        refresh_token: 'sync-refresh',
+      });
+    });
+
+    it('should apply default limits when tenant response lacks them', async () => {
+      const mockAdmin = {
+        id: 'admin-def',
+        email: 'admin@defaults.com',
+        role: 'owner',
+        tenant_id: 'tenant-def',
+        userId: 'user-def',
+      };
+
+      const mockTenant = {
+        id: 'tenant-def',
+        business_name: 'Defaults Business',
+        slug: 'defaults-biz',
+        subscription_plan: 'free',
+        subscription_status: 'active',
+        // No limits or usage provided
+      };
+
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({
+            user: { id: 'user-def', email: 'admin@defaults.com' },
+            session: { access_token: 'def-access', refresh_token: 'def-refresh' },
+            admin: mockAdmin,
+            tenant: mockTenant,
+            access_token: 'def-access',
+            refresh_token: 'def-refresh',
+          }),
+          { status: 200 }
+        ),
+        attempts: 1,
+        category: null,
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      await act(async () => {
+        await result.current.login('admin@defaults.com', 'password123', 'defaults-biz');
+      });
+
+      // Should have default limits applied
+      expect(result.current.tenant?.limits).toEqual({
+        customers: 50,
+        menus: 3,
+        products: 100,
+        locations: 2,
+        users: 3,
+      });
+      expect(result.current.tenant?.usage).toEqual({
+        customers: 0,
+        menus: 0,
+        products: 0,
+        locations: 0,
+        users: 0,
+      });
+    });
+
+    it('should handle access denied (403)', async () => {
+      (resilientFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        response: new Response(
+          JSON.stringify({ error: 'Account suspended' }),
+          { status: 403 }
+        ),
+        attempts: 1,
+        category: 'auth',
+      });
+
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      await expect(
+        result.current.login('admin@test.com', 'password', 'test-tenant')
+      ).rejects.toThrow();
+
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+  });
+
+  describe('Re-initialization Guard', () => {
+    it('should not loop infinitely when on admin route with no session', async () => {
+      // The wrapper starts on /test-tenant/admin/dashboard (admin route)
+      // With no session and no stored tokens, initialization completes with loading=false
+      // The re-init guard should prevent infinite loops
+      const { result } = renderHook(() => useTenantAdminAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      // Should stabilize with no auth
+      expect(result.current.admin).toBeNull();
+      expect(result.current.tenant).toBeNull();
       expect(result.current.isAuthenticated).toBe(false);
     });
   });
