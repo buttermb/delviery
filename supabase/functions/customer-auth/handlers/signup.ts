@@ -1,4 +1,3 @@
-import { corsHeaders } from '../../_shared/deps.ts';
 import { hashPassword } from '../../_shared/password.ts';
 import { signupSchema } from '../validation.ts';
 import { AUTH_ERRORS } from '../../_shared/auth-errors.ts';
@@ -17,7 +16,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
         error: "Validation failed",
         details: zodError.error.errors
       }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -26,7 +25,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
   if (!tenantSlug && !tenantId) {
     return new Response(
       JSON.stringify({ error: "Either tenantSlug or tenantId is required" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -42,7 +41,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
   if (tenantError || !tenant) {
     return new Response(
       JSON.stringify({ error: "Store not found or inactive" }),
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 404, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -57,7 +56,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
   if (existingUser) {
     return new Response(
       JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
-      { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 409, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -74,7 +73,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
   if (tenantUserExists) {
     return new Response(
       JSON.stringify({ error: AUTH_ERRORS.INVALID_CREDENTIALS }),
-      { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 409, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -93,13 +92,13 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
     if (actualAge < minimumAge) {
       return new Response(
         JSON.stringify({ error: `You must be at least ${minimumAge} years old to create an account` }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
       );
     }
   } else if (tenant.age_verification_required) {
     return new Response(
       JSON.stringify({ error: "Date of birth is required for age verification" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -120,7 +119,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
         if (!phoneResult.valid) {
           return new Response(
             JSON.stringify({ error: phoneResult.reason || "Invalid phone number" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
@@ -153,7 +152,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
     console.error('Failed to create customer user:', createError);
     return new Response(
       JSON.stringify({ error: "Failed to create account" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -202,7 +201,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
           console.error('Failed to create marketplace profile:', profileError);
           // Don't fail signup if profile creation fails - user can complete it later
         } else {
-          console.error('Marketplace profile created for business buyer:', businessName);
+          console.info('Marketplace profile created for business buyer:', businessName);
         }
       } else {
         // Update existing profile with business buyer info
@@ -224,7 +223,7 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
     }
   }
 
-  console.error('Customer signup successful:', email);
+  console.info('Customer signup successful:', email);
 
   return new Response(
     JSON.stringify({
@@ -234,6 +233,6 @@ export async function handleSignup(ctx: HandlerContext): Promise<Response> {
       customer_user_id: customerUser.id,
       is_business_buyer: isBusinessBuyer || false,
     }),
-    { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status: 201, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
   );
 }

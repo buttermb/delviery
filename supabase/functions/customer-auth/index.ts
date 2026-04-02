@@ -1,5 +1,5 @@
 // Edge Function: customer-auth
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { handleHealth } from './handlers/health.ts';
 import { handleSignup } from './handlers/signup.ts';
@@ -110,14 +110,14 @@ serve(secureHeadersMiddleware(async (req) => {
       default:
         return new Response(
           JSON.stringify({ error: "Invalid action" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 400, headers: { ...corsHeadersWithOrigin, "Content-Type": "application/json" } }
         );
     }
   } catch (error) {
     console.error("Customer auth error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeadersWithOrigin, "Content-Type": "application/json" } }
     );
   }
 }));

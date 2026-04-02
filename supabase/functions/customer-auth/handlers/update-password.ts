@@ -1,4 +1,3 @@
-import { corsHeaders } from '../../_shared/deps.ts';
 import { hashPassword, comparePassword } from '../../_shared/password.ts';
 import { updatePasswordSchema } from '../validation.ts';
 import { AUTH_ERRORS } from '../../_shared/auth-errors.ts';
@@ -12,7 +11,7 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return new Response(
       JSON.stringify({ error: "Authorization required" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -27,7 +26,7 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
         error: "Validation failed",
         details: zodError.error.errors
       }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -39,7 +38,7 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
   if (!payload) {
     return new Response(
       JSON.stringify({ error: "Invalid or expired token" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -54,7 +53,7 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
   if (customerError || !customerUser) {
     return new Response(
       JSON.stringify({ error: AUTH_ERRORS.UNAUTHORIZED }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -63,7 +62,7 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
   if (!validPassword) {
     return new Response(
       JSON.stringify({ error: "Current password is incorrect" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -79,12 +78,12 @@ export async function handleUpdatePassword(ctx: HandlerContext): Promise<Respons
   if (updateError) {
     return new Response(
       JSON.stringify({ error: "Failed to update password" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
   return new Response(
     JSON.stringify({ success: true, message: "Password updated successfully" }),
-    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status: 200, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
   );
 }
