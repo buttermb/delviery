@@ -8,6 +8,9 @@
  * 4. Uses tenantId from credit gate (not client-supplied accountId)
  * 5. Uses shared deps imports with proper types
  * 6. Looks up credit cost dynamically from credit_costs table
+ * 7. Uses errorResponse helper for consistent error formatting
+ * 8. Uses createRequestLogger for structured logging
+ * 9. Safely parses JSON request body (returns 400, not 500)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -45,6 +48,14 @@ describe('Send SMS Credit Gate Integration', () => {
       expect(source).toContain("import { corsHeaders, type SupabaseClient } from '../_shared/deps.ts'");
     });
 
+    it('should import errorResponse from shared error-response module', () => {
+      expect(source).toContain("import { errorResponse } from '../_shared/error-response.ts'");
+    });
+
+    it('should import createRequestLogger from shared logger module', () => {
+      expect(source).toContain("import { createRequestLogger } from '../_shared/logger.ts'");
+    });
+
     it('should not import directly from deno.land or esm.sh', () => {
       expect(source).not.toContain('deno.land/std');
       expect(source).not.toContain('esm.sh/@supabase');
@@ -52,6 +63,92 @@ describe('Send SMS Credit Gate Integration', () => {
 
     it('should not define its own corsHeaders', () => {
       expect(source).not.toMatch(/const\s+corsHeaders\s*=/);
+    });
+  });
+
+  describe('structured logging', () => {
+    it('should create a request-scoped logger inside the handler', () => {
+      expect(source).toContain("createRequestLogger('send-sms', req)");
+    });
+
+    it('should not use console.error directly', () => {
+      expect(source).not.toMatch(/\bconsole\.error\b/);
+    });
+
+    it('should not use console.warn directly', () => {
+      expect(source).not.toMatch(/\bconsole\.warn\b/);
+    });
+
+    it('should not use console.log', () => {
+      expect(source).not.toMatch(/\bconsole\.log\b/);
+    });
+
+    it('should use logger.error for Twilio API errors', () => {
+      const twilioErrorIdx = source.indexOf('!twilioResponse.ok');
+      const afterCheck = source.slice(twilioErrorIdx, twilioErrorIdx + 300);
+      expect(afterCheck).toContain('logger.error');
+    });
+
+    it('should use logger.warn for non-critical message logging failures', () => {
+      expect(source).toContain('logger.warn');
+    });
+  });
+
+  describe('error response consistency', () => {
+    it('should use errorResponse for Twilio not configured error', () => {
+      const envCheckIdx = source.indexOf('!TWILIO_ACCOUNT_SID');
+      const nextReturn = source.indexOf('return', envCheckIdx + 1);
+      const errorCall = source.slice(nextReturn, nextReturn + 200);
+      expect(errorCall).toContain('errorResponse');
+      expect(errorCall).toContain('TWILIO_NOT_CONFIGURED');
+    });
+
+    it('should use errorResponse for invalid JSON error', () => {
+      expect(source).toContain("errorResponse(400, 'Invalid JSON in request body', 'INVALID_JSON')");
+    });
+
+    it('should use errorResponse for missing fields error', () => {
+      expect(source).toContain("errorResponse(400, 'Missing required fields: to, message', 'MISSING_FIELDS')");
+    });
+
+    it('should use errorResponse for Twilio API failure', () => {
+      expect(source).toContain("errorResponse(502, 'Failed to send SMS via Twilio', 'TWILIO_ERROR'");
+    });
+
+    it('should use errorResponse for network/unexpected failures', () => {
+      expect(source).toContain("errorResponse(\n        500,\n        'Failed to send SMS',\n        'SMS_SEND_FAILED'");
+    });
+
+    it('should return 502 for upstream Twilio errors (not 500)', () => {
+      const twilioErrorIdx = source.indexOf('!twilioResponse.ok');
+      const errorBlock = source.slice(twilioErrorIdx, twilioErrorIdx + 500);
+      expect(errorBlock).toContain('502');
+    });
+  });
+
+  describe('JSON parsing safety', () => {
+    it('should wrap req.json() in try-catch', () => {
+      const jsonCallIdx = source.indexOf('req.json()');
+      expect(jsonCallIdx).toBeGreaterThan(-1);
+      const beforeJson = source.slice(0, jsonCallIdx);
+      const lastTryIdx = beforeJson.lastIndexOf('try {');
+      const lastCatchIdx = beforeJson.lastIndexOf('catch');
+      // The try should be more recent than any previous catch
+      expect(lastTryIdx).toBeGreaterThan(lastCatchIdx);
+    });
+
+    it('should return 400 for invalid JSON (not 500)', () => {
+      // Find the catch block that handles JSON parse errors
+      const invalidJsonIdx = source.indexOf('INVALID_JSON');
+      expect(invalidJsonIdx).toBeGreaterThan(-1);
+      const beforeInvalidJson = source.slice(Math.max(0, invalidJsonIdx - 100), invalidJsonIdx);
+      expect(beforeInvalidJson).toContain('400');
+    });
+
+    it('should parse to, message, and customerId from body', () => {
+      expect(source).toContain('body.to');
+      expect(source).toContain('body.message');
+      expect(source).toContain('body.customerId');
     });
   });
 
@@ -91,6 +188,13 @@ describe('Send SMS Credit Gate Integration', () => {
       expect(twilioFetchIdx).toBeGreaterThan(-1);
       expect(costLookupIdx).toBeLessThan(twilioFetchIdx);
     });
+
+    it('should default to 25 credits if lookup fails', () => {
+      const getCreditCostIdx = source.indexOf('async function getCreditCost');
+      const refundCreditsIdx = source.indexOf('async function refundCredits');
+      const getCreditCostBody = source.slice(getCreditCostIdx, refundCreditsIdx);
+      expect(getCreditCostBody).toContain('?? 25');
+    });
   });
 
   describe('credit refund on failure', () => {
@@ -100,13 +204,13 @@ describe('Send SMS Credit Gate Integration', () => {
 
     it('should use proper SupabaseClient type for refund function', () => {
       const refundFnIdx = source.indexOf('async function refundCredits');
-      const refundFn = source.slice(refundFnIdx, refundFnIdx + 200);
+      const refundFn = source.slice(refundFnIdx, refundFnIdx + 300);
       expect(refundFn).toContain('supabaseClient: SupabaseClient');
     });
 
     it('should accept numeric amount parameter for refund', () => {
       const refundFnIdx = source.indexOf('async function refundCredits');
-      const refundFn = source.slice(refundFnIdx, refundFnIdx + 200);
+      const refundFn = source.slice(refundFnIdx, refundFnIdx + 300);
       expect(refundFn).toContain('amount: number');
     });
 
@@ -140,6 +244,12 @@ describe('Send SMS Credit Gate Integration', () => {
 
     it('should include descriptive reason for refund transaction', () => {
       expect(source).toMatch(/p_reason:.*Refund.*failed/);
+    });
+
+    it('should accept a logger parameter for structured error logging', () => {
+      const refundFnIdx = source.indexOf('async function refundCredits');
+      const refundFn = source.slice(refundFnIdx, refundFnIdx + 300);
+      expect(refundFn).toContain('logger');
     });
   });
 
@@ -179,6 +289,14 @@ describe('Send SMS Credit Gate Integration', () => {
 
     it('should log sent message to message_history', () => {
       expect(source).toContain("from('message_history')");
+    });
+
+    it('should include external_id from Twilio response in message log', () => {
+      expect(source).toContain('external_id: twilioData.sid');
+    });
+
+    it('should handle message_history table not existing (42P01)', () => {
+      expect(source).toContain("logError.code !== '42P01'");
     });
   });
 });

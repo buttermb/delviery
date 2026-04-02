@@ -6,6 +6,8 @@
 
 import { corsHeaders, type SupabaseClient } from '../_shared/deps.ts';
 import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
+import { errorResponse } from '../_shared/error-response.ts';
+import { createRequestLogger } from '../_shared/logger.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,26 +15,35 @@ Deno.serve(async (req) => {
   }
 
   return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (tenantId, serviceClient) => {
+    const logger = createRequestLogger('send-sms', req);
+
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER');
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      return new Response(
-        JSON.stringify({
-          error: 'Twilio not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in environment variables.',
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return errorResponse(
+        500,
+        'Twilio not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in environment variables.',
+        'TWILIO_NOT_CONFIGURED',
       );
     }
 
-    const { to, message, customerId } = await req.json();
+    // Parse request body with safe error handling
+    let to: string;
+    let message: string;
+    let customerId: string | undefined;
+    try {
+      const body = await req.json();
+      to = body.to;
+      message = body.message;
+      customerId = body.customerId;
+    } catch {
+      return errorResponse(400, 'Invalid JSON in request body', 'INVALID_JSON');
+    }
 
     if (!to || !message) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: to, message' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse(400, 'Missing required fields: to, message', 'MISSING_FIELDS');
     }
 
     // Look up actual credit cost for accurate refunds
@@ -61,18 +72,12 @@ Deno.serve(async (req) => {
 
       if (!twilioResponse.ok) {
         const errorText = await twilioResponse.text();
-        console.error('Twilio API error:', errorText);
+        logger.error('Twilio API error', { errorText, to: formattedPhone });
 
         // Refund credits on Twilio failure
-        await refundCredits(serviceClient, tenantId, creditCost);
+        await refundCredits(serviceClient, tenantId, creditCost, logger);
 
-        return new Response(
-          JSON.stringify({
-            error: 'Failed to send SMS via Twilio',
-            details: errorText,
-          }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse(502, 'Failed to send SMS via Twilio', 'TWILIO_ERROR', errorText);
       }
 
       const twilioData = await twilioResponse.json();
@@ -92,10 +97,10 @@ Deno.serve(async (req) => {
         });
 
         if (logError && logError.code !== '42P01') {
-          console.error('Error logging message:', logError);
+          logger.error('Error logging message', { code: logError.code, message: logError.message });
         }
       } catch (err) {
-        console.warn('Could not log message:', err);
+        logger.warn('Could not log message', { error: String(err) });
       }
 
       return new Response(
@@ -107,17 +112,16 @@ Deno.serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (error: unknown) {
-      console.error('SMS sending failed:', error);
+      logger.error('SMS sending failed', { error: error instanceof Error ? error.message : String(error) });
 
       // Refund credits on network/unexpected errors
-      await refundCredits(serviceClient, tenantId, creditCost);
+      await refundCredits(serviceClient, tenantId, creditCost, logger);
 
-      return new Response(
-        JSON.stringify({
-          error: 'Failed to send SMS',
-          details: error instanceof Error ? error.message : 'Network error',
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return errorResponse(
+        500,
+        'Failed to send SMS',
+        'SMS_SEND_FAILED',
+        error instanceof Error ? error.message : 'Network error',
       );
     }
   });
@@ -151,7 +155,8 @@ async function getCreditCost(
 async function refundCredits(
   supabaseClient: SupabaseClient,
   tenantId: string,
-  amount: number
+  amount: number,
+  logger: { error: (msg: string, data?: Record<string, unknown>) => void },
 ): Promise<void> {
   try {
     const { error } = await supabaseClient.rpc('admin_adjust_credits', {
@@ -162,9 +167,9 @@ async function refundCredits(
     });
 
     if (error) {
-      console.error('Failed to refund credits:', error);
+      logger.error('Failed to refund credits', { code: error.code, message: error.message });
     }
   } catch (err) {
-    console.error('Credit refund error:', err);
+    logger.error('Credit refund error', { error: String(err) });
   }
 }
