@@ -301,7 +301,7 @@ export default function SignUpPage() {
         logger.error('[SIGNUP] Edge function error', { message: error.message, name: error.name });
         let errorMessage = 'Failed to create account';
         try {
-          const ctx = (error as any).context;
+          const ctx = (error as unknown as Record<string, unknown>).context;
           if (ctx && typeof ctx.json === 'function') {
             const errorBody = await ctx.json();
             logger.error('[SIGNUP] Error response body', errorBody);
