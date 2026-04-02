@@ -153,8 +153,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
   // Track whether auth has been initialized to prevent re-running on route changes
   const authInitializedRef = useRef(false);
-  // Guard against infinite re-initialization loop when no session exists
-  const reinitAttemptedRef = useRef(false);
 
   // Define clearAuthState first so it can be used by other functions
   // Helper function to clear auth state
@@ -174,7 +172,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
     // Allow re-initialization after logout (e.g., switching tenants)
     authInitializedRef.current = false;
-    reinitAttemptedRef.current = false;
   }, []);
 
   // Helper: redirect to login page with session expired message
@@ -798,20 +795,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   // RE-INITIALIZE AUTH when navigating to admin routes after login
   // This fixes the case where initializeAuth ran on /saas/login (non-admin route),
   // set authInitializedRef=true, and never re-runs when navigating to /{slug}/admin/dashboard
-  //
-  // Deps: only location.pathname and initialized — admin/tenant/loading are guard conditions,
-  // NOT triggers. Including loading in deps causes an infinite re-init loop when no session exists
-  // (loading toggles true→false→true→false endlessly).
   useEffect(() => {
     const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
+    // Skip re-init on auth pages (login/signup) — user is expected to authenticate there
+    const isAuthPage = location.pathname.includes('/login') ||
+      location.pathname.includes('/signup') ||
+      location.pathname.includes('/forgot-password');
 
-    // If we're on an admin route, initialized is done, but no admin/tenant loaded => re-init
-    // reinitAttemptedRef prevents infinite loop: no session → loading flips → effect re-fires
-    if (isTenantAdminRoute && initialized && !admin && !tenant && !loading && !reinitAttemptedRef.current) {
-      reinitAttemptedRef.current = true;
+    // If we're on an admin route (not auth page), initialized is done, but no admin/tenant loaded => re-init
+    if (isTenantAdminRoute && !isAuthPage && initialized && !admin && !tenant && !loading) {
       logger.info('[AUTH] On admin route with no auth data - re-initializing');
       authInitializedRef.current = false;
-
+      
       const reinitialize = async () => {
         setLoading(true);
         try {
@@ -897,8 +892,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       reinitialize();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- admin/tenant/loading are guards, not triggers; including loading causes infinite re-init loop
-  }, [location.pathname, initialized]);
+  }, [location.pathname, initialized, admin, tenant, loading]);
 
   // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
    // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).
@@ -1036,12 +1030,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           return false;
         }
 
-        // Non-401 error (e.g., 500, 503) — log but don't clear auth state
-        // The periodic safety net will retry in 2 minutes
-        logger.warn('[AUTH] Token refresh failed with unexpected status', {
-          status: response.status,
-          error: errorData?.error,
-        });
         return false;
       } catch (error) {
         logger.error('[AUTH] Token refresh exception', error);
@@ -1351,32 +1339,29 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Prevents the old session marker from being reused
     invalidateSessionNonce();
 
-    // Clear all refresh timers (both legacy and visibility-aware)
-    if (refreshTimerHandleRef.current) {
-      refreshTimerHandleRef.current.cleanup();
-      refreshTimerHandleRef.current = null;
-    }
+    // Clear refresh timer
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
-    }
-    if (warningTimerRef.current) {
-      clearTimeout(warningTimerRef.current);
-      warningTimerRef.current = null;
     }
 
     // Notify other tabs immediately
     broadcastLogout('tenant_auth_channel');
 
     try {
-      // Call logout endpoint to clear cookies
+      // Call logout endpoint to clear cookies and server-side session
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const currentToken = accessToken || safeStorage.getItem(ACCESS_TOKEN_KEY);
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (currentToken) {
+        headers["Authorization"] = `Bearer ${currentToken}`;
+      }
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include',
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         timeout: 10000,
         retryConfig: {
           maxRetries: 1,
