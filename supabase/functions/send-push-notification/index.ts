@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   return withCreditGate(
     req,
     CREDIT_ACTIONS.SEND_PUSH_NOTIFICATION,
-    async (_tenantId, supabase) => {
+    async (tenantId, supabase) => {
       const { userId, title, body, data } = await req.json();
 
       if (!userId || !title || !body) {
@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
       // Default to enabled if no preferences set
       const pushEnabled = prefs?.push_enabled !== false;
       const isCritical = data?.critical === true;
-      const allowPush = pushEnabled && (prefs?.push_all_updates || (prefs?.push_critical_only && isCritical));
+      // When prefs is null (no preferences row), default to allowing push
+      const allowPush = pushEnabled && (!prefs || prefs.push_all_updates || (prefs.push_critical_only && isCritical));
 
       if (!allowPush) {
         return new Response(
@@ -43,6 +44,7 @@ Deno.serve(async (req) => {
         .from('push_tokens')
         .select('token, platform')
         .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
         .eq('is_active', true);
 
       if (tokenError) {
