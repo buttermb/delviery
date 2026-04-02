@@ -24,13 +24,21 @@ Deno.serve(async (req: Request) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
-    return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, supabase) => {
-        const body: NotificationRequest = await req.json();
-        const { order_id, phone, email, store_name, order_number } = body;
+    // Parse and validate body BEFORE credit gate so callers get 400 for bad input
+    let body: NotificationRequest;
+    try {
+        body = await req.json();
+    } catch {
+        return errorResponse(400, "Invalid JSON body");
+    }
 
-        if (!order_id || !phone) {
-            return errorResponse(400, "Missing required fields");
-        }
+    const { order_id, phone } = body;
+    if (!order_id || !phone) {
+        return errorResponse(400, "Missing required fields: order_id and phone are required");
+    }
+
+    return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, supabase) => {
+        const { email, store_name, order_number } = body;
 
         // Build notification message
         const message = store_name && order_number
