@@ -64,7 +64,15 @@ serve(async (req) => {
     }
 
     // Parse and validate request body
-    const body = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body', code: 'INVALID_JSON' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     const parseResult = RequestSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -141,7 +149,7 @@ serve(async (req) => {
       );
     }
 
-    console.error(`[CREDITS_USE] Used ${amount} credits for tenant ${tenantId} (${reference_type}/${reference_id})`);
+    console.log(`[CREDITS_USE] Used ${amount} credits for tenant ${tenantId} (${reference_type}/${reference_id})`);
 
     return new Response(
       JSON.stringify({
@@ -155,14 +163,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[CREDITS_USE] Error:', error);
-
-    if (error instanceof z.ZodError) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid request', code: 'VALIDATION_ERROR', details: error.errors }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     return new Response(
       JSON.stringify({ error: 'Internal server error', code: 'INTERNAL_ERROR' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
