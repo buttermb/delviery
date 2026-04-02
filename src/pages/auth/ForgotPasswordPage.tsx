@@ -233,7 +233,6 @@ export function ForgotPasswordPage() {
               onClick={() => {
                 setSubmitted(false);
                 setEmail("");
-                setEmailError("");
               }}
             >
               {rateLimited ? (

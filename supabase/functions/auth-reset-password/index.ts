@@ -25,6 +25,11 @@ const resetPasswordSchema = z.object({
     ),
 });
 
+const verifyTokenSchema = z.object({
+  action: z.literal('verify'),
+  token: z.string().min(1, 'Token is required'),
+});
+
 /**
  * Hash a token using SHA-256 for secure lookup
  */
@@ -68,6 +73,66 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json();
+
+    // Route to verify action if requested
+    if (body.action === 'verify') {
+      const verifyResult = verifyTokenSchema.safeParse(body);
+      if (!verifyResult.success) {
+        return new Response(
+          JSON.stringify({ error: 'Token is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const tokenHash = await hashToken(verifyResult.data.token);
+
+      // Try hashed token first, then raw token (legacy)
+      let resetToken: Record<string, unknown> | null = null;
+
+      const { data: hashedResult, error: hashedError } = await supabase
+        .from('password_reset_tokens')
+        .select('id, email, expires_at, used_at')
+        .eq('token', tokenHash)
+        .is('used_at', null)
+        .maybeSingle();
+
+      if (!hashedError && hashedResult) {
+        resetToken = hashedResult;
+      } else {
+        const { data: rawResult, error: rawError } = await supabase
+          .from('password_reset_tokens')
+          .select('id, email, expires_at, used_at')
+          .eq('token', verifyResult.data.token)
+          .is('used_at', null)
+          .maybeSingle();
+
+        if (!rawError && rawResult) {
+          resetToken = rawResult;
+        }
+      }
+
+      if (!resetToken) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired reset token' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (new Date(resetToken.expires_at as string) < new Date()) {
+        return new Response(
+          JSON.stringify({ error: 'Reset token has expired. Please request a new one.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      logger.info('Token verified successfully', { tokenId: resetToken.id as string });
+      return new Response(
+        JSON.stringify({ valid: true, email: resetToken.email }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Password reset action
     const parseResult = resetPasswordSchema.safeParse(body);
 
     if (!parseResult.success) {
