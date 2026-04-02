@@ -260,7 +260,19 @@ export function SinglePageCheckout() {
       };
 
       const orderId = await submitWithRetry(1);
-      return { order_id: orderId, formValues: values };
+
+      // Fetch the actual order_number from the database
+      const { data: orderRow } = await supabase
+        .from('storefront_orders')
+        .select('order_number')
+        .eq('id', orderId)
+        .maybeSingle();
+
+      return {
+        order_id: orderId,
+        order_number: (orderRow?.order_number as string) || orderId,
+        formValues: values,
+      };
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
@@ -279,7 +291,7 @@ export function SinglePageCheckout() {
             order_id: data.order_id,
             customer_email: values.email,
             customer_name: `${values.firstName} ${values.lastName}`.trim(),
-            order_number: data.order_id,
+            order_number: data.order_number,
             items: cartItems.map((item) => ({
               name: item.name,
               quantity: item.quantity,
