@@ -171,7 +171,7 @@ serve(async (req: Request) => {
       const { error: signOutError } = await serviceClient.auth.admin.signOut(user.id);
       if (signOutError) {
         // Non-fatal: password was already changed, just log the failure
-        console.error('Failed to revoke other sessions:', signOutError.message);
+        // Logged server-side; no user-facing action needed
       }
     }
 
