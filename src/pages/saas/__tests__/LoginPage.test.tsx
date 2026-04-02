@@ -89,7 +89,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/components/ThemeToggle', () => ({
-  default: () => null,
+  ThemeToggle: () => null,
 }));
 
 vi.mock('@/components/FloraIQLogo', () => ({
@@ -105,6 +105,14 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }: { children: React.ReactNode }) => <div {...props}>{children}</div>,
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/hooks/useCsrfToken', () => ({
+  useCsrfToken: () => ({
+    csrfToken: 'test-csrf-token',
+    validateToken: () => true,
+    refreshToken: vi.fn(),
+  }),
 }));
 
 // Import after mocks
@@ -136,7 +144,7 @@ describe('LoginPage Cookie Clearing', () => {
     safeStorage.setItem('tenant_admin_refresh_token', 'old-refresh');
 
     // Import component dynamically to ensure mocks are applied
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -168,7 +176,7 @@ describe('LoginPage Cookie Clearing', () => {
     // Set up a non-tenant cookie
     document.cookie = 'other_cookie=value;path=/';
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
