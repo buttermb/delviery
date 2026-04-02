@@ -1,0 +1,740 @@
+## FloraIQ Overnight Test & Fix Pipeline
+## Run: ralphy --yaml overnight-test-fix.yaml --parallel --max-parallel 3
+##
+## What this does:
+## 1. Smoke tests ALL 200+ edge functions for 500 errors
+## 2. Tests critical UI flows (signup, login, dashboard, POS, ordering)
+## 3. Tests email sending (verification, welcome, password reset)
+## 4. Tests payment flows (Stripe Connect, checkout)
+## 5. Tests loyalty/wallet features
+## 6. For EVERY failure: diagnose root cause, fix the code, deploy the fix, verify it works
+##
+## Expected runtime: 2-4 hours depending on how many issues found
+
+tasks:
+  # ============================================================
+  # GROUP 1: Edge Function Smoke Tests (parallel)
+  # ============================================================
+
+  - title: "Smoke test all edge functions for 500 errors and fix any crashes"
+    parallel_group: 1
+    completed: false
+    description: |
+      Test every edge function by sending a minimal POST request with empty body {}.
+
+      1. Get the full list of functions:
+         ls supabase/functions/*/index.ts | sed 's|.*/functions/||;s|/index.ts||' | grep -v _shared | grep -v __tests__ | sort
+
+      2. For each function, run:
+         curl -s -o /dev/null -w "%{http_code}" -m 10 -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/<function-name>"
+
+      3. Expected results:
+         - 200 = working (cron jobs, health checks)
+         - 400 = working (validation error, missing fields — correct behavior)
+         - 401 = working (auth required — correct behavior)
+         - 404 = function not deployed or wrong name
+         - 429 = rate limited (OK, means rate limiting works)
+         - 500 = BUG — needs fixing
+
+      4. For every function returning 500:
+         a. Read the function code
+         b. Get the actual error: curl -s the full response body
+         c. Diagnose the root cause (missing column, bad import, null dereference, etc.)
+         d. Fix the code
+         e. Deploy: npx supabase functions deploy <function-name>
+         f. Re-test to verify the fix works
+
+      5. Common 500 causes to check:
+         - req.headers.get("Authorization")! — crashes if no auth header (remove the !)
+         - .from('table_that_doesnt_exist') — check table exists in DB
+         - .select('column_that_doesnt_exist') — check column exists
+         - import from wrong path after refactoring
+         - Deno.env.get() returning undefined for required vars
+
+      6. After fixing, commit: git add <files> && git commit -m "fix: resolve 500 errors found in overnight smoke test"
+
+      IMPORTANT: Do NOT change business logic. Only fix crashes and deployment issues.
+
+  - title: "Verify all CORS preflight OPTIONS requests return 200"
+    parallel_group: 1
+    completed: false
+    description: |
+      Test CORS preflight on every edge function.
+
+      1. For each function, send an OPTIONS request:
+         curl -s -o /dev/null -w "%{http_code}" -X OPTIONS \
+           -H "Origin: https://floraiqcrm.com" \
+           -H "Access-Control-Request-Method: POST" \
+           -H "Access-Control-Request-Headers: authorization,content-type" \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/<function-name>"
+
+      2. Every function MUST return 200 for OPTIONS.
+
+      3. If any return non-200:
+         a. Read the function code
+         b. Check if it handles OPTIONS: look for req.method === 'OPTIONS'
+         c. Check if withZenProtection middleware is blocking it
+         d. Fix and deploy
+
+      4. Also verify the response includes proper CORS headers:
+         curl -s -I -X OPTIONS -H "Origin: https://floraiqcrm.com" "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/<function-name>"
+         Must include: Access-Control-Allow-Origin, Access-Control-Allow-Headers
+
+  - title: "Verify config.toml matches all function directories"
+    parallel_group: 1
+    completed: false
+    description: |
+      Cross-reference supabase/config.toml with actual function directories.
+
+      1. List all function directories:
+         ls -d supabase/functions/*/index.ts | sed 's|.*/functions/||;s|/index.ts||' | grep -v _shared | grep -v __tests__ | sort > /tmp/fn_dirs.txt
+
+      2. Extract functions from config.toml:
+         grep '^\[functions\.' supabase/config.toml | sed 's/\[functions\.//;s/\]//' | sort > /tmp/fn_config.txt
+
+      3. Find functions missing from config.toml:
+         comm -23 /tmp/fn_dirs.txt /tmp/fn_config.txt
+
+      4. For each missing function:
+         a. Read the function code to determine if it needs auth or not
+         b. Add it to config.toml with correct verify_jwt setting
+         c. Public endpoints (webhooks, auth login/signup, menus): verify_jwt = false
+         d. Protected endpoints (admin, billing, user data): verify_jwt = true
+
+      5. Deploy to apply config changes: npx supabase functions deploy <function-names>
+
+  # ============================================================
+  # GROUP 2: Auth Flow Tests (after smoke tests pass)
+  # ============================================================
+
+  - title: "Test tenant signup flow end-to-end and fix any issues"
+    parallel_group: 2
+    completed: false
+    description: |
+      Test the complete tenant signup flow.
+
+      1. Call tenant-signup with test data:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{
+             "email": "overnight-test-'$(date +%s)'@testmail.com",
+             "password": "TestPass123!",
+             "business_name": "Test Deli '$(date +%s)'",
+             "owner_name": "Test Owner",
+             "phone": "555-0100",
+             "state": "NY",
+             "industry": "retail",
+             "company_size": "1-5"
+           }' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-signup"
+
+      2. Expected: 200 with { success: true, tenant: {...}, user: {...}, session: {...} }
+
+      3. If it fails:
+         a. Check the error message in the response
+         b. Common issues: JWT_SECRET missing, rate limiting, Zod validation
+         c. Read supabase/functions/tenant-signup/index.ts and related modules
+         d. Fix, deploy, re-test
+
+      4. If signup succeeds, verify:
+         a. Tenant record created in DB: npx supabase db query --linked "SELECT id, slug FROM tenants WHERE owner_email = '<email>'"
+         b. Tenant user created: npx supabase db query --linked "SELECT id FROM tenant_users WHERE email = '<email>'"
+         c. Credits initialized: npx supabase db query --linked "SELECT balance FROM tenant_credits WHERE tenant_id = '<tenant_id>'"
+
+      5. Clean up test data after verification:
+         npx supabase db query --linked "DELETE FROM tenants WHERE owner_email LIKE 'overnight-test-%@testmail.com'"
+
+  - title: "Test tenant admin login flow and fix any issues"
+    parallel_group: 2
+    completed: false
+    description: |
+      Test the tenant-admin-auth login flow.
+
+      1. Use an existing test account or the one created by signup test.
+         Call tenant-admin-auth with login action:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"action": "login", "email": "sake2608@icloud.com", "password": "<password>"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
+
+      2. Expected: 200 with session tokens and tenant data
+
+      3. If 403: check if brute force protection is blocking (check auth_audit_log table)
+      4. If 401: check credentials and tenant_users record
+      5. If 500: read the error, check tenant-admin-auth/index.ts and handlers/
+
+      6. Also test:
+         - verify action (with token from login)
+         - refresh action (with refresh token)
+         - logout action (with session token)
+
+      7. Fix any issues found, deploy, re-test.
+
+  - title: "Test customer auth flow and fix any issues"
+    parallel_group: 2
+    completed: false
+    description: |
+      Test the customer-auth signup and login flow.
+
+      1. Test customer signup:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"action": "signup", "email": "cust-test-'$(date +%s)'@testmail.com", "password": "CustPass123!", "name": "Test Customer", "phone": "555-0200", "tenant_slug": "snak-station-inc-1774894616257"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-auth"
+
+      2. Test customer login:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"action": "login", "email": "<email>", "password": "CustPass123!", "tenant_slug": "snak-station-inc-1774894616257"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-auth"
+
+      3. Expected: 200 with token and customer data
+
+      4. Fix any issues, deploy, clean up test data.
+
+  # ============================================================
+  # GROUP 3: Email & Notification Tests (after auth works)
+  # ============================================================
+
+  - title: "Test all email-sending edge functions and fix any issues"
+    parallel_group: 3
+    completed: false
+    description: |
+      Test every edge function that sends emails. These need a valid auth token.
+
+      First, get a session token by logging in:
+        TOKEN=$(curl -s -X POST -H "Content-Type: application/json" \
+          -d '{"action": "login", "email": "sake2608@icloud.com", "password": "<password>"}' \
+          "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth" | jq -r '.session.access_token // .token // empty')
+
+      Then test each email function with the auth token:
+
+      1. send-verification-email:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"email": "sake2608@icloud.com"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-verification-email"
+
+      2. resend-admin-verification:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"email": "sake2608@icloud.com"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/resend-admin-verification"
+
+      3. send-welcome-email:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"email": "sake2608@icloud.com", "name": "Test", "tenant_slug": "snak-station-inc-1774894616257"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-welcome-email"
+
+      4. request-password-reset:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"email": "sake2608@icloud.com", "tenant_slug": "snak-station-inc-1774894616257"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/request-password-reset"
+
+      5. send-invitation-email (via tenant-invite):
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"action": "send_invitation", "email": "invite-test@testmail.com", "role": "staff", "name": "Test Staff"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-invite"
+
+      For each test:
+      - Expected: 200 or 202 (email queued)
+      - If 500: read the error, check RESEND_API_KEY is set in Supabase secrets, fix code
+      - If 400: check request body matches expected schema
+      - If 401: token expired or invalid, re-authenticate
+
+      Fix any issues, deploy, re-test.
+
+      NOTE: These send REAL emails. Use test email addresses only.
+
+  - title: "Test push notification and SMS edge functions"
+    parallel_group: 3
+    completed: false
+    description: |
+      Test notification functions (these may fail gracefully if Twilio/FCM not configured — that's OK).
+
+      1. send-notification:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"type": "test", "message": "Overnight test notification"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-notification"
+
+      2. send-sms:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"to": "+15550000000", "message": "Test SMS"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-sms"
+
+      3. send-push-notification:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"title": "Test", "body": "Overnight test push"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-push-notification"
+
+      Expected: 200 (sent), 200 with "skipped" (service not configured), or 400 (missing params)
+      NOT expected: 500 (crash)
+
+      If 500: fix the crash. If service not configured, ensure it fails gracefully with a clear message.
+
+  # ============================================================
+  # GROUP 4: Dashboard & Admin Function Tests
+  # ============================================================
+
+  - title: "Test admin dashboard endpoints and fix any issues"
+    parallel_group: 4
+    completed: false
+    description: |
+      Test the admin-dashboard edge function with various actions.
+
+      Need auth token first (get from tenant-admin-auth login).
+
+      Test each dashboard endpoint:
+      1. overview: {"endpoint": "overview"}
+      2. realtime-stats: {"endpoint": "realtime-stats"}
+      3. orders: {"endpoint": "orders"}
+      4. live-deliveries: {"endpoint": "live-deliveries"}
+      5. couriers: {"endpoint": "couriers"}
+      6. compliance: {"endpoint": "compliance"}
+      7. sales-analytics: {"endpoint": "sales-analytics"}
+
+      For each:
+        curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+          -d '{"endpoint": "<name>"}' \
+          "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-dashboard"
+
+      Expected: 200 with data (may be empty arrays for new tenants)
+      If 500: read error, check handler code in admin-dashboard/handlers/, fix, deploy.
+      If 403: auth issue — check token validity and admin_users record.
+
+  - title: "Test credits system edge functions and fix any issues"
+    parallel_group: 4
+    completed: false
+    description: |
+      Test the credits system end-to-end.
+
+      1. credits-balance:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-balance"
+         Expected: 200 with balance, subscription info
+
+      2. credits-packages:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-packages"
+         Expected: 200 with list of available packages
+
+      3. credits-transactions:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-transactions"
+         Expected: 200 with transaction history
+
+      4. grant-free-credits (service-level):
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <SERVICE_ROLE_KEY>" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/grant-free-credits"
+         Expected: 200 with grant results
+
+      Fix any 500 errors. Check for missing DB tables/columns, wrong RPC function names.
+
+  - title: "Test invoice and billing edge functions"
+    parallel_group: 4
+    completed: false
+    description: |
+      Test billing-related functions.
+
+      1. invoice-management (list):
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"action": "list"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/invoice-management"
+
+      2. check-stripe-config:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-stripe-config"
+
+      3. billing:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"action": "status"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/billing"
+
+      Fix any 500s. Common issues: missing Stripe keys, wrong column names.
+
+  # ============================================================
+  # GROUP 5: Product & Inventory Tests
+  # ============================================================
+
+  - title: "Test product and inventory management edge functions"
+    parallel_group: 5
+    completed: false
+    description: |
+      Test product-related functions.
+
+      1. generate-product-barcode:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"product_id": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-product-barcode"
+
+      2. barcode-lookup:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"barcode": "012345678905"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/barcode-lookup"
+
+      3. process-product-image:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"product_id": "test", "image_url": "https://example.com/test.jpg"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-product-image"
+
+      4. ai-suggestions:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"type": "product", "query": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/ai-suggestions"
+
+      Expected: 200 or 400 (validation). NOT 500.
+      Fix any crashes.
+
+  - title: "Test order management edge functions"
+    parallel_group: 5
+    completed: false
+    description: |
+      Test order-related functions.
+
+      1. create-order:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"items": [], "customer_name": "Test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-order"
+
+      2. update-order-status:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"order_id": "00000000-0000-0000-0000-000000000000", "status": "confirmed"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/update-order-status"
+
+      3. check-order-fraud:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"order_id": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-order-fraud"
+
+      Expected: 200 or 400 (validation, missing order). NOT 500.
+      Fix any crashes.
+
+  # ============================================================
+  # GROUP 6: Wholesale & Delivery Tests
+  # ============================================================
+
+  - title: "Test wholesale operation edge functions"
+    parallel_group: 6
+    completed: false
+    description: |
+      Test wholesale functions.
+
+      1. wholesale-order-create:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"client_id": "test", "items": []}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-order-create"
+
+      2. wholesale-delivery-assign:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"delivery_id": "test", "runner_id": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-delivery-assign"
+
+      3. wholesale-payment-process:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"payment_id": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-payment-process"
+
+      Expected: 400 (invalid data) or 200. NOT 500.
+      Fix any crashes.
+
+  - title: "Test delivery and courier edge functions"
+    parallel_group: 6
+    completed: false
+    description: |
+      Test delivery system functions.
+
+      1. courier-app (login):
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"endpoint": "login"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/courier-app"
+         Expected: 401 (no auth — correct)
+
+      2. calculate-eta:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"origin": {"lat": 40.7128, "lng": -74.0060}, "destination": {"lat": 40.7580, "lng": -73.9855}}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/calculate-eta"
+         Expected: 200 with ETA or error about missing Mapbox token (not 500)
+
+      3. assign-courier:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"order_id": "test", "courier_id": "test"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/assign-courier"
+
+      4. optimize-route:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"stops": []}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/optimize-route"
+
+      Fix any 500s.
+
+  # ============================================================
+  # GROUP 7: Menu & Storefront Tests
+  # ============================================================
+
+  - title: "Test menu management edge functions"
+    parallel_group: 7
+    completed: false
+    description: |
+      Test menu-related functions.
+
+      1. menu-generate:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"tenant_id": "fe2d888f-bc9a-42be-828c-6adf95971ebc"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-generate"
+
+      2. create-encrypted-menu:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"tenant_id": "fe2d888f-bc9a-42be-828c-6adf95971ebc", "name": "Test Menu"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-encrypted-menu"
+
+      3. menu-whitelist-manage:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"action": "list"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-whitelist-manage"
+
+      4. validate-email (public):
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"email": "test@gmail.com"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-email"
+
+      Fix any 500s.
+
+  - title: "Test storefront and marketplace edge functions"
+    parallel_group: 7
+    completed: false
+    description: |
+      Test storefront functions.
+
+      1. storefront-checkout:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"items": [], "store_slug": "snak-station-inc-1774894616257"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/storefront-checkout"
+         Expected: 400 (empty cart) — NOT 500
+
+      2. create-marketplace-order:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -d '{"items": []}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-marketplace-order"
+
+      3. create-marketplace-profile:
+         curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" \
+           -d '{"tenant_id": "fe2d888f-bc9a-42be-828c-6adf95971ebc"}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-marketplace-profile"
+
+      Fix any 500s.
+
+  # ============================================================
+  # GROUP 8: Security & GDPR Tests
+  # ============================================================
+
+  - title: "Test security edge functions and verify they reject unauthorized access"
+    parallel_group: 8
+    completed: false
+    description: |
+      Verify security functions properly reject unauthorized access.
+
+      1. encrypt-all-data (NO auth — should return 401):
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/encrypt-all-data"
+         MUST return 401, NOT 200 or 500
+
+      2. panic-reset (NO auth — should return 401):
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/panic-reset"
+         MUST return 401, NOT 200 or 500
+
+      3. impersonate-tenant (NO auth — should return 401):
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/impersonate-tenant"
+         MUST return 401, NOT 200 or 500
+
+      4. admin-reset-password (NO auth — should return 401):
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-reset-password"
+         MUST return 401, NOT 200 or 500
+
+      5. gdpr-erase (NO auth — should return 401):
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-erase"
+         MUST return 401, NOT 200 or 500
+
+      If ANY of these return 200 without auth: CRITICAL BUG — fix immediately.
+      If ANY return 500: fix the crash.
+
+  - title: "Test rate limiting is working on public endpoints"
+    parallel_group: 8
+    completed: false
+    description: |
+      Verify rate limiting on public endpoints.
+
+      For each of these public endpoints, send 15 rapid requests and verify rate limiting kicks in:
+
+      1. validate-email (limit: 10/min):
+         for i in $(seq 1 15); do
+           code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" \
+             -d '{"email": "test'$i'@test.com"}' \
+             "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-email")
+           echo "Request $i: $code"
+         done
+         After 10 requests, should see 429 (Too Many Requests)
+
+      2. send-otp (limit: 5/min):
+         Similar test with 8 rapid requests — should see 429 after 5
+
+      3. request-password-reset (limit: 3/hour):
+         Send 5 rapid requests — should see 429 after 3
+
+      If rate limiting is NOT working (all return 200/400):
+         Check that checkRateLimit is imported and called in each function
+         Check _shared/rateLimiting.ts for issues
+         Fix and deploy
+
+  # ============================================================
+  # GROUP 9: Cron Job & Background Task Tests
+  # ============================================================
+
+  - title: "Test cron job edge functions and fix any issues"
+    parallel_group: 9
+    completed: false
+    description: |
+      Test scheduled/cron functions that run without user auth.
+      These use SERVICE_ROLE_KEY for authentication.
+
+      1. grant-free-credits:
+         curl -s -X POST -H "Content-Type: application/json" \
+           -H "Authorization: Bearer $(npx supabase db query --linked "SELECT current_setting('app.settings.jwt_secret', true)" 2>/dev/null | grep -o '"[^"]*"' | head -1 | tr -d '"')" \
+           -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/grant-free-credits"
+
+      2. check-expired-trials:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-expired-trials"
+
+      3. credit-threshold-alerts:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-threshold-alerts"
+
+      4. detect-orphaned-orders:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-orphaned-orders"
+
+      5. check-usage-limits:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-usage-limits"
+
+      6. low-stock-email-digest:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/low-stock-email-digest"
+
+      7. process-delivery-notifications:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-delivery-notifications"
+
+      8. credit-usage-reset:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-usage-reset"
+
+      9. collect-metrics:
+         curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+           "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/collect-metrics"
+
+      10. uptime-checker:
+          curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+            "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/uptime-checker"
+
+      Expected: 200 with results (may be empty). NOT 500.
+      Fix any crashes.
+
+  # ============================================================
+  # GROUP 10: Database Schema Verification
+  # ============================================================
+
+  - title: "Verify all tables referenced by edge functions exist in the database"
+    parallel_group: 10
+    completed: false
+    description: |
+      Cross-reference every table name used in edge functions against the actual database schema.
+
+      1. Extract all table names from edge functions:
+         grep -roh "\.from(['\"][a-z_]*['\"])" supabase/functions/ | sort -u | sed "s/\.from(['\"]//;s/['\"])//" > /tmp/fn_tables.txt
+
+      2. Get actual tables from database:
+         npx supabase db query --linked "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name"
+
+      3. Find tables referenced in code but not in DB:
+         Compare the two lists
+
+      4. For each missing table:
+         a. Check if it's a typo (e.g., 'super_admins' vs 'super_admin_users')
+         b. If typo: fix the code reference
+         c. If legitimately missing: create the table with appropriate schema
+         d. Run: NOTIFY pgrst, 'reload schema'
+
+      5. Also check for missing columns:
+         grep -roh "\.select(['\"][a-z_, ]*['\"])" supabase/functions/ — spot-check critical queries
+
+      6. Fix any schema mismatches, deploy affected functions.
+
+  - title: "Verify all RPC functions referenced by edge functions exist"
+    parallel_group: 10
+    completed: false
+    description: |
+      Check that all .rpc() calls reference existing database functions.
+
+      1. Extract all RPC function names:
+         grep -roh "\.rpc(['\"][a-z_]*['\"]" supabase/functions/ | sort -u | sed "s/\.rpc(['\"]//;s/['\"]$//"
+
+      2. Check each one exists:
+         npx supabase db query --linked "SELECT proname FROM pg_proc WHERE pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public') ORDER BY proname"
+
+      3. For each missing RPC function:
+         a. Search the migrations folder for the CREATE FUNCTION statement
+         b. If found: it may not have been applied — run the migration
+         c. If not found: the function was never created — check if it's needed or if the code should use a different approach
+
+      4. Fix any issues.
+
+  # ============================================================
+  # GROUP 11: Final Verification & Report
+  # ============================================================
+
+  - title: "Run final comprehensive verification and generate report"
+    parallel_group: 11
+    completed: false
+    description: |
+      Final pass: re-run the full 200+ function smoke test to confirm all fixes work.
+
+      1. Re-test all functions:
+         while IFS= read -r fn; do
+           code=$(curl -s -o /dev/null -w "%{http_code}" -m 10 -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/$fn")
+           if [ "$code" = "500" ]; then
+             echo "STILL FAILING: $fn ($code)"
+           fi
+         done < <(ls supabase/functions/*/index.ts | sed 's|.*/functions/||;s|/index.ts||' | grep -v _shared | grep -v __tests__)
+
+      2. Generate a report file at tasks/overnight-test-report.md:
+         # Overnight Test Report — $(date)
+
+         ## Summary
+         - Total functions tested: XXX
+         - Passing: XXX
+         - Fixed during this run: XXX
+         - Still failing: XXX (list them with reasons)
+
+         ## Fixes Applied
+         - [list each fix with file and description]
+
+         ## Known Issues (not fixable overnight)
+         - [list issues that require manual intervention, missing env vars, etc.]
+
+         ## Recommendations
+         - [list any architectural issues discovered]
+
+      3. Commit the report:
+         git add tasks/overnight-test-report.md
+         git commit -m "docs: overnight test report — $(date +%Y-%m-%d)"
+
+      4. If any functions were fixed during this run, do a final deployment:
+         npx supabase functions deploy
+
+      5. Push everything:
+         git push
