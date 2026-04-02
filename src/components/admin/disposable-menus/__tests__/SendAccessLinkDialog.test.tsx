@@ -323,6 +323,72 @@ describe('SendAccessLinkDialog', () => {
     });
   });
 
+  describe('Menu title display', () => {
+    it('should show menu title in dialog description', () => {
+      renderDialog({ menuTitle: 'Premium Menu' });
+
+      expect(screen.getByText(/Premium Menu access link to John Doe/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Preview display', () => {
+    it('should display email preview with subject and message', async () => {
+      const user = userEvent.setup();
+
+      // Make execute call the action so preview state is set
+      mockExecute.mockImplementation(async (options: { action: () => Promise<unknown> }) => {
+        await options.action();
+        return { success: true, wasBlocked: false };
+      });
+
+      // Mock supabase to return email preview
+      const { supabase } = await import('@/integrations/supabase/client');
+      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+        data: { preview: { subject: 'Access to Test Menu', message: 'Hello, here is your link.' } },
+        error: null,
+      });
+
+      renderDialog();
+
+      const sendButton = screen.getByRole('button', { name: /send via email/i });
+      await user.click(sendButton);
+
+      await waitFor(() => {
+        const textarea = screen.getByRole('textbox', { name: /message preview/i });
+        expect(textarea).toHaveValue('Access to Test Menu\n\nHello, here is your link.');
+      });
+    });
+
+    it('should display SMS preview with message only', async () => {
+      const user = userEvent.setup();
+
+      mockExecute.mockImplementation(async (options: { action: () => Promise<unknown> }) => {
+        await options.action();
+        return { success: true, wasBlocked: false };
+      });
+
+      const { supabase } = await import('@/integrations/supabase/client');
+      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+        data: { preview: { message: 'Test Menu: Access your menu at https://example.com/menu/abc123' } },
+        error: null,
+      });
+
+      renderDialog();
+
+      // Select SMS
+      const smsRadio = screen.getByLabelText(/SMS/);
+      await user.click(smsRadio);
+
+      const sendButton = screen.getByRole('button', { name: /send via sms/i });
+      await user.click(sendButton);
+
+      await waitFor(() => {
+        const textarea = screen.getByRole('textbox', { name: /message preview/i });
+        expect(textarea).toHaveValue('Test Menu: Access your menu at https://example.com/menu/abc123');
+      });
+    });
+  });
+
   describe('Disabled states', () => {
     it('should disable email option when no email on file', () => {
       renderDialog({

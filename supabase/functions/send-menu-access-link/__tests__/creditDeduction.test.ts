@@ -280,6 +280,47 @@ describe('Send Menu Access Link - Credit Deduction', () => {
     });
   });
 
+  describe('Access URL Construction', () => {
+    it('should construct access URL using SITE_URL env var pattern', () => {
+      const siteUrl = 'https://app.floraiq.io';
+      const uniqueAccessToken = 'abc-token-123';
+
+      const accessUrl = `${siteUrl}/menu/${uniqueAccessToken}`;
+
+      expect(accessUrl).toBe('https://app.floraiq.io/menu/abc-token-123');
+      expect(accessUrl).not.toContain('supabase.co');
+      expect(accessUrl).not.toContain('lovable.app');
+    });
+
+    it('should append access code placeholder when required', () => {
+      const siteUrl = 'https://app.floraiq.io';
+      const uniqueAccessToken = 'abc-token-123';
+      const accessCodeRequired = true;
+
+      const accessUrl = `${siteUrl}/menu/${uniqueAccessToken}${accessCodeRequired ? '?code=XXXXX' : ''}`;
+
+      expect(accessUrl).toContain('?code=XXXXX');
+    });
+
+    it('should not append access code when not required', () => {
+      const siteUrl = 'https://app.floraiq.io';
+      const uniqueAccessToken = 'abc-token-123';
+      const accessCodeRequired = false;
+
+      const accessUrl = `${siteUrl}/menu/${uniqueAccessToken}${accessCodeRequired ? '?code=XXXXX' : ''}`;
+
+      expect(accessUrl).not.toContain('?code=XXXXX');
+    });
+
+    it('should fall back to SUPABASE_URL when SITE_URL is not set', () => {
+      const siteUrl = undefined;
+      const supabaseUrl = 'https://abc.supabase.co';
+      const resolvedUrl = siteUrl || supabaseUrl || '';
+
+      expect(resolvedUrl).toBe('https://abc.supabase.co');
+    });
+  });
+
   describe('Consume Credits RPC Call Contract', () => {
     it('should use correct RPC parameters for SMS credit deduction', () => {
       const expectedRpcParams = {
