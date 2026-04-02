@@ -112,7 +112,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         sessionStorage.removeItem('auth_redirect_timestamps');
 
         toast.success("Welcome!", {
-          description: "You've been signed in with Google.",
+          description: "You've been signed in successfully.",
         });
 
         // Check for intended destination (user tried to access a protected page before OAuth login)
