@@ -44,7 +44,7 @@ serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid request', details: (parsed as { success: false; error: { issues: unknown[] } }).error.issues }),
+        JSON.stringify({ error: 'Invalid request', details: parsed.error.issues }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -144,7 +144,7 @@ serve(async (req) => {
         body: new URLSearchParams({
           To: fullPhoneNumber,
           From: twilioPhoneNumber,
-          Body: `Your BigMike verification code is: ${otp}. Valid for ${OTP_EXPIRY_MINUTES} minutes. Do not share this code.`,
+          Body: `Your FloraIQ verification code is: ${otp}. Valid for ${OTP_EXPIRY_MINUTES} minutes. Do not share this code.`,
         }),
       });
 
@@ -242,11 +242,10 @@ async function bestEffortCreditDeduction(
     // Deduct credits (best-effort)
     const { data, error } = await supabase.rpc('consume_credits', {
       p_tenant_id: tenantUser.tenant_id,
-      p_amount: 25,
       p_action_key: CREDIT_ACTIONS.SEND_SMS,
-      p_description: 'SMS verification code',
       p_reference_id: verificationId,
-      p_metadata: { type: 'phone_verification' },
+      p_reference_type: 'phone_verification',
+      p_description: 'SMS verification code',
     });
 
     if (error) {
