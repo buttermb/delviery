@@ -51,11 +51,26 @@ serve(async (req) => {
       );
     }
 
-    // Look up tenant user
+    // Look up tenant by slug to verify context
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('id, business_name')
+      .eq('slug', tenant_slug)
+      .maybeSingle();
+
+    if (tenantError || !tenant) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Look up tenant user scoped to both user and tenant
     const { data: tenantUser, error: tuError } = await supabase
       .from('tenant_users')
-      .select('id, name, tenant_id')
+      .select('id, name')
       .eq('user_id', user.id)
+      .eq('tenant_id', tenant.id)
       .maybeSingle();
 
     if (tuError || !tenantUser) {
@@ -65,14 +80,7 @@ serve(async (req) => {
       );
     }
 
-    // Get tenant info
-    const { data: tenant } = await supabase
-      .from('tenants')
-      .select('business_name')
-      .eq('id', tenantUser.tenant_id)
-      .maybeSingle();
-
-    const businessName = tenant?.business_name || 'Your Store';
+    const businessName = tenant.business_name || 'Your Store';
     const ownerName = tenantUser.name || 'there';
     const siteUrl = Deno.env.get('SITE_URL') || supabaseUrl;
 
@@ -135,11 +143,14 @@ serve(async (req) => {
     }
 
     // Update verification sent timestamp
-    await supabase
+    const { error: updateError } = await supabase
       .from('tenant_users')
       .update({ email_verification_sent_at: new Date().toISOString() })
-      .eq('id', tenantUser.id)
-      .catch((err) => console.warn('[RESEND_VERIFICATION] timestamp update failed:', err));
+      .eq('id', tenantUser.id);
+
+    if (updateError) {
+      console.warn('[RESEND_VERIFICATION] timestamp update failed:', updateError);
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Verification email sent' }),
