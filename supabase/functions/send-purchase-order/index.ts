@@ -1,4 +1,4 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 import { validateSendPurchaseOrder } from './validation.ts';
 
@@ -198,8 +198,25 @@ serve(async (req) => {
             },
           },
         );
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Send purchase order error:', error);
+
+        if (error instanceof z.ZodError) {
+          return new Response(
+            JSON.stringify({
+              error: 'Validation failed',
+              details: error.errors,
+            }),
+            {
+              status: 400,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              },
+            },
+          );
+        }
+
         return new Response(
           JSON.stringify({
             error: error instanceof Error ? error.message : 'Unknown error',
