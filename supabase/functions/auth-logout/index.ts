@@ -43,10 +43,12 @@ serve(withZenProtection(async (req: Request) => {
 
     // Determine user identity from auth header
     const authHeader = req.headers.get('Authorization');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
     let userId: string | undefined;
+    let supabaseAuth: ReturnType<typeof createClient> | undefined;
 
-    if (authHeader) {
-      const supabaseAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    if (authHeader && anonKey) {
+      supabaseAuth = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
 
@@ -123,11 +125,8 @@ serve(withZenProtection(async (req: Request) => {
       },
     });
 
-    // Sign out from Supabase Auth (only possible with a valid auth header)
-    if (authHeader) {
-      const supabaseAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-        global: { headers: { Authorization: authHeader } },
-      });
+    // Sign out from Supabase Auth (reuse client created above)
+    if (supabaseAuth) {
       await supabaseAuth.auth.signOut();
     }
     // When only session_token is provided (no auth header), the user_sessions
@@ -139,7 +138,7 @@ serve(withZenProtection(async (req: Request) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error('Auth logout error:', error);
+    console.error('[AUTH_LOGOUT] Error:', error instanceof Error ? error.message : 'Unknown error');
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Logout failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
