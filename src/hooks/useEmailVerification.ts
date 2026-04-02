@@ -7,8 +7,7 @@ import { humanizeError } from '@/lib/humanizeError';
 
 interface VerifyEmailResponse {
   success: boolean;
-  alreadyVerified?: boolean;
-  expired?: boolean;
+  already_verified?: boolean;
   message?: string;
 }
 
@@ -73,9 +72,9 @@ export function useEmailVerification() {
   });
 
   const verificationState: EmailVerificationState = {
-    isAlreadyVerified: verifyEmail.data?.alreadyVerified === true,
-    isExpired: verifyEmail.data?.expired === true,
-    canResend: verifyEmail.data?.expired === true,
+    isAlreadyVerified: verifyEmail.data?.already_verified === true,
+    isExpired: false,
+    canResend: false,
   };
 
   return {
@@ -87,6 +86,6 @@ export function useEmailVerification() {
     isResending: resendVerification.isPending,
     verifyError: verifyEmail.error,
     resendError: resendVerification.error,
-    isSuccess: verifyEmail.isSuccess && !verifyEmail.data?.alreadyVerified && !verifyEmail.data?.expired,
+    isSuccess: verifyEmail.isSuccess && !verifyEmail.data?.already_verified,
   };
 }
