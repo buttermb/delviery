@@ -24,8 +24,30 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const body = await req.json();
-    const { email, full_name, tenant_id } = WelcomeEmailSchema.parse(body);
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const parsed = WelcomeEmailSchema.safeParse(body);
+    if (!parsed.success) {
+      console.error('[WELCOME-EMAIL] Validation error:', parsed.error.issues);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Validation error',
+          details: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { email, full_name, tenant_id } = parsed.data;
 
     // Resolve tenant info for branding
     let businessName = 'FloraIQ';

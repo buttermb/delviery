@@ -163,12 +163,13 @@ describe('Send Welcome Email — Email Send Tracking', () => {
     expect(source).toContain("emailSent = true; // Count as \"sent\" for dev mode");
   });
 
-  it('should not set emailSent on Klaviyo failure', () => {
-    // After Klaviyo failure, emailSent stays false
-    const failureBlock = source.slice(
-      source.indexOf('Failed to send via Klaviyo'),
-      source.indexOf('Sent successfully to:')
-    );
+  it('should not set emailSent on send failure', () => {
+    // After send failure, emailSent stays false
+    const failStart = source.indexOf('Failed to send via Resend:');
+    const successStart = source.indexOf('Sent successfully to:');
+    expect(failStart).toBeGreaterThan(-1);
+    expect(successStart).toBeGreaterThan(-1);
+    const failureBlock = source.slice(failStart, successStart);
     expect(failureBlock).not.toContain('emailSent = true');
   });
 });
