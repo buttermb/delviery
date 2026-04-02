@@ -185,7 +185,15 @@ If you didn't create an account with ${businessName}, please ignore this email.
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error('Send verification email error:', error);
+    console.error('[SEND_VERIFICATION_EMAIL] Error:', error);
+
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: error.errors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to send verification email',
