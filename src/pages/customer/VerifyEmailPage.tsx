@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Customer Email Verification Page
  * Allows customers to verify their email with a 6-digit code
@@ -13,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { logger } from '@/lib/logger';
 import { apiFetch } from '@/lib/utils/apiClient';
 
 export default function CustomerVerifyEmailPage() {
