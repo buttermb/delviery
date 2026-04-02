@@ -25,6 +25,15 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication first — before any env/config checks
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -40,15 +49,6 @@ serve(async (req) => {
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: STRIPE_API_VERSION,
     });
-
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
