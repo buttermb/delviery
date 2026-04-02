@@ -8,6 +8,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import type { SupabaseClient } from '../_shared/deps.ts';
 
 const revokeSessionSchema = z.object({
   action: z.enum(['revoke', 'revoke_all_others']),
@@ -57,7 +58,15 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const body = await req.json();
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON body' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const { action, session_id } = revokeSessionSchema.parse(body);
 
       const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
@@ -93,7 +102,7 @@ serve(async (req) => {
 });
 
 async function handleGetSessions(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   currentToken: string
 ): Promise<Response> {
@@ -132,7 +141,7 @@ async function handleGetSessions(
 }
 
 async function handleRevokeSession(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   sessionId: string,
   ipAddress: string,
@@ -187,7 +196,7 @@ async function handleRevokeSession(
 }
 
 async function handleRevokeAllOthers(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   currentToken: string,
   ipAddress: string,
@@ -250,7 +259,7 @@ async function handleRevokeAllOthers(
 }
 
 async function logSessionRevokedEvent(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   ipAddress: string,
   userAgent: string,
