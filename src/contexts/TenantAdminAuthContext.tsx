@@ -797,9 +797,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   // set authInitializedRef=true, and never re-runs when navigating to /{slug}/admin/dashboard
   useEffect(() => {
     const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
-    
-    // If we're on an admin route, initialized is done, but no admin/tenant loaded => re-init
-    if (isTenantAdminRoute && initialized && !admin && !tenant && !loading) {
+    // Skip re-init on auth pages (login/signup) — user is expected to authenticate there
+    const isAuthPage = location.pathname.includes('/login') ||
+      location.pathname.includes('/signup') ||
+      location.pathname.includes('/forgot-password');
+
+    // If we're on an admin route (not auth page), initialized is done, but no admin/tenant loaded => re-init
+    if (isTenantAdminRoute && !isAuthPage && initialized && !admin && !tenant && !loading) {
       logger.info('[AUTH] On admin route with no auth data - re-initializing');
       authInitializedRef.current = false;
       
@@ -1345,14 +1349,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     broadcastLogout('tenant_auth_channel');
 
     try {
-      // Call logout endpoint to clear cookies
+      // Call logout endpoint to clear cookies and server-side session
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const currentToken = accessToken || safeStorage.getItem(ACCESS_TOKEN_KEY);
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (currentToken) {
+        headers["Authorization"] = `Bearer ${currentToken}`;
+      }
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include',
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         timeout: 10000,
         retryConfig: {
           maxRetries: 1,
