@@ -1,4 +1,3 @@
-import { corsHeaders } from '../../_shared/deps.ts';
 import { comparePassword } from '../../_shared/password.ts';
 import { loginSchema } from '../validation.ts';
 import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR } from '../../_shared/bruteForceProtection.ts';
@@ -18,7 +17,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
         error: "Validation failed",
         details: zodError.error.errors
       }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -42,7 +41,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
     });
     return new Response(
       JSON.stringify({ error: GENERIC_AUTH_ERROR }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -57,7 +56,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
   if (tenantError || !tenant) {
     return new Response(
       JSON.stringify({ error: "Tenant not found or inactive" }),
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 404, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -82,7 +81,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
     });
     return new Response(
       JSON.stringify({ error: GENERIC_AUTH_ERROR }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -100,7 +99,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
     });
     return new Response(
       JSON.stringify({ error: GENERIC_AUTH_ERROR }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 401, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -113,7 +112,7 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
         customer_user_id: customerUser.id,
         message: AUTH_ERRORS.EMAIL_NOT_VERIFIED
       }),
-      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 403, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -191,6 +190,6 @@ export async function handleLogin(ctx: HandlerContext): Promise<Response> {
       },
       customerRecord: customer,
     }),
-    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status: 200, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
   );
 }

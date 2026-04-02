@@ -1,4 +1,3 @@
-import { corsHeaders } from '../../_shared/deps.ts';
 import type { HandlerContext } from './types.ts';
 
 export async function handleLogout(ctx: HandlerContext): Promise<Response> {
@@ -12,6 +11,6 @@ export async function handleLogout(ctx: HandlerContext): Promise<Response> {
 
   return new Response(
     JSON.stringify({ success: true }),
-    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status: 200, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } }
   );
 }
