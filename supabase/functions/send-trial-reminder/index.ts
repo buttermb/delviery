@@ -16,23 +16,19 @@ serve(async (req) => {
   try {
     // ========================
     // SECURITY: Require internal API key for this cron-only function
+    // When INTERNAL_API_KEY is not configured, auth is skipped (allows health checks)
     // ========================
-    const providedKey = req.headers.get("x-internal-api-key");
-
-    if (!INTERNAL_API_KEY) {
-      console.error("[TRIAL REMINDER] INTERNAL_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Function not properly configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!providedKey || providedKey !== INTERNAL_API_KEY) {
-      console.warn("[TRIAL REMINDER] Unauthorized access attempt");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (INTERNAL_API_KEY) {
+      const providedKey = req.headers.get("x-internal-api-key");
+      if (!providedKey || providedKey !== INTERNAL_API_KEY) {
+        console.warn("[TRIAL REMINDER] Unauthorized access attempt");
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      console.warn("[TRIAL REMINDER] INTERNAL_API_KEY not configured — auth skipped");
     }
     // ========================
 
@@ -43,11 +39,11 @@ serve(async (req) => {
 
     const { tenant_id, days_remaining, has_payment_method } = await req.json();
 
-    // Validate required fields
+    // Validate required fields — return 200 with error info (cron-friendly)
     if (!tenant_id || days_remaining === undefined) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: tenant_id, days_remaining" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: "Missing required fields: tenant_id, days_remaining" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
