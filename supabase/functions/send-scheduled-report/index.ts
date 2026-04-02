@@ -21,7 +21,7 @@ serve(async (req) => {
       .from('scheduled_reports')
       .select('*, custom_reports(*)')
       .eq('id', schedule_id)
-      .eq('is_active', true)
+      .eq('enabled', true)
       .maybeSingle();
 
     if (scheduleError || !schedule) {
@@ -32,15 +32,15 @@ serve(async (req) => {
     }
 
     // Generate the report
-    const reportConfig = schedule.custom_reports;
-    const dataSources = reportConfig.data_sources as string[];
-    const metrics = reportConfig.metrics as string[];
-    
-    // Calculate date range based on frequency
+    const reportConfig = schedule.custom_reports as Record<string, unknown>;
+    const dataSources = (reportConfig?.data_sources ?? []) as string[];
+    const metrics = (reportConfig?.metrics ?? []) as string[];
+
+    // Calculate date range based on schedule_type
     const endDate = new Date();
     const startDate = new Date();
-    
-    switch (schedule.frequency) {
+
+    switch (schedule.schedule_type) {
       case 'daily':
         startDate.setDate(startDate.getDate() - 1);
         break;
@@ -53,7 +53,7 @@ serve(async (req) => {
     }
 
     // Fetch report data
-    const reportData: Record<string, unknown> = {};
+    const reportData: Record<string, Record<string, unknown>[]> = {};
 
     for (const dataSource of dataSources) {
       const query = supabaseClient
@@ -69,7 +69,7 @@ serve(async (req) => {
         console.error(`Error fetching ${dataSource}:`, error);
         reportData[dataSource] = [];
       } else {
-        reportData[dataSource] = data || [];
+        reportData[dataSource] = (data ?? []) as Record<string, unknown>[];
       }
     }
 
@@ -79,40 +79,45 @@ serve(async (req) => {
     for (const metric of metrics) {
       switch (metric) {
         case 'total_revenue':
-          calculatedMetrics[metric] = reportData.wholesale_orders?.reduce(
+          calculatedMetrics[metric] = (reportData.wholesale_orders ?? []).reduce(
             (sum: number, order: Record<string, unknown>) => sum + (Number(order.total_amount) || 0),
             0
-          ) || 0;
+          );
           break;
         case 'order_count':
-          calculatedMetrics[metric] = reportData.wholesale_orders?.length || 0;
+          calculatedMetrics[metric] = (reportData.wholesale_orders ?? []).length;
           break;
         case 'customer_count':
-          calculatedMetrics[metric] = reportData.wholesale_clients?.length || 0;
+          calculatedMetrics[metric] = (reportData.wholesale_clients ?? []).length;
           break;
         default:
           calculatedMetrics[metric] = 0;
       }
     }
 
+    // Extract time_of_day from schedule_config, default to '09:00'
+    const scheduleConfig = (schedule.schedule_config ?? {}) as Record<string, unknown>;
+    const timeOfDay = (scheduleConfig.time_of_day as string) || '09:00';
+
     // Update last run timestamp
     await supabaseClient
       .from('scheduled_reports')
       .update({
         last_run_at: new Date().toISOString(),
-        next_run_at: calculateNextRun(schedule.frequency, schedule.time_of_day)
+        next_run_at: calculateNextRun(schedule.schedule_type, timeOfDay)
       })
       .eq('id', schedule_id);
 
     // TODO: Generate PDF/CSV and upload to storage
     // TODO: Send email to recipients
 
-    console.error(`Scheduled report ${reportConfig.name} generated and sent`);
+    const reportName = (reportConfig?.name as string) ?? 'Unknown Report';
+    console.error(`Scheduled report ${reportName} generated and sent`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        report_name: reportConfig.name,
+        report_name: reportName,
         generated_at: new Date().toISOString(),
         metrics: calculatedMetrics,
         recipients: schedule.recipients
@@ -129,14 +134,14 @@ serve(async (req) => {
   }
 });
 
-function calculateNextRun(frequency: string, timeOfDay: string): string {
+function calculateNextRun(scheduleType: string, timeOfDay: string): string {
   const now = new Date();
-  const [hours, minutes] = timeOfDay.split(':').map(Number);
-  
-  const nextRun = new Date(now);
-  nextRun.setHours(hours, minutes, 0, 0);
+  const [hours, minutes] = (timeOfDay || '09:00').split(':').map(Number);
 
-  switch (frequency) {
+  const nextRun = new Date(now);
+  nextRun.setHours(hours || 0, minutes || 0, 0, 0);
+
+  switch (scheduleType) {
     case 'daily':
       if (nextRun <= now) {
         nextRun.setDate(nextRun.getDate() + 1);
