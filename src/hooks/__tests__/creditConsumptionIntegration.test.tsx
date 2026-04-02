@@ -113,7 +113,7 @@ vi.mock('@/lib/credits', () => ({
     { id: 'starter-pack', name: 'Starter Pack', slug: 'starter-pack', credits: 5000, priceCents: 999, description: '5,000 credits for $9.99' },
     { id: 'growth-pack', name: 'Growth Pack', slug: 'growth-pack', credits: 15000, priceCents: 2499, badge: 'POPULAR', description: '15,000 credits for $24.99' },
     { id: 'power-pack', name: 'Power Pack', slug: 'power-pack', credits: 50000, priceCents: 4999, description: '50,000 credits for $49.99' },
-    { id: 'enterprise-pack', name: 'Enterprise Pack', slug: 'enterprise-pack', credits: 150000, priceCents: 17999, badge: 'BEST VALUE', description: '150,000 credits for $179.99' },
+    { id: 'enterprise-pack', name: 'Enterprise Pack', slug: 'enterprise-pack', credits: 150000, priceCents: 11999, badge: 'BEST VALUE', description: '150,000 credits for $119.99' },
   ],
 }));
 

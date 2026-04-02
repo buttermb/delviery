@@ -1502,9 +1502,9 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     name: 'Enterprise Pack',
     slug: 'enterprise-pack',
     credits: 150000,
-    priceCents: 17999, // $179.99 for 150,000 credits
+    priceCents: 11999, // $119.99 for 150,000 credits
     badge: 'BEST VALUE',
-    description: '150,000 credits for $179.99 - Maximum savings',
+    description: '150,000 credits for $119.99 - Maximum savings',
   },
 ];
 
