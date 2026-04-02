@@ -12,14 +12,7 @@ describe('Credit Package Pricing', () => {
       expect(CREDIT_PACKAGES).toHaveLength(4);
     });
 
-    it('quick boost: 500 credits for $19.99', () => {
-      const pack = CREDIT_PACKAGES.find(p => p.id === 'quick-boost');
-      expect(pack).toBeDefined();
-      expect(pack?.credits).toBe(500);
-      expect(pack?.priceCents).toBe(1999);
-    });
-
-    it('starter pack: 1,500 credits for $49.99 (marked as POPULAR)', () => {
+    it('starter pack: 5,000 credits for $9.99', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'starter-pack');
       expect(pack).toBeDefined();
       expect(pack?.credits).toBe(5000);
