@@ -12,7 +12,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.error('Sending expired trial notifications...');
+    console.error('[TRIAL EXPIRED] Sending expired trial notifications...');
 
     // Find recently suspended accounts (suspended in last 24 hours)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -24,11 +24,11 @@ serve(async (req) => {
       .gte('updated_at', oneDayAgo.toISOString());
 
     if (selectError) {
-      console.error('Error fetching suspended tenants:', selectError);
+      console.error('[TRIAL EXPIRED] Error fetching suspended tenants:', selectError);
       throw selectError;
     }
 
-    console.error(`Found ${suspendedTenants?.length || 0} recently suspended tenants`);
+    console.error(`[TRIAL EXPIRED] Found ${suspendedTenants?.length || 0} recently suspended tenants`);
 
     const emailTasks = (suspendedTenants || []).map(async (tenant) => {
       // Deduct credits for free-tier tenants before sending email
@@ -43,17 +43,17 @@ serve(async (req) => {
           });
 
         if (creditError) {
-          console.error(`Credit deduction error for tenant ${tenant.id}:`, creditError);
+          console.error(`[TRIAL EXPIRED] Credit deduction error for tenant ${tenant.id}:`, creditError);
           return { email: tenant.owner_email, sent: false, reason: 'credit_error' };
         }
 
         const result = creditResult?.[0];
         if (!result?.success) {
-          console.error(`Insufficient credits for tenant ${tenant.id}: ${result?.error_message}`);
+          console.error(`[TRIAL EXPIRED] Insufficient credits for tenant ${tenant.id}: ${result?.error_message}`);
           return { email: tenant.owner_email, sent: false, reason: 'insufficient_credits' };
         }
 
-        console.error(`Credits deducted for tenant ${tenant.id}: cost=${result.credits_cost}, remaining=${result.new_balance}`);
+        console.error(`[TRIAL EXPIRED] Credits deducted for tenant ${tenant.id}: cost=${result.credits_cost}, remaining=${result.new_balance}`);
       }
 
       const emailBody = `
@@ -138,7 +138,7 @@ serve(async (req) => {
         </html>
       `;
 
-      console.error(`Would send expiration email to ${tenant.owner_email}`);
+      console.error(`[TRIAL EXPIRED] Would send expiration email to ${tenant.owner_email}`);
 
       // Example SendGrid integration
       // const sendGridKey = Deno.env.get('SENDGRID_API_KEY');
@@ -168,7 +168,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error in send-trial-expired-notice:', error);
+    console.error('[TRIAL EXPIRED] Error in send-trial-expired-notice:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({
