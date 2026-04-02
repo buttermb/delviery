@@ -57,10 +57,11 @@ serve(async (req) => {
         }
 
         // Send magic link via Supabase Auth (built-in)
+        const siteUrl = Deno.env.get('SITE_URL') || supabaseUrl;
         const { error: otpError } = await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: redirectTo || `${supabaseUrl.replace('.supabase.co', '')}/dashboard`,
+                emailRedirectTo: redirectTo || `${siteUrl}/dashboard`,
                 shouldCreateUser: false // Only allow existing users
             }
         });
