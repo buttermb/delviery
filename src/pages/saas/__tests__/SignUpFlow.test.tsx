@@ -13,6 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // ============================================================================
 // Mocks
@@ -141,6 +142,23 @@ vi.mock('@/components/auth/GoogleSignInButton', () => ({
   GoogleSignInButton: () => <button data-testid="google-signin">Sign in with Google</button>,
 }));
 
+vi.mock('@/hooks/useEmailValidation', () => ({
+  useEmailValidation: () => ({
+    isValid: true,
+    isDisposable: false,
+    isSuspicious: false,
+    reason: null,
+    isLoading: false,
+    isChecked: false,
+  }),
+}));
+
+vi.mock('@/hooks/useCsrfToken', () => ({
+  useCsrfToken: () => ({
+    validateToken: vi.fn().mockReturnValue(true),
+  }),
+}));
+
 vi.mock('@/components/FloraIQLogo', () => ({
   default: () => <div data-testid="logo">Logo</div>,
 }));
@@ -195,6 +213,30 @@ const MOCK_SESSION = {
 };
 
 // ============================================================================
+// Helpers
+// ============================================================================
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        {ui}
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -213,11 +255,7 @@ describe('Complete Signup Flow', () => {
     it('should render signup form with all required fields', async () => {
       const { default: SignUpPage } = await import('../SignUpPage');
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       expect(screen.getByPlaceholderText("Big Mike's Wholesale")).toBeInTheDocument();
       expect(screen.getByPlaceholderText('John Doe')).toBeInTheDocument();
@@ -248,11 +286,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill in business name
       const businessNameInput = screen.getByPlaceholderText("Big Mike's Wholesale");
@@ -314,11 +348,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill required fields
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -359,11 +389,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Submit without filling anything
       const submitButton = screen.getByRole('button', { name: /start free with credits/i });
@@ -399,11 +425,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -443,11 +465,7 @@ describe('Complete Signup Flow', () => {
 
       const { default: AuthConfirmPage } = await import('../../auth/AuthConfirmPage');
 
-      render(
-        <MemoryRouter>
-          <AuthConfirmPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<AuthConfirmPage />);
 
       // Should show loading state initially
       expect(screen.getByText(/verifying your email/i)).toBeInTheDocument();
@@ -477,11 +495,7 @@ describe('Complete Signup Flow', () => {
 
       const { default: AuthConfirmPage } = await import('../../auth/AuthConfirmPage');
 
-      render(
-        <MemoryRouter>
-          <AuthConfirmPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<AuthConfirmPage />);
 
       // Should show expired error
       await waitFor(() => {
@@ -500,11 +514,7 @@ describe('Complete Signup Flow', () => {
 
       const { default: AuthConfirmPage } = await import('../../auth/AuthConfirmPage');
 
-      render(
-        <MemoryRouter>
-          <AuthConfirmPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<AuthConfirmPage />);
 
       // Should show invalid error
       await waitFor(() => {
@@ -532,11 +542,7 @@ describe('Complete Signup Flow', () => {
 
       const { default: AuthConfirmPage } = await import('../../auth/AuthConfirmPage');
 
-      render(
-        <MemoryRouter>
-          <AuthConfirmPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<AuthConfirmPage />);
 
       // After successful verification, should navigate to tenant dashboard
       await waitFor(() => {
@@ -597,7 +603,11 @@ describe('Complete Signup Flow', () => {
   });
 
   describe('Step 5: Credits account created with zero balance', () => {
-    it('should call grant_free_credits RPC after successful signup', async () => {
+    it('should set free tier flags after successful signup', async () => {
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
       mockInvoke.mockResolvedValue({
         data: {
           success: true,
@@ -610,21 +620,13 @@ describe('Complete Signup Flow', () => {
 
       mockSetSession.mockResolvedValue({ error: null });
       mockGetSession.mockResolvedValue({ data: { session: MOCK_SESSION } });
-      mockFrom.mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null }),
-        }),
-      });
+      mockFrom.mockReturnValue({ update: mockUpdate });
       mockRpc.mockResolvedValue({ error: null });
 
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -634,10 +636,12 @@ describe('Complete Signup Flow', () => {
       await user.click(screen.getByRole('checkbox'));
       await user.click(screen.getByRole('button', { name: /start free with credits/i }));
 
-      // Verify credits RPC was called with tenant ID
+      // Verify tenants table was updated with free tier settings
       await waitFor(() => {
-        expect(mockRpc).toHaveBeenCalledWith('grant_free_credits', {
-          p_tenant_id: MOCK_TENANT.id,
+        expect(mockFrom).toHaveBeenCalledWith('tenants');
+        expect(mockUpdate).toHaveBeenCalledWith({
+          is_free_tier: true,
+          credits_enabled: true,
         });
       });
     });
@@ -665,11 +669,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -713,11 +713,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -759,11 +755,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -864,11 +856,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -910,11 +898,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -941,11 +925,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);
@@ -970,11 +950,7 @@ describe('Complete Signup Flow', () => {
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter>
-          <SignUpPage />
-        </MemoryRouter>
-      );
+      renderWithProviders(<SignUpPage />);
 
       // Fill form and submit
       await user.type(screen.getByPlaceholderText("Big Mike's Wholesale"), TEST_USER.businessName);

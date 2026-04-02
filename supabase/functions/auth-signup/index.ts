@@ -4,8 +4,7 @@
  *
  * Accepts: email, password, full_name, tenant_slug, phone
  * - Validates input with Zod
- * - Checks if email already exists
- * - Creates user via supabase.auth.admin.createUser
+ * - Creates user via supabase.auth.admin.createUser (handles duplicate emails)
  * - Generates email verification token
  * - Sends verification email via SendGrid or Resend
  * - Returns success with message to check email
@@ -310,36 +309,8 @@ serve(async (req) => {
       );
     }
 
-    // Check if email already exists in auth.users
-    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
-      perPage: 1000,
-    });
-
-    if (listError) {
-      console.error('Error checking existing users:', listError);
-      return new Response(
-        JSON.stringify({ error: 'Unable to process signup at this time' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const emailExists = existingUsers?.users?.some(
-      (u) => u.email?.toLowerCase() === normalizedEmail
-    );
-
-    if (emailExists) {
-      // Return generic success-like response to prevent email enumeration
-      console.error('Signup attempted with existing email:', normalizedEmail);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'If this email is valid, you will receive a verification email.',
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Create user via supabase.auth.admin.createUser
+    // Duplicate email is handled below via the createUser error response
     const { data: authData, error: createError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
       password,
@@ -472,7 +443,7 @@ serve(async (req) => {
     console.error('Auth signup error:', error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        error: 'An unexpected error occurred. Please try again.',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
