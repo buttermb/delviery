@@ -72,12 +72,32 @@ serve(
       const isFreeTier = tenant?.is_free_tier ?? false;
 
       // Parse and validate request
-      const body = await req.json();
-      const notificationData = notificationSchema.parse(body);
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON body' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const parseResult = notificationSchema.safeParse(body);
+      if (!parseResult.success) {
+        return new Response(
+          JSON.stringify({
+            error: 'Validation failed',
+            details: parseResult.error.issues,
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const notificationData = parseResult.data;
 
       // Determine which channels need credit deduction
+      // Only charge for billable channels that will actually deliver (require user_id)
       const billableChannels = notificationData.channels.filter(
-        (ch) => ch in CHANNEL_CREDIT_MAP
+        (ch) => ch in CHANNEL_CREDIT_MAP && notificationData.user_id
       );
 
       // Deduct credits for each billable channel (free tier only)
@@ -161,7 +181,7 @@ serve(
 
         if (targetUser?.user?.email) {
           // In production, integrate with email service (SendGrid, Resend, etc.)
-          console.error('Email notification would be sent to:', targetUser.user.email);
+          console.log('Email notification would be sent to:', targetUser.user.email);
           results.email = { success: true, sent: false, note: 'Email service not configured' };
         } else {
           results.email = { error: 'User email not found' };
@@ -171,14 +191,14 @@ serve(
       // Send SMS (if requested and user_id provided)
       if (notificationData.channels.includes('sms') && notificationData.user_id) {
         // In production, integrate with Twilio/SMS service
-        console.error('SMS notification would be sent to user:', notificationData.user_id);
+        console.log('SMS notification would be sent to user:', notificationData.user_id);
         results.sms = { success: true, sent: false, note: 'SMS service not configured' };
       }
 
       // Send push notification (if requested and user_id provided)
       if (notificationData.channels.includes('push') && notificationData.user_id) {
         // In production, integrate with FCM/APNS
-        console.error('Push notification would be sent to user:', notificationData.user_id);
+        console.log('Push notification would be sent to user:', notificationData.user_id);
         results.push = { success: true, sent: false, note: 'Push service not configured' };
       }
 

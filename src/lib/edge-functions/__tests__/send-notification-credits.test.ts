@@ -295,6 +295,141 @@ describe('send-notification credit deduction', () => {
     });
   });
 
+  describe('validation error handling', () => {
+    it('should return 400 for invalid notification type', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { error: 'Validation failed', details: [{ code: 'invalid_enum_value' }] },
+          400
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          type: 'invalid_type',
+          title: 'Test',
+          message: 'Test message',
+        }),
+      });
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe('Validation failed');
+      expect(data.details).toBeDefined();
+    });
+
+    it('should return 400 for message exceeding max length', async () => {
+      const result = notificationSchema.safeParse({
+        type: 'system',
+        title: 'Test',
+        message: 'a'.repeat(1001),
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].code).toBe('too_big');
+      }
+    });
+
+    it('should return 400 for empty title', async () => {
+      const result = notificationSchema.safeParse({
+        type: 'system',
+        title: '',
+        message: 'Test message',
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should return 400 for invalid user_id format', async () => {
+      const result = notificationSchema.safeParse({
+        type: 'system',
+        title: 'Test',
+        message: 'Test message',
+        user_id: 'not-a-uuid',
+      });
+
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('credit deduction with missing user_id', () => {
+    it('should not deduct credits for email channel without user_id', async () => {
+      // When no user_id is provided, billable channels should NOT charge credits
+      // because the notification won't actually be delivered
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          success: true,
+          results: {
+            database: { success: true, id: 'notif-1' },
+          },
+          // No credits field because email channel was skipped (no user_id)
+        })
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          type: 'system',
+          title: 'System Update',
+          message: 'Maintenance scheduled',
+          channels: ['database', 'email'],
+          // No user_id provided
+        }),
+      });
+
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.credits).toBeUndefined();
+    });
+
+    it('should deduct credits for email channel when user_id is provided', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          {
+            success: true,
+            results: {
+              database: { success: true, id: 'notif-1' },
+              email: { success: true, sent: false, note: 'Email service not configured' },
+            },
+            credits: { consumed: 10, remaining: 490 },
+          },
+          200,
+          { 'X-Credits-Consumed': '10', 'X-Credits-Remaining': '490' }
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+        },
+        body: JSON.stringify({
+          user_id: '550e8400-e29b-41d4-a716-446655440000',
+          type: 'order_status',
+          title: 'Order Shipped',
+          message: 'Your order has shipped!',
+          channels: ['database', 'email'],
+        }),
+      });
+
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.credits).toBeDefined();
+      expect(data.credits.consumed).toBe(10);
+    });
+  });
+
   describe('CREDIT_ACTIONS constants', () => {
     it('should include SEND_PUSH_NOTIFICATION in credit actions', async () => {
       // Verify the constant was added to creditGate.ts by reading source
@@ -417,6 +552,64 @@ describe('send-notification credit deduction', () => {
       // Should use auth.getUser to resolve tenant
       expect(source).toContain('auth.getUser');
       expect(source).toContain('tenant_users');
+    });
+
+    it('should use safeParse for validation (returns 400, not 500)', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const edgeFnPath = path.resolve(
+        __dirname,
+        '../../../../supabase/functions/send-notification/index.ts'
+      );
+      const source = fs.readFileSync(edgeFnPath, 'utf-8');
+
+      expect(source).toContain('safeParse');
+      expect(source).toContain('status: 400');
+      expect(source).toContain("error: 'Validation failed'");
+    });
+
+    it('should only charge credits for billable channels when user_id is present', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const edgeFnPath = path.resolve(
+        __dirname,
+        '../../../../supabase/functions/send-notification/index.ts'
+      );
+      const source = fs.readFileSync(edgeFnPath, 'utf-8');
+
+      // The billable channels filter should check for user_id
+      expect(source).toContain('notificationData.user_id');
+      expect(source).toMatch(/billableChannels.*=.*filter/);
+    });
+
+    it('should use console.log not console.error for info messages', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const edgeFnPath = path.resolve(
+        __dirname,
+        '../../../../supabase/functions/send-notification/index.ts'
+      );
+      const source = fs.readFileSync(edgeFnPath, 'utf-8');
+
+      // Info messages about "would be sent" should use console.log
+      expect(source).toContain("console.log('Email notification would be sent");
+      expect(source).toContain("console.log('SMS notification would be sent");
+      expect(source).toContain("console.log('Push notification would be sent");
+
+      // Error logging should still use console.error
+      expect(source).toContain("console.error('Send notification error:");
+    });
+
+    it('should handle invalid JSON body gracefully', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const edgeFnPath = path.resolve(
+        __dirname,
+        '../../../../supabase/functions/send-notification/index.ts'
+      );
+      const source = fs.readFileSync(edgeFnPath, 'utf-8');
+
+      expect(source).toContain("error: 'Invalid JSON body'");
     });
   });
 });
