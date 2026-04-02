@@ -24,19 +24,23 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== 'POST') {
+    return errorResponse(405, 'Method not allowed');
+  }
+
   try {
+    // Authenticate user first — must return 401 before any other check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return errorResponse(401, 'Missing authorization header');
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
       return errorResponse(500, 'Stripe is not configured');
-    }
-
-    // Authenticate user
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return errorResponse(401, 'Missing authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
@@ -48,7 +52,12 @@ serve(async (req) => {
     }
 
     // Validate input
-    const body = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
+    }
     const parseResult = requestSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -214,7 +223,8 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from('credit_subscriptions')
       .update(updateData)
-      .eq('id', subscription_id);
+      .eq('id', subscription_id)
+      .eq('user_id', user.id);
 
     if (updateError) {
       console.error('[CREDITS_CANCEL_SUB] Error updating subscription record:', updateError);
