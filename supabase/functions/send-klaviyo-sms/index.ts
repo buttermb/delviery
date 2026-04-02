@@ -1,25 +1,37 @@
-import { serve, corsHeaders } from '../_shared/deps.ts';
-import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
+/**
+ * Send SMS via Klaviyo Edge Function
+ * Uses Klaviyo Events API to track an SMS event that triggers a Klaviyo flow.
+ * Credit-gated with auto-refund: deducts credits (action_key: send_sms)
+ * for free tier tenants and refunds on API failure.
+ */
+
+import { corsHeaders } from '../_shared/deps.ts';
+import { withCreditGateAndRefund, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 interface SmsRequest {
-  phone: string;
+  to?: string;
+  phone?: string;
   message: string;
   metadata?: Record<string, unknown>;
 }
 
-serve(async (req) => {
-  // CORS preflight handled by withCreditGate, but keep explicit for clarity
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  return withCreditGate(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, _serviceClient) => {
+  return withCreditGateAndRefund(req, CREDIT_ACTIONS.SEND_SMS, async (_tenantId, _serviceClient) => {
     const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
     if (!klaviyoApiKey) {
-      throw new Error('KLAVIYO_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'KLAVIYO_API_KEY not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const { phone, message, metadata: _metadata = {} }: SmsRequest = await req.json();
+    const body: SmsRequest = await req.json();
+    const phone = body.to || body.phone;
+    const { message, metadata = {} } = body;
 
     if (!phone || !message) {
       return new Response(
@@ -28,49 +40,56 @@ serve(async (req) => {
       );
     }
 
-    console.error('Sending SMS via Klaviyo:', { phone, messageLength: message.length });
-
-    // Klaviyo Campaigns API - Create SMS Campaign
-    const response = await fetch('https://a.klaviyo.com/api/campaigns/', {
+    // Klaviyo Events API — track a custom event on a profile identified by phone.
+    // A Klaviyo flow triggered by this metric sends the actual SMS.
+    const response = await fetch('https://a.klaviyo.com/api/events/', {
       method: 'POST',
       headers: {
         'Authorization': `Klaviyo-API-Key ${klaviyoApiKey}`,
         'Content-Type': 'application/json',
-        'revision': '2024-10-15'
+        'revision': '2024-10-15',
       },
       body: JSON.stringify({
         data: {
-          type: 'campaign',
+          type: 'event',
           attributes: {
-            name: `SMS Test - ${new Date().toISOString()}`,
-            audiences: {
-              included: [phone]
+            metric: {
+              data: {
+                type: 'metric',
+                attributes: { name: 'SMS Requested' },
+              },
             },
-            messages: {
-              sms: {
-                body: message
-              }
+            profile: {
+              data: {
+                type: 'profile',
+                attributes: { phone_number: phone },
+              },
             },
-            send_strategy: {
-              method: 'immediate'
-            }
-          }
-        }
-      })
+            properties: {
+              message,
+              ...metadata,
+            },
+          },
+        },
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Klaviyo SMS API error:', errorText);
-      // TODO: Refund credits on API failure when refundCredits mechanism is available
-      throw new Error(`Klaviyo API error: ${response.status} - ${errorText}`);
+      console.error('[send-klaviyo-sms] Klaviyo API error:', response.status, errorText);
+      return new Response(
+        JSON.stringify({
+          error: 'Klaviyo API error',
+          details: `${response.status} - ${errorText}`,
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const result = await response.json();
-    console.error('SMS sent successfully via Klaviyo:', result);
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.data?.id }),
+      JSON.stringify({ success: true, eventId: result.data?.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   });
