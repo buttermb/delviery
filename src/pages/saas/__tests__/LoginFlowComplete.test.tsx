@@ -98,7 +98,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/components/ThemeToggle', () => ({
-  default: () => null,
+  ThemeToggle: () => null,
 }));
 
 vi.mock('@/components/FloraIQLogo', () => ({
@@ -114,6 +114,14 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/hooks/useCsrfToken', () => ({
+  useCsrfToken: () => ({
+    csrfToken: 'test-csrf-token',
+    validateToken: () => true,
+    refreshToken: vi.fn(),
+  }),
 }));
 
 // --- Helpers ---
@@ -207,7 +215,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should authenticate and create a session with tokens stored', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -235,7 +243,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should store admin and tenant data in session', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -263,7 +271,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should store user id in sessionStorage and localStorage', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -282,7 +290,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should store lastTenantSlug for session continuity', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -301,7 +309,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -330,7 +338,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should call edge function with correct payload', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -349,6 +357,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
             email: 'admin@greenleaf.com',
             password: 'SecurePass123!',
             tenantSlug: 'greenleaf',
+            rememberMe: false,
           }),
         })
       );
@@ -358,7 +367,7 @@ describe('Login Flow - Complete with Valid Credentials', () => {
   it('should normalize email to lowercase before login', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -390,7 +399,7 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
       error: { message: 'Invalid login credentials', status: 400 },
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -418,7 +427,7 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
       error: { message: 'Invalid login credentials', status: 400 },
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -445,7 +454,7 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
       error: { message: 'Invalid login credentials', status: 400 },
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -467,7 +476,7 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
       error: { message: 'Invalid login credentials', status: 400 },
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -536,7 +545,7 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
       category: 'auth',
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -606,7 +615,7 @@ describe('Login Flow - Locked/Suspended Account', () => {
       category: 'auth',
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -667,7 +676,7 @@ describe('Login Flow - Locked/Suspended Account', () => {
       category: 'auth',
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -728,7 +737,7 @@ describe('Login Flow - Locked/Suspended Account', () => {
       category: 'auth',
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -794,7 +803,7 @@ describe('Login Flow - Locked/Suspended Account', () => {
       category: 'auth',
     });
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -830,7 +839,7 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     mockFrom.mockImplementation(() => tenantUsersChain);
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -855,7 +864,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   });
 
   it('should render the Remember me checkbox', async () => {
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -869,7 +878,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   it('should persist access token in localStorage for session continuity', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -889,7 +898,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   it('should persist tenant and admin data in localStorage for session recovery', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -916,7 +925,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   it('should store lastTenantSlug in localStorage for cross-session persistence', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -935,7 +944,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   it('should store user id in both sessionStorage and localStorage for hybrid persistence', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -955,7 +964,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
   it('should use edge function cookie with 7-day Max-Age for persistent sessions', async () => {
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
@@ -992,7 +1001,7 @@ describe('Login Flow - Remember Me Session Persistence', () => {
 
     setupSuccessfulLoginMocks();
 
-    const { default: LoginPage } = await import('../LoginPage');
+    const { LoginPage } = await import('../LoginPage');
 
     render(
       <MemoryRouter>
