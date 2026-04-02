@@ -1,4 +1,3 @@
-import { corsHeaders } from '../../_shared/deps.ts';
 import type { SupabaseClient } from '../../_shared/deps.ts';
 import type { CorsHeaders } from '../utils.ts';
 import { errorResponse, jsonResponse } from '../utils.ts';
@@ -139,8 +138,5 @@ export async function handleVerify(
     features: userTenant.features,
   };
 
-  return new Response(
-    JSON.stringify({ user, admin, tenant }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
+  return jsonResponse(corsHeaders_, { user, admin, tenant });
 }
