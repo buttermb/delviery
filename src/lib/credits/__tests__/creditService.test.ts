@@ -7,17 +7,20 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock supabase client to avoid env var requirement
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-    }),
-    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    from: vi.fn(),
+    rpc: vi.fn(),
+    auth: { getUser: vi.fn() },
+  },
+}));
+
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
