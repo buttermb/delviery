@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/queryKeys";
 
 interface NotifyRecallParams {
   recall_id: string;
-  notification_method?: 'email' | 'sms' | 'phone' | 'in_person';
+  notification_method?: 'email' | 'sms' | 'both';
 }
 
 export function useRecallActions() {

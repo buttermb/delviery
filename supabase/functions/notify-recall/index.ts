@@ -7,14 +7,39 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    // --- Auth check ---
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'User not authenticated' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const rawBody = await req.json();
     const { recall_id, notification_method } = validateNotifyRecall(rawBody);
+
+    // Use user-scoped client for RLS
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
 
     // Get recall details
     const { data: recall, error: recallError } = await supabaseClient
@@ -32,14 +57,14 @@ serve(async (req) => {
 
     // Get affected customers based on scope
     let affectedCustomers: Record<string, unknown>[] = [];
-    
+
     if (recall.scope === 'all') {
       const { data: customers } = await supabaseClient
         .from('wholesale_clients')
         .select('id, name, email, phone')
         .eq('tenant_id', recall.tenant_id)
         .eq('status', 'active');
-      
+
       affectedCustomers = customers || [];
     } else if (recall.scope === 'batch' && recall.batch_number) {
       // Find customers who purchased this batch
@@ -48,52 +73,48 @@ serve(async (req) => {
         .select('client_id, wholesale_clients(id, name, email, phone)')
         .eq('tenant_id', recall.tenant_id)
         .contains('metadata', { batch_number: recall.batch_number });
-      
+
       affectedCustomers = orders?.map(o => o.wholesale_clients).filter(Boolean) || [];
     }
 
     // Create notification records
     const notifications = affectedCustomers.map(customer => ({
-      tenant_id: recall.tenant_id,
       recall_id: recall.id,
       customer_id: customer.id,
-      notification_method: notification_method || 'email',
+      notification_type: notification_method || 'email',
       status: 'pending'
     }));
 
-    const { error: notifError } = await supabaseClient
-      .from('recall_notifications')
-      .insert(notifications);
+    if (notifications.length > 0) {
+      const { error: notifError } = await supabaseClient
+        .from('recall_notifications')
+        .insert(notifications);
 
-    if (notifError) throw notifError;
+      if (notifError) throw notifError;
+    }
 
     // Simulate sending notifications (in production, integrate with email/SMS service)
     let sentCount = 0;
     for (const customer of affectedCustomers) {
-      // TODO: Send actual email/SMS
-      // For now, just update status to sent
       await supabaseClient
         .from('recall_notifications')
-        .update({ 
+        .update({
           status: 'sent',
           sent_at: new Date().toISOString()
         })
         .eq('recall_id', recall_id)
         .eq('customer_id', customer.id);
-      
+
       sentCount++;
     }
 
     // Update recall with affected customer count
     await supabaseClient
       .from('batch_recalls')
-      .update({ 
-        affected_customers: affectedCustomers.length,
-        updated_at: new Date().toISOString()
-      })
+      .update({ affected_customers: affectedCustomers.length })
       .eq('id', recall_id);
 
-    console.error(`Recall notification sent to ${sentCount} customers`);
+    console.error(`[notify-recall] Sent to ${sentCount} customers for recall ${recall_id}`);
 
     return new Response(
       JSON.stringify({
@@ -105,7 +126,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error sending recall notifications:', error);
+    console.error('[notify-recall] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: message }),
