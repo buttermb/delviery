@@ -143,7 +143,7 @@ export function usePasswordReset() {
 
       const response = await apiFetch(`${supabaseUrl}/functions/v1/auth-reset-password`, {
         method: "POST",
-        body: JSON.stringify({ token, newPassword }),
+        body: JSON.stringify({ token, new_password: newPassword }),
         skipAuth: true,
       });
 

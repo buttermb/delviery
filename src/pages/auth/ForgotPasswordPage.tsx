@@ -230,6 +230,10 @@ export function ForgotPasswordPage() {
               className="w-full min-h-[44px]"
               disabled={isRequestingReset || rateLimited}
               aria-busy={isRequestingReset}
+              onClick={() => {
+                setSubmitted(false);
+                setEmail("");
+              }}
             >
               {rateLimited ? (
                 <>
