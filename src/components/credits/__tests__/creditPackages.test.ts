@@ -34,11 +34,11 @@ describe('Credit Package Pricing', () => {
       expect(pack?.priceCents).toBe(4999);
     });
 
-    it('enterprise pack: 150,000 credits for $179.99 (marked as BEST VALUE)', () => {
+    it('enterprise pack: 150,000 credits for $119.99 (marked as BEST VALUE)', () => {
       const pack = CREDIT_PACKAGES.find(p => p.id === 'enterprise-pack');
       expect(pack).toBeDefined();
       expect(pack?.credits).toBe(150000);
-      expect(pack?.priceCents).toBe(17999);
+      expect(pack?.priceCents).toBe(11999);
       expect(pack?.badge).toBe('BEST VALUE');
     });
   });
@@ -157,7 +157,7 @@ describe('CREDIT_PACKAGES matches database migration', () => {
     { slug: 'starter-pack', credits: 5000, priceCents: 999 },
     { slug: 'growth-pack', credits: 15000, priceCents: 2499 },
     { slug: 'power-pack', credits: 50000, priceCents: 4999 },
-    { slug: 'enterprise-pack', credits: 150000, priceCents: 17999 },
+    { slug: 'enterprise-pack', credits: 150000, priceCents: 11999 },
   ];
 
   it.each(DB_PACKAGES)(
