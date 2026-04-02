@@ -12,8 +12,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // ============================================================================
 // Mocks
@@ -142,6 +142,23 @@ vi.mock('@/components/auth/GoogleSignInButton', () => ({
   GoogleSignInButton: () => <button data-testid="google-signin">Sign in with Google</button>,
 }));
 
+vi.mock('@/hooks/useEmailValidation', () => ({
+  useEmailValidation: () => ({
+    isValid: true,
+    isDisposable: false,
+    isSuspicious: false,
+    reason: null,
+    isLoading: false,
+    isChecked: false,
+  }),
+}));
+
+vi.mock('@/hooks/useCsrfToken', () => ({
+  useCsrfToken: () => ({
+    validateToken: vi.fn().mockReturnValue(true),
+  }),
+}));
+
 vi.mock('@/components/FloraIQLogo', () => ({
   default: () => <div data-testid="logo">Logo</div>,
 }));
@@ -158,59 +175,6 @@ vi.mock('@/config/planPricing', () => ({
   PLAN_CONFIG: { free: { name: 'Free', priceMonthly: 0, description: 'Free plan' } },
   getPlanConfig: () => ({ name: 'Free', priceMonthly: 0, description: 'Free plan' }),
 }));
-
-vi.mock('@/hooks/useEmailValidation', () => ({
-  useEmailValidation: () => ({
-    isValid: true,
-    isDisposable: false,
-    isSuspicious: false,
-    reason: null,
-    isLoading: false,
-    isChecked: true,
-  }),
-}));
-
-vi.mock('@/hooks/useCsrfToken', () => ({
-  useCsrfToken: () => ({
-    csrfToken: 'test-csrf-token',
-    validateToken: () => true,
-    refreshToken: vi.fn(),
-  }),
-}));
-
-vi.mock('@/constants/storageKeys', () => ({
-  STORAGE_KEYS: {
-    LAST_TENANT_SLUG: 'lastTenantSlug',
-    SIGNUP_FORM_DATA: 'signup_form_data',
-    SIGNUP_FORM_DATA_EXPIRY: 'signup_form_data_expiry',
-    TENANT_ADMIN_USER: 'tenant_admin_user',
-    TENANT_DATA: 'tenant_data',
-  },
-}));
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-}
-
-function renderWithProviders(ui: React.ReactElement) {
-  const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        {ui}
-      </MemoryRouter>
-    </QueryClientProvider>
-  );
-}
 
 // ============================================================================
 // Test Constants
@@ -247,6 +211,30 @@ const MOCK_SESSION = {
   token_type: 'bearer',
   user: MOCK_USER,
 };
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        {ui}
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+}
 
 // ============================================================================
 // Tests
@@ -615,7 +603,11 @@ describe('Complete Signup Flow', () => {
   });
 
   describe('Step 5: Credits account created with zero balance', () => {
-    it('should invoke tenant-signup edge function which grants credits server-side', async () => {
+    it('should set free tier flags after successful signup', async () => {
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
       mockInvoke.mockResolvedValue({
         data: {
           success: true,
@@ -628,11 +620,8 @@ describe('Complete Signup Flow', () => {
 
       mockSetSession.mockResolvedValue({ error: null });
       mockGetSession.mockResolvedValue({ data: { session: MOCK_SESSION } });
-      mockFrom.mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null }),
-        }),
-      });
+      mockFrom.mockReturnValue({ update: mockUpdate });
+      mockRpc.mockResolvedValue({ error: null });
 
       const { default: SignUpPage } = await import('../SignUpPage');
       const user = userEvent.setup();
@@ -647,15 +636,13 @@ describe('Complete Signup Flow', () => {
       await user.click(screen.getByRole('checkbox'));
       await user.click(screen.getByRole('button', { name: /start free with credits/i }));
 
-      // Credits are granted server-side by the edge function (setupFreeTier + grant_free_credits RPC)
-      // Frontend only invokes the edge function — verify it was called
+      // Verify tenants table was updated with free tier settings
       await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith('tenant-signup', expect.objectContaining({
-          body: expect.objectContaining({
-            email: TEST_USER.email,
-            business_name: TEST_USER.businessName,
-          }),
-        }));
+        expect(mockFrom).toHaveBeenCalledWith('tenants');
+        expect(mockUpdate).toHaveBeenCalledWith({
+          is_free_tier: true,
+          credits_enabled: true,
+        });
       });
     });
 
