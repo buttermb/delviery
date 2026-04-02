@@ -73,7 +73,7 @@ const PACKAGES: CreditPackage[] = [
   { id: 'starter-pack', credits: 5000, price: 9.99, label: 'Starter Pack' },
   { id: 'growth-pack', credits: 15000, price: 24.99, label: 'Growth Pack', popular: true },
   { id: 'power-pack', credits: 50000, price: 49.99, label: 'Power Pack' },
-  { id: 'enterprise-pack', credits: 150000, price: 179.99, label: 'Enterprise Pack' },
+  { id: 'enterprise-pack', credits: 150000, price: 119.99, label: 'Enterprise Pack' },
 ];
 
 const INITIAL_BILLING_ADDRESS: BillingAddress = {

@@ -22,7 +22,7 @@ const CREDIT_PACKAGES = [
   { credits: 5000, priceCents: 999 },      // Starter Pack
   { credits: 15000, priceCents: 2499 },    // Growth Pack
   { credits: 50000, priceCents: 4999 },    // Power Pack
-  { credits: 150000, priceCents: 17999 },  // Enterprise Pack
+  { credits: 150000, priceCents: 11999 },  // Enterprise Pack
 ];
 
 // Rate limiting: max top-ups per hour
