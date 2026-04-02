@@ -1,5 +1,12 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { checkRateLimit, RATE_LIMITS } from '../_shared/rateLimiting.ts';
+import { validateEmail, validatePhoneNumber, validateUUID } from '../_shared/validation.ts';
+
+const RequestSchema = z.object({
+  entryId: z.string().min(1),
+  email: z.string().min(1),
+  phone: z.string().min(1),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -16,23 +23,56 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+    const parsed = RequestSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: entryId, email, phone' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { entryId, email, phone } = parsed.data;
+
+    if (!validateUUID(entryId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid entryId format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!validateEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!validatePhoneNumber(phone)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid phone number format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { entryId, email, phone } = await req.json();
-
-    if (!entryId || !email || !phone) {
-      throw new Error("Missing required fields");
+    // Generate OTPs
+    const { data: emailOTP, error: otpError1 } = await supabase.rpc('generate_otp');
+    if (otpError1) {
+      console.error('[SEND_OTP] Failed to generate email OTP:', otpError1);
+      throw otpError1;
     }
 
-    // Generate OTPs
-    const { data: otpData } = await supabase.rpc('generate_otp');
-    const emailOTP = otpData;
-    
-    const { data: otpData2 } = await supabase.rpc('generate_otp');
-    const phoneOTP = otpData2;
+    const { data: phoneOTP, error: otpError2 } = await supabase.rpc('generate_otp');
+    if (otpError2) {
+      console.error('[SEND_OTP] Failed to generate phone OTP:', otpError2);
+      throw otpError2;
+    }
 
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -46,12 +86,15 @@ serve(async (req) => {
       })
       .eq('id', entryId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('[SEND_OTP] Failed to update entry:', updateError);
+      throw updateError;
+    }
 
     // Send email OTP (using Resend)
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (resendApiKey) {
-      await fetch("https://api.resend.com/emails", {
+      const emailResponse = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,10 +107,14 @@ serve(async (req) => {
           text: `Your verification code is: ${emailOTP}\n\nThis code expires in 10 minutes.`,
         }),
       });
+
+      if (!emailResponse.ok) {
+        console.error('[SEND_OTP] Resend API error:', await emailResponse.text());
+      }
     }
 
     // Send SMS OTP (using Twilio via edge function)
-    await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-sms`, {
+    const smsResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-sms`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,12 +122,16 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         to: phone,
-        message: `BudDash Giveaway verification code: ${phoneOTP}. Expires in 10 minutes.`
+        message: `FloraIQ Giveaway verification code: ${phoneOTP}. Expires in 10 minutes.`
       })
     });
 
+    if (!smsResponse.ok) {
+      console.error('[SEND_OTP] SMS send error:', await smsResponse.text());
+    }
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         message: "Verification codes sent"
       }),
@@ -88,12 +139,12 @@ serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    console.error("OTP sending error:", error);
+    console.error("[SEND_OTP] Error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
+      JSON.stringify({ error: 'Failed to send verification codes' }),
+      {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }
