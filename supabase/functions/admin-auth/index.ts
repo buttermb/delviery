@@ -13,9 +13,32 @@ serve(secureHeadersMiddleware(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { action, email, password } = await req.json();
+    // Safe JSON parsing — malformed/empty body must not cause 500
+    let body: Record<string, unknown> = {};
+    try {
+      const text = await req.text();
+      if (text && text.trim() !== '') {
+        body = JSON.parse(text);
+      }
+    } catch (_e) {
+      return new Response(
+        JSON.stringify({ error: "Invalid request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const action = body.action as string | undefined;
+    const email = body.email as string | undefined;
+    const password = body.password as string | undefined;
 
     if (action === "login") {
+      if (!email || !password) {
+        return new Response(
+          JSON.stringify({ error: "Email and password are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Extract client info
       const clientIp = getClientIP(req);
       const userAgent = req.headers.get("user-agent") || "unknown";
@@ -298,9 +321,10 @@ serve(secureHeadersMiddleware(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    // Error logged server-side only, no sensitive data
+    // Log server-side only; never expose internal error details to clients
+    console.error('[admin-auth] Unhandled error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
+      JSON.stringify({ error: "Authentication failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
