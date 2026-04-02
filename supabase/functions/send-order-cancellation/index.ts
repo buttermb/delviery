@@ -124,15 +124,22 @@ serve(async (req) => {
     // ----------------------------------------------------------------
     // Build email HTML
     // ----------------------------------------------------------------
-    const itemsHtml = items
+    const safeItems = Array.isArray(items) ? items : [];
+    const safeTotal = typeof total === 'number' ? total : 0;
+
+    const itemsHtml = safeItems
       .map(
-        (item) => `
+        (item) => {
+          const qty = typeof item.quantity === 'number' ? item.quantity : 1;
+          const price = typeof item.price === 'number' ? item.price : 0;
+          return `
       <tr>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${item.name}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${(item.price * item.quantity).toFixed(2)}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${item.name || 'Item'}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${qty}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${(price * qty).toFixed(2)}</td>
       </tr>
-    `
+    `;
+        }
       )
       .join("");
 
@@ -165,7 +172,7 @@ serve(async (req) => {
             <div style="border-top: 2px solid #eee; padding-top: 12px;">
               <div style="display: flex; justify-content: space-between; font-weight: bold;">
                 <span style="color: #333;">Order Total:</span>
-                <span style="color: #ef4444; text-decoration: line-through;">$${total.toFixed(2)}</span>
+                <span style="color: #ef4444; text-decoration: line-through;">$${safeTotal.toFixed(2)}</span>
               </div>
             </div>
 
