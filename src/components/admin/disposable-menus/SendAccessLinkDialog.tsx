@@ -37,7 +37,7 @@ export function SendAccessLinkDialog({
   open,
   onClose,
   whitelistEntry,
-  menuTitle: _menuTitle,
+  menuTitle,
 }: SendAccessLinkDialogProps) {
   const [method, setMethod] = useState<'email' | 'sms'>('email');
   const [preview, setPreview] = useState<{ message?: string; [key: string]: unknown } | null>(null);
@@ -103,7 +103,7 @@ export function SendAccessLinkDialog({
         <DialogHeader>
           <DialogTitle>Send Access Link</DialogTitle>
           <DialogDescription>
-            Send menu access link to {whitelistEntry.customer_name}
+            Send {menuTitle} access link to {whitelistEntry.customer_name}
           </DialogDescription>
         </DialogHeader>
 
@@ -163,9 +163,10 @@ export function SendAccessLinkDialog({
           {/* Preview */}
           {preview && (
             <div className="space-y-2">
-              <Label>Message Preview</Label>
+              <Label htmlFor="message-preview">Message Preview</Label>
               <Textarea
-                value={preview.message || preview.subject + '\n\n' + preview.message}
+                id="message-preview"
+                value={preview.subject ? `${preview.subject}\n\n${preview.message}` : (preview.message || '')}
                 readOnly
                 rows={10}
                 className="font-mono text-xs"

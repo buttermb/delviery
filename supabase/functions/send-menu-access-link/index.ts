@@ -99,7 +99,8 @@ serve(async (req) => {
         );
       }
     }
-    const accessUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/menu/${whitelist.unique_access_token}${
+    const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
+    const accessUrl = `${siteUrl}/menu/${whitelist.unique_access_token}${
       menu.access_code_required ? '?code=XXXXX' : ''
     }`;
 
