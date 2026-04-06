@@ -125,8 +125,8 @@ export function ModernHero() {
           </div>
 
           {/* Centered Product Visual (Browser Mockup) */}
-          <div className="relative z-20 -mt-10 lg:-mt-24 w-full h-[280px] sm:h-[380px] md:h-[520px] lg:h-[680px]">
-            <div className="absolute left-1/2 top-0 origin-top transform -translate-x-1/2 scale-[0.40] sm:scale-[0.55] md:scale-[0.75] lg:scale-100 w-[1100px] transition-transform duration-300">
+          <div className="relative z-20 -mt-10 lg:-mt-20 w-full h-[320px] sm:h-[450px] md:h-[600px] lg:h-[760px]">
+            <div className="absolute left-1/2 top-0 origin-top transform -translate-x-1/2 scale-[0.38] sm:scale-[0.55] md:scale-[0.75] lg:scale-[0.95] w-[1100px] transition-transform duration-300">
               <div className="relative rounded-xl border border-slate-200/60 bg-white shadow-[0_20px_60px_-15px_rgba(46,22,121,0.2)] overflow-hidden">
                 {/* Browser Header */}
                 <div className="h-8 bg-white/80 backdrop-blur border-b border-slate-200/60 flex items-center px-4 gap-2">

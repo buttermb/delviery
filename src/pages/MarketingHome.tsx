@@ -85,12 +85,12 @@ export default function MarketingHome() {
 
 
         {/* SECTION 9: PRICING PREVIEW - GRAY BG */}
-        <section className="py-24 bg-white">
+        <section className="py-16 md:py-20 bg-white">
           <PricingSection />
         </section>
 
         {/* SECTION 10: FINAL CTA */}
-        <section className="py-24 bg-white">
+        <section className="pb-24 pt-8 md:pt-16 bg-white">
           <CTASection
             title="Ready to Create Your First Secure Menu?"
             description="Live in 60 seconds. No demo. No contract."

@@ -28,7 +28,7 @@ export function DetailedFeatureSection() {
             linkText: 'Learn more about Smart Logistics',
             icon: Truck,
             demo: (
-                <div className="w-full h-[500px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl relative">
+                <div className="w-full aspect-[4/3] min-h-[400px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl relative">
                     <LogisticsDemo />
                 </div>
             ),
@@ -43,7 +43,7 @@ export function DetailedFeatureSection() {
             linkText: 'Learn more about B2B E-Commerce',
             icon: ShoppingCart,
             demo: (
-                <div className="w-full h-[600px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl">
+                <div className="w-full aspect-[4/3] min-h-[450px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl">
                     <StorefrontDemo />
                 </div>
             ),
