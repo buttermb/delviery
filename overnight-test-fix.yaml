@@ -1,134 +1,152 @@
-## ============================================================
-## FloraIQ Overnight Test & Fix Pipeline — 130 Tasks
-## ============================================================
-## Run: ralphy --yaml overnight-test-fix.yaml --parallel --max-parallel 5
-##
-## Tests every edge function individually, all auth flows, emails,
-## payments, database schema, security, and UI flows.
-## Auto-fixes and deploys any issues found.
-##
-## Expected runtime: 4-8 hours
-## ============================================================
-
 tasks:
-
-  # ============================================================
-  # GROUP 1: Auth Edge Functions (individual tests)
-  # ============================================================
-
   - title: "Test & fix: tenant-signup"
     parallel_group: 1
-    completed: false
-    description: |
+    completed: true
+    description: >
       Test tenant-signup edge function end-to-end.
-      1. Send: curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test-signup-'$(date +%s)'@test.com","password":"TestPass123!","business_name":"Overnight Test Store","owner_name":"Test Owner"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-signup"
-      2. Expected: 200 with {success:true} or 400 (validation). NOT 500.
-      3. If 500: read supabase/functions/tenant-signup/index.ts and all modules in that directory. Diagnose, fix, deploy with: npx supabase functions deploy tenant-signup
-      4. Verify the fix by re-testing.
-      5. Clean up test data: npx supabase db query --linked "DELETE FROM tenants WHERE owner_email LIKE 'test-signup-%@test.com'"
 
+      1. Send: curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test-signup-'$(date
+      +%s)'@test.com","password":"TestPass123!","business_name":"Overnight Test
+      Store","owner_name":"Test Owner"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-signup"
+
+      2. Expected: 200 with {success:true} or 400 (validation). NOT 500.
+
+      3. If 500: read supabase/functions/tenant-signup/index.ts and all modules
+      in that directory. Diagnose, fix, deploy with: npx supabase functions
+      deploy tenant-signup
+
+      4. Verify the fix by re-testing.
+
+      5. Clean up test data: npx supabase db query --linked "DELETE FROM tenants
+      WHERE owner_email LIKE 'test-signup-%@test.com'"
   - title: "Test & fix: tenant-admin-auth login"
     parallel_group: 1
-    completed: false
-    description: |
+    completed: true
+    description: >
       Test tenant-admin-auth login action.
-      1. Send: curl -s -X POST -H "Content-Type: application/json" -d '{"action":"login","email":"sake2608@icloud.com","password":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
-      2. Expected: 200 (valid creds) or 401 (wrong password). NOT 500.
-      3. If 500: read supabase/functions/tenant-admin-auth/index.ts and handlers/login.ts. Fix, deploy, verify.
 
+      1. Send: curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"login","email":"sake2608@icloud.com","password":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
+
+      2. Expected: 200 (valid creds) or 401 (wrong password). NOT 500.
+
+      3. If 500: read supabase/functions/tenant-admin-auth/index.ts and
+      handlers/login.ts. Fix, deploy, verify.
   - title: "Test & fix: tenant-admin-auth verify"
     parallel_group: 1
-    completed: false
-    description: |
+    completed: true
+    description: >
       Test tenant-admin-auth verify action.
-      1. Send: curl -s -X POST -H "Content-Type: application/json" -d '{"action":"verify"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
-      2. Expected: 401 (no token). NOT 500.
-      3. If 500: fix handlers/verify.ts, deploy, verify.
 
+      1. Send: curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"verify"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
+
+      2. Expected: 401 (no token). NOT 500.
+
+      3. If 500: fix handlers/verify.ts, deploy, verify.
   - title: "Test & fix: tenant-admin-auth refresh"
     parallel_group: 1
-    completed: false
-    description: |
+    completed: true
+    description: >
       Test tenant-admin-auth refresh action.
-      1. Send: curl -s -X POST -H "Content-Type: application/json" -d '{"action":"refresh"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
-      2. Expected: 400 or 401. NOT 500.
-      3. If 500: fix handlers/refresh.ts, deploy.
 
+      1. Send: curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"refresh"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
+
+      2. Expected: 400 or 401. NOT 500.
+
+      3. If 500: fix handlers/refresh.ts, deploy.
   - title: "Test & fix: tenant-admin-auth logout"
     parallel_group: 1
-    completed: false
-    description: |
+    completed: true
+    description: >
       Test tenant-admin-auth logout action.
-      1. Send: curl -s -X POST -H "Content-Type: application/json" -d '{"action":"logout"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
-      2. Expected: 200 or 401. NOT 500.
-      3. If 500: fix handlers/logout.ts, deploy.
 
+      1. Send: curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"logout"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth"
+
+      2. Expected: 200 or 401. NOT 500.
+
+      3. If 500: fix handlers/logout.ts, deploy.
   - title: "Test & fix: auth-login"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","password":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-login"
-      Expected: 401 (bad creds). NOT 500. If 500: fix, deploy.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@test.com","password":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-login"
 
+      Expected: 401 (bad creds). NOT 500. If 500: fix, deploy.
   - title: "Test & fix: auth-signup"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"auth-test-'$(date +%s)'@test.com","password":"TestPass123!","name":"Test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-signup"
-      Expected: 200 or 400. NOT 500. If 500: fix, deploy. Clean up test user after.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"auth-test-'$(date
+      +%s)'@test.com","password":"TestPass123!","name":"Test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-signup"
 
+      Expected: 200 or 400. NOT 500. If 500: fix, deploy. Clean up test user
+      after.
   - title: "Test & fix: auth-logout"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-logout"
-      Expected: 200 or 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-logout"
 
+      Expected: 200 or 401. NOT 500.
   - title: "Test & fix: auth-forgot-password"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-forgot-password"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: auth-refresh"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-refresh"
-      Expected: 400 or 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-refresh"
 
+      Expected: 400 or 401. NOT 500.
   - title: "Test & fix: auth-reset-password"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test","password":"NewPass123!"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-reset-password"
       Expected: 400 (invalid token). NOT 500.
-
   - title: "Test & fix: auth-change-password"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"current_password":"old","new_password":"New123!"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-change-password"
       Expected: 401 (no auth). NOT 500.
-
   - title: "Test & fix: auth-verify-email"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-verify-email"
-      Expected: 400 or 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-verify-email"
 
+      Expected: 400 or 401. NOT 500.
   - title: "Test & fix: auth-sessions"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-sessions"
-      Expected: 401 (no auth). NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/auth-sessions"
 
+      Expected: 401 (no auth). NOT 500.
   - title: "Test & fix: customer-auth all actions"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       Test all customer-auth actions:
       1. Login: curl -s -X POST -d '{"action":"login","email":"test@test.com","password":"test","tenant_slug":"snak-station-inc-1774894616257"}' ...
@@ -136,1267 +154,1257 @@ tasks:
       3. Verify: curl -s -X POST -d '{"action":"verify"}' ...
       4. Health: curl -s -X POST -d '{"action":"health"}' ...
       Expected: 200/400/401 per action. NOT 500. Fix any crashes in customer-auth/handlers/.
-
   - title: "Test & fix: admin-auth"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"login","email":"test@test.com","password":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-auth"
-      Expected: 401 (bad creds) or 403 (not admin). NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"login","email":"test@test.com","password":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-auth"
 
+      Expected: 401 (bad creds) or 403 (not admin). NOT 500.
   - title: "Test & fix: super-admin-auth all actions"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       Test all actions: login, verify, refresh, logout, update-password, health.
       Each with minimal body. Expected: 200/400/401. NOT 500.
-
   - title: "Test & fix: magic-link-login"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/magic-link-login"
-      Expected: 200 or 400. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@test.com"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/magic-link-login"
 
+      Expected: 200 or 400. NOT 500.
   - title: "Test & fix: detect-suspicious-login"
     parallel_group: 1
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"userId":"00000000-0000-0000-0000-000000000000","fingerprint":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-suspicious-login"
       Expected: 401 (no auth) or 200. NOT 500.
-
   - title: "Test & fix: secure-account"
     parallel_group: 1
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/secure-account"
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/secure-account"
+
       Expected: 401. NOT 500.
-
-  # ============================================================
-  # GROUP 2: Email & Notification Functions (individual tests)
-  # ============================================================
-
   - title: "Test & fix: send-verification-email"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-verification-email"
       Expected: 200/400/401. NOT 500.
-
   - title: "Test & fix: resend-admin-verification"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/resend-admin-verification"
       Expected: 401 (needs auth). NOT 500.
-
   - title: "Test & fix: send-welcome-email"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","name":"Test","tenant_slug":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-welcome-email"
-      Expected: 200/400. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@test.com","name":"Test","tenant_slug":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-welcome-email"
 
+      Expected: 200/400. NOT 500.
   - title: "Test & fix: send-invitation-email"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","role":"staff"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-invitation-email"
       Expected: 401 (needs auth). NOT 500.
-
   - title: "Test & fix: send-klaviyo-email"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"to":"test@test.com","subject":"Test","html":"<p>test</p>"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-klaviyo-email"
-      Expected: 401 (needs auth) or 200. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"to":"test@test.com","subject":"Test","html":"<p>test</p>"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-klaviyo-email"
 
+      Expected: 401 (needs auth) or 200. NOT 500.
   - title: "Test & fix: send-klaviyo-sms"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"to":"+15550000000","message":"Test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-klaviyo-sms"
-      Expected: 401 or 200. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"to":"+15550000000","message":"Test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-klaviyo-sms"
 
+      Expected: 401 or 200. NOT 500.
   - title: "Test & fix: send-notification"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"type":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-notification"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"type":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-notification"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: send-sms"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"to":"+15550000000","message":"Test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-sms"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"to":"+15550000000","message":"Test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-sms"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: send-push-notification"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"title":"Test","body":"Test push"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-push-notification"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: send-otp"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"phone":"+15550000000"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-otp"
-      Expected: 200/400. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"phone":"+15550000000"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-otp"
 
+      Expected: 200/400. NOT 500.
   - title: "Test & fix: send-verification-sms"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"phone":"+15550000000"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-verification-sms"
       Expected: 200/400. NOT 500.
-
   - title: "Test & fix: send-order-confirmation"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-order-confirmation"
       Expected: 400 or 401. NOT 500.
-
   - title: "Test & fix: send-order-cancellation"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-order-cancellation"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: send-purchase-order"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-purchase-order"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: send-webhook"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"event":"test","data":{}}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-webhook"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"event":"test","data":{}}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-webhook"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: send-menu-access-link"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"phone":"+15550000000","menu_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-menu-access-link"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: send-marketing-campaign"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"campaign_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-marketing-campaign"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: send-scheduled-report"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-scheduled-report"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: send-trial-reminder"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-trial-reminder"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: send-trial-expiration-notice"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-trial-expiration-notice"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: send-trial-expired-notice"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/send-trial-expired-notice"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: notify-order-placed"
     parallel_group: 2
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/notify-order-placed"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: notify-order-ready"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/notify-order-ready"
-      Expected: 400. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"order_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/notify-order-ready"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: notify-recall"
     parallel_group: 2
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/notify-recall"
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/notify-recall"
+
       Expected: 401. NOT 500.
-
-  # ============================================================
-  # GROUP 3: Credits & Billing Functions
-  # ============================================================
-
   - title: "Test & fix: credits-balance"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-balance"
-      Expected: 401 or 200. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-balance"
 
+      Expected: 401 or 200. NOT 500.
   - title: "Test & fix: credits-packages"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-packages"
-      Expected: 200 with package list or 400. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-packages"
 
+      Expected: 200 with package list or 400. NOT 500.
   - title: "Test & fix: credits-transactions"
     parallel_group: 3
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-transactions"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: credits-purchase"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"package_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-purchase"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"package_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-purchase"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: credits-subscribe"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-subscribe"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-subscribe"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: credits-cancel-subscription"
     parallel_group: 3
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-cancel-subscription"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: credits-apply-promo"
     parallel_group: 3
-    completed: false
+    completed: true
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"code":"TEST123"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-apply-promo"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: credits-use"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"test","amount":1}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-use"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"test","amount":1}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credits-use"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: purchase-credits"
     parallel_group: 3
-    completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"package":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/purchase-credits"
-      Expected: 401. NOT 500.
+    completed: true
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"package":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/purchase-credits"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: grant-free-credits"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/grant-free-credits"
-      Expected: 200 (cron mode) or 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/grant-free-credits"
 
+      Expected: 200 (cron mode) or 401. NOT 500.
   - title: "Test & fix: credit-threshold-alerts"
     parallel_group: 3
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-threshold-alerts"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: credit-usage-reset"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-usage-reset"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-usage-reset"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: credit-warning-emails"
     parallel_group: 3
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/credit-warning-emails"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: billing"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"status"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/billing"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"status"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/billing"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: invoice-management list"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"list"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/invoice-management"
-      Expected: 401 or 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"list"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/invoice-management"
 
+      Expected: 401 or 200. NOT 500.
   - title: "Test & fix: set-free-tier"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/set-free-tier"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/set-free-tier"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: process-auto-topup"
     parallel_group: 3
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-auto-topup"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-auto-topup"
+
       Expected: 401. NOT 500.
-
-  # ============================================================
-  # GROUP 4: Stripe & Payment Functions
-  # ============================================================
-
   - title: "Test & fix: check-stripe-config"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-stripe-config"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: create-checkout"
     parallel_group: 4
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-checkout"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-checkout"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: create-setup-session"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-setup-session"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-stripe-connect"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-stripe-connect"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-stripe-refund"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"payment_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-stripe-refund"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: stripe-customer-portal"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/stripe-customer-portal"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: stripe-webhook"
     parallel_group: 4
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"type":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/stripe-webhook"
-      Expected: 400 (missing signature). NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"type":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/stripe-webhook"
 
+      Expected: 400 (missing signature). NOT 500.
   - title: "Test & fix: storefront-stripe-webhook"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"type":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/storefront-stripe-webhook"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: tenant-stripe-checkout"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-stripe-checkout"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: verify-tenant-stripe"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-tenant-stripe"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: retry-stripe-payment"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/retry-stripe-payment"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: setup-stripe-products"
     parallel_group: 4
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/setup-stripe-products"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: process-payment"
     parallel_group: 4
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-payment"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-payment"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: polar-checkout"
     parallel_group: 4
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/polar-checkout"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/polar-checkout"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: polar-webhook"
     parallel_group: 4
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/polar-webhook"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/polar-webhook"
+
       Expected: 400. NOT 500.
-
-  # ============================================================
-  # GROUP 5: Order & Delivery Functions
-  # ============================================================
-
   - title: "Test & fix: create-order"
     parallel_group: 5
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"items":[]}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-order"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"items":[]}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-order"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: update-order-status"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test","status":"confirmed"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/update-order-status"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: check-order-fraud"
     parallel_group: 5
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-order-fraud"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-order-fraud"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: process-return"
     parallel_group: 5
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-return"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-return"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: create-purchase-order"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-purchase-order"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: receive-purchase-order"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/receive-purchase-order"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: storefront-checkout"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"items":[],"store_slug":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/storefront-checkout"
       Expected: 400 (empty cart). NOT 500.
-
   - title: "Test & fix: menu-order-place"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"menu_id":"test","order_items":[],"payment_method":"cash","contact_phone":"+15550000000"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-order-place"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: convert-menu-order-to-invoice"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/convert-menu-order-to-invoice"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-marketplace-order"
     parallel_group: 5
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"items":[]}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-marketplace-order"
       Expected: 400. NOT 500.
-
-  # ============================================================
-  # GROUP 6: Delivery & Courier Functions
-  # ============================================================
-
   - title: "Test & fix: courier-app all endpoints"
     parallel_group: 6
     completed: false
-    description: |
-      Test all courier-app endpoints: login, toggle-online, my-orders, available-orders, earnings, today-stats.
-      All should return 401 without auth. NOT 500.
+    description: >
+      Test all courier-app endpoints: login, toggle-online, my-orders,
+      available-orders, earnings, today-stats.
 
+      All should return 401 without auth. NOT 500.
   - title: "Test & fix: assign-courier"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"order_id":"test","courier_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/assign-courier"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"order_id":"test","courier_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/assign-courier"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: add-courier"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/add-courier"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/add-courier"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: add-driver"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/add-driver"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/add-driver"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: suspend-driver"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"driver_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/suspend-driver"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"driver_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/suspend-driver"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: terminate-driver"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"driver_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/terminate-driver"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"driver_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/terminate-driver"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: reset-driver-pin"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"driver_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reset-driver-pin"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"driver_id":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reset-driver-pin"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: reset-driver-password"
     parallel_group: 6
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"driver_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reset-driver-password"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: calculate-eta"
     parallel_group: 6
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"origin":{"lat":40.7128,"lng":-74.006},"destination":{"lat":40.758,"lng":-73.9855}}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/calculate-eta"
       Expected: 200 or error about Mapbox token. NOT 500 crash.
-
   - title: "Test & fix: optimize-route"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"stops":[]}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/optimize-route"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"stops":[]}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/optimize-route"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: check-geofence"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-geofence"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-geofence"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: realtime-tracking"
     parallel_group: 6
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/realtime-tracking"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/realtime-tracking"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: runner-location-update"
     parallel_group: 6
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/runner-location-update"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: process-delivery-notifications"
     parallel_group: 6
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-delivery-notifications"
       Expected: 200. NOT 500.
-
-  # ============================================================
-  # GROUP 7: Menu & Product Functions
-  # ============================================================
-
   - title: "Test & fix: menu-generate"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-generate"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-generate"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: menu-burn"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-burn"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-burn"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: menu-parse"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-parse"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-parse"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: menu-ocr"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-ocr"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-ocr"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: menu-whitelist-manage"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"action":"list"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-whitelist-manage"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: menu-access-validate"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/menu-access-validate"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: create-encrypted-menu"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-encrypted-menu"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: access-encrypted-menu"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/access-encrypted-menu"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: access-encrypted-menu-v2"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/access-encrypted-menu-v2"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: serve-menu-page"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/serve-menu-page"
-      Expected: 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/serve-menu-page"
 
+      Expected: 400. NOT 500.
   - title: "Test & fix: sync-product-to-menu"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/sync-product-to-menu"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: generate-product-barcode"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"product_id":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-product-barcode"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: generate-product-images"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-product-images"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: process-product-image"
     parallel_group: 7
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-product-image"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: barcode-lookup"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"barcode":"012345678905"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/barcode-lookup"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"barcode":"012345678905"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/barcode-lookup"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: leafly-suggestions"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"query":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/leafly-suggestions"
-      Expected: 200 or 400. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"query":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/leafly-suggestions"
 
+      Expected: 200 or 400. NOT 500.
   - title: "Test & fix: pricing-advisor"
     parallel_group: 7
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/pricing-advisor"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/pricing-advisor"
+
       Expected: 400. NOT 500.
-
-  # ============================================================
-  # GROUP 8: Admin & Dashboard Functions
-  # ============================================================
-
   - title: "Test & fix: admin-dashboard all endpoints"
     parallel_group: 8
     completed: false
-    description: |
-      Test all admin-dashboard endpoints: overview, realtime-stats, orders, order-details, live-deliveries, couriers, courier-details, compliance, sales-analytics, heatmap, test.
-      All need auth. Send each with: curl -s -X POST -H "Content-Type: application/json" -d '{"endpoint":"<name>"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-dashboard"
-      Expected: 401 without auth. NOT 500.
+    description: >
+      Test all admin-dashboard endpoints: overview, realtime-stats, orders,
+      order-details, live-deliveries, couriers, courier-details, compliance,
+      sales-analytics, heatmap, test.
 
+      All need auth. Send each with: curl -s -X POST -H "Content-Type:
+      application/json" -d '{"endpoint":"<name>"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-dashboard"
+
+      Expected: 401 without auth. NOT 500.
   - title: "Test & fix: admin-actions all actions"
     parallel_group: 8
     completed: false
-    description: |
-      Test all admin-actions: cancel-order, accept-order, assign-courier, flag-order, unflag-order, decline-order, suspend-user.
-      All need auth. Expected: 401. NOT 500.
+    description: >
+      Test all admin-actions: cancel-order, accept-order, assign-courier,
+      flag-order, unflag-order, decline-order, suspend-user.
 
+      All need auth. Expected: 401. NOT 500.
   - title: "Test & fix: admin-api-operations"
     parallel_group: 8
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: admin-database-backup"
     parallel_group: 8
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-database-backup"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: admin-database-maintenance"
     parallel_group: 8
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-database-maintenance"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: admin-reset-password"
     parallel_group: 8
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-reset-password"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-admin-user"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-admin-user"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-admin-user"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: create-super-admin"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-super-admin"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-super-admin"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: staff-management"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/staff-management"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/staff-management"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: tenant-invite"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"action":"list_invitations"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-invite"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"action":"list_invitations"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-invite"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: impersonate-tenant"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/impersonate-tenant"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/impersonate-tenant"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: apply-tier-preset"
     parallel_group: 8
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/apply-tier-preset"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/apply-tier-preset"
+
       Expected: 401. NOT 500.
-
-  # ============================================================
-  # GROUP 9: Wholesale Functions
-  # ============================================================
-
   - title: "Test & fix: wholesale-order-create"
     parallel_group: 9
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"client_id":"test","items":[]}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-order-create"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: wholesale-delivery-assign"
     parallel_group: 9
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-delivery-assign"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: wholesale-delivery-update"
     parallel_group: 9
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-delivery-update"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: wholesale-payment-process"
     parallel_group: 9
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/wholesale-payment-process"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-marketplace-profile"
     parallel_group: 9
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-marketplace-profile"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: portal-data"
     parallel_group: 9
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/portal-data"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/portal-data"
+
       Expected: 400 or 401. NOT 500.
-
-  # ============================================================
-  # GROUP 10: Trial & Subscription Functions
-  # ============================================================
-
   - title: "Test & fix: start-trial"
     parallel_group: 10
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/start-trial"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/start-trial"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: cancel-trial"
     parallel_group: 10
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/cancel-trial"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/cancel-trial"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: update-trial-status"
     parallel_group: 10
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/update-trial-status"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: update-subscription"
     parallel_group: 10
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/update-subscription"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: check-expired-trials"
     parallel_group: 10
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-expired-trials"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: check-trial-reminders"
     parallel_group: 10
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-trial-reminders"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: check-usage-limits"
     parallel_group: 10
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-usage-limits"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/check-usage-limits"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: enforce-tenant-limits"
     parallel_group: 10
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/enforce-tenant-limits"
       Expected: 200. NOT 500.
-
-  # ============================================================
-  # GROUP 11: Security & GDPR Functions
-  # ============================================================
-
   - title: "Test & fix: encrypt-all-data rejects without auth"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/encrypt-all-data"
-      MUST return 401. If returns 200: CRITICAL security bug. If 500: fix crash.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/encrypt-all-data"
 
+      MUST return 401. If returns 200: CRITICAL security bug. If 500: fix crash.
   - title: "Test & fix: panic-reset rejects without auth"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/panic-reset"
-      MUST return 401. If returns 200: CRITICAL. If 500: fix.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/panic-reset"
 
+      MUST return 401. If returns 200: CRITICAL. If 500: fix.
   - title: "Test & fix: gdpr-export"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-export"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-export"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: gdpr-erase"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-erase"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-erase"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: gdpr-portability"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-portability"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/gdpr-portability"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: delete-customer-account"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/delete-customer-account"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: export-customer-data"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/export-customer-data"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: log-security-event"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/log-security-event"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/log-security-event"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: report-security-event"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/report-security-event"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: get-active-sessions"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/get-active-sessions"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: revoke-all-sessions"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/revoke-all-sessions"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: verify-backup-code"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-backup-code"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-backup-code"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: verify-age-jumio"
     parallel_group: 11
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-age-jumio"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-age-jumio"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: encrypted-operations"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/encrypted-operations"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: weekly-encryption-report"
     parallel_group: 11
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/weekly-encryption-report"
       Expected: 200. NOT 500.
-
-  # ============================================================
-  # GROUP 12: Utility & Misc Functions
-  # ============================================================
-
   - title: "Test & fix: validate-email"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@gmail.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-email"
-      Expected: 200 with validation result. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@gmail.com"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-email"
 
+      Expected: 200 with validation result. NOT 500.
   - title: "Test & fix: validate-phone"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"phone":"+15551234567"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-phone"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"phone":"+15551234567"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-phone"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: validate-tenant"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"slug":"snak-station-inc-1774894616257"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-tenant"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"slug":"snak-station-inc-1774894616257"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/validate-tenant"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: verify-email"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@gmail.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-email"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@gmail.com"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-email"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: verify-email-code"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","code":"123456"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-email-code"
-      Expected: 400 (invalid code). NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"email":"test@test.com","code":"123456"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-email-code"
 
+      Expected: 400 (invalid code). NOT 500.
   - title: "Test & fix: verify-phone"
     parallel_group: 12
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"verificationId":"00000000-0000-0000-0000-000000000000","code":"123456"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/verify-phone"
       Expected: 400 (not found). NOT 500.
-
   - title: "Test & fix: request-password-reset"
     parallel_group: 12
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","tenant_slug":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/request-password-reset"
       Expected: 200 (generic response). NOT 500.
-
   - title: "Test & fix: reset-password"
     parallel_group: 12
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"token":"test","email":"test@test.com","new_password":"New123!","tenant_slug":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reset-password"
       Expected: 400. NOT 500.
-
   - title: "Test & fix: request-account-unlock"
     parallel_group: 12
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/request-account-unlock"
       Expected: 200 or 400. NOT 500.
-
   - title: "Test & fix: heartbeat"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/heartbeat"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/heartbeat"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: public-holidays"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"country":"US","year":2026}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/public-holidays"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"country":"US","year":2026}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/public-holidays"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: fetch-weather"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"lat":40.7128,"lng":-74.006}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/fetch-weather"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"lat":40.7128,"lng":-74.006}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/fetch-weather"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: currency-convert"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"from":"USD","to":"EUR","amount":100}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/currency-convert"
-      Expected: 200 or 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"from":"USD","to":"EUR","amount":100}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/currency-convert"
 
+      Expected: 200 or 401. NOT 500.
   - title: "Test & fix: bin-lookup"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"bin":"411111"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/bin-lookup"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"bin":"411111"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/bin-lookup"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: ai-suggestions"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"query":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/ai-suggestions"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{"query":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/ai-suggestions"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: predict-revenue"
     parallel_group: 12
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/predict-revenue"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/predict-revenue"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: commission-calculate"
     parallel_group: 12
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/commission-calculate"
       Expected: 401. NOT 500.
-
-  # ============================================================
-  # GROUP 13: Remaining Functions
-  # ============================================================
-
   - title: "Test & fix: track-access"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{"userId":"test","fingerprint":"test"}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/track-access"
-      Expected: 400 or 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d
+      '{"userId":"test","fingerprint":"test"}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/track-access"
 
+      Expected: 400 or 200. NOT 500.
   - title: "Test & fix: detect-fraud"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-fraud"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-fraud"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: detect-orphaned-orders"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/detect-orphaned-orders"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: assess-risk"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/assess-risk"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/assess-risk"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: collect-metrics"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/collect-metrics"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/collect-metrics"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: uptime-checker"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/uptime-checker"
-      Expected: 200. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/uptime-checker"
 
+      Expected: 200. NOT 500.
   - title: "Test & fix: compliance-report"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/compliance-report"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/compliance-report"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: generate-report"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-report"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-report"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: generate-custom-report"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-custom-report"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: reports"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reports"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/reports"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: process-data-export"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/process-data-export"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: marketing-automation"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/marketing-automation"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: execute-marketing-workflow"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/execute-marketing-workflow"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: run-automation and workflow-executor and workflows"
     parallel_group: 13
     completed: false
@@ -1406,77 +1414,72 @@ tasks:
       2. curl -s -X POST -d '{}' .../workflow-executor → Expected: 401
       3. curl -s -X POST -d '{}' .../workflows → Expected: 401
       NOT 500 on any.
-
   - title: "Test & fix: forum-approvals"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/forum-approvals"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/forum-approvals"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: customer-chat"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-chat"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-chat"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: redeem-loyalty-reward"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/redeem-loyalty-reward"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: seed-demo-data"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/seed-demo-data"
-      Expected: 401. NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/seed-demo-data"
 
+      Expected: 401. NOT 500.
   - title: "Test & fix: bootstrap-tenant-owner"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/bootstrap-tenant-owner"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: update-account-profile"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/update-account-profile"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: create-user-profile"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/create-user-profile"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: low-stock-email-digest"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/low-stock-email-digest"
       Expected: 401 or 200. NOT 500.
-
   - title: "Test & fix: generate-recurring-invoices"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/generate-recurring-invoices"
       Expected: 401. NOT 500.
-
   - title: "Test & fix: retry-failed-emails"
     parallel_group: 13
     completed: false
     description: |
       curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/retry-failed-emails"
       Expected: 200. NOT 500.
-
   - title: "Test & fix: check-sendgrid-config and check-twilio-config"
     parallel_group: 13
     completed: false
@@ -1484,14 +1487,14 @@ tasks:
       1. curl -s -X POST -d '{}' .../check-sendgrid-config → Expected: 200
       2. curl -s -X POST -d '{}' .../check-twilio-config → Expected: 200
       NOT 500 on either.
-
   - title: "Test & fix: clerk-webhook"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/clerk-webhook"
-      Expected: 400 (missing signature). NOT 500.
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/clerk-webhook"
 
+      Expected: 400 (missing signature). NOT 500.
   - title: "Test & fix: forward-order-telegram and test-telegram"
     parallel_group: 13
     completed: false
@@ -1499,101 +1502,93 @@ tasks:
       1. curl -s -X POST -d '{}' .../forward-order-telegram → Expected: 400
       2. curl -s -X POST -d '{}' .../test-telegram → Expected: 400
       NOT 500.
-
   - title: "Test & fix: api edge function"
     parallel_group: 13
     completed: false
-    description: |
-      curl -s -X POST -H "Content-Type: application/json" -d '{}' "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/api"
+    description: >
+      curl -s -X POST -H "Content-Type: application/json" -d '{}'
+      "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/api"
+
       Expected: 400 or 401. NOT 500.
-
-  # ============================================================
-  # GROUP 14: Database & Schema Verification
-  # ============================================================
-
-  - title: "Verify all tables referenced by edge functions exist"
+  - title: Verify all tables referenced by edge functions exist
     parallel_group: 14
     completed: false
-    description: |
+    description: >
       Extract all table names from edge functions:
         grep -roh "\.from(['\"][a-z_]*['\"])" supabase/functions/ | sort -u | sed "s/\.from(['\"]//;s/['\"])//"
       Cross-reference with actual database tables. Fix any mismatches.
-
-  - title: "Verify all RPC functions referenced by edge functions exist"
+  - title: Verify all RPC functions referenced by edge functions exist
     parallel_group: 14
     completed: false
-    description: |
+    description: >
       Extract all RPC names:
         grep -roh "\.rpc(['\"][a-z_]*['\"]" supabase/functions/ | sort -u | sed "s/\.rpc(['\"]//;s/['\"]$//"
-      Check each exists: npx supabase db query --linked "SELECT proname FROM pg_proc WHERE pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')"
+      Check each exists: npx supabase db query --linked "SELECT proname FROM
+      pg_proc WHERE pronamespace = (SELECT oid FROM pg_namespace WHERE nspname =
+      'public')"
+
       Fix any missing.
-
-  - title: "Verify all column references in edge functions match DB schema"
+  - title: Verify all column references in edge functions match DB schema
     parallel_group: 14
     completed: false
-    description: |
-      Spot-check 20 critical tables: tenants, tenant_users, orders, products, tenant_credits, deliveries, wholesale_orders, wholesale_payments, couriers, invoices.
-      For each: compare .select() columns in the code vs actual columns in the DB.
-      Fix any column name mismatches (common: owner_phone vs phone, delivery_lat vs dropoff_lat).
+    description: >
+      Spot-check 20 critical tables: tenants, tenant_users, orders, products,
+      tenant_credits, deliveries, wholesale_orders, wholesale_payments,
+      couriers, invoices.
 
-  - title: "Verify RLS policies allow expected operations"
+      For each: compare .select() columns in the code vs actual columns in the
+      DB.
+
+      Fix any column name mismatches (common: owner_phone vs phone, delivery_lat
+      vs dropoff_lat).
+  - title: Verify RLS policies allow expected operations
     parallel_group: 14
     completed: false
-    description: |
+    description: >
       Check critical tables have both SELECT and UPDATE policies:
         npx supabase db query --linked "SELECT tablename, policyname, cmd FROM pg_policies WHERE schemaname='public' AND tablename IN ('tenants','tenant_users','orders','products','tenant_credits','invoices','sidebar_preferences')"
-      Any table with SELECT but no UPDATE policy needs one if the frontend writes to it.
+      Any table with SELECT but no UPDATE policy needs one if the frontend
+      writes to it.
+
       Fix by adding appropriate RLS policies.
-
-  # ============================================================
-  # GROUP 15: Rate Limiting & Security Verification
-  # ============================================================
-
-  - title: "Verify rate limiting works on validate-email"
+  - title: Verify rate limiting works on validate-email
     parallel_group: 15
     completed: false
-    description: |
+    description: >
       Send 15 rapid requests to validate-email. After 10, should get 429.
-      If all return 200: rate limiting is broken. Check the function imports checkRateLimit correctly.
 
-  - title: "Verify rate limiting works on send-otp"
+      If all return 200: rate limiting is broken. Check the function imports
+      checkRateLimit correctly.
+  - title: Verify rate limiting works on send-otp
     parallel_group: 15
     completed: false
     description: |
       Send 8 rapid requests to send-otp. After 5, should get 429.
-
-  - title: "Verify rate limiting works on request-password-reset"
+  - title: Verify rate limiting works on request-password-reset
     parallel_group: 15
     completed: false
     description: |
       Send 5 rapid requests. After 3, should get 429.
-
-  - title: "Verify rate limiting works on access-encrypted-menu"
+  - title: Verify rate limiting works on access-encrypted-menu
     parallel_group: 15
     completed: false
     description: |
       Send 35 rapid requests. After 30, should get 429.
-
-  - title: "Verify no PINs or passwords in API responses"
+  - title: Verify no PINs or passwords in API responses
     parallel_group: 15
     completed: false
-    description: |
-      Grep all edge function response bodies for 'pin' or 'password' fields being returned:
+    description: >
+      Grep all edge function response bodies for 'pin' or 'password' fields
+      being returned:
         grep -rn '"pin"' supabase/functions/ | grep -i "json\|response\|stringify" | grep -v "pin_delivered\|pin_reset\|pin_required"
       Any function returning actual PIN values: CRITICAL — fix immediately.
-
-  - title: "Verify CORS preflight on all 204 functions"
+  - title: Verify CORS preflight on all 204 functions
     parallel_group: 15
     completed: false
     description: |
       Test OPTIONS on every function. All must return 200.
       Fix any that don't.
-
-  # ============================================================
-  # GROUP 16: Final Verification & Report
-  # ============================================================
-
-  - title: "Final full smoke test — all 204 functions"
+  - title: Final full smoke test — all 204 functions
     parallel_group: 16
     completed: false
     description: |
@@ -1605,14 +1600,20 @@ tasks:
       - List of all fixes applied during this run
       - Known issues requiring manual intervention
       - Recommendations
-
-  - title: "Commit all fixes, deploy, and push final report"
+  - title: Commit all fixes, deploy, and push final report
     parallel_group: 16
     completed: false
-    description: |
+    description: >
       1. git add all modified files
-      2. git commit -m "fix: overnight automated test & fix run — $(date +%Y-%m-%d)"
+
+      2. git commit -m "fix: overnight automated test & fix run — $(date
+      +%Y-%m-%d)"
+
       3. npx supabase functions deploy (all functions)
+
       4. git push
+
       5. Generate tasks/overnight-test-report.md with full results
-      6. git add tasks/overnight-test-report.md && git commit -m "docs: overnight test report" && git push
+
+      6. git add tasks/overnight-test-report.md && git commit -m "docs:
+      overnight test report" && git push
