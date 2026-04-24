@@ -39,7 +39,7 @@ export function ModernHero() {
   }, []);
 
   return (
-    <section className="relative bg-white pt-8 pb-16 md:pb-24 overflow-x-hidden">
+    <section className="relative bg-white pt-8 pb-12 md:pb-16 overflow-x-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full max-w-[1400px]">
         {/* Nested Flowhub-style container */}
         <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-[40px] md:rounded-[60px] pt-16 md:pt-24 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 w-full">

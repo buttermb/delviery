@@ -69,7 +69,7 @@ export default function MarketingHome() {
         {/* SECTION 2: PROBLEM/SOLUTION - GRAY BG */}
         <MarketingErrorBoundary section="ProblemSolution">
           <SectionTransition variant="fade" delay={0}>
-            <section className="bg-white py-12 md:py-24">
+            <section className="bg-white pt-16 md:pt-24 pb-12 md:pb-16">
               <Suspense fallback={<SectionLoader />}>
                 <ProblemSolutionSection />
               </Suspense>
@@ -78,19 +78,19 @@ export default function MarketingHome() {
         </MarketingErrorBoundary>
 
         {/* SECTION 3: DETAILED FEATURES - WHITE BG */}
-        <section className="bg-white py-24">
+        <section className="bg-white pt-12 md:pt-16 pb-12 md:pb-16">
           <DetailedFeatureSection />
         </section>
 
 
 
         {/* SECTION 9: PRICING PREVIEW - GRAY BG */}
-        <section className="py-16 md:py-20 bg-white">
+        <section className="pt-16 md:pt-20 pb-8 md:pb-12 bg-white">
           <PricingSection />
         </section>
 
         {/* SECTION 10: FINAL CTA */}
-        <section className="pb-24 pt-8 md:pt-16 bg-white">
+        <section className="pb-24 pt-8 bg-white">
           <CTASection
             title="Ready to Create Your First Secure Menu?"
             description="Live in 60 seconds. No demo. No contract."

@@ -13,7 +13,7 @@ export function StorefrontDemo() {
             type: "Sativa Dominant",
             thc: "24%",
             price: 45,
-            image: "https://images.unsplash.com/photo-1603909223429-69bb7101f420?auto=format&fit=crop&q=80&w=800",
+            image: "/products/blue-dream.jpg",
             tag: "Best Seller",
             effects: ["Happy", "Creative"]
         },
@@ -23,7 +23,7 @@ export function StorefrontDemo() {
             type: "Indica",
             thc: "22%",
             price: 50,
-            image: "https://images.unsplash.com/photo-1556928045-16f7f50be0f3?auto=format&fit=crop&q=80&w=800",
+            image: "/products/purple-haze.jpg",
             tag: "Premium",
             effects: ["Relaxed", "Sleepy"]
         },
@@ -33,7 +33,7 @@ export function StorefrontDemo() {
             type: "Sativa",
             thc: "26%",
             price: 55,
-            image: "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?auto=format&fit=crop&q=80&w=800",
+            image: "/products/sour-diesel.jpg",
             tag: "Staff Pick",
             effects: ["Energetic", "Focused"]
         }
